@@ -1,17 +1,20 @@
-export * from './combo'
-export * from './forex'
-export * from './future'
-export * from './fop'
-export * from './option'
-export * from './stock'
-export * from './cfd'
+import { fop } from "./fop";
+import { future } from "./future";
+import { option } from "./option";
+import { stock } from "./stock";
+import { combo } from "./combo";
+import { cfd } from "./cfd";
+import { forex } from "./forex";
+import { index } from "./ind";
 
-export default function (symbol: string, currency?: string, exchange?: string) {
 
-    return {
-        currency: currency || 'USD',
-        exchange: exchange || 'CBOE',
-        secType: 'IND',
-        symbol: symbol
-    };
-};
+export default {
+    fop,
+    future,
+    option,
+    stock,
+    combo,
+    cfd,
+    forex,
+    index
+}

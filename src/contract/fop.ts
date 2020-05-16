@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-export default function fop(symbol: string, expiry: string, strike: string, right: string, multiplier?: number, exchange?: string, currency?: string) {
+export function fop(symbol: string, expiry: string, strike: string, right: string, multiplier?: number, exchange?: string, currency?: string) {
 
   return {
     currency: currency || 'USD',

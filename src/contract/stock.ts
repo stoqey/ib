@@ -1,13 +1,12 @@
 import assert from 'assert';
 import _ from 'lodash';
 
-export default function (symbol, exchange, currency) {
-  assert(_.isString(symbol), 'Symbol must be a string.');
+export function stock(symbol: string, exchange?: string, currency?: string) {
 
   return {
     currency: currency || 'USD',
-    exchange: exchange || 'SMART',
+    exchange: exchange || 'CBOE',
     secType: 'STK',
-    symbol: symbol
+    symbol
   };
 };
