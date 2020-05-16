@@ -2,7 +2,7 @@ var assert = require('assert');
 
 var _ = require('lodash');
 
-module.exports = function (action, quantity, auxPrice, tif, transmitOrder, parentId) {
+export default function (action, quantity, auxPrice, tif, transmitOrder, parentId) {
   assert(_.isString(action), 'Action must be a string.');
   assert(_.isNumber(quantity), 'Quantity must be a number.');
   assert(_.isNumber(auxPrice), 'Price must be a number.');

@@ -41,7 +41,7 @@ Incoming.prototype._ACCOUNT_UPDATE_MULTI = function () {
   var account = this.dequeue();
   var modelCode = this.dequeue();
   var key = this.dequeue();
-  var value  = this.dequeue();
+  var value = this.dequeue();
   var currency = this.dequeue();
 
   this._emit('accountUpdateMulti', reqId, account, modelCode, key, value, currency);
@@ -64,7 +64,7 @@ Incoming.prototype._ACCT_UPDATE_TIME = function () {
 Incoming.prototype._ACCT_VALUE = function () {
   var version = this.dequeueInt();
   var key = this.dequeue();
-  var value  = this.dequeue();
+  var value = this.dequeue();
   var currency = this.dequeue();
   var accountName = null;
 
@@ -107,7 +107,7 @@ Incoming.prototype._BOND_CONTRACT_DATA = function () {
   contract.cusip = this.dequeue();
   contract.coupon = this.dequeueFloat();
   contract.maturity = this.dequeue();
-  contract.issueDate  = this.dequeue();
+  contract.issueDate = this.dequeue();
   contract.ratings = this.dequeue();
   contract.bondType = this.dequeue();
   contract.couponType = this.dequeue();
@@ -131,7 +131,7 @@ Incoming.prototype._BOND_CONTRACT_DATA = function () {
     contract.notes = this.dequeue();
   }
 
-  if(version >= 4) {
+  if (version >= 4) {
     contract.longName = this.dequeue();
   }
 
@@ -223,7 +223,7 @@ Incoming.prototype._CONTRACT_DATA = function () {
 
   if (version >= 7) {
     secIdListCount = this.dequeueInt();
-    if (secIdListCount  > 0) {
+    if (secIdListCount > 0) {
       contract.secIdList = [];
       for (i = 0; i < secIdListCount; ++i) {
         tagValue = {};
@@ -420,7 +420,7 @@ Incoming.prototype._HISTORICAL_DATA = function () {
   this._emit('historicalData', reqId, completedIndicator, -1, -1, -1, -1, -1, -1, -1, false);
 };
 
-Incoming.prototype._HISTORICAL_TICKS_LAST = function() {
+Incoming.prototype._HISTORICAL_TICKS_LAST = function () {
   var reqId = this.dequeueInt();
   var tickCount = this.dequeueInt();
 
@@ -449,7 +449,7 @@ Incoming.prototype._HISTORICAL_TICKS_LAST = function() {
   }
 };
 
-Incoming.prototype._HISTORICAL_TICKS_BID_ASK = function() {
+Incoming.prototype._HISTORICAL_TICKS_BID_ASK = function () {
   var reqId = this.dequeueInt();
   var tickCount = this.dequeueInt();
 
@@ -477,7 +477,7 @@ Incoming.prototype._HISTORICAL_TICKS_BID_ASK = function() {
   }
 };
 
-Incoming.prototype._HISTORICAL_TICKS = function() { // MIDPOINT (size appears to always be zero)
+Incoming.prototype._HISTORICAL_TICKS = function () { // MIDPOINT (size appears to always be zero)
   var reqId = this.dequeueInt();
   var tickCount = this.dequeueInt();
 
@@ -490,7 +490,7 @@ Incoming.prototype._HISTORICAL_TICKS = function() { // MIDPOINT (size appears to
     this.dequeueInt();//for consistency
     price = this.dequeueFloat();
     size = this.dequeueInt();
- 
+
     this._emit('historicalTickMidPointData', reqId, date, price, size);
   }
 
@@ -508,7 +508,7 @@ Incoming.prototype._TICK_BY_TICK = function () {
 
   var mask;
 
-  switch (tickType){
+  switch (tickType) {
     case 0: // None
       break;
     case 1: // Last
@@ -536,14 +536,14 @@ Incoming.prototype._TICK_BY_TICK = function () {
       break;
     case 4: // MidPoint
       var midPoint = this.dequeueFloat();
-      
+
       this._emit('tickByTickMidPoint', reqId, time, midPoint);
       break;
   }
 };
 
-Incoming.prototype._HEAD_TIMESTAMP = function() {
-  var reqId         = this.dequeueInt();
+Incoming.prototype._HEAD_TIMESTAMP = function () {
+  var reqId = this.dequeueInt();
   var headTimestamp = this.dequeue();
   this._emit('headTimestamp', reqId, headTimestamp);
 
@@ -993,7 +993,7 @@ Incoming.prototype._ORDER_STATUS = function () {
   }
 
   this._emit('orderStatus', id, status, filled, remaining, avgFillPrice,
-                                       permId, parentId, lastFillPrice, clientId, whyHeld);
+    permId, parentId, lastFillPrice, clientId, whyHeld);
 };
 
 Incoming.prototype._PORTFOLIO_VALUE = function () {
@@ -1050,7 +1050,7 @@ Incoming.prototype._PORTFOLIO_VALUE = function () {
   }
 
   this._emit('updatePortfolio', contract, position, marketPrice, marketValue,
-                                           averageCost, unrealizedPNL, realizedPNL, accountName);
+    averageCost, unrealizedPNL, realizedPNL, accountName);
 };
 
 Incoming.prototype._POSITION = function () {
@@ -1180,7 +1180,7 @@ Incoming.prototype._SCANNER_DATA = function () {
     }
 
     this._emit('scannerData', tickerId, rank, contract, distance,
-                                         benchmark, projection, legsStr);
+      benchmark, projection, legsStr);
   }
 
   this._emit('scannerDataEnd', tickerId);
@@ -1193,21 +1193,21 @@ Incoming.prototype._SCANNER_PARAMETERS = function () {
   this._emit('scannerParameters', xml);
 };
 
-Incoming.prototype._SECURITY_DEFINITION_OPTION_PARAMETER = function() {
-  var reqId           = this.dequeueInt();
-  var exchange        = this.dequeue();
+Incoming.prototype._SECURITY_DEFINITION_OPTION_PARAMETER = function () {
+  var reqId = this.dequeueInt();
+  var exchange = this.dequeue();
   var underlyingConId = this.dequeueInt();
-  var tradingClass    = this.dequeue();
-  var multiplier      = this.dequeue();
-  var expCount        = this.dequeueInt();
-  var expirations     = [];
+  var tradingClass = this.dequeue();
+  var multiplier = this.dequeue();
+  var expCount = this.dequeueInt();
+  var expirations = [];
 
   for (var i = 0; i < expCount; i++) {
     expirations.push(this.dequeue());
   }
 
   var strikeCount = this.dequeueInt();
-  var strikes     = [];
+  var strikes = [];
   for (var j = 0; j < strikeCount; j++) {
     strikes.push(this.dequeueFloat());
   }
@@ -1216,8 +1216,8 @@ Incoming.prototype._SECURITY_DEFINITION_OPTION_PARAMETER = function() {
 
 };
 
-Incoming.prototype._SECURITY_DEFINITION_OPTION_PARAMETER_END = function() {
-  var reqId           = this.dequeueInt();
+Incoming.prototype._SECURITY_DEFINITION_OPTION_PARAMETER_END = function () {
+  var reqId = this.dequeueInt();
   this._emit('securityDefinitionOptionParameterEnd', reqId);
 };
 
@@ -1234,8 +1234,8 @@ Incoming.prototype._TICK_EFP = function () {
   var dividendsToExpiry = this.dequeueFloat();
 
   this._emit('tickEFP', tickerId, tickType, basisPoints, formattedBasisPoints,
-                                   impliedFuturesPrice, holdDays, futureExpiry,
-                                   dividendImpact, dividendsToExpiry);
+    impliedFuturesPrice, holdDays, futureExpiry,
+    dividendImpact, dividendsToExpiry);
 };
 
 Incoming.prototype._TICK_GENERIC = function () {
@@ -1335,20 +1335,20 @@ Incoming.prototype._TICK_PRICE = function () {
   var sizeTickType = -1;
 
   if (version >= 2) {
-    sizeTickType = -1 ; // not a tick
+    sizeTickType = -1; // not a tick
 
     switch (tickType) {
-    case 1:  // BID
-      sizeTickType = 0;  // BID_SIZE
-      break;
-    case 2:  // ASK
-      sizeTickType = 3;  // ASK_SIZE
-      break;
-    case 4:  // LAST
-      sizeTickType = 5;  // LAST_SIZE
-      break;
-    default:
-      break;
+      case 1:  // BID
+        sizeTickType = 0;  // BID_SIZE
+        break;
+      case 2:  // ASK
+        sizeTickType = 3;  // ASK_SIZE
+        break;
+      case 4:  // LAST
+        sizeTickType = 5;  // LAST_SIZE
+        break;
+      default:
+        break;
     }
 
     if (sizeTickType !== -1) {
@@ -1463,4 +1463,4 @@ Incoming.prototype.process = function () {
   }
 };
 
-module.exports = Incoming;
+export default Incoming;

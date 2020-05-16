@@ -6,6 +6,6 @@ function UnderrunError(message) {
 UnderrunError.prototype = Object.create(Error.prototype);
 UnderrunError.prototype.constructor = UnderrunError;
 
-module.exports = {
+export default {
   UnderrunError: UnderrunError
 };

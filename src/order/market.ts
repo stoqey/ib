@@ -2,7 +2,7 @@ var assert = require('assert');
 
 var _ = require('lodash');
 
-module.exports = function (action, quantity, transmitOrder, goodAfterTime, goodTillDate) {
+export default function (action, quantity, transmitOrder, goodAfterTime, goodTillDate) {
   assert(_.isString(action), 'Action must be a string.');
   assert(_.isNumber(quantity), 'Quantity must be a number.');
 
@@ -10,11 +10,11 @@ module.exports = function (action, quantity, transmitOrder, goodAfterTime, goodT
     transmitOrder = true;
   }
 
-  if ( goodAfterTime === undefined ) {
+  if (goodAfterTime === undefined) {
     goodAfterTime = '';
   }
 
-  if ( goodTillDate === undefined ) {
+  if (goodTillDate === undefined) {
     goodTillDate = '';
   }
 

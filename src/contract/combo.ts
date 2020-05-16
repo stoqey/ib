@@ -2,7 +2,7 @@ var assert = require('assert');
 
 var _ = require('lodash');
 
-module.exports = function (symbol, currency, exchange) {
+export default function (symbol, currency, exchange) {
   assert(_.isString(symbol), 'Symbol must be a string.');
 
   return {

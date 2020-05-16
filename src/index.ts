@@ -10,7 +10,7 @@ var Controller = require('./controller');
 function IB(options) {
   this._controller = new Controller(this, options);
 
-  this.on('error', function () {});
+  this.on('error', function () { });
 }
 
 util.inherits(IB, events.EventEmitter);
@@ -156,7 +156,7 @@ IB.prototype.cancelScannerSubscription = function (tickerId) {
 };
 
 IB.prototype.exerciseOptions = function (tickerId, contract, exerciseAction, exerciseQuantity,
-                                         account, override) {
+  account, override) {
   assert(_.isNumber(tickerId), '"tickerId" must be an integer - ' + tickerId);
   assert(_.isPlainObject(contract), '"contract" must be a plain object - ' + contract);
   assert(_.isNumber(exerciseAction), '"exerciseAction" must be an integer - ' + exerciseAction);
@@ -165,7 +165,7 @@ IB.prototype.exerciseOptions = function (tickerId, contract, exerciseAction, exe
   assert(_.isNumber(override), '"override" must be an integer - ' + override);
 
   this._send('exerciseOptions', tickerId, contract, exerciseAction, exerciseQuantity,
-                                account, override);
+    account, override);
 
   return this;
 };
@@ -275,7 +275,7 @@ IB.prototype.reqGlobalCancel = function () {
   return this;
 };
 
-IB.prototype.reqHeadTimestamp = function(reqId, contract, whatToShow, useRTH, formatDate) {
+IB.prototype.reqHeadTimestamp = function (reqId, contract, whatToShow, useRTH, formatDate) {
   assert(_.isNumber(reqId), '"reqId" must be an integer - ' + reqId);
   assert(_.isPlainObject(contract), '"contract" must be a plain object - ' + contract);
   assert(_.isString(whatToShow), '"whatToShow" must be a string - ' + whatToShow);
@@ -284,7 +284,7 @@ IB.prototype.reqHeadTimestamp = function(reqId, contract, whatToShow, useRTH, fo
   this._send('reqHeadTimestamp', reqId, contract, whatToShow, useRTH, formatDate);
 };
 
-IB.prototype.reqSecDefOptParams = function(reqId, underlyingSymbol, futFopExchange, underlyingSecType, underlyingConId) {
+IB.prototype.reqSecDefOptParams = function (reqId, underlyingSymbol, futFopExchange, underlyingSecType, underlyingConId) {
   assert(_.isNumber(reqId), '"reqId" must be an integer - ' + reqId);
   assert(_.isString(underlyingSymbol), '"underlyingSymbol" must be a string - ' + underlyingSymbol);
   assert(_.isString(futFopExchange), '"futFopExchange" must be a string - ' + futFopExchange);
@@ -296,7 +296,7 @@ IB.prototype.reqSecDefOptParams = function(reqId, underlyingSymbol, futFopExchan
 };
 
 IB.prototype.reqHistoricalData = function (tickerId, contract, endDateTime, durationStr,
-                                           barSizeSetting, whatToShow, useRTH, formatDate, keepUpToDate) {
+  barSizeSetting, whatToShow, useRTH, formatDate, keepUpToDate) {
   assert(_.isNumber(tickerId), '"tickerId" must be an integer - ' + tickerId);
   assert(_.isPlainObject(contract), '"contract" must be a plain object - ' + contract);
   assert(_.isString(endDateTime), '"endDateTime" must be a string - ' + endDateTime);
@@ -308,13 +308,13 @@ IB.prototype.reqHistoricalData = function (tickerId, contract, endDateTime, dura
   assert(_.isBoolean(keepUpToDate), '"keepUpToDate" must be an boolean - ' + keepUpToDate);
 
   this._send('reqHistoricalData', tickerId, contract, endDateTime, durationStr,
-                                     barSizeSetting, whatToShow, useRTH, formatDate, keepUpToDate);
+    barSizeSetting, whatToShow, useRTH, formatDate, keepUpToDate);
 
   return this;
 };
 
 IB.prototype.reqHistoricalTicks = function (tickerId, contract, startDateTime, endDateTime, numberOfTicks,
-                                whatToShow, useRTH, ignoreSize){
+  whatToShow, useRTH, ignoreSize) {
   assert(_.isNumber(tickerId), '"tickerId" must be an integer - ' + tickerId);
   assert(_.isPlainObject(contract), '"contract" must be a plain object - ' + contract);
   if (startDateTime && endDateTime || !startDateTime && !endDateTime) {
@@ -324,10 +324,10 @@ IB.prototype.reqHistoricalTicks = function (tickerId, contract, startDateTime, e
   assert(_.isString(whatToShow), '"whatToShow" must be a string - ' + whatToShow);
   assert(_.isNumber(useRTH), '"useRTH" must be an integer - ' + useRTH);
   assert(_.isBoolean(ignoreSize), '"ignoreSize" must be an boolean - ' + ignoreSize);
-  
-  this._send('reqHistoricalTicks', tickerId, contract, startDateTime, endDateTime, numberOfTicks, 
-                                    whatToShow, useRTH, ignoreSize);
-  
+
+  this._send('reqHistoricalTicks', tickerId, contract, startDateTime, endDateTime, numberOfTicks,
+    whatToShow, useRTH, ignoreSize);
+
   return this;
 };
 
@@ -347,7 +347,7 @@ IB.prototype.cancelTickByTickData = function (tickerId) {
   assert(_.isNumber(tickerId), '"tickerId" must be an integer - ' + tickerId);
 
   this._send('cancelTickByTickData', tickerId);
-  
+
   return this;
 };
 
@@ -522,4 +522,4 @@ IB.contract = IB.prototype.contract = require('./contract');
 IB.order = IB.prototype.order = require('./order');
 IB.util = IB.prototype.util = require('./util');
 
-module.exports = IB;
+export default IB;

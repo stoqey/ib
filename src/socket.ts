@@ -132,4 +132,4 @@ Socket.prototype.send = function (tokens, async) {
   this._neverSent = false;
 };
 
-module.exports = Socket;
+export default Socket;

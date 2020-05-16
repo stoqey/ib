@@ -218,7 +218,7 @@ Outgoing.prototype.cancelScannerSubscription = function (tickerId) {
 };
 
 Outgoing.prototype.exerciseOptions = function (tickerId, contract, exerciseAction, exerciseQuantity,
-                                               account, override) {
+  account, override) {
   var version = 2;
 
   if (this._controller._serverVersion < 21) {
@@ -266,7 +266,7 @@ Outgoing.prototype.placeOrder = function (id, contract, order) {
 
   if (this._controller._serverVersion < C.MIN_SERVER_VER.SCALE_ORDERS) {
     if (order.scaleInitLevelSize !== Number.MAX_VALUE ||
-        order.scalePriceIncrement !== Number.MAX_VALUE) {
+      order.scalePriceIncrement !== Number.MAX_VALUE) {
       return this._controller.emitError('It does not support Scale orders.');
     }
   }
@@ -353,18 +353,18 @@ Outgoing.prototype.placeOrder = function (id, contract, order) {
 
   if (this._controller._serverVersion < C.MIN_SERVER_VER.DELTA_NEUTRAL_CONID) {
     if (order.deltaNeutralConId > 0 ||
-        !_.isEmpty(order.deltaNeutralSettlingFirm) ||
-        !_.isEmpty(order.deltaNeutralClearingAccount) ||
-        !_.isEmpty(order.deltaNeutralClearingIntent)) {
+      !_.isEmpty(order.deltaNeutralSettlingFirm) ||
+      !_.isEmpty(order.deltaNeutralClearingAccount) ||
+      !_.isEmpty(order.deltaNeutralClearingIntent)) {
       return this._controller.emitError('It does not support deltaNeutral parameters: ConId, SettlingFirm, ClearingAccount, ClearingIntent.');
     }
   }
 
   if (this._controller._serverVersion < C.MIN_SERVER_VER.DELTA_NEUTRAL_OPEN_CLOSE) {
     if (!_.isEmpty(order.deltaNeutralOpenClose) ||
-        order.deltaNeutralShortSale ||
-        order.deltaNeutralShortSaleSlot > 0 ||
-        !_.isEmpty(order.deltaNeutralDesignatedLocation)) {
+      order.deltaNeutralShortSale ||
+      order.deltaNeutralShortSaleSlot > 0 ||
+      !_.isEmpty(order.deltaNeutralDesignatedLocation)) {
       return this._controller.emitError('It does not support deltaNeutral parameters: OpenClose, ShortSale, ShortSaleSlot, DesignatedLocation.');
     }
   }
@@ -372,20 +372,20 @@ Outgoing.prototype.placeOrder = function (id, contract, order) {
   if (this._controller._serverVersion < C.MIN_SERVER_VER.SCALE_ORDERS3) {
     if (order.scalePriceIncrement > 0 && order.scalePriceIncrement !== Number.MAX_VALUE) {
       if (order.scalePriceAdjustValue !== Number.MAX_VALUE ||
-          order.scalePriceAdjustInterval !== Number.MAX_VALUE ||
-          order.scaleProfitOffset !== Number.MAX_VALUE ||
-          order.scaleAutoReset ||
-          order.scaleInitPosition !== Number.MAX_VALUE ||
-          order.scaleInitFillQty !== Number.MAX_VALUE ||
-          order.scaleRandomPercent) {
+        order.scalePriceAdjustInterval !== Number.MAX_VALUE ||
+        order.scaleProfitOffset !== Number.MAX_VALUE ||
+        order.scaleAutoReset ||
+        order.scaleInitPosition !== Number.MAX_VALUE ||
+        order.scaleInitFillQty !== Number.MAX_VALUE ||
+        order.scaleRandomPercent) {
         return this._controller.emitError('It does not support Scale order parameters: PriceAdjustValue, PriceAdjustInterval, ProfitOffset, AutoReset, InitPosition, InitFillQty and RandomPercent');
       }
     }
   }
 
   if (this._controller._serverVersion < C.MIN_SERVER_VER.ORDER_COMBO_LEGS_PRICE &&
-      _.isString(contract.secType) &&
-      C.BAG_SEC_TYPE.toUpperCase() === contract.secType.toUpperCase()) {
+    _.isString(contract.secType) &&
+    C.BAG_SEC_TYPE.toUpperCase() === contract.secType.toUpperCase()) {
     if (_.isArray(order.orderComboLegs)) {
       order.orderComboLegs.forEach(function (orderComboLeg) {
         if (orderComboLeg.price !== Number.MAX_VALUE) {
@@ -409,8 +409,8 @@ Outgoing.prototype.placeOrder = function (id, contract, order) {
 
   if (this._controller._serverVersion < C.MIN_SERVER_VER.SCALE_TABLE) {
     if (!_.isEmpty(order.scaleTable) ||
-        !_.isEmpty(order.activeStartTime) ||
-        !_.isEmpty(order.activeStopTime)) {
+      !_.isEmpty(order.activeStartTime) ||
+      !_.isEmpty(order.activeStopTime)) {
       return this._controller.emitError('It does not support scaleTable, activeStartTime and activeStopTime parameters.');
     }
   }
@@ -443,7 +443,7 @@ Outgoing.prototype.placeOrder = function (id, contract, order) {
   if (this._controller._serverVersion >= C.MIN_SERVER_VER.TRADING_CLASS) {
     args.push(contract.tradingClass);
   }
-  if (this._controller._serverVersion >= C.MIN_SERVER_VER.SEC_ID_TYPE){
+  if (this._controller._serverVersion >= C.MIN_SERVER_VER.SEC_ID_TYPE) {
     args.push(contract.secIdType);
     args.push(contract.secId);
   }
@@ -494,8 +494,8 @@ Outgoing.prototype.placeOrder = function (id, contract, order) {
 
   // Send combo legs for BAG requests
   if (this._controller._serverVersion >= 8 &&
-      _.isString(contract.secType) &&
-      C.BAG_SEC_TYPE.toUpperCase() === contract.secType.toUpperCase()) {
+    _.isString(contract.secType) &&
+    C.BAG_SEC_TYPE.toUpperCase() === contract.secType.toUpperCase()) {
     if (!_.isArray(contract.comboLegs)) {
       args.push(0);
     } else {
@@ -521,8 +521,8 @@ Outgoing.prototype.placeOrder = function (id, contract, order) {
 
   // Send order combo legs for BAG requests
   if (this._controller._serverVersion >= C.MIN_SERVER_VER.ORDER_COMBO_LEGS_PRICE &&
-      _.isString(contract.secType) &&
-      C.BAG_SEC_TYPE.toUpperCase() === contract.secType.toUpperCase()) {
+    _.isString(contract.secType) &&
+    C.BAG_SEC_TYPE.toUpperCase() === contract.secType.toUpperCase()) {
     if (!_.isArray(order.orderComboLegs)) {
       args.push(0);
     } else {
@@ -536,8 +536,8 @@ Outgoing.prototype.placeOrder = function (id, contract, order) {
   var smartComboRoutingParamsCount;
 
   if (this._controller._serverVersion >= C.MIN_SERVER_VER.SMART_COMBO_ROUTING_PARAMS &&
-      _.isString(contract.secType) &&
-      C.BAG_SEC_TYPE.toUpperCase() === contract.secType.toUpperCase()) {
+    _.isString(contract.secType) &&
+    C.BAG_SEC_TYPE.toUpperCase() === contract.secType.toUpperCase()) {
     smartComboRoutingParamsCount = !_.isArray(order.smartComboRoutingParams) ? 0 : order.smartComboRoutingParams.length;
     args.push(smartComboRoutingParamsCount);
 
@@ -608,8 +608,8 @@ Outgoing.prototype.placeOrder = function (id, contract, order) {
 
     // Volatility orders had specific watermark price attribs in server version 26
     lower = ((this._controller._serverVersion === 26 && order.orderType === 'VOL') ?
-        Number.MAX_VALUE :
-        order.stockRangeLower);
+      Number.MAX_VALUE :
+      order.stockRangeLower);
     upper = (this._controller._serverVersion === 26 && order.orderType === 'VOL') ?
       Number.MAX_VALUE :
       order.stockRangeUpper;
@@ -622,8 +622,8 @@ Outgoing.prototype.placeOrder = function (id, contract, order) {
   }
 
   if (this._controller._serverVersion >= 26) { // Volatility orders
-     args.push(_nullifyMax(order.volatility));
-     args.push(_nullifyMax(order.volatilityType));
+    args.push(_nullifyMax(order.volatility));
+    args.push(_nullifyMax(order.volatilityType));
 
     if (this._controller._serverVersion < 28) {
       args.push(order.deltaNeutralOrderType.toUpperCase() === 'MKT');
@@ -632,7 +632,7 @@ Outgoing.prototype.placeOrder = function (id, contract, order) {
       args.push(_nullifyMax(order.deltaNeutralAuxPrice));
 
       if (this._controller._serverVersion >= C.MIN_SERVER_VER.DELTA_NEUTRAL_CONID &&
-          !_.isEmpty(order.deltaNeutralOrderType)){
+        !_.isEmpty(order.deltaNeutralOrderType)) {
         args.push(order.deltaNeutralConId);
         args.push(order.deltaNeutralSettlingFirm);
         args.push(order.deltaNeutralClearingAccount);
@@ -640,7 +640,7 @@ Outgoing.prototype.placeOrder = function (id, contract, order) {
       }
 
       if (this._controller._serverVersion >= C.MIN_SERVER_VER.DELTA_NEUTRAL_OPEN_CLOSE &&
-          !_.isEmpty(order.deltaNeutralOrderType)){
+        !_.isEmpty(order.deltaNeutralOrderType)) {
         args.push(order.deltaNeutralOpenClose);
         args.push(order.deltaNeutralShortSale);
         args.push(order.deltaNeutralShortSaleSlot);
@@ -665,14 +665,14 @@ Outgoing.prototype.placeOrder = function (id, contract, order) {
     args.push(_nullifyMax(order.trailStopPrice));
   }
 
-  if (this._controller._serverVersion >= C.MIN_SERVER_VER.TRAILING_PERCENT){
+  if (this._controller._serverVersion >= C.MIN_SERVER_VER.TRAILING_PERCENT) {
     args.push(_nullifyMax(order.trailingPercent));
   }
 
   if (this._controller._serverVersion >= C.MIN_SERVER_VER.SCALE_ORDERS) {
     if (this._controller._serverVersion >= C.MIN_SERVER_VER.SCALE_ORDERS2) {
-     args.push(_nullifyMax(order.scaleInitLevelSize));
-     args.push(_nullifyMax(order.scaleSubsLevelSize));
+      args.push(_nullifyMax(order.scaleInitLevelSize));
+      args.push(_nullifyMax(order.scaleSubsLevelSize));
     } else {
       args.push('');
       args.push(_nullifyMax(order.scaleInitLevelSize));
@@ -681,8 +681,8 @@ Outgoing.prototype.placeOrder = function (id, contract, order) {
   }
 
   if (this._controller._serverVersion >= C.MIN_SERVER_VER.SCALE_ORDERS3 &&
-      order.scalePriceIncrement > 0.0 &&
-      order.scalePriceIncrement !== Number.MAX_VALUE) {
+    order.scalePriceIncrement > 0.0 &&
+    order.scalePriceIncrement !== Number.MAX_VALUE) {
     args.push(_nullifyMax(order.scalePriceAdjustValue));
     args.push(_nullifyMax(order.scalePriceAdjustInterval));
     args.push(_nullifyMax(order.scaleProfitOffset));
@@ -800,7 +800,7 @@ Outgoing.prototype.reqAutoOpenOrders = function (bAutoBind) {
 };
 
 
-Outgoing.prototype.reqHeadTimestamp = function(reqId, contract, whatToShow, useRTH, formatDate) {
+Outgoing.prototype.reqHeadTimestamp = function (reqId, contract, whatToShow, useRTH, formatDate) {
   if (this._controller._serverVersion < C.MIN_SERVER_VER.REQ_HEAD_TIMESTAMP) {
     // We don't currently support the v100 extended handshake so our server version shows up as < 100.
     // However, this functionality still works so we skip the version check for now.
@@ -808,23 +808,23 @@ Outgoing.prototype.reqHeadTimestamp = function(reqId, contract, whatToShow, useR
   }
 
   var args = [C.OUTGOING.REQ_HEAD_TIMESTAMP,
-              reqId,
-              contract.conId,
-              contract.symbol,
-              contract.secType,
-              contract.lastTradeDateOrContractMonth,
-              contract.strike,
-              contract.right,
-              contract.multiplier,
-              contract.exchange,
-              contract.primaryExchange,
-              contract.currency,
-              contract.localSymbol,
-              contract.tradingClass,
-              contract.includeExpired,
-              useRTH,
-              whatToShow,
-              formatDate];
+    reqId,
+  contract.conId,
+  contract.symbol,
+  contract.secType,
+  contract.lastTradeDateOrContractMonth,
+  contract.strike,
+  contract.right,
+  contract.multiplier,
+  contract.exchange,
+  contract.primaryExchange,
+  contract.currency,
+  contract.localSymbol,
+  contract.tradingClass,
+  contract.includeExpired,
+    useRTH,
+    whatToShow,
+    formatDate];
 
   this._send(args);
 
@@ -971,7 +971,7 @@ Outgoing.prototype.reqGlobalCancel = function () {
 };
 
 Outgoing.prototype.reqHistoricalData = function (tickerId, contract, endDateTime, durationStr,
-                                                 barSizeSetting, whatToShow, useRTH, formatDate, keepUpToDate) {
+  barSizeSetting, whatToShow, useRTH, formatDate, keepUpToDate) {
   var version = 6;
 
   if (this._controller._serverVersion < 16) {
@@ -1024,7 +1024,7 @@ Outgoing.prototype.reqHistoricalData = function (tickerId, contract, endDateTime
   }
 
   if (_.isString(contract.secType) &&
-      C.BAG_SEC_TYPE.toUpperCase() === contract.secType.toUpperCase()) {
+    C.BAG_SEC_TYPE.toUpperCase() === contract.secType.toUpperCase()) {
     if (!_.isArray(contract.comboLegs)) {
       args.push(0);
     } else {
@@ -1076,16 +1076,16 @@ Outgoing.prototype.reqHistoricalTicks = function (tickerId, contract, startDateT
   args.push(contract.localSymbol);
   args.push(contract.tradingClass);
   args.push(contract.includeExpired);
-  
+
   args.push(startDateTime);
   args.push(endDateTime);
-  
+
   args.push(numberOfTicks);
   args.push(whatToShow);
   args.push(useRTH);
 
   if (_.isString(contract.secType) &&
-      C.BAG_SEC_TYPE.toUpperCase() === contract.secType.toUpperCase()) {
+    C.BAG_SEC_TYPE.toUpperCase() === contract.secType.toUpperCase()) {
     if (!_.isArray(contract.comboLegs)) {
       args.push(0);
     } else {
@@ -1109,7 +1109,7 @@ Outgoing.prototype.reqHistoricalTicks = function (tickerId, contract, startDateT
   this._send(args);
 };
 
-Outgoing.prototype.reqTickByTickData = function (tickerId, contract, tickType, numberOfTicks, ignoreSize){
+Outgoing.prototype.reqTickByTickData = function (tickerId, contract, tickType, numberOfTicks, ignoreSize) {
   if (this._controller._serverVersion < 73) {
     return this._controller.emitError('It does not support tick by tick data.');
   }
@@ -1133,17 +1133,17 @@ Outgoing.prototype.reqTickByTickData = function (tickerId, contract, tickType, n
   args.push(tickType);
   args.push(numberOfTicks);
   args.push(ignoreSize);
-  
+
   this._send(args);
 };
 
 Outgoing.prototype.cancelTickByTickData = function (tickerId) {
-   if (this._controller._serverVersion < 73) {
+  if (this._controller._serverVersion < 73) {
     return this._controller.emitError('It does not support tick by tick data.');
   }
 
   var args = [C.OUTGOING.CANCEL_TICK_BY_TICK_DATA, tickerId];
-  
+
   this._send(args);
 };
 
@@ -1223,8 +1223,8 @@ Outgoing.prototype.reqMktData = function (tickerId, contract, genericTickList, s
   }
 
   if (this._controller._serverVersion >= 8 &&
-      _.isString(contract.secType) &&
-      C.BAG_SEC_TYPE.toUpperCase() === contract.secType.toUpperCase()) {
+    _.isString(contract.secType) &&
+    C.BAG_SEC_TYPE.toUpperCase() === contract.secType.toUpperCase()) {
     if (!_.isArray(contract.comboLegs)) {
       args.push(0);
     } else {
@@ -1277,7 +1277,7 @@ Outgoing.prototype.reqMktData = function (tickerId, contract, genericTickList, s
 
 Outgoing.prototype.reqMktDepth = function (tickerId, contract, numRows) {
   if (this._controller._serverVersion < 6) {
-      return this._controller.emitError('This feature is only available for versions of TWS >=6');
+    return this._controller.emitError('This feature is only available for versions of TWS >=6');
   }
 
   if (this._controller._serverVersion < C.MIN_SERVER_VER.TRADING_CLASS) {
@@ -1479,7 +1479,7 @@ Outgoing.prototype.unsubscribeToGroupEvents = function (reqId) {
 };
 
 
-Outgoing.prototype.reqSecDefOptParams = function(reqId, underlyingSymbol, futFopExchange, underlyingSecType, underlyingConId) {
+Outgoing.prototype.reqSecDefOptParams = function (reqId, underlyingSymbol, futFopExchange, underlyingSecType, underlyingConId) {
   if (this._controller._serverVersion < C.MIN_SERVER_VER.SEC_DEF_OPT_PARAMS_REQ) {
     // We don't currently support the v100 extended handshake so our server version shows up as < 100.
     // However, this functionality still works so we skip the version check for now.
@@ -1489,4 +1489,4 @@ Outgoing.prototype.reqSecDefOptParams = function(reqId, underlyingSymbol, futFop
   this._send(C.OUTGOING.REQ_SEC_DEF_OPT_PARAMS, reqId, underlyingSymbol, futFopExchange, underlyingSecType, underlyingConId);
 };
 
-module.exports = Outgoing;
+export default Outgoing;

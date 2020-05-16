@@ -8,12 +8,12 @@ var _ = require('lodash');
 
 var CURRENCIES = [
   'KRW', 'EUR', 'GBP', 'AUD',
-  'USD', 'TRY', 'ZAR', 'CAD', 
-  'CHF', 'MXN', 'HKD', 'JPY', 
+  'USD', 'TRY', 'ZAR', 'CAD',
+  'CHF', 'MXN', 'HKD', 'JPY',
   'INR', 'NOK', 'SEK', 'RUB'
 ];
 
-module.exports = function (symbol, currency) {
+export default function (symbol, currency) {
   assert(_.isString(symbol), 'Symbol must be a string.');
   if (!_.isString(currency)) { currency = 'USD'; }
 

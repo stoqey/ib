@@ -2,7 +2,7 @@ var assert = require('assert');
 
 var _ = require('lodash');
 
-module.exports = function (symbol, expiry, strike, right, exchange, currency) {
+export default function (symbol, expiry, strike, right, exchange, currency) {
   assert(_.isString(right), 'Right must be a string.');
   assert(_.isString(symbol), 'Symbol must be a string.');
   assert(_.isString(expiry), 'Expiry must be a string.');
@@ -10,7 +10,7 @@ module.exports = function (symbol, expiry, strike, right, exchange, currency) {
 
   return {
     currency: currency || 'USD',
-    exchange: exchange ||'SMART',
+    exchange: exchange || 'SMART',
     expiry: expiry,
     multiplier: 100,
     right: right,
