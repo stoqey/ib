@@ -50,7 +50,7 @@ ib.once('nextValidId', function (orderId) {
   console.log(chalk.yellow('Placing orders...'));
 
   // Place orders
-  ib.placeOrder(orderId, ib.contract.stock('AAPL'), ib.order.limit('BUY', 1, 0.01));
+  ib.placeOrder(orderId, ib.contract.stock('AAPL'), ib.order.market('BUY', 1, true));
   ib.placeOrder(orderId + 1, ib.contract.stock('GOOG'), ib.order.limit('SELL', 1, 9999));
   ib.placeOrder(orderId + 2, ib.contract.stock('FB'), ib.order.limit('BUY', 1, 0.01));
 

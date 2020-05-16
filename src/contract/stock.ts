@@ -5,7 +5,7 @@ export function stock(symbol: string, exchange?: string, currency?: string) {
 
   return {
     currency: currency || 'USD',
-    exchange: exchange || 'CBOE',
+    exchange: exchange || 'SMART',
     secType: 'STK',
     symbol
   };
