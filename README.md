@@ -1,6 +1,6 @@
 
 <p align="center">
-  <h1 align="center">[WIP] Interactive Brokers Typescript</h1>
+  <h1 align="center">Interactive Brokers Typescript</h1>
 </p>
 
 
