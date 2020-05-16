@@ -1,11 +1,6 @@
-import assert from 'assert';
-import _ from 'lodash';
+import { ACTION } from '../interfaces.share';
 
-export function limit(action, quantity, price, transmitOrder) {
-  assert(_.isString(action), 'Action must be a string.');
-  assert(_.isNumber(quantity), 'Quantity must be a number.');
-  assert(_.isNumber(price), 'Price must be a number.');
-
+export function limit(action: ACTION, quantity: number, price: number, transmitOrder?: boolean) {
   if (transmitOrder === undefined) {
     transmitOrder = true;
   }

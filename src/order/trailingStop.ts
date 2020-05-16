@@ -1,17 +1,13 @@
-import assert from 'assert';
-import _ from 'lodash';
+import { ACTION } from '../interfaces.share';
 
-export function trailingStop(action, quantity, auxPrice, tif, transmitOrder, parentId) {
-  assert(_.isString(action), 'Action must be a string.');
-  assert(_.isNumber(quantity), 'Quantity must be a number.');
-  assert(_.isNumber(auxPrice), 'Price must be a number.');
+export function trailingStop(action: ACTION, quantity: number, auxPrice: number, tif?: string, transmitOrder?: boolean, parentId?: number) {
 
   return {
     action: action,
     totalQuantity: quantity,
     orderType: 'TRAIL',  // https://www.interactivebrokers.com/en/software/api/apiguide/tables/supported_order_types.htm
     auxPrice: auxPrice,
-    tif: tif,  // note - TRAIL orders are only triggered during the trading hours of the contract
+    tif,  // note - TRAIL orders are only triggered during the trading hours of the contract
     transmit: transmitOrder || true,
     parentId: parentId || 0
   };

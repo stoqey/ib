@@ -1,9 +1,6 @@
-import assert from 'assert';
-import _ from 'lodash';
+import { ACTION } from '../interfaces.share';
 
-export function market(action, quantity, transmitOrder, goodAfterTime, goodTillDate) {
-  assert(_.isString(action), 'Action must be a string.');
-  assert(_.isNumber(quantity), 'Quantity must be a number.');
+export function market(action: ACTION, quantity: number, transmitOrder?: boolean, goodAfterTime?: string, goodTillDate?: string) {
 
   if (transmitOrder === undefined) {
     transmitOrder = true;
