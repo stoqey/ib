@@ -18,10 +18,18 @@
 
 </div>
 
-[Interactive Brokers](http://interactivebrokers.com/) TWS (or IB Gateway)  [Node.js](http://nodejs.org/).
+`ib` is an [Interactive Brokers](http://interactivebrokers.com/) TWS (or IB Gateway) API client library for [Node.js](http://nodejs.org/). Refer to the official [Trader Workstation API](https://interactivebrokers.github.io/tws-api/) documentation for details.
 
 This is a direct port of Interactive Brokers' official Java client. There is no C++/Java library dependency. It makes a socket connection to TWS (or IB Gateway) using the [net](http://nodejs.org/api/net.html) module, and all messages are entirely processed in JavaScript. It uses [EventEmitter](http://nodejs.org/api/events.html) to pass the result back to user.
 
+
+### _MAINTAINERS NEEDED_
+
+The libary is lagging behind the official Java reference and [no updates have been made after v9.70 (~2017)](https://github.com/pilwon/node-ib/issues/145#issuecomment-526855798). This means that some newer features aren't implemented:
+* [reqHistoricalNews and reqNewsArticle](https://github.com/pilwon/node-ib/issues/130)
+* [time and sales data](https://github.com/pilwon/node-ib/issues/111)
+* [trailing stop limit orders](https://github.com/pilwon/node-ib/issues/145)
+  
 
 ## Installation
 
