@@ -5,7 +5,7 @@ var chalk = require('chalk');
 var ib = new (require('..'))({
   // clientId: 0,
   // host: '127.0.0.1',
-  // port: 7496
+  port: 7497
 }).on('connected', function () {
   console.log(chalk.inverse('CONNECTED'));
 }).on('disconnected', function () {

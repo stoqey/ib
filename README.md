@@ -42,7 +42,7 @@ The libary is lagging behind the official Java reference and  This means that so
 var ib = new (require('ib'))({
   // clientId: 0,
   // host: '127.0.0.1',
-  // port: 7496
+  port: 7497
 }).on('error', function (err) {
   console.error('error --- %s', err.message);
 }).on('result', function (event, args) {

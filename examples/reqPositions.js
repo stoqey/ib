@@ -4,7 +4,7 @@ var chalk = require('chalk');
 var ib = new (require('..'))({
   // clientId: 0,
   // host: '127.0.0.1',
-  // port: 7496
+  port: 7497
 }).on('error', function (err) {
   console.error(chalk.red(err.message));
 }).on('result', function (event, args) {

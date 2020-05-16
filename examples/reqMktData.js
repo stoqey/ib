@@ -3,20 +3,25 @@ var util = require('util');
 var _ = require('lodash');
 var chalk = require('chalk');
 
-var ib = new (require('..'))({
-  // clientId: 0,
-  // host: '127.0.0.1',
-  // port: 7496
-}).on('error', function (err) {
+var ibApi = require('..');
+
+const ib = new ibApi({
+  clientId: 1990,
+  host: '127.0.0.1',
+  port: 7497
+});
+
+
+ib.on('error', function (err) {
   console.error(chalk.red(err.message));
 }).on('result', function (event, args) {
   if (!_.includes(['tickEFP', 'tickGeneric', 'tickOptionComputation', 'tickPrice',
-        'tickSize', 'tickString'], event)) {
+    'tickSize', 'tickString'], event)) {
     console.log('%s %s', chalk.yellow(event + ':'), JSON.stringify(args));
   }
 }).on('tickEFP', function (tickerId, tickType, basisPoints, formattedBasisPoints,
-                           impliedFuturesPrice, holdDays, futureExpiry, dividendImpact,
-                           dividendsToExpiry) {
+  impliedFuturesPrice, holdDays, futureExpiry, dividendImpact,
+  dividendsToExpiry) {
   console.log(
     '%s %s%d %s%d %s%s %s%d %s%d %s%s %s%d %s%d',
     chalk.cyan(util.format('[%s]', ib.util.tickTypeToString(tickType))),
@@ -37,7 +42,7 @@ var ib = new (require('..'))({
     chalk.bold('value='), value
   );
 }).on('tickOptionComputation', function (tickerId, tickType, impliedVol, delta, optPrice,
-                                         pvDividend, gamma, vega, theta, undPrice) {
+  pvDividend, gamma, vega, theta, undPrice) {
   console.log(
     '%s %s%d %s%s %s%s %s%s %s%d %s%s %s%s %s%s %s%d',
     chalk.cyan(util.format('[%s]', ib.util.tickTypeToString(tickType))),
