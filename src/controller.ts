@@ -1,10 +1,9 @@
-var _ = require('lodash');
-var CommandBuffer = require('command-buffer');
-
-var C = require('./constants');
-var Socket = require('./socket');
-var Incoming = require('./incoming');
-var Outgoing = require('./outgoing');
+import _ from 'lodash';
+import CommandBuffer from 'command-buffer';
+import C from './constants';
+import Socket from './socket';
+import Incoming from './incoming';
+import Outgoing from './outgoing';
 
 function Controller(ib, options) {
   if (!_.isPlainObject(options)) { options = {}; }
