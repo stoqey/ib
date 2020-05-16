@@ -1,8 +1,7 @@
-var assert = require('assert');
+import assert from 'assert';
+import _ from 'lodash';
 
-var _ = require('lodash');
-
-export default function (action, quantity, transmitOrder, goodAfterTime, goodTillDate) {
+export function market(action, quantity, transmitOrder, goodAfterTime, goodTillDate) {
   assert(_.isString(action), 'Action must be a string.');
   assert(_.isNumber(quantity), 'Quantity must be a number.');
 
