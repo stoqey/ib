@@ -1,8 +1,7 @@
-var net = require('net');
+import net from 'net'
+import _ from 'lodash'
 
-var _ = require('lodash');
-
-var C = require('./constants');
+import C from './constants';
 
 var EOL = '\0';
 
