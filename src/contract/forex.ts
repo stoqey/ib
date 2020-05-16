@@ -11,6 +11,11 @@ export const CURRENCIES = [
   'INR', 'NOK', 'SEK', 'RUB'
 ];
 
+/**
+ * Forex contract
+ * @param symbol 
+ * @param currency 
+ */
 export function forex(symbol: string, currency: string) {
   let temp;
 

@@ -1,5 +1,13 @@
-import _ from 'lodash';
-
+/**
+ * FOP contract
+ * @param symbol 
+ * @param expiry 
+ * @param strike 
+ * @param right 
+ * @param multiplier 
+ * @param exchange 
+ * @param currency 
+ */
 export function fop(symbol: string, expiry: string, strike: string, right: string, multiplier?: number, exchange?: string, currency?: string) {
 
   return {

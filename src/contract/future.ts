@@ -1,10 +1,12 @@
-import assert from 'assert';
-import _ from 'lodash';
-
-export function future(symbol, expiry, currency, exchange, multiplier) {
-  assert(_.isString(symbol), 'Symbol must be a string.');
-  assert(_.isString(expiry), 'Expiry must be a string.');
-
+/**
+ * Future contract
+ * @param symbol 
+ * @param expiry 
+ * @param currency 
+ * @param exchange 
+ * @param multiplier 
+ */
+export function future(symbol: string, expiry: string, currency?: string, exchange?: string, multiplier?: number) {
   return {
     secType: 'FUT',
     symbol: symbol,

@@ -1,12 +1,14 @@
-import assert from 'assert';
-import _ from 'lodash';
 
-export function option(symbol, expiry, strike, right, exchange, currency) {
-  assert(_.isString(right), 'Right must be a string.');
-  assert(_.isString(symbol), 'Symbol must be a string.');
-  assert(_.isString(expiry), 'Expiry must be a string.');
-  assert(_.isNumber(strike), 'Strike must be a number.');
-
+/**
+ * Option contact
+ * @param symbol 
+ * @param expiry 
+ * @param strike 
+ * @param right 
+ * @param exchange 
+ * @param currency 
+ */
+export function option(symbol: string, expiry: string, strike: string, right: string, exchange?: string, currency?: string) {
   return {
     currency: currency || 'USD',
     exchange: exchange || 'SMART',

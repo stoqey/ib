@@ -16,5 +16,5 @@ export default {
     combo,
     cfd,
     forex,
-    index
+    ind: index
 }
