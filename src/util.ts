@@ -31,3 +31,12 @@ export function outgoingToString(outgoing) {
 export function tickTypeToString(tickType) {
   return _findKeyForValue(TICK_TYPE, tickType);
 }
+
+
+export default {
+  _findKeyForValue,
+  incomingToString,
+  outgoingToString,
+  tickTypeToString,
+  numberToString
+}
