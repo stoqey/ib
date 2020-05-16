@@ -5,6 +5,10 @@ import _ from 'lodash'
 import C from './constants';
 import Controller from './controller';
 
+import order from './order';
+import contract from './contract';
+import utils from './util';
+
 function IB(options) {
   this._controller = new Controller(this, options);
 
@@ -516,8 +520,8 @@ _.keys(C).forEach(function (key) {
 });
 
 // Attach modules.
-IB.contract = IB.prototype.contract = require('./contract');
-IB.order = IB.prototype.order = require('./order');
-IB.util = IB.prototype.util = require('./util');
+IB.contract = IB.prototype.contract = contract;
+IB.order = IB.prototype.order = order;
+IB.util = IB.prototype.util = utils;
 
 export default IB;
