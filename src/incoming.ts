@@ -1,7 +1,6 @@
-var _ = require('lodash');
-
-var C = require('./constants');
-var errors = require('./errors');
+import _ from 'lodash'
+import C from './constants';
+import errors from './errors';
 
 function Incoming(controller) {
   this._controller = controller;
@@ -78,7 +77,7 @@ Incoming.prototype._ACCT_VALUE = function () {
 Incoming.prototype._COMMISSION_REPORT = function () {
   var version = this.dequeueInt();
 
-  var commissionReport = {};
+  var commissionReport: any = {};
   commissionReport.execId = this.dequeue();
   commissionReport.commission = this.dequeueFloat();
   commissionReport.currency = this.dequeue();
@@ -98,7 +97,7 @@ Incoming.prototype._BOND_CONTRACT_DATA = function () {
     reqId = this.dequeueInt();
   }
 
-  var contract = {
+  var contract: any = {
     summary: {}
   };
 
@@ -169,7 +168,7 @@ Incoming.prototype._CONTRACT_DATA = function () {
     reqId = this.dequeueInt();
   }
 
-  var contract = {
+  var contract: any = {
     summary: {}
   };
 
@@ -255,7 +254,7 @@ Incoming.prototype._DELTA_NEUTRAL_VALIDATION = function () {
   var version = this.dequeueInt();
   var reqId = this.dequeueInt();
 
-  var underComp = {};
+  var underComp: any = {};
   underComp.conId = this.dequeueInt();
   underComp.delta = this.dequeueFloat();
   underComp.price = this.dequeueFloat();
@@ -295,7 +294,7 @@ Incoming.prototype._EXECUTION_DATA = function () {
   var orderId = this.dequeueInt();
 
   // read contract fields
-  var contract = {};
+  var contract: any = {};
 
   if (version >= 5) {
     contract.conId = this.dequeueInt();
@@ -319,7 +318,7 @@ Incoming.prototype._EXECUTION_DATA = function () {
     contract.tradingClass = this.dequeue();
   }
 
-  var exec = {};
+  var exec: any = {};
 
   exec.orderId = orderId;
   exec.execId = this.dequeue();
@@ -613,11 +612,11 @@ Incoming.prototype._OPEN_ORDER = function () {
   var version = this.dequeueInt();
 
   // read order id
-  var order = {};
+  var order: any = {};
   order.orderId = this.dequeueInt();
 
   // read contract fields
-  var contract = {};
+  var contract: any = {};
 
   if (version >= 17) {
     contract.conId = this.dequeueInt();
@@ -930,7 +929,7 @@ Incoming.prototype._OPEN_ORDER = function () {
     }
   }
 
-  var orderState = {};
+  var orderState: any = {};
 
   if (version >= 16) {
     order.whatIf = this.dequeueBool();
@@ -999,7 +998,7 @@ Incoming.prototype._ORDER_STATUS = function () {
 Incoming.prototype._PORTFOLIO_VALUE = function () {
   var version = this.dequeueInt();
 
-  var contract = {};
+  var contract: any = {};
 
   if (version >= 6) {
     contract.conId = this.dequeueInt();
@@ -1056,7 +1055,7 @@ Incoming.prototype._PORTFOLIO_VALUE = function () {
 Incoming.prototype._POSITION = function () {
   var version = this.dequeueInt();
   var account = this.dequeue();
-  var contract = {};
+  var contract: any = {};
 
   contract.conId = this.dequeueInt();
   contract.symbol = this.dequeue();
@@ -1092,7 +1091,7 @@ Incoming.prototype._POSITION_MULTI = function () {
   var reqId = this.dequeueInt();
   var account = this.dequeue();
   var modelCode = null;
-  var contract = {};
+  var contract: any = {};
 
   contract.conId = this.dequeueInt();
   contract.symbol = this.dequeue();
@@ -1151,7 +1150,7 @@ Incoming.prototype._SCANNER_DATA = function () {
   var rank;
 
   while (numberOfElements--) {
-    var contract = {
+    var contract: any = {
       summary: {}
     };
     rank = this.dequeueInt();
