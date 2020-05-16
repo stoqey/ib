@@ -1,8 +1,7 @@
-var assert = require('assert');
+import assert from 'assert';
+import _ from 'lodash';
 
-var _ = require('lodash');
-
-export default function (symbol, expiry, currency, exchange, multiplier) {
+export function future(symbol, expiry, currency, exchange, multiplier) {
   assert(_.isString(symbol), 'Symbol must be a string.');
   assert(_.isString(expiry), 'Expiry must be a string.');
 

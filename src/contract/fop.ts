@@ -1,12 +1,6 @@
-var assert = require('assert');
+import _ from 'lodash';
 
-var _ = require('lodash');
-
-export default function (symbol, expiry, strike, right, multiplier, exchange, currency) {
-  assert(_.isString(right), 'Right must be a string.');
-  assert(_.isString(symbol), 'Symbol must be a string.');
-  assert(_.isString(expiry), 'Expiry must be a string.');
-  assert(_.isNumber(strike), 'Strike must be a number.');
+export default function fop(symbol: string, expiry: string, strike: string, right: string, multiplier?: number, exchange?: string, currency?: string) {
 
   return {
     currency: currency || 'USD',

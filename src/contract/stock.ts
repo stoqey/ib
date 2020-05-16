@@ -1,6 +1,5 @@
-var assert = require('assert');
-
-var _ = require('lodash');
+import assert from 'assert';
+import _ from 'lodash';
 
 export default function (symbol, exchange, currency) {
   assert(_.isString(symbol), 'Symbol must be a string.');
