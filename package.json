@@ -13,10 +13,7 @@
   "scripts": {
     "lint": "tslint \"src/**/*.ts\" --project tsconfig.json",
     "build": "rimraf dist && tsc",
-    "unit-test": "mocha src/**/*test.ts --exit",
-    "test": "mocha src/*test.ts --exit",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm test"
+    "prepare": "npm run build"
   },
   "engines": {
     "node": ">=4.2.0"

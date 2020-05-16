@@ -25,7 +25,7 @@ This is a direct port of Interactive Brokers' official Java client. There is no 
 
 ### _MAINTAINERS NEEDED_
 
-The libary is lagging behind the official Java reference and  This means that some newer features aren't implemented:
+The library is lagging behind the official Java reference and  This means that some newer features aren't implemented:
 * [reqHistoricalNews and reqNewsArticle](https://github.com/pilwon/node-ib/issues/130)
 * [time and sales data](https://github.com/pilwon/node-ib/issues/111)
 * [trailing stop limit orders](https://github.com/pilwon/node-ib/issues/145)
