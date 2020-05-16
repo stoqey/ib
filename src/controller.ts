@@ -116,4 +116,4 @@ Controller.prototype.schedule = function () {
   this._commands.schedule.apply(this._commands, arguments);
 };
 
-export default Controller;
+export = Controller;

@@ -1487,4 +1487,4 @@ Outgoing.prototype.reqSecDefOptParams = function (reqId, underlyingSymbol, futFo
   this._send(C.OUTGOING.REQ_SEC_DEF_OPT_PARAMS, reqId, underlyingSymbol, futFopExchange, underlyingSecType, underlyingConId);
 };
 
-export default Outgoing;
+export = Outgoing;

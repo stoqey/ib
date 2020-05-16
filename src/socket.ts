@@ -131,4 +131,4 @@ Socket.prototype.send = function (tokens, async) {
   this._neverSent = false;
 };
 
-export default Socket;
+export = Socket;

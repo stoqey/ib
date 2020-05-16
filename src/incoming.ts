@@ -1462,4 +1462,4 @@ Incoming.prototype.process = function () {
   }
 };
 
-export default Incoming;
+export = Incoming;
