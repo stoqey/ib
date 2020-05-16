@@ -1,0 +1,8 @@
+node_modules/
+coverage/
+.DS_Store
+*.account.json*
+.env*
+npm-debug.log*
+yarn-error.log*
+dist/

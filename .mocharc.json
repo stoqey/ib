@@ -1,0 +1,19 @@
+// This config file contains Mocha's defaults.
+// As you can see, comments are allowed.
+// This same configuration could be provided in the `mocha` property of your
+// project's `package.json`.
+// "test": "mocha src/**/*test.ts --exit --timeout 30000 --require ts-node/register --full-trace",
+
+{
+    "diff": true,
+    "extension": ["ts"],
+    "opts": false,
+    "package": "./package.json",
+    "reporter": "spec",
+    "require": "ts-node/register",
+    "slow": 75,
+    "timeout": 30000,
+    "ui": "bdd",
+    "watch-files": ["src/**/*test.ts"],
+    "watch-ignore": ["node_modules"]
+  }
