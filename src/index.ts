@@ -1,11 +1,9 @@
-var assert = require('assert');
-var events = require('events');
-var util = require('util');
-
-var _ = require('lodash');
-
-var C = require('./constants');
-var Controller = require('./controller');
+import assert from 'assert';
+import events from 'events';
+import util from 'util';
+import _ from 'lodash'
+import C from './constants';
+import Controller from './controller';
 
 function IB(options) {
   this._controller = new Controller(this, options);
