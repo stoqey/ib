@@ -1,8 +1,6 @@
-var _ = require('lodash');
-
-var rateLimit = require('function-rate-limit');
-
-var C = require('./constants');
+import _ from 'lodash';
+import rateLimit from 'function-rate-limit';
+import C from './constants'
 
 function _nullifyMax(number) {
   if (number === Number.MAX_VALUE) {
