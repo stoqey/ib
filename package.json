@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "lint": "tslint \"src/**/*.ts\" --project tsconfig.json",
-    "build": "rimraf dist && tsc",
+    "build": "rimraf dist && tsc -p .",
     "prepare": "npm run build"
   },
   "engines": {
@@ -68,7 +68,7 @@
     "@types/source-map-support": "^0.4.0",
     "chai": "^4.2.0",
     "mocha": "^7.1.1",
-    "rimraf": "^2.5.4",
+    "rimraf": "^2.7.1",
     "ts-node": "^8.4.1",
     "tslint": "^5.11.0",
     "tslint-config-standard": "^8.0.1",

@@ -9,7 +9,6 @@ export const CLIENT_VERSION = 62;
 export const SERVER_VERSION = 38;
 
 // incoming msg id's
-// incoming msg id's
 export const INCOMING = {
   TICK_PRICE: 1,
   TICK_SIZE: 2,
@@ -75,6 +74,8 @@ export const INCOMING = {
   HISTORICAL_NEWS_END: 87,
   HEAD_TIMESTAMP: 88,
   HISTOGRAM_DATA: 89,
+  PNL: 94,
+  PNL_SINGLE: 95, //not implemented
   HISTORICAL_TICKS: 96,
   HISTORICAL_TICKS_BID_ASK: 97,
   HISTORICAL_TICKS_LAST: 98,
@@ -148,6 +149,10 @@ export const OUTGOING = {
   REQ_HEAD_TIMESTAMP: 87,
   REQ_HISTOGRAM_DATA: 88,
   CANCEL_HISTOGRAM_DATA: 89,
+  REQ_PNL: 92,
+  CANCEL_PNL: 93,
+  REQ_PNL_SINGLE: 94, // not implemented
+  CANCEL_PNL_SINGLE: 95, // not implemented
   REQ_HISTORICAL_TICKS: 96,
   REQ_TICK_BY_TICK_DATA: 97,
   CANCEL_TICK_BY_TICK_DATA: 98
