@@ -422,6 +422,23 @@ class IB extends EventEmitter {
     return this;
   };
 
+  // public synchronized void reqPnL(int reqId, String account, String modelCode) {
+  reqPnl = function (reqId, account, modelCode) {
+    assert(_.isNumber(reqId), '"reqId" must be an integer - ' + reqId);
+    assert(_.isString(account), '"account" must be a string - ' + account);
+    assert(_.isString(modelCode) || _.isNull(modelCode), '"modelCode" must be a string or null - ' + modelCode);
+
+    this._send('reqPnl', reqId, account, modelCode);
+  };
+
+  cancelPnl = function (reqId) {
+    assert(_.isNumber(reqId), '"reqId" must be an integer - ' + reqId);
+
+    this._send('cancelPnl', reqId);
+
+    return this;
+  };
+
   // input params account here is acctCode, we name it account to be consistent with IB document
   reqPositionsMulti = function (reqId, account, modelCode) {
     assert(_.isNumber(reqId), '"reqId" must be an integer - ' + reqId);

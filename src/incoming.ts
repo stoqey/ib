@@ -60,6 +60,20 @@ Incoming.prototype._ACCT_UPDATE_TIME = function () {
   this._emit('updateAccountTime', timeStamp);
 };
 
+Incoming.prototype._PNL = function () {
+  const reqId = this.dequeueInt();
+  const dailyPnL = this.dequeueFloat();
+
+  //FIXME need to fix the version check once v100 is implemented in issue #3
+  //const unrealizedPnL = this.dequeueFloat();
+
+  /*   if (m_serverVersion >= EClient.MIN_SERVER_VER_UNREALIZED_PNL) {
+        unrealizedPnL = readDouble();
+    } */
+
+  this._emit('pnl', reqId, dailyPnL);
+}
+
 Incoming.prototype._ACCT_VALUE = function () {
   var version = this.dequeueInt();
   var key = this.dequeue();
