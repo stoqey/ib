@@ -65,11 +65,16 @@ Incoming.prototype._PNL = function () {
   const dailyPnL = this.dequeueFloat();
 
   //FIXME need to fix the version check once v100 is implemented in issue #3
-  //const unrealizedPnL = this.dequeueFloat();
-
-  /*   if (m_serverVersion >= EClient.MIN_SERVER_VER_UNREALIZED_PNL) {
-        unrealizedPnL = readDouble();
-    } */
+  /*
+  let unrealizedPnL = Number.MAX_VALUE;
+  let realizedPnL = Number.MAX_VALUE;
+  if (m_serverVersion >= EClient.MIN_SERVER_VER_UNREALIZED_PNL) {
+    unrealizedPnL = readDouble();
+  }
+  if (m_serverVersion >= EClient.MIN_SERVER_VER_REALIZED_PNL) {
+    realizedPnL = readDouble();
+  }
+  */
 
   this._emit('pnl', reqId, dailyPnL);
 }
