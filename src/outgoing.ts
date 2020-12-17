@@ -784,6 +784,20 @@ Outgoing.prototype.cancelPnL = function (reqId) {
   this._send(C.OUTGOING.CANCEL_PNL, reqId);
 };
 
+Outgoing.prototype.reqPnLSingle = function (reqId, account, modelCode, conId) {
+  //FIXME when #3 is done we should reinstate this check
+  /* if (this._controller._serverVersion < C.MIN_SERVER_VER.PNL) {
+    return this._controller.emitError('It does not support pnl requests.');
+  } */
+
+  this._send(C.OUTGOING.REQ_PNL_SINGLE, reqId, account, modelCode, conId);
+};
+
+Outgoing.prototype.cancelPnLSingle = function (reqId) {
+  //FIXME when #3 is done we should check server version
+  this._send(C.OUTGOING.REQ_PNL_SINGLE, reqId);
+};
+
 Outgoing.prototype.reqAccountUpdates = function (subscribe, acctCode) {
   var version = 2;
 

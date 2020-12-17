@@ -79,6 +79,29 @@ Incoming.prototype._PNL = function () {
   this._emit('pnl', reqId, dailyPnL);
 }
 
+Incoming.prototype._PNL_SINGLE = function () {
+  const reqId = this.dequeueInt();
+  const pos = this.dequeueInt();
+  const dailyPnL = this.dequeueFloat();
+
+  const unrealizedPnL = Number.MAX_VALUE;
+  const realizedPnL = Number.MAX_VALUE;
+
+  //FIXME need to fix the version check once v100 is implemented in issue #3
+  /*
+  if (m_serverVersion >= EClient.MIN_SERVER_VER_UNREALIZED_PNL) {
+    unrealizedPnL = readDouble();
+  }
+  if (m_serverVersion >= EClient.MIN_SERVER_VER_REALIZED_PNL) {
+    realizedPnL = readDouble();
+  }
+  */
+
+  const value = this.dequeueFloat();
+
+  this._emit('pnlSingle', reqId, pos, dailyPnL, unrealizedPnL, realizedPnL, value);
+}
+
 Incoming.prototype._ACCT_VALUE = function () {
   var version = this.dequeueInt();
   var key = this.dequeue();
