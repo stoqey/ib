@@ -422,7 +422,6 @@ class IB extends EventEmitter {
     return this;
   };
 
-  // public synchronized void reqPnL(int reqId, String account, String modelCode) {
   reqPnL = function (reqId, account, modelCode) {
     assert(_.isNumber(reqId), '"reqId" must be an integer - ' + reqId);
     assert(_.isString(account), '"account" must be a string - ' + account);
@@ -435,6 +434,23 @@ class IB extends EventEmitter {
     assert(_.isNumber(reqId), '"reqId" must be an integer - ' + reqId);
 
     this._send('cancelPnL', reqId);
+
+    return this;
+  };
+
+  reqPnLSingle = function (reqId, account, modelCode, conId) {
+    assert(_.isNumber(reqId), '"reqId" must be an integer - ' + reqId);
+    assert(_.isString(account), '"account" must be a string - ' + account);
+    assert(_.isString(modelCode) || _.isNull(modelCode), '"modelCode" must be a string or null - ' + modelCode);
+    assert(_.isNumber(conId), '"conId" must be an integer - ' + conId);
+
+    this._send('reqPnLSingle', reqId, account, modelCode, conId);
+  };
+
+  cancelPnLSingle = function (reqId) {
+    assert(_.isNumber(reqId), '"reqId" must be an integer - ' + reqId);
+
+    this._send('cancelPnLSingle', reqId);
 
     return this;
   };
