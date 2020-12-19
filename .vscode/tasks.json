@@ -1,0 +1,17 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "npm",
+			"script": "dev:debug",
+			"problemMatcher": [],
+			"label": "dev: debug",
+			"detail": "devleopment debug build",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"isBackground": true,
+		}
+	]
+}
