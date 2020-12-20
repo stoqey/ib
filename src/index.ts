@@ -1556,7 +1556,7 @@ class IB extends EventEmitter  {
    *
    * @see [[reqPositions]]
    */
-  public cancelPositions(): IB {
+  cancelPositions(): IB {
     this.send('cancelPositions');
     return this;
   };
@@ -1592,7 +1592,7 @@ class IB extends EventEmitter  {
    *
    * @see [[reqScannerSubscription]], [[reqScannerParameters]]
    */
-  public cancelScannerSubscription(tickerId: number): IB {
+  cancelScannerSubscription(tickerId: number): IB {
     this.send('cancelScannerSubscription', tickerId);
     return this;
   };
@@ -1779,7 +1779,7 @@ class IB extends EventEmitter  {
    *
    * @see [[reqAutoOpenOrders]], [[reqOpenOrders]]
    */
-  public reqAllOpenOrders(): IB {
+  reqAllOpenOrders(): IB {
     this.send('reqAllOpenOrders');
     return this;
   };
