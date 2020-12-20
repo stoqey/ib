@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
+/* Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.client;
@@ -55,7 +55,7 @@ public abstract class EClient {
 	// 38 = can receive multiplier and primaryExchange in portfolio updates
 	//    ; can receive cumQty and avgPrice in execution
 	//    ; can receive fundamental data
-	//    ; can receive underComp for Contract objects
+	//    ; can receive deltaNeutralContract for Contract objects
 	//    ; can receive reqId and end marker in contractDetails/bondContractDetails
  	//    ; can receive ScaleInitComponentSize and ScaleSubsComponentSize for Order objects
 	// 39 = can receive underConId in contractDetails
@@ -189,6 +189,10 @@ public abstract class EClient {
     private static final int CANCEL_PNL = 93;
     private static final int REQ_PNL_SINGLE = 94;
     private static final int CANCEL_PNL_SINGLE = 95;
+    private static final int REQ_HISTORICAL_TICKS = 96;
+    private static final int REQ_TICK_BY_TICK_DATA = 97;
+    private static final int CANCEL_TICK_BY_TICK_DATA = 98;
+    private static final int REQ_COMPLETED_ORDERS = 99;
 
 	private static final int MIN_SERVER_VER_REAL_TIME_BARS = 34;
 	private static final int MIN_SERVER_VER_SCALE_ORDERS = 35;
@@ -198,7 +202,7 @@ public abstract class EClient {
 	private static final int MIN_SERVER_VER_CONTRACT_CONID = 37;
 	private static final int MIN_SERVER_VER_PTA_ORDERS = 39;
 	private static final int MIN_SERVER_VER_FUNDAMENTAL_DATA = 40;
-	private static final int MIN_SERVER_VER_UNDER_COMP = 40;
+	private static final int MIN_SERVER_VER_DELTA_NEUTRAL = 40;
 	private static final int MIN_SERVER_VER_CONTRACT_DATA_CHAIN = 40;
 	private static final int MIN_SERVER_VER_SCALE_ORDERS2 = 40;
 	private static final int MIN_SERVER_VER_ALGO_ORDERS = 41;
@@ -262,9 +266,30 @@ public abstract class EClient {
     protected static final int MIN_SERVER_VER_PNL = 127;
     protected static final int MIN_SERVER_VER_NEWS_QUERY_ORIGINS = 128;
     protected static final int MIN_SERVER_VER_UNREALIZED_PNL = 129;
+    protected static final int MIN_SERVER_VER_HISTORICAL_TICKS = 130;
+    protected static final int MIN_SERVER_VER_MARKET_CAP_PRICE = 131;
+    protected static final int MIN_SERVER_VER_PRE_OPEN_BID_ASK = 132;
+    protected static final int MIN_SERVER_VER_REAL_EXPIRATION_DATE = 134;
+    protected static final int MIN_SERVER_VER_REALIZED_PNL = 135;
+    protected static final int MIN_SERVER_VER_LAST_LIQUIDITY = 136;
+    protected static final int MIN_SERVER_VER_TICK_BY_TICK = 137;
+    protected static final int MIN_SERVER_VER_DECISION_MAKER = 138;
+    protected static final int MIN_SERVER_VER_MIFID_EXECUTION = 139;
+    protected static final int MIN_SERVER_VER_TICK_BY_TICK_IGNORE_SIZE = 140;
+    protected static final int MIN_SERVER_VER_AUTO_PRICE_FOR_HEDGE = 141;
+    protected static final int MIN_SERVER_VER_WHAT_IF_EXT_FIELDS = 142;
+    protected static final int MIN_SERVER_VER_SCANNER_GENERIC_OPTS = 143;
+    protected static final int MIN_SERVER_VER_API_BIND_ORDER = 144;
+    protected static final int MIN_SERVER_VER_ORDER_CONTAINER = 145;
+    protected static final int MIN_SERVER_VER_SMART_DEPTH = 146;
+    protected static final int MIN_SERVER_VER_REMOVE_NULL_ALL_CASTING = 147;
+    protected static final int MIN_SERVER_VER_D_PEG_ORDERS = 148;
+    protected static final int MIN_SERVER_VER_MKT_DEPTH_PRIM_EXCHANGE = 149;
+    protected static final int MIN_SERVER_VER_REQ_COMPLETED_ORDERS = 150;
+    protected static final int MIN_SERVER_VER_PRICE_MGMT_ALGO = 151;
     
     public static final int MIN_VERSION = 100; // envelope encoding, applicable to useV100Plus mode only
-    public static final int MAX_VERSION = MIN_SERVER_VER_UNREALIZED_PNL; // ditto
+    public static final int MAX_VERSION = MIN_SERVER_VER_PRICE_MGMT_ALGO; // ditto
 
     protected EReaderSignal m_signal;
     protected EWrapper m_eWrapper;    // msg handler
@@ -285,7 +310,6 @@ public abstract class EClient {
     public int serverVersion()          { return m_serverVersion;   }
     public String getTwsConnectionTime()   { return m_TwsTime; }
     public EWrapper wrapper()           { return m_eWrapper; }
-//    public EReader reader()             { return m_reader; }
     public abstract boolean isConnected();
 
     // set
@@ -444,9 +468,12 @@ public abstract class EClient {
         }
     }
 
-    public synchronized void reqScannerSubscription( int tickerId, ScannerSubscription subscription, List<TagValue> scannerSubscriptionOptions) {
+    public synchronized void reqScannerSubscription(int tickerId, 
+            ScannerSubscription subscription, 
+            List<TagValue> scannerSubscriptionOptions, 
+            List<TagValue> scannerSubscriptionFilterOptions) {
         // not connected?
-        if( !isConnected()) {
+        if (!isConnected()) {
             notConnected();
             return;
         }
@@ -454,21 +481,34 @@ public abstract class EClient {
         if (m_serverVersion < 24) {
           error(EClientErrors.NO_VALID_ID, EClientErrors.UPDATE_TWS,
                 "  It does not support API scanner subscription.");
+          
           return;
+        }
+        
+        if (m_serverVersion < MIN_SERVER_VER_SCANNER_GENERIC_OPTS && scannerSubscriptionFilterOptions != null) {
+            error(EClientErrors.NO_VALID_ID, EClientErrors.UPDATE_TWS, 
+                    " It does not support API scanner subscription generic filter options");
+            
+            return;
         }
 
         final int VERSION = 4;
 
         try {
-            Builder b = prepareBuffer(); 
+            Builder b = prepareBuffer();
 
             b.send(REQ_SCANNER_SUBSCRIPTION);
-            b.send(VERSION);
+            
+            if (m_serverVersion < MIN_SERVER_VER_SCANNER_GENERIC_OPTS) {
+                b.send(VERSION);
+            }
+            
             b.send(tickerId);
             b.sendMax(subscription.numberOfRows());
             b.send(subscription.instrument());
             b.send(subscription.locationCode());
             b.send(subscription.scanCode());
+
             b.sendMax(subscription.abovePrice());
             b.sendMax(subscription.belowPrice());
             b.sendMax(subscription.aboveVolume());
@@ -482,27 +522,26 @@ public abstract class EClient {
             b.send(subscription.maturityDateBelow());
             b.sendMax(subscription.couponRateAbove());
             b.sendMax(subscription.couponRateBelow());
-            b.send(subscription.excludeConvertible());
+            b.send(subscription.excludeConvertible());           
+
             if (m_serverVersion >= 25) {
                 b.sendMax(subscription.averageOptionVolumeAbove());
                 b.send(subscription.scannerSettingPairs());
             }
+
             if (m_serverVersion >= 27) {
                 b.send(subscription.stockTypeFilter());
             }
+
+            if (m_serverVersion >= MIN_SERVER_VER_SCANNER_GENERIC_OPTS) {
+                b.send(scannerSubscriptionFilterOptions);
+            }
             
             // send scannerSubscriptionOptions parameter
-            if(m_serverVersion >= MIN_SERVER_VER_LINKING) {
-                StringBuilder scannerSubscriptionOptionsStr = new StringBuilder();
-                int scannerSubscriptionOptionsCount = scannerSubscriptionOptions == null ? 0 : scannerSubscriptionOptions.size();
-                if( scannerSubscriptionOptionsCount > 0) {
-                    for( int i = 0; i < scannerSubscriptionOptionsCount; ++i) {
-                        TagValue tagValue = scannerSubscriptionOptions.get(i);
-                        scannerSubscriptionOptionsStr.append( tagValue.m_tag).append("=").append(tagValue.m_value).append(";");
-                    }
-                }
-                b.send( scannerSubscriptionOptionsStr.toString());
+            if (m_serverVersion >= MIN_SERVER_VER_LINKING) {
+                b.send(scannerSubscriptionOptions);
             }
+            
             closeAndSend(b);
         }
         catch( Exception e) {
@@ -524,8 +563,8 @@ public abstract class EClient {
         	return;
         }
 
-        if (m_serverVersion < MIN_SERVER_VER_UNDER_COMP) {
-        	if (contract.underComp() != null) {
+        if (m_serverVersion < MIN_SERVER_VER_DELTA_NEUTRAL) {
+        	if (contract.deltaNeutralContract() != null) {
         		error(tickerId, EClientErrors.UPDATE_TWS,
         			"  It does not support delta-neutral orders.");
         		return;
@@ -562,50 +601,61 @@ public abstract class EClient {
             if (m_serverVersion >= MIN_SERVER_VER_REQ_MKT_DATA_CONID) {
                 b.send(contract.conid());
             }
+            
             b.send(contract.symbol());
             b.send(contract.getSecType());
             b.send(contract.lastTradeDateOrContractMonth());
             b.send(contract.strike());
             b.send(contract.getRight());
+            
             if (m_serverVersion >= 15) {
                 b.send(contract.multiplier());
             }
+            
             b.send(contract.exchange());
+            
             if (m_serverVersion >= 14) {
                 b.send(contract.primaryExch());
             }
+            
             b.send(contract.currency());
-            if(m_serverVersion >= 2) {
-                b.send( contract.localSymbol());
+            
+            if (m_serverVersion >= 2) {
+                b.send(contract.localSymbol());
             }
-            if(m_serverVersion >= MIN_SERVER_VER_TRADING_CLASS) {
-                b.send( contract.tradingClass());
+            
+            if (m_serverVersion >= MIN_SERVER_VER_TRADING_CLASS) {
+                b.send(contract.tradingClass());
             }
-            if(m_serverVersion >= 8 && SecType.BAG.name().equalsIgnoreCase(contract.getSecType())) {
-                if ( contract.comboLegs() == null ) {
-                    b.send( 0);
+            
+            if (m_serverVersion >= 8 && SecType.BAG.name().equalsIgnoreCase(contract.getSecType())) {
+                if (contract.comboLegs() == null) {
+                    b.send(0);
                 }
                 else {
-                    b.send( contract.comboLegs().size());
+                    b.send(contract.comboLegs().size());
 
                     ComboLeg comboLeg;
-                    for (int i=0; i < contract.comboLegs().size(); i ++) {
+                    
+                    for (int i = 0; i < contract.comboLegs().size(); i++) {
                         comboLeg = contract.comboLegs().get(i);
-                        b.send( comboLeg.conid());
-                        b.send( comboLeg.ratio());
-                        b.send( comboLeg.getAction());
-                        b.send( comboLeg.exchange());
+                        
+                        b.send(comboLeg.conid());
+                        b.send(comboLeg.ratio());
+                        b.send(comboLeg.getAction());
+                        b.send(comboLeg.exchange());
                     }
                 }
             }
 
-            if (m_serverVersion >= MIN_SERVER_VER_UNDER_COMP) {
-         	   if (contract.underComp() != null) {
-         		   DeltaNeutralContract underComp = contract.underComp();
-         		   b.send( true);
-         		   b.send( underComp.conid());
-         		   b.send( underComp.delta());
-         		   b.send( underComp.price());
+            if (m_serverVersion >= MIN_SERVER_VER_DELTA_NEUTRAL) {
+         	   if (contract.deltaNeutralContract() != null) {
+         		   DeltaNeutralContract deltaNeutralContract = contract.deltaNeutralContract();
+         		   
+         		   b.send(true);
+         		   b.send(deltaNeutralContract.conid());
+         		   b.send(deltaNeutralContract.delta());
+         		   b.send(deltaNeutralContract.price());
          	   }
          	   else {
          		   b.send( false);
@@ -620,10 +670,11 @@ public abstract class EClient {
             	 *
             	 *       Therefore we are relying on TWS doing validation.
             	 */
-            	b.send( genericTickList);
+            	b.send(genericTickList);
             }
+            
             if (m_serverVersion >= MIN_SERVER_VER_SNAPSHOT_MKT_DATA) {
-            	b.send (snapshot);
+            	b.send(snapshot);
             }
             
             if (m_serverVersion >= MIN_SERVER_VER_REQ_SMART_COMPONENTS) {
@@ -632,16 +683,9 @@ public abstract class EClient {
             
             // send mktDataOptions parameter
             if(m_serverVersion >= MIN_SERVER_VER_LINKING) {
-                StringBuilder mktDataOptionsStr = new StringBuilder();
-                int mktDataOptionsCount = mktDataOptions == null ? 0 : mktDataOptions.size();
-                if( mktDataOptionsCount > 0) {
-                    for( int i = 0; i < mktDataOptionsCount; ++i) {
-                        TagValue tagValue = mktDataOptions.get(i);
-                        mktDataOptionsStr.append(tagValue.m_tag).append("=").append(tagValue.m_value).append(";");
-                    }
-                }
-                b.send( mktDataOptionsStr.toString());
+                b.send(mktDataOptions);
             }
+            
             closeAndSend(b);
         }
         catch( Exception e) {
@@ -754,6 +798,7 @@ public abstract class EClient {
           if (m_serverVersion >= MIN_SERVER_VER_TRADING_CLASS) {
               b.send(contract.conid());
           }
+          
           b.send(contract.symbol());
           b.send(contract.getSecType());
           b.send(contract.lastTradeDateOrContractMonth());
@@ -764,23 +809,29 @@ public abstract class EClient {
           b.send(contract.primaryExch());
           b.send(contract.currency());
           b.send(contract.localSymbol());
+          
           if (m_serverVersion >= MIN_SERVER_VER_TRADING_CLASS) {
               b.send(contract.tradingClass());
           }
+          
           if (m_serverVersion >= 31) {
         	  b.send(contract.includeExpired() ? 1 : 0);
           }
+          
           if (m_serverVersion >= 20) {
               b.send(endDateTime);
               b.send(barSizeSetting);
           }
+          
           b.send(durationStr);
           b.send(useRTH);
           b.send(whatToShow);
+          
           if (m_serverVersion > 16) {
               b.send(formatDate);
           }
-          if ( SecType.BAG.name().equalsIgnoreCase(contract.getSecType()) ) {
+          
+          if (SecType.BAG.name().equalsIgnoreCase(contract.getSecType())) {
               if (contract.comboLegs() == null) {
                   b.send(0);
               }
@@ -788,8 +839,10 @@ public abstract class EClient {
                   b.send(contract.comboLegs().size());
 
                   ComboLeg comboLeg;
+                  
                   for (int i = 0; i < contract.comboLegs().size(); i++) {
                       comboLeg = contract.comboLegs().get(i);
+                      
                       b.send(comboLeg.conid());
                       b.send(comboLeg.ratio());
                       b.send(comboLeg.getAction());
@@ -802,17 +855,9 @@ public abstract class EClient {
               b.send(keepUpToDate);
           }
           
-         // send chartOptions parameter
+          // send chartOptions parameter
           if(m_serverVersion >= MIN_SERVER_VER_LINKING) {
-              StringBuilder chartOptionsStr = new StringBuilder();
-              int chartOptionsCount = chartOptions == null ? 0 : chartOptions.size();
-              if( chartOptionsCount > 0) {
-                  for( int i = 0; i < chartOptionsCount; ++i) {
-                      TagValue tagValue = chartOptions.get(i);
-                      chartOptionsStr.append(tagValue.m_tag).append("=").append(tagValue.m_value).append( ";");
-                  }
-              }
-              b.send( chartOptionsStr.toString());
+              b.send(chartOptions);
           }
           
           closeAndSend(b);
@@ -843,19 +888,7 @@ public abstract class EClient {
 
     		b.send(REQ_HEAD_TIMESTAMP);
     		b.send(tickerId);
-    		b.send(contract.conid());
-    		b.send(contract.symbol());
-    		b.send(contract.getSecType());
-    		b.send(contract.lastTradeDateOrContractMonth());
-    		b.send(contract.strike());
-    		b.send(contract.getRight());
-    		b.send(contract.multiplier());
-    		b.send(contract.exchange());
-    		b.send(contract.primaryExch());
-    		b.send(contract.currency());
-    		b.send(contract.localSymbol());
-    		b.send(contract.tradingClass());
-    		b.send(contract.includeExpired() ? 1 : 0);
+    		b.send(contract);
     		b.send(useRTH);
     		b.send(whatToShow);          
     		b.send(formatDate);
@@ -907,6 +940,7 @@ public abstract class EClient {
                   "  It does not support real time bars.");
             return;
         }
+        
         if (m_serverVersion < MIN_SERVER_VER_TRADING_CLASS) {
             if (!IsEmpty(contract.tradingClass()) || (contract.conid() > 0)) {
                   error(tickerId, EClientErrors.UPDATE_TWS,
@@ -929,6 +963,7 @@ public abstract class EClient {
             if (m_serverVersion >= MIN_SERVER_VER_TRADING_CLASS) {
                 b.send(contract.conid());
             }
+            
             b.send(contract.symbol());
             b.send(contract.getSecType());
             b.send(contract.lastTradeDateOrContractMonth());
@@ -939,25 +974,20 @@ public abstract class EClient {
             b.send(contract.primaryExch());
             b.send(contract.currency());
             b.send(contract.localSymbol());
+            
             if (m_serverVersion >= MIN_SERVER_VER_TRADING_CLASS) {
                 b.send(contract.tradingClass());
             }
+            
             b.send(barSize);  // this parameter is not currently used
             b.send(whatToShow);
             b.send(useRTH);
 
             // send realTimeBarsOptions parameter
             if(m_serverVersion >= MIN_SERVER_VER_LINKING) {
-                StringBuilder realTimeBarsOptionsStr = new StringBuilder();
-                int realTimeBarsOptionsCount = realTimeBarsOptions == null ? 0 : realTimeBarsOptions.size();
-                if( realTimeBarsOptionsCount > 0) {
-                    for( int i = 0; i < realTimeBarsOptionsCount; ++i) {
-                        TagValue tagValue = realTimeBarsOptions.get(i);
-                        realTimeBarsOptionsStr.append(tagValue.m_tag).append("=").append(tagValue.m_value).append(";");
-                    }
-                }
-                b.send( realTimeBarsOptionsStr.toString());
+                b.send(realTimeBarsOptions);
             }
+            
             closeAndSend(b);
         }
         catch( Exception e) {
@@ -1063,7 +1093,7 @@ public abstract class EClient {
         }
     }
 
-    public synchronized void reqMktDepth( int tickerId, Contract contract, int numRows, List<TagValue> mktDepthOptions) {
+    public synchronized void reqMktDepth( int tickerId, Contract contract, int numRows, boolean isSmartDepth, List<TagValue> mktDepthOptions) {
         // not connected?
         if( !isConnected()) {
             notConnected();
@@ -1084,51 +1114,69 @@ public abstract class EClient {
                   return;
             }
         }
+        
+        if (m_serverVersion < MIN_SERVER_VER_SMART_DEPTH && isSmartDepth) {
+            error(EClientErrors.NO_VALID_ID, EClientErrors.UPDATE_TWS,
+            "  It does not support SMART depth request.");
+            return;
+        }
 
+        if (m_serverVersion < MIN_SERVER_VER_MKT_DEPTH_PRIM_EXCHANGE && !IsEmpty(contract.primaryExch())) {
+            error(EClientErrors.NO_VALID_ID, EClientErrors.UPDATE_TWS,
+            "  It does not support primaryExch parameter in reqMktDepth.");
+            return;
+        }
+        
         final int VERSION = 5;
 
         try {
             // send req mkt data msg
             Builder b = prepareBuffer(); 
 
-            b.send( REQ_MKT_DEPTH);
-            b.send( VERSION);
-            b.send( tickerId);
+            b.send(REQ_MKT_DEPTH);
+            b.send(VERSION);
+            b.send(tickerId);
 
             // send contract fields
             if (m_serverVersion >= MIN_SERVER_VER_TRADING_CLASS) {
                 b.send(contract.conid());
             }
-            b.send( contract.symbol());
-            b.send( contract.getSecType());
-            b.send( contract.lastTradeDateOrContractMonth());
-            b.send( contract.strike());
-            b.send( contract.getRight());
+            
+            b.send(contract.symbol());
+            b.send(contract.getSecType());
+            b.send(contract.lastTradeDateOrContractMonth());
+            b.send(contract.strike());
+            b.send(contract.getRight());
+            
             if (m_serverVersion >= 15) {
               b.send(contract.multiplier());
             }
-            b.send( contract.exchange());
-            b.send( contract.currency());
-            b.send( contract.localSymbol());
+            
+            b.send(contract.exchange());
+            if (m_serverVersion >= MIN_SERVER_VER_MKT_DEPTH_PRIM_EXCHANGE) {
+                b.send(contract.primaryExch());
+            }
+            
+            b.send(contract.currency());
+            b.send(contract.localSymbol());
+            
             if (m_serverVersion >= MIN_SERVER_VER_TRADING_CLASS) {
                 b.send(contract.tradingClass());
             }
+            
             if (m_serverVersion >= 19) {
-                b.send( numRows);
+                b.send(numRows);
+            }
+
+            if (m_serverVersion >= MIN_SERVER_VER_SMART_DEPTH) {
+                b.send(isSmartDepth);
             }
             
             // send mktDepthOptions parameter
             if(m_serverVersion >= MIN_SERVER_VER_LINKING) {
-                StringBuilder mktDepthOptionsStr = new StringBuilder();
-                int mktDepthOptionsCount = mktDepthOptions == null ? 0 : mktDepthOptions.size();
-                if( mktDepthOptionsCount > 0) {
-                    for( int i = 0; i < mktDepthOptionsCount; ++i) {
-                        TagValue tagValue = mktDepthOptions.get(i);
-                        mktDepthOptionsStr.append(tagValue.m_tag).append("=").append(tagValue.m_value).append(";");
-                    }
-                }
-                b.send( mktDepthOptionsStr.toString());
+                b.send(mktDepthOptions);
             }
+            
             closeAndSend(b);
         }
         catch( Exception e) {
@@ -1162,7 +1210,7 @@ public abstract class EClient {
         }
     }
 
-    public synchronized void cancelMktDepth( int tickerId) {
+    public synchronized void cancelMktDepth( int tickerId, boolean isSmartDepth) {
         // not connected?
         if( !isConnected()) {
             notConnected();
@@ -1175,6 +1223,13 @@ public abstract class EClient {
                     EClientErrors.UPDATE_TWS.msg());
             return;
         }
+        
+        if (m_serverVersion < MIN_SERVER_VER_SMART_DEPTH && isSmartDepth) {
+            error(EClientErrors.NO_VALID_ID, EClientErrors.UPDATE_TWS,
+            "  It does not support SMART depth cancel.");
+            return;
+        }
+        
 
         final int VERSION = 1;
 
@@ -1185,6 +1240,10 @@ public abstract class EClient {
             b.send( CANCEL_MKT_DEPTH);
             b.send( VERSION);
             b.send( tickerId);
+            
+            if (m_serverVersion >= MIN_SERVER_VER_SMART_DEPTH) {
+                b.send( isSmartDepth);
+            }
 
             closeAndSend(b);
         }
@@ -1292,8 +1351,8 @@ public abstract class EClient {
         	}
         }
 
-        if (m_serverVersion < MIN_SERVER_VER_UNDER_COMP) {
-        	if (contract.underComp() != null) {
+        if (m_serverVersion < MIN_SERVER_VER_DELTA_NEUTRAL) {
+        	if (contract.deltaNeutralContract() != null) {
         		error(id, EClientErrors.UPDATE_TWS,
         			"  It does not support delta-neutral orders.");
         		return;
@@ -1490,6 +1549,49 @@ public abstract class EClient {
                 return;
             }
         }
+        
+        if (m_serverVersion < MIN_SERVER_VER_DECISION_MAKER
+            && (!IsEmpty(order.mifid2DecisionMaker())
+                || !IsEmpty(order.mifid2DecisionAlgo()))) {
+            error(id, EClientErrors.UPDATE_TWS,
+                    " It does not support MIFID II decision maker parameters");
+            return;
+        }
+
+        if (m_serverVersion < MIN_SERVER_VER_MIFID_EXECUTION
+                && (!IsEmpty(order.mifid2ExecutionTrader())
+                        || !IsEmpty(order.mifid2ExecutionAlgo()))) {
+            error(id, EClientErrors.UPDATE_TWS,
+                    " It does not support MIFID II execution parameters");
+            return;
+        }
+
+        if (m_serverVersion < MIN_SERVER_VER_AUTO_PRICE_FOR_HEDGE
+                && order.dontUseAutoPriceForHedge()) {
+            error(id, EClientErrors.UPDATE_TWS,
+                "  It does not support don't use auto price for hedge parameter.");
+            return;
+        }
+        
+        if (m_serverVersion < MIN_SERVER_VER_ORDER_CONTAINER
+                && order.isOmsContainer()) {
+            error(id, EClientErrors.UPDATE_TWS,
+                    "  It does not support oms container parameter.");
+            return;           
+        }
+        
+        if (m_serverVersion < MIN_SERVER_VER_D_PEG_ORDERS
+                && order.discretionaryUpToLimitPrice()) {
+            error(id, EClientErrors.UPDATE_TWS,
+                    "  It does not support D-Peg orders.");
+            return;           
+        }
+        
+        if (m_serverVersion < MIN_SERVER_VER_PRICE_MGMT_ALGO 
+                && order.usePriceMgmtAlgo() != null) {
+            error(id, EClientErrors.UPDATE_TWS, "  It does not support price management algo parameter");
+        }
+
 
         int VERSION = (m_serverVersion < MIN_SERVER_VER_NOT_HELD) ? 27 : 45;
 
@@ -1498,7 +1600,11 @@ public abstract class EClient {
             final Builder b = prepareBuffer(); 
 
             b.send( PLACE_ORDER);
-            b.send( VERSION);
+            
+            if (m_serverVersion < MIN_SERVER_VER_ORDER_CONTAINER) {
+                b.send( VERSION);
+            }
+            
             b.send( id);
 
             // send contract fields
@@ -1792,13 +1898,13 @@ public abstract class EClient {
         	   b.send (order.notHeld());
            }
 
-           if (m_serverVersion >= MIN_SERVER_VER_UNDER_COMP) {
-        	   if (contract.underComp() != null) {
-        		   DeltaNeutralContract underComp = contract.underComp();
+           if (m_serverVersion >= MIN_SERVER_VER_DELTA_NEUTRAL) {
+        	   if (contract.deltaNeutralContract() != null) {
+        		   DeltaNeutralContract deltaNeutralContract = contract.deltaNeutralContract();
         		   b.send( true);
-        		   b.send( underComp.conid());
-        		   b.send( underComp.delta());
-        		   b.send( underComp.price());
+        		   b.send( deltaNeutralContract.conid());
+        		   b.send( deltaNeutralContract.delta());
+        		   b.send( deltaNeutralContract.price());
         	   }
         	   else {
         		   b.send( false);
@@ -1828,15 +1934,7 @@ public abstract class EClient {
            
            // send orderMiscOptions parameter
            if(m_serverVersion >= MIN_SERVER_VER_LINKING) {
-               StringBuilder orderMiscOptionsStr = new StringBuilder();
-               List<TagValue> orderMiscOptions = order.orderMiscOptions();
-               int orderMiscOptionsCount = orderMiscOptions == null ? 0 : orderMiscOptions.size();
-               if( orderMiscOptionsCount > 0) {
-                   for( TagValue tagValue : orderMiscOptions ) {
-                       orderMiscOptionsStr.append(tagValue.m_tag).append("=").append(tagValue.m_value).append(";");
-                   }
-               }
-               b.send( orderMiscOptionsStr.toString());
+               b.send(order.orderMiscOptions());
            }
            
            if (m_serverVersion >= MIN_SERVER_VER_ORDER_SOLICITED) {
@@ -1893,6 +1991,32 @@ public abstract class EClient {
                b.sendMax(order.cashQty());
            }
            
+           if (m_serverVersion >= MIN_SERVER_VER_DECISION_MAKER) {
+               b.send(order.mifid2DecisionMaker());
+               b.send(order.mifid2DecisionAlgo());
+           }
+           
+           if (m_serverVersion >= MIN_SERVER_VER_MIFID_EXECUTION) {
+               b.send(order.mifid2ExecutionTrader());
+               b.send(order.mifid2ExecutionAlgo());
+           }
+           
+           if (m_serverVersion >= MIN_SERVER_VER_AUTO_PRICE_FOR_HEDGE) {
+               b.send(order.dontUseAutoPriceForHedge());
+           }
+           
+           if (m_serverVersion >= MIN_SERVER_VER_ORDER_CONTAINER) {
+               b.send(order.isOmsContainer());
+           }
+           
+           if (m_serverVersion >= MIN_SERVER_VER_D_PEG_ORDERS) {
+               b.send(order.discretionaryUpToLimitPrice());
+           }
+           
+           if (m_serverVersion >= MIN_SERVER_VER_PRICE_MGMT_ALGO) {
+               b.send(order.usePriceMgmtAlgo());
+           }
+
            closeAndSend(b);
         }
         catch( Exception e) {
@@ -2282,7 +2406,9 @@ public abstract class EClient {
         }
     }
 
-    public synchronized void reqFundamentalData(int reqId, Contract contract, String reportType) {
+    public synchronized void reqFundamentalData(int reqId, Contract contract, String reportType,
+            //reserved for future use, must be blank
+            List<TagValue> fundamentalDataOptions) {
         // not connected?
         if( !isConnected()) {
             notConnected();
@@ -2309,22 +2435,27 @@ public abstract class EClient {
             // send req fund data msg
             Builder b = prepareBuffer(); 
 
-            b.send( REQ_FUNDAMENTAL_DATA);
-            b.send( VERSION);
-            b.send( reqId);
+            b.send(REQ_FUNDAMENTAL_DATA);
+            b.send(VERSION);
+            b.send(reqId);
 
             // send contract fields
-            if( m_serverVersion >= MIN_SERVER_VER_TRADING_CLASS) {
+            if(m_serverVersion >= MIN_SERVER_VER_TRADING_CLASS) {
                 b.send(contract.conid());
             }
-            b.send( contract.symbol());
-            b.send( contract.getSecType());
-            b.send( contract.exchange());
-            b.send( contract.primaryExch());
-            b.send( contract.currency());
-            b.send( contract.localSymbol());
+            
+            b.send(contract.symbol());
+            b.send(contract.getSecType());
+            b.send(contract.exchange());
+            b.send(contract.primaryExch());
+            b.send(contract.currency());
+            b.send(contract.localSymbol());
 
-            b.send( reportType);
+            b.send(reportType);
+            
+            if (m_serverVersion >= MIN_SERVER_VER_LINKING) {
+                b.send(fundamentalDataOptions);
+            }
 
             closeAndSend(b);
         }
@@ -2366,10 +2497,12 @@ public abstract class EClient {
     }
 
     public synchronized void calculateImpliedVolatility(int reqId, Contract contract,
-            double optionPrice, double underPrice) {
+            double optionPrice, double underPrice,
+            //reserved for future use, must be blank
+            List<TagValue> impliedVolatilityOptions) {
 
         // not connected?
-        if( !isConnected()) {
+        if (!isConnected()) {
             notConnected();
             return;
         }
@@ -2394,28 +2527,33 @@ public abstract class EClient {
             // send calculate implied volatility msg
             Builder b = prepareBuffer(); 
 
-            b.send( REQ_CALC_IMPLIED_VOLAT);
-            b.send( VERSION);
-            b.send( reqId);
+            b.send(REQ_CALC_IMPLIED_VOLAT);
+            b.send(VERSION);
+            b.send(reqId);
 
             // send contract fields
-            b.send( contract.conid());
-            b.send( contract.symbol());
-            b.send( contract.getSecType());
-            b.send( contract.lastTradeDateOrContractMonth());
-            b.send( contract.strike());
-            b.send( contract.getRight());
-            b.send( contract.multiplier());
-            b.send( contract.exchange());
-            b.send( contract.primaryExch());
-            b.send( contract.currency());
-            b.send( contract.localSymbol());
-            if( m_serverVersion >= MIN_SERVER_VER_TRADING_CLASS) {
+            b.send(contract.conid());
+            b.send(contract.symbol());
+            b.send(contract.getSecType());
+            b.send(contract.lastTradeDateOrContractMonth());
+            b.send(contract.strike());
+            b.send(contract.getRight());
+            b.send(contract.multiplier());
+            b.send(contract.exchange());
+            b.send(contract.primaryExch());
+            b.send(contract.currency());
+            b.send(contract.localSymbol());
+            
+            if (m_serverVersion >= MIN_SERVER_VER_TRADING_CLASS) {
                 b.send(contract.tradingClass());
             }
 
-            b.send( optionPrice);
-            b.send( underPrice);
+            b.send(optionPrice);
+            b.send(underPrice);
+            
+            if (m_serverVersion >= MIN_SERVER_VER_LINKING) {
+                b.send(impliedVolatilityOptions);
+            }
 
             closeAndSend(b);
         }
@@ -2458,10 +2596,12 @@ public abstract class EClient {
     }
 
     public synchronized void calculateOptionPrice(int reqId, Contract contract,
-            double volatility, double underPrice) {
+            double volatility, double underPrice,
+            //reserved for future use, must be blank
+            List<TagValue> optionPriceOptions) {
 
         // not connected?
-        if( !isConnected()) {
+        if (!isConnected()) {
             notConnected();
             return;
         }
@@ -2486,28 +2626,33 @@ public abstract class EClient {
             // send calculate option price msg
             Builder b = prepareBuffer(); 
 
-            b.send( REQ_CALC_OPTION_PRICE);
-            b.send( VERSION);
-            b.send( reqId);
+            b.send(REQ_CALC_OPTION_PRICE);
+            b.send(VERSION);
+            b.send(reqId);
 
             // send contract fields
-            b.send( contract.conid());
-            b.send( contract.symbol());
-            b.send( contract.getSecType());
-            b.send( contract.lastTradeDateOrContractMonth());
-            b.send( contract.strike());
-            b.send( contract.getRight());
-            b.send( contract.multiplier());
-            b.send( contract.exchange());
-            b.send( contract.primaryExch());
-            b.send( contract.currency());
-            b.send( contract.localSymbol());
-            if( m_serverVersion >= MIN_SERVER_VER_TRADING_CLASS) {
+            b.send(contract.conid());
+            b.send(contract.symbol());
+            b.send(contract.getSecType());
+            b.send(contract.lastTradeDateOrContractMonth());
+            b.send(contract.strike());
+            b.send(contract.getRight());
+            b.send(contract.multiplier());
+            b.send(contract.exchange());
+            b.send(contract.primaryExch());
+            b.send(contract.currency());
+            b.send(contract.localSymbol());
+            
+            if (m_serverVersion >= MIN_SERVER_VER_TRADING_CLASS) {
                 b.send(contract.tradingClass());
             }
 
-            b.send( volatility);
-            b.send( underPrice);
+            b.send(volatility);
+            b.send(underPrice);
+            
+            if (m_serverVersion >= MIN_SERVER_VER_LINKING) {
+                b.send(optionPriceOptions);
+            }
 
             closeAndSend(b);
         }
@@ -3280,7 +3425,7 @@ public abstract class EClient {
 
     public synchronized void reqNewsArticle(int requestId, String providerCode, String articleId, List<TagValue> newsArticleOptions) {
         // not connected?
-        if( !isConnected()) {
+        if (!isConnected()) {
             notConnected();
             return;
         }
@@ -3293,29 +3438,21 @@ public abstract class EClient {
 
         Builder b = prepareBuffer();
 
-        b.send( REQ_NEWS_ARTICLE);
-        b.send( requestId);
-        b.send( providerCode);
-        b.send( articleId);
+        b.send(REQ_NEWS_ARTICLE);
+        b.send(requestId);
+        b.send(providerCode);
+        b.send(articleId);
 
         // send newsArticleOptions parameter
         if (m_serverVersion >= MIN_SERVER_VER_NEWS_QUERY_ORIGINS) {
-            StringBuilder newsArticleOptionsStr = new StringBuilder();
-            int newsArticleOptionsCount = newsArticleOptions == null ? 0 : newsArticleOptions.size();
-            if( newsArticleOptionsCount > 0) {
-                for( int i = 0; i < newsArticleOptionsCount; ++i) {
-                    TagValue tagValue = newsArticleOptions.get(i);
-                    newsArticleOptionsStr.append(tagValue.m_tag).append("=").append(tagValue.m_value).append(";");
-                }
-            }
-            b.send( newsArticleOptionsStr.toString());
+            b.send(newsArticleOptions);
         }
         
         try {
             closeAndSend(b);
         }
         catch (IOException e) {
-            error( EClientErrors.NO_VALID_ID, EClientErrors.FAIL_SEND_REQNEWSARTICLE, e.toString());
+            error(EClientErrors.NO_VALID_ID, EClientErrors.FAIL_SEND_REQNEWSARTICLE, e.toString());
         }
     }
 
@@ -3323,7 +3460,7 @@ public abstract class EClient {
             String startDateTime, String endDateTime, int totalResults, List<TagValue> historicalNewsOptions) {
 
         // not connected?
-        if( !isConnected()) {
+        if (!isConnected()) {
             notConnected();
             return;
         }
@@ -3336,32 +3473,24 @@ public abstract class EClient {
 
         Builder b = prepareBuffer();
 
-        b.send( REQ_HISTORICAL_NEWS);
-        b.send( requestId);
-        b.send( conId);
-        b.send( providerCodes);
-        b.send( startDateTime);
-        b.send( endDateTime);
-        b.send( totalResults);
+        b.send(REQ_HISTORICAL_NEWS);
+        b.send(requestId);
+        b.send(conId);
+        b.send(providerCodes);
+        b.send(startDateTime);
+        b.send(endDateTime);
+        b.send(totalResults);
 
         // send historicalNewsOptions parameter
         if (m_serverVersion >= MIN_SERVER_VER_NEWS_QUERY_ORIGINS) {
-            StringBuilder historicalNewsOptionsStr = new StringBuilder();
-            int historicalNewsOptionsCount = historicalNewsOptions == null ? 0 : historicalNewsOptions.size();
-            if( historicalNewsOptionsCount > 0) {
-                for( int i = 0; i < historicalNewsOptionsCount; ++i) {
-                    TagValue tagValue = historicalNewsOptions.get(i);
-                    historicalNewsOptionsStr.append(tagValue.m_tag).append("=").append(tagValue.m_value).append(";");
-                }
-            }
-            b.send( historicalNewsOptionsStr.toString());
+            b.send(historicalNewsOptions);
         }
 
         try {
             closeAndSend(b);
         }
         catch (IOException e) {
-            error( EClientErrors.NO_VALID_ID, EClientErrors.FAIL_SEND_REQHISTORICALNEWS, e.toString());
+            error(EClientErrors.NO_VALID_ID, EClientErrors.FAIL_SEND_REQHISTORICALNEWS, e.toString());
         }
     }
 
@@ -3384,19 +3513,7 @@ public abstract class EClient {
 
     		b.send(REQ_HISTOGRAM_DATA);
     		b.send(tickerId);
-    		b.send(contract.conid());
-    		b.send(contract.symbol());
-    		b.send(contract.getSecType());
-    		b.send(contract.lastTradeDateOrContractMonth());
-    		b.send(contract.strike());
-    		b.send(contract.getRight());
-    		b.send(contract.multiplier());
-    		b.send(contract.exchange());
-    		b.send(contract.primaryExch());
-    		b.send(contract.currency());
-    		b.send(contract.localSymbol());
-    		b.send(contract.tradingClass());
-    		b.send(contract.includeExpired() ? 1 : 0);
+    		b.send(contract);
     		b.send(useRTH ? 1 : 0);
     		b.send(timePeriod);
 
@@ -3568,7 +3685,151 @@ public abstract class EClient {
             close();
         }
     }
+    
+    public synchronized void reqHistoricalTicks(int reqId, Contract contract, String startDateTime,
+            String endDateTime, int numberOfTicks, String whatToShow, int useRth, boolean ignoreSize,
+            List<TagValue> miscOptions) {
+        if (!isConnected()) {
+            notConnected();
+            return;
+        }
+
+        if (m_serverVersion < MIN_SERVER_VER_HISTORICAL_TICKS) {
+            error(reqId, EClientErrors.UPDATE_TWS,
+                    "  It does not support historical ticks request.");
+            return;
+        }
+        
+        try {
+            Builder b = prepareBuffer(); 
+
+            b.send(REQ_HISTORICAL_TICKS);
+            b.send(reqId);
+            b.send(contract);
+            b.send(startDateTime);
+            b.send(endDateTime);
+            b.send(numberOfTicks);
+            b.send(whatToShow);
+            b.send(useRth);
+            b.send(ignoreSize);
+            b.send(miscOptions);
+
+            closeAndSend(b);
+        } catch(Exception e) {
+            error(reqId, EClientErrors.FAIL_SEND_HISTORICAL_TICK, e.toString());
+            close();
+        }        
+    }
   
+    public synchronized void reqTickByTickData(int reqId, Contract contract, String tickType, int numberOfTicks, boolean ignoreSize) {
+        // not connected?
+        if( !isConnected()) {
+            notConnected();
+            return;
+        }
+
+        if (m_serverVersion < MIN_SERVER_VER_TICK_BY_TICK) {
+          error(EClientErrors.NO_VALID_ID, EClientErrors.UPDATE_TWS,
+                "  It does not support tick-by-tick data requests.");
+          return;
+        }
+
+        if (m_serverVersion < MIN_SERVER_VER_TICK_BY_TICK_IGNORE_SIZE) {
+            if (numberOfTicks != 0 || ignoreSize) {
+                error(EClientErrors.NO_VALID_ID, EClientErrors.UPDATE_TWS,
+                    "  It does not support ignoreSize and numberOfTicks parameters in tick-by-tick data requests.");
+                return;
+            }
+        }
+        
+        try {
+            Builder b = prepareBuffer(); 
+
+            b.send(REQ_TICK_BY_TICK_DATA);
+            b.send(reqId);
+            b.send(contract.conid());
+            b.send(contract.symbol());
+            b.send(contract.getSecType());
+            b.send(contract.lastTradeDateOrContractMonth());
+            b.send(contract.strike());
+            b.send(contract.getRight());
+            b.send(contract.multiplier());
+            b.send(contract.exchange());
+            b.send(contract.primaryExch());
+            b.send(contract.currency());
+            b.send(contract.localSymbol());
+            b.send(contract.tradingClass());
+            b.send(tickType);
+            if (m_serverVersion >= MIN_SERVER_VER_TICK_BY_TICK_IGNORE_SIZE) {
+                b.send(numberOfTicks);
+                b.send(ignoreSize);
+            }
+
+            closeAndSend(b);
+        }
+        catch( Exception e) {
+            error( EClientErrors.NO_VALID_ID,
+                   EClientErrors.FAIL_SEND_REQTICKBYTICK, e.toString());
+            close();
+        }
+    }
+
+    public synchronized void cancelTickByTickData(int reqId) {
+        // not connected?
+        if( !isConnected()) {
+            notConnected();
+            return;
+        }
+
+        if (m_serverVersion < MIN_SERVER_VER_TICK_BY_TICK) {
+          error(EClientErrors.NO_VALID_ID, EClientErrors.UPDATE_TWS,
+                "  It does not support tick-by-tick data cancels.");
+          return;
+        }
+
+        try {
+            Builder b = prepareBuffer(); 
+
+            b.send(CANCEL_TICK_BY_TICK_DATA);
+            b.send(reqId);
+
+            closeAndSend(b);
+        }
+        catch( Exception e) {
+            error( EClientErrors.NO_VALID_ID,
+                   EClientErrors.FAIL_SEND_CANTICKBYTICK, e.toString());
+            close();
+        }
+    }
+
+    public synchronized void reqCompletedOrders(boolean apiOnly) {
+        // not connected?
+        if( !isConnected()) {
+            notConnected();
+            return;
+        }
+
+        if (m_serverVersion < MIN_SERVER_VER_REQ_COMPLETED_ORDERS) {
+          error(EClientErrors.NO_VALID_ID, EClientErrors.UPDATE_TWS,
+                "  It does not support completed orders requests.");
+          return;
+        }
+
+        try {
+            Builder b = prepareBuffer(); 
+
+            b.send(REQ_COMPLETED_ORDERS);
+            b.send(apiOnly);
+
+            closeAndSend(b);
+        }
+        catch( Exception e) {
+            error( EClientErrors.NO_VALID_ID,
+                   EClientErrors.FAIL_SEND_REQ_COMPLETED_ORDERS, e.toString());
+            close();
+        }
+    }
+    
     /**
      * @deprecated This method is never called.
      */

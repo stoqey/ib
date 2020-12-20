@@ -1,4 +1,4 @@
-/* Copyright (C) 2013 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
+/* Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.client;
@@ -27,6 +27,10 @@ import static com.ib.client.Types.AlgoParam.useOddLots;
 import static com.ib.client.Types.AlgoParam.waitForFill;
 
 public class Types {
+	public enum TickByTickType {
+		None, Last, AllLast, BidAsk, MidPoint,
+	}
+	
 	public enum ComboParam {
 		NonGuaranteed, PriceCondConid, CondPriceMax, CondPriceMin, ChangeToMktTime1, ChangeToMktTime2, DiscretionaryPct, DontLeginNext, LeginPrio, MaxSegSize,
 	}
@@ -156,7 +160,7 @@ public class Types {
 	}
 
 	public enum Rule80A implements IApiEnum {
-		None(""), IndivArb("J"), IndivBigNonArb("K"), IndivSmallNonArb("I"), INST_ARB("U"), InstBigNonArb("Y"), InstSmallNonArb("A");
+		None(""), Individual("I"), Agency("A"), AgentOtherMember("W"), IndividualPTIA("J"), AgencyPTIA("U"), AgentOtherMemberPTIA("M"), IndividualPT("K"), AgencyPT("Y"), AgentOtherMemberPT("N");
 
 		private String m_apiString;
 
@@ -208,7 +212,8 @@ public class Types {
 		ReportRatios("Financial ratios"),
 		ReportsFinStatements("Financial statements"),
 		RESC("Analyst estimates"),
-		CalendarReport("Company calendar");
+		CalendarReport("Company calendar"), 
+		ReportsOwnership("Company ownership");
 
 		private final String description;
 
@@ -227,7 +232,7 @@ public class Types {
 
 	public enum WhatToShow {
 		TRADES, MIDPOINT, BID, ASK, // << only these are valid for real-time bars
-        BID_ASK, HISTORICAL_VOLATILITY, OPTION_IMPLIED_VOLATILITY, YIELD_ASK, YIELD_BID, YIELD_BID_ASK, YIELD_LAST
+        BID_ASK, HISTORICAL_VOLATILITY, OPTION_IMPLIED_VOLATILITY, YIELD_ASK, YIELD_BID, YIELD_BID_ASK, YIELD_LAST, ADJUSTED_LAST
 	}
 
 	public enum BarSize {
@@ -340,6 +345,20 @@ public class Types {
 	    @Override public String getApiString() {
 			return this == None ? "" : super.toString();
 		}
+	}
+	
+	public enum UsePriceMgmtAlgo {
+	    Default(null), NotUse(false), Use(true);
+	    
+	    private Boolean value;
+	    
+	    UsePriceMgmtAlgo(Boolean value) {
+	        this.value = value;
+	    }
+	    
+	    public Boolean toBoolean() {
+	        return value;
+	    }
 	}
 
 	public static <T extends Enum<?> & IApiEnum> T getValueOf( String v, T[] values, T defaultValue ) {

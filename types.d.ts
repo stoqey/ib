@@ -1,1 +1,1 @@
-declare module 'ib';
+declare module "ib";

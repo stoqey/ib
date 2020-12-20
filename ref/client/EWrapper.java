@@ -1,4 +1,4 @@
-/* Copyright (C) 2013 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
+/* Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.client;
@@ -12,7 +12,7 @@ public interface EWrapper {
     ///////////////////////////////////////////////////////////////////////
     // Interface methods
     ///////////////////////////////////////////////////////////////////////
-    void tickPrice( int tickerId, int field, double price, TickAttr attrib);
+    void tickPrice( int tickerId, int field, double price, TickAttrib attrib);
     void tickSize( int tickerId, int field, int size);
     void tickOptionComputation( int tickerId, int field, double impliedVol,
     		double delta, double optPrice, double pvDividend,
@@ -24,7 +24,7 @@ public interface EWrapper {
 			String futureLastTradeDate, double dividendImpact, double dividendsToLastTradeDate);
     void orderStatus( int orderId, String status, double filled, double remaining,
             double avgFillPrice, int permId, int parentId, double lastFillPrice,
-            int clientId, String whyHeld);
+            int clientId, String whyHeld, double mktCapPrice);
     void openOrder( int orderId, Contract contract, Order order, OrderState orderState);
     void openOrderEnd();
     void updateAccountValue(String key, String value, String currency, String accountName);
@@ -40,7 +40,7 @@ public interface EWrapper {
     void execDetailsEnd( int reqId);
     void updateMktDepth( int tickerId, int position, int operation, int side, double price, int size);
     void updateMktDepthL2( int tickerId, int position, String marketMaker, int operation,
-    		int side, double price, int size);
+    		int side, double price, int size, boolean isSmartDepth);
     void updateNewsBulletin( int msgId, int msgType, String message, String origExchange);
     void managedAccounts( String accountsList);
     void receiveFA(int faDataType, String xml);
@@ -52,7 +52,7 @@ public interface EWrapper {
     void realtimeBar(int reqId, long time, double open, double high, double low, double close, long volume, double wap, int count);
     void currentTime(long time);
     void fundamentalData(int reqId, String data);
-    void deltaNeutralValidation(int reqId, DeltaNeutralContract underComp);
+    void deltaNeutralValidation(int reqId, DeltaNeutralContract deltaNeutralContract);
     void tickSnapshotEnd(int reqId);
     void marketDataType(int reqId, int marketDataType);
     void commissionReport(CommissionReport commissionReport);
@@ -95,7 +95,16 @@ public interface EWrapper {
 	void rerouteMktDataReq(int reqId, int conId, String exchange);
 	void rerouteMktDepthReq(int reqId, int conId, String exchange);
     void marketRule(int marketRuleId, PriceIncrement[] priceIncrements);
-	void pnl(int reqId, double dailyPnL, double unrealizedPnL);
-	void pnlSingle(int reqId, int pos, double dailyPnL, double unrealizedPnL, double value);
+	void pnl(int reqId, double dailyPnL, double unrealizedPnL, double realizedPnL);
+	void pnlSingle(int reqId, int pos, double dailyPnL, double unrealizedPnL, double realizedPnL, double value);
+    void historicalTicks(int reqId, List<HistoricalTick> ticks, boolean done);
+    void historicalTicksBidAsk(int reqId, List<HistoricalTickBidAsk> ticks, boolean done);
+    void historicalTicksLast(int reqId, List<HistoricalTickLast> ticks, boolean done);
+    void tickByTickAllLast(int reqId, int tickType, long time, double price, int size, TickAttribLast tickAttribLast, String exchange, String specialConditions);
+    void tickByTickBidAsk(int reqId, long time, double bidPrice, double askPrice, int bidSize, int askSize, TickAttribBidAsk tickAttribBidAsk);
+    void tickByTickMidPoint(int reqId, long time, double midPoint);
+    void orderBound(long orderId, int apiClientId, int apiOrderId);
+    void completedOrder(Contract contract, Order order, OrderState orderState);
+    void completedOrdersEnd();
 }
 

@@ -3,10 +3,10 @@
 	"tasks": [
 		{
 			"type": "npm",
-			"script": "dev:debug",
+			"script": "build",
 			"problemMatcher": [],
-			"label": "dev: debug",
-			"detail": "devleopment debug build",
+			"label": "build",
+			"detail": "library code build",
 			"group": {
 				"kind": "build",
 				"isDefault": true
