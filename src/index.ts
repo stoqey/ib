@@ -1,11 +1,11 @@
-import { EventEmitter } from 'events';
-import _ from 'lodash'
-import C from './constants';
-import Controller from './controller';
+import { EventEmitter } from "events";
+import _ from "lodash";
+import C from "./constants";
+import Controller from "./controller";
 
-import order from './order';
-import contract from './contract';
-import utils from './util';
+import order from "./order";
+import contract from "./contract";
+import utils from "./util";
 
 /**
  * Input arguments on the [[IB]] class constructor.
@@ -32,14 +32,14 @@ interface IBCreationOptions {
    * Default is 0.
    */
   clientId?: number;
-};
+}
 
 /**
  * The [[IB]] Event emitter interface.
 */
 declare interface IB {
 
-  on(event: string, listener: (...args: any[]) => void): this;
+  on(event: string, listener: (...args: unknown[]) => void): this;
 
   /**
    * Notifies when all the account's information has finished.
@@ -831,7 +831,7 @@ declare interface IB {
    *
    * @see [[reqSmartComponents]]
    */
-  on(event: "smartComponents", listener: (reqId: number, theMap: Map<Number, [string, string]>) => void): this;
+  on(event: "smartComponents", listener: (reqId: number, theMap: Map<number, [string, string]>) => void): this;
 
   /**
    * Called when receives Soft Dollar Tier configuration information
@@ -1318,7 +1318,6 @@ class IB extends EventEmitter  {
   constructor(options?: IBCreationOptions) {
     super();
     this.controller = new Controller(this, options);
-    this.on('error', function () { });
   }
 
   /** The I/O queue controller object. */
@@ -1328,17 +1327,17 @@ class IB extends EventEmitter  {
    * Connect to the TWS or IB Gateway.
    */
   connect(): IB {
-    this.controller.schedule('connect');
+    this.controller.schedule("connect");
     return this;
-  };
+  }
 
   /**
    * Disconnect from the TWS or IB Gateway.
    */
   disconnect(): IB {
-    this.controller.schedule('disconnect');
+    this.controller.schedule("disconnect");
     return this;
-  };
+  }
 
   /**
    * Calculate the volatility for an option.
@@ -1357,9 +1356,9 @@ class IB extends EventEmitter  {
     contract: unknown /* TODO: replace with Contract type as soon as available. */,
     optionPrice: number,
     underPrice: number): IB {
-    this.send('calculateImpliedVolatility', reqId, contract, optionPrice, underPrice);
+    this.send("calculateImpliedVolatility", reqId, contract, optionPrice, underPrice);
     return this;
-  };
+  }
 
   /**
    * Calculates an option's price based on the provided volatility and its underlying price.
@@ -1377,9 +1376,9 @@ class IB extends EventEmitter  {
     contract: unknown /* TODO: replace with Contract type as soon as available. */,
     volatility: number,
     underPrice: number): IB {
-    this.send('calculateOptionPrice', reqId, contract, volatility, underPrice);
+    this.send("calculateOptionPrice", reqId, contract, volatility, underPrice);
     return this;
-  };
+  }
 
   /**
    * Cancels the account's summary request.
@@ -1390,9 +1389,9 @@ class IB extends EventEmitter  {
    * @see [[reqAccountSummary]]
    */
   cancelAccountSummary(reqId: number): IB {
-    this.send('cancelAccountSummary', reqId);
+    this.send("cancelAccountSummary", reqId);
     return this;
-  };
+  }
 
   /**
    * Cancels account updates request for account and/or model.
@@ -1402,9 +1401,9 @@ class IB extends EventEmitter  {
    * @see [[reqAccountUpdatesMulti]]
    */
   cancelAccountUpdatesMulti(reqId: number): IB {
-    this.send('cancelAccountUpdatesMulti', reqId);
+    this.send("cancelAccountUpdatesMulti", reqId);
     return this;
-  };
+  }
 
   /**
    * Cancels an option's implied volatility calculation request.
@@ -1414,9 +1413,9 @@ class IB extends EventEmitter  {
    * @see [[calculateImpliedVolatility]]
    */
   cancelCalculateImpliedVolatility(reqId: number): IB {
-    this.send('cancelCalculateImpliedVolatility', reqId);
+    this.send("cancelCalculateImpliedVolatility", reqId);
     return this;
-  };
+  }
 
   /**
    * Cancels an option's price calculation request.
@@ -1426,9 +1425,9 @@ class IB extends EventEmitter  {
    * @see [[calculateOptionPrice]]
    */
   cancelCalculateOptionPrice(reqId: number): IB {
-    this.send('cancelCalculateOptionPrice', reqId);
+    this.send("cancelCalculateOptionPrice", reqId);
     return this;
-  };
+  }
 
   /**
    * Cancels Fundamental data request.
@@ -1438,9 +1437,9 @@ class IB extends EventEmitter  {
    * @see [[reqFundamentalData]]
    */
   cancelFundamentalData(reqId: number): IB  {
-    this.send('cancelFundamentalData', reqId);
+    this.send("cancelFundamentalData", reqId);
     return this;
-  };
+  }
 
   /**
    * Cancels a pending [[reqHeadTimeStamp]] request.
@@ -1450,9 +1449,9 @@ class IB extends EventEmitter  {
    * @see [[reqHeadTimeStamp]]
    */
   cancelHeadTimestamp(tickerId: number): IB  {
-    this.send('cancelHeadTimestamp', tickerId);
+    this.send("cancelHeadTimestamp", tickerId);
     return this;
-  };
+  }
 
   /**
    * Cancels a historical data request.
@@ -1462,9 +1461,9 @@ class IB extends EventEmitter  {
    * @see [[reqHistoricalData]]
    */
   cancelHistogramData(tickerId: number): IB {
-    this.send('cancelHistogramData', tickerId);
+    this.send("cancelHistogramData", tickerId);
     return this;
-  };
+  }
 
   /**
    * Cancels a historical data request.
@@ -1474,9 +1473,9 @@ class IB extends EventEmitter  {
    * @see [[reqHistoricalData]]
    */
   cancelHistoricalData(tickerId: number): IB {
-    this.send('cancelHistoricalData', tickerId);
+    this.send("cancelHistoricalData", tickerId);
     return this;
-  };
+  }
 
   /**
    * Cancels a RT Market Data request.
@@ -1486,9 +1485,9 @@ class IB extends EventEmitter  {
    * @see [[reqMktData]]
    */
   cancelMktData(tickerId: number): IB {
-    this.send('cancelMktData', tickerId);
+    this.send("cancelMktData", tickerId);
     return this;
-  };
+  }
 
   /**
    * Cancel a market depth's request.
@@ -1498,9 +1497,9 @@ class IB extends EventEmitter  {
    * @see [[reqMktDepth]]
    */
   cancelMktDepth(tickerId: number): IB {
-    this.send('cancelMktDepth', tickerId);
+    this.send("cancelMktDepth", tickerId);
     return this;
-  };
+  }
 
   /**
    * Cancels IB's news bulletin subscription.
@@ -1508,9 +1507,9 @@ class IB extends EventEmitter  {
    * @see [[reqNewsBulletins]]
    */
   cancelNewsBulletins(): IB {
-    this.send('cancelNewsBulletins');
+    this.send("cancelNewsBulletins");
     return this;
-  };
+  }
 
   /**
    * Cancels an active order placed by from the same API client ID.
@@ -1523,9 +1522,9 @@ class IB extends EventEmitter  {
    * @see [[placeOrder]], [[reqGlobalCancel]]
    */
   cancelOrder(orderId: number): IB {
-    this.send('cancelOrder', orderId);
+    this.send("cancelOrder", orderId);
     return this;
-  };
+  }
 
   /**
    * Cancels subscription for real time updated daily PnL.
@@ -1535,9 +1534,9 @@ class IB extends EventEmitter  {
    * @see [[reqPnL]]
    */
   cancelPnL(reqId: number): IB {
-    this.send('cancelPnL', reqId);
+    this.send("cancelPnL", reqId);
     return this;
-  };
+  }
 
   /**
    * Cancels real time subscription for a positions daily PnL information.
@@ -1547,9 +1546,9 @@ class IB extends EventEmitter  {
    * @see [[reqPnLSingle]]
    */
   cancelPnLSingle(reqId: number): IB {
-    this.send('cancelPnLSingle', reqId);
+    this.send("cancelPnLSingle", reqId);
     return this;
-  };
+  }
 
   /**
    * Cancels a previous position subscription request made with reqPositions.
@@ -1557,9 +1556,9 @@ class IB extends EventEmitter  {
    * @see [[reqPositions]]
    */
   cancelPositions(): IB {
-    this.send('cancelPositions');
+    this.send("cancelPositions");
     return this;
-  };
+  }
 
   /**
    * Cancels positions request for account and/or model.
@@ -1569,9 +1568,9 @@ class IB extends EventEmitter  {
    * @see [[reqPositionsMulti]]
    */
   cancelPositionsMulti(reqId: number): IB {
-    this.send('cancelPositionsMulti', reqId);
+    this.send("cancelPositionsMulti", reqId);
     return this;
-  };
+  }
 
   /**
    * Cancels Real Time Bars' subscription.
@@ -1581,9 +1580,9 @@ class IB extends EventEmitter  {
    * @see [[reqRealTimeBars]]
    */
   cancelRealTimeBars(tickerId: number): IB {
-    this.send('cancelRealTimeBars', tickerId);
+    this.send("cancelRealTimeBars", tickerId);
     return this;
-  };
+  }
 
   /**
    * Cancels Scanner Subscription.
@@ -1593,9 +1592,9 @@ class IB extends EventEmitter  {
    * @see [[reqScannerSubscription]], [[reqScannerParameters]]
    */
   cancelScannerSubscription(tickerId: number): IB {
-    this.send('cancelScannerSubscription', tickerId);
+    this.send("cancelScannerSubscription", tickerId);
     return this;
-  };
+  }
 
   /**
    * Cancels tick-by-tick data.
@@ -1605,9 +1604,9 @@ class IB extends EventEmitter  {
    * @see [[reqTickByTickData]]
    */
   cancelTickByTickData(tickerId: number): IB {
-    this.send('cancelTickByTickData', tickerId);
+    this.send("cancelTickByTickData", tickerId);
     return this;
-  };
+  }
 
   /**
    * Exercises an options contract.
@@ -1632,10 +1631,10 @@ class IB extends EventEmitter  {
     exerciseQuantity: number,
     account: string,
     override: number): IB {
-    this.send('exerciseOptions', tickerId, contract, exerciseAction, exerciseQuantity,
+    this.send("exerciseOptions", tickerId, contract, exerciseAction, exerciseQuantity,
       account, override);
     return this;
-  };
+  }
 
   /**
    * Places or modifies an order.
@@ -1651,9 +1650,9 @@ class IB extends EventEmitter  {
     id: number,
     contract: unknown /* TODO: replace with Contract type as soon as available. */,
     order: unknown /* TODO: replace with Order type as soon as available. */): IB {
-    this.send('placeOrder', id, contract, order);
+    this.send("placeOrder", id, contract, order);
     return this;
-  };
+  }
 
   /**
    * Requests all available Display Groups in TWS.
@@ -1661,9 +1660,9 @@ class IB extends EventEmitter  {
    * @param reqId The ID of this request.
    */
   queryDisplayGroups(reqId: number): IB {
-    this.send('queryDisplayGroups', reqId);
+    this.send("queryDisplayGroups", reqId);
     return this;
-  };
+  }
 
   /**
    * Replaces Financial Advisor's settings A Financial Advisor can define three different configurations:
@@ -1677,9 +1676,9 @@ class IB extends EventEmitter  {
    * @param xml Zhe xml-formatted configuration string.
    */
   replaceFA(faDataType: number, xml: string): IB {
-    this.send('replaceFA', faDataType, xml);
+    this.send("replaceFA", faDataType, xml);
     return this;
-  };
+  }
 
   /**
    * Requests a specific account's summary.
@@ -1728,9 +1727,9 @@ class IB extends EventEmitter  {
    * @see [[cancelAccountSummary]]
    */
   reqAccountSummary(reqId: number, group: string, tags: string): IB {
-    this.send('reqAccountSummary', reqId, group, tags);
+    this.send("reqAccountSummary", reqId, group, tags);
     return this;
-  };
+  }
 
   /**
    * Subscribes to a specific account's information and portfolio.
@@ -1752,9 +1751,9 @@ class IB extends EventEmitter  {
    * @see [[reqPositions]]
    */
   reqAccountUpdates(subscribe: boolean, acctCode: string): IB {
-    this.send('reqAccountUpdates', subscribe, acctCode);
+    this.send("reqAccountUpdates", subscribe, acctCode);
     return this;
-  };
+  }
 
   /**
    * Requests account updates for account and/or model.
@@ -1767,9 +1766,9 @@ class IB extends EventEmitter  {
    * @see [[cancelAccountUpdatesMulti]]
    */
   reqAccountUpdatesMulti(reqId: number, acctCode: string, modelCode: string, ledgerAndNLV: boolean): IB {
-    this.send('reqAccountUpdatesMulti', reqId, acctCode, modelCode, ledgerAndNLV);
+    this.send("reqAccountUpdatesMulti", reqId, acctCode, modelCode, ledgerAndNLV);
     return this;
-  };
+  }
 
   /**
    * Requests all current open orders in associated accounts at the current moment.
@@ -1780,9 +1779,9 @@ class IB extends EventEmitter  {
    * @see [[reqAutoOpenOrders]], [[reqOpenOrders]]
    */
   reqAllOpenOrders(): IB {
-    this.send('reqAllOpenOrders');
+    this.send("reqAllOpenOrders");
     return this;
-  };
+  }
 
   /**
    * Requests status updates about future orders placed from TWS. Can only be used with client ID 0.
@@ -1793,9 +1792,9 @@ class IB extends EventEmitter  {
    * @see [[reqAllOpenOrders]], [[reqOpenOrders]], [[cancelOrder]], [[reqGlobalCancel]]
    */
   reqAutoOpenOrders(bAutoBind: boolean): IB {
-    this.send('reqAutoOpenOrders', bAutoBind);
+    this.send("reqAutoOpenOrders", bAutoBind);
     return this;
-  };
+  }
 
   /**
    * Requests completed orders.
@@ -1803,9 +1802,9 @@ class IB extends EventEmitter  {
    * @param apiOnly Request only API orders.
    */
   reqCompletedOrders(apiOnly: boolean): IB {
-    this.send('reqCompletedOrders', apiOnly);
+    this.send("reqCompletedOrders", apiOnly);
     return this;
-  };
+  }
 
   /**
    * Requests contract information.
@@ -1820,17 +1819,17 @@ class IB extends EventEmitter  {
    * @param contract The contract used as sample to query the available contracts.
    */
   reqContractDetails(reqId: number, contract: unknown /* TODO: replace with Contract type as soon as available. */): IB {
-    this.send('reqContractDetails', reqId, contract);
+    this.send("reqContractDetails", reqId, contract);
     return this;
-  };
+  }
 
   /**
    * Requests TWS's current time.
    */
   reqCurrentTime(): IB {
-    this.send('reqCurrentTime');
+    this.send("reqCurrentTime");
     return this;
-  };
+  }
 
   /**
    * Requests current day's (since midnight) executions matching the filter.
@@ -1843,17 +1842,17 @@ class IB extends EventEmitter  {
    * @param filter The filter criteria used to determine which execution reports are returned.
    */
    reqExecutions(reqId: number, filter: unknown /* TODO: replace with	ExecutionFilter type as soon as available. */): IB {
-    this.send('reqExecutions', reqId, filter);
+    this.send("reqExecutions", reqId, filter);
     return this;
-  };
+  }
 
   /**
    * Requests family codes for an account, for instance if it is a FA, IBroker, or associated account.
    */
   reqFamilyCodes(): IB {
-    this.send('reqFamilyCodes');
+    this.send("reqFamilyCodes");
     return this;
-  };
+  }
 
   /**
    * Requests the contract's fundamental data. Fundamental data is emitted as fundamentalData event.
@@ -1868,9 +1867,9 @@ class IB extends EventEmitter  {
    * - RESC: Analyst estimates.
    */
   reqFundamentalData(reqId: number, contract: unknown /* TODO: replace with	CONTRACT type as soon as available. */, reportType: string): IB {
-    this.send('reqFundamentalData', reqId, contract, reportType);
+    this.send("reqFundamentalData", reqId, contract, reportType);
     return this;
-  };
+  }
 
   /**
    * Cancels all active orders.
@@ -1879,9 +1878,9 @@ class IB extends EventEmitter  {
    * @see [[cancelOrder]]
    */
   reqGlobalCancel(): IB {
-    this.send('reqGlobalCancel');
+    this.send("reqGlobalCancel");
     return this;
-  };
+  }
 
   /**
    * Returns the timestamp of earliest available historical data for a contract and data type.
@@ -1898,9 +1897,9 @@ class IB extends EventEmitter  {
     whatToShow: string,
     useRTH: boolean,
     formatDate: number): IB {
-    this.send('reqHeadTimestamp', reqId, contract, whatToShow, useRTH, formatDate);
+    this.send("reqHeadTimestamp", reqId, contract, whatToShow, useRTH, formatDate);
     return this;
-  };
+  }
 
   /**
    * Returns data histogram of specified contract.
@@ -1915,7 +1914,7 @@ class IB extends EventEmitter  {
     contract: unknown /* TODO: replace with	CONTRACT type as soon as available. */,
     useRTH: boolean,
     period: string): IB {
-    this.send('reqHistogramData', tickerId, contract, useRTH, period);
+    this.send("reqHistogramData", tickerId, contract, useRTH, period);
     return this;
   }
 
@@ -1975,10 +1974,10 @@ class IB extends EventEmitter  {
     useRTH: number,
     formatDate: number,
     keepUpToDate: boolean): IB {
-    this.send('reqHistoricalData', tickerId, contract, endDateTime, durationStr,
+    this.send("reqHistoricalData", tickerId, contract, endDateTime, durationStr,
       barSizeSetting, whatToShow, useRTH, formatDate, keepUpToDate);
     return this;
-  };
+  }
 
   /**
    * Requests historical news headlines.
@@ -1997,9 +1996,9 @@ class IB extends EventEmitter  {
     startDateTime: string,
     endDateTime: string,
     totalResults: number): IB {
-    this.send('reqHistoricalNews', reqId, conId, providerCodes, startDateTime, endDateTime, totalResults);
+    this.send("reqHistoricalNews", reqId, conId, providerCodes, startDateTime, endDateTime, totalResults);
     return this;
-  };
+  }
 
   /**
    * Requests historical Time&Sales data for an instrument.
@@ -2022,10 +2021,10 @@ class IB extends EventEmitter  {
     whatToShow: string,
     useRTH: number,
     ignoreSize: boolean): IB {
-    this.send('reqHistoricalTicks', reqId, contract, startDateTime, endDateTime, numberOfTicks,
+    this.send("reqHistoricalTicks", reqId, contract, startDateTime, endDateTime, numberOfTicks,
       whatToShow, useRTH, ignoreSize);
     return this;
-  };
+  }
 
   /**
    * Requests the next valid order ID at the current moment.
@@ -2033,17 +2032,17 @@ class IB extends EventEmitter  {
    * @param numIds deprecated- this parameter will not affect the value returned to nextValidId
    */
   reqIds(numIds?: number): IB {
-    this.send('reqIds', numIds??0);
+    this.send("reqIds", numIds??0);
     return this;
-  };
+  }
 
   /**
    * Requests the accounts to which the logged user has access to.
    */
   reqManagedAccts(): IB {
-    this.send('reqManagedAccts');
+    this.send("reqManagedAccts");
     return this;
-  };
+  }
 
   /**
    * Switches data type returned from reqMktData request to "frozen", "delayed" or "delayed-frozen" market data. Requires TWS/IBG v963+.
@@ -2061,9 +2060,9 @@ class IB extends EventEmitter  {
    * - 4 (delayed-frozen) enables delayed and delayed-frozen market data.
    */
   reqMarketDataType(marketDataType: number): IB {
-    this.send('reqMarketDataType', marketDataType);
+    this.send("reqMarketDataType", marketDataType);
     return this;
-  };
+  }
 
   /**
    * Requests the contract's market depth (order book).
@@ -2085,9 +2084,9 @@ class IB extends EventEmitter  {
     contract: unknown /* TODO: replace with	CONTRACT type as soon as available. */,
     numRows: number,
     isSmartDepth: boolean): IB {
-    this.send('reqMktDepth', tickerId, contract, numRows, isSmartDepth);
+    this.send("reqMktDepth", tickerId, contract, numRows, isSmartDepth);
     return this;
-  };
+  }
 
   /**
    * Requests details about a given market rule.
@@ -2098,9 +2097,9 @@ class IB extends EventEmitter  {
    * @param marketRuleId The id of market rule.
    */
   reqMarketRule(marketRuleId: number): IB {
-    this.send('reqMarketRule', marketRuleId);
+    this.send("reqMarketRule", marketRuleId);
     return this;
-  };
+  }
 
   /**
    * Requests matching stock symbols.
@@ -2111,9 +2110,9 @@ class IB extends EventEmitter  {
    * @param pattern Either start of ticker symbol or (for larger strings) company name.
    */
   reqMatchingSymbols(reqId: number, pattern: string): IB {
-    this.send('reqMatchingSymbols', reqId, pattern);
+    this.send("reqMatchingSymbols", reqId, pattern);
     return this;
-  };
+  }
 
   /**
    * Requests real time market data.
@@ -2151,15 +2150,15 @@ class IB extends EventEmitter  {
     genericTickList: string ,
     snapshot: boolean,
     regulatorySnapshot: boolean): IB {
-    this.send('reqMktData', tickerId, contract, genericTickList, snapshot, regulatorySnapshot);
+    this.send("reqMktData", tickerId, contract, genericTickList, snapshot, regulatorySnapshot);
     return this;
-  };
+  }
 
   /**
    * Requests venues for which market data is returned to updateMktDepthL2 (those with market makers)
    */
   reqMktDepthExchanges(): IB {
-    this.send('reqMktDepthExchanges');
+    this.send("reqMktDepthExchanges");
     return this;
   }
 
@@ -2171,7 +2170,7 @@ class IB extends EventEmitter  {
    * @param articleId ID of the specific article.
    */
   reqNewsArticle(requestId: number, providerCode: string, articleId: string): IB {
-    this.send('reqNewsArticle', requestId, providerCode, articleId);
+    this.send("reqNewsArticle", requestId, providerCode, articleId);
     return this;
   }
 
@@ -2184,26 +2183,26 @@ class IB extends EventEmitter  {
    * @see [[cancelNewsBulletin]]
    */
   reqNewsBulletins(allMsgs: boolean): IB {
-    this.send('reqNewsBulletins', allMsgs);
+    this.send("reqNewsBulletins", allMsgs);
     return this;
-  };
+  }
 
   /**
    * Requests news providers which the user has subscribed to.
    */
   reqNewsProviders(): IB {
-    this.send('reqNewsProviders');
+    this.send("reqNewsProviders");
     return this;
-  };
+  }
 
   /**
    * Requests all open orders places by this specific API client (identified by the API client id).
    * For client ID 0, this will bind previous manual TWS orders.
    */
   reqOpenOrders(): IB {
-    this.send('reqOpenOrders');
+    this.send("reqOpenOrders");
     return this;
-  };
+  }
 
   /**
    * Creates subscription for real time daily PnL and unrealized PnL updates.
@@ -2213,9 +2212,9 @@ class IB extends EventEmitter  {
    * @param modelCode Specify to request PnL updates for a specific model.
    */
   reqPnL(reqId: number, account: string, modelCode?: string|null): IB  {
-    this.send('reqPnL', reqId, account, modelCode??null);
+    this.send("reqPnL", reqId, account, modelCode??null);
     return this;
-  };
+  }
 
   /**
    * Requests real time updates for daily PnL of individual positions.
@@ -2227,9 +2226,9 @@ class IB extends EventEmitter  {
    * Note: does not return message if invalid conId is entered.
    */
   reqPnLSingle(reqId: number, account: string, modelCode: string|null, conId: number): IB {
-    this.send('reqPnLSingle', reqId, account, modelCode, conId);
+    this.send("reqPnLSingle", reqId, account, modelCode, conId);
     return this;
-  };
+  }
 
   /**
    * Subscribes to position updates for all accessible accounts.
@@ -2238,9 +2237,9 @@ class IB extends EventEmitter  {
    * @see [[cancelPositions]]
    */
   reqPositions(): IB {
-    this.send('reqPositions');
+    this.send("reqPositions");
     return this;
-  };
+  }
 
   /**
    * Requests position subscription for account and/or model.
@@ -2253,9 +2252,9 @@ class IB extends EventEmitter  {
    * @see [[cancelPositionsMulti]]
    */
   reqPositionsMulti(reqId: number, account: string, modelCode: string|null): IB {
-    this.send('reqPositionsMulti', reqId, account, modelCode);
+    this.send("reqPositionsMulti", reqId, account, modelCode);
     return this;
-  };
+  }
 
   /**
    * Requests real time bars.
@@ -2284,9 +2283,9 @@ class IB extends EventEmitter  {
     barSize: number,
     whatToShow: string,
     useRTH: boolean): IB {
-    this.send('reqRealTimeBars', tickerId, contract, barSize, whatToShow, useRTH);
+    this.send("reqRealTimeBars", tickerId, contract, barSize, whatToShow, useRTH);
     return this;
-  };
+  }
 
   /**
    * Requests an XML list of scanner parameters valid in TWS.
@@ -2296,9 +2295,9 @@ class IB extends EventEmitter  {
    * @sse [[reqScannerSubscription]]
    */
   reqScannerParameters(): IB {
-    this.send('reqScannerParameters');
+    this.send("reqScannerParameters");
     return this;
-  };
+  }
 
   /**
    * Starts a subscription to market scan results based on the provided parameters.
@@ -2309,9 +2308,9 @@ class IB extends EventEmitter  {
    * @see [[reqScannerParameters]]
    */
   reqScannerSubscription(tickerId: number, subscription: unknown /* TODO: replace with ScannerSubscription type as soon as available. */): IB {
-    this.send('reqScannerSubscription', tickerId, subscription);
+    this.send("reqScannerSubscription", tickerId, subscription);
     return this;
-  };
+  }
 
   /**
    * Requests security definition option parameters for viewing a contract's option chain.
@@ -2329,9 +2328,9 @@ class IB extends EventEmitter  {
     futFopExchange: string,
     underlyingSecType: string,
     underlyingConId: number): IB {
-    this.send('reqSecDefOptParams', reqId, underlyingSymbol, futFopExchange, underlyingSecType, underlyingConId);
+    this.send("reqSecDefOptParams", reqId, underlyingSymbol, futFopExchange, underlyingSecType, underlyingConId);
     return this;
-  };
+  }
 
   /**
    * Returns the mapping of single letter codes to exchange names given the mapping identifier.
@@ -2340,9 +2339,9 @@ class IB extends EventEmitter  {
    * @param bboExchange The mapping identifier received from on tickReqParams event.
    */
   reqSmartComponents(reqId: number, bboExchange: string): IB {
-    this.send('reqSmartComponents', reqId, bboExchange);
+    this.send("reqSmartComponents", reqId, bboExchange);
     return this;
-  };
+  }
 
   /**
    * Requests pre-defined Soft Dollar Tiers.
@@ -2354,9 +2353,9 @@ class IB extends EventEmitter  {
    * @param reqId The id of the request.
    */
   reqSoftDollarTiers(reqId: number): IB {
-    this.send('reqSoftDollarTiers', reqId);
+    this.send("reqSoftDollarTiers", reqId);
     return this;
-  };
+  }
 
   /**
    *
@@ -2372,9 +2371,9 @@ class IB extends EventEmitter  {
     tickType: string,
     numberOfTicks: number,
     ignoreSize: boolean): IB {
-    this.send('reqTickByTickData', tickerId, contract, tickType, numberOfTicks, ignoreSize);
+    this.send("reqTickByTickData", tickerId, contract, tickType, numberOfTicks, ignoreSize);
     return this;
-  };
+  }
 
   /**
    * Requests the FA configuration A Financial Advisor can define three different configurations:
@@ -2388,9 +2387,9 @@ class IB extends EventEmitter  {
    * @param faDataType The configuration to change. Set to 1, 2 or 3 as defined above.
    */
   requestFA(faDataType: number): IB {
-    this.send('requestFA', faDataType);
+    this.send("requestFA", faDataType);
     return this;
-  };
+  }
 
   /**
    * Integrates API client and TWS window grouping.
@@ -2398,10 +2397,10 @@ class IB extends EventEmitter  {
    * @param reqId The Id chosen for this subscription request.
    * @param groupId The display group for integration.
    */
-  subscribeToGroupEvents(reqId, groupId): IB {
-    this.send('subscribeToGroupEvents', reqId, groupId);
+  subscribeToGroupEvents(reqId: number, groupId: number): IB {
+    this.send("subscribeToGroupEvents", reqId, groupId);
     return this;
-  };
+  }
 
   /**
    * Updates the contract displayed in a TWS Window Group.
@@ -2413,10 +2412,10 @@ class IB extends EventEmitter  {
    * - contractID = any non-combination contract. Examples 8314 for IBM SMART; 8314 for IBM ARCA
    * - combo = if any combo is selected Note: This request from the API does not get a TWS response unless an error occurs.
    */
-  updateDisplayGroup(reqId, contractInfo): IB {
-    this.send('updateDisplayGroup', reqId, contractInfo);
+  updateDisplayGroup(reqId: number, contractInfo: string): IB {
+    this.send("updateDisplayGroup", reqId, contractInfo);
     return this;
-  };
+  }
 
   /**
    * Cancels a TWS Window Group subscription.
@@ -2426,10 +2425,9 @@ class IB extends EventEmitter  {
    * @sse [[subscribeToGroupEvents]]
    */
   unsubscribeFromGroupEvents (reqId: number): IB {
-    this.send('unsubscribeToGroupEvents', reqId);
+    this.send("unsubscribeToGroupEvents", reqId);
     return this;
-  };
-
+  }
 
   /**
    * Changes the TWS/GW log level.
@@ -2446,19 +2444,19 @@ class IB extends EventEmitter  {
    * @param logLevel The log level (see above).
    */
   setServerLogLevel(logLevel: number): IB {
-    this.send('setServerLogLevel', logLevel);
+    this.send("setServerLogLevel", logLevel);
     return this;
-  };
+  }
 
 
   /** Internal send method. */
-  private send(...args: any[]) {
-    var argsArray = Array.prototype.slice.call(arguments);
-    this.controller.schedule('api', {
+  private send(...args: unknown[]) {
+    const argsArray = Array.prototype.slice.call(arguments);
+    this.controller.schedule("api", {
       func: args[0],
       args: argsArray.slice(1)
     });
-  };
+  }
 }
 
 // Attach constants (TODO: what is this used for? can we remove it or define constant on IB class directly? )
