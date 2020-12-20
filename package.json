@@ -11,7 +11,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "lint": "tslint \"src/**/*.ts\" --project tsconfig.json",
+    "lint": "eslint . --ext .ts",
     "build": "rimraf dist && tsc -p .",
     "prepare": "npm run build",
     "dev": "ts-node-dev --respawn --transpile-only examples/index.ts",
@@ -74,8 +74,6 @@
     "rimraf": "^2.7.1",
     "ts-node": "^8.4.1",
     "ts-node-dev": "^1.1.1",
-    "tslint": "^5.11.0",
-    "tslint-config-standard": "^8.0.1",
     "typedoc": "^0.19.2",
     "typescript": "^3.2.4"
   },
@@ -83,9 +81,12 @@
     "typescript": ">=2.0"
   },
   "dependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.10.0",
+    "@typescript-eslint/parser": "^4.10.0",
     "chalk": "^4.0.0",
     "command-buffer": "^0.1.0",
     "dotenv": "^8.2.0",
+    "eslint": "^7.16.0",
     "function-rate-limit": "^1.1.0",
     "lodash": "^4.17.20",
     "moment": "^2.24.0"
