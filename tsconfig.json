@@ -13,10 +13,12 @@
     "sourceMap": true,
     "inlineSources": true,
     "esModuleInterop": true,
+    "noImplicitAny": false, // TODO enabled this as soon as ported  all code is ported to TS
     "types": [
       "node"
     ],
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true  /* Disallow inconsistently-cased references to the same file. */
   },
   "include": [
     "src/**/*",
@@ -26,7 +28,7 @@
     "src/**/*test.ts",
   ],
   "typedocOptions": {
-    "mode": "modules",
+    "mode": "file",
     "out": "typedoc"
 }
 }

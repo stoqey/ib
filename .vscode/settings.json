@@ -9,6 +9,17 @@
         "node_modules": true
     },
     "cSpell.words": [
-      "typedoc"
+      "CFDs",
+      "IB's",
+      "MPID",
+      "Maint",
+      "Marginable",
+      "OHLC",
+      "RESC",
+      "TWS's",
+      "intraday",
+      "timespan",
+      "typedoc",
+      "volatilities"
     ],
 }
