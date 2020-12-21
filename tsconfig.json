@@ -30,5 +30,5 @@
   "typedocOptions": {
     "mode": "file",
     "out": "typedoc"
-}
+  }
 }

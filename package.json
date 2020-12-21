@@ -12,10 +12,10 @@
   ],
   "scripts": {
     "lint": "eslint . --ext .ts",
-    "build": "rimraf dist && tsc -p .",
+    "build": "rimraf dist && tsc -p . && typedoc src --stripInternal",
     "prepare": "npm run build",
-    "dev": "ts-node-dev --respawn --transpile-only examples/index.ts",
-    "dev:debug": "ts-node-dev --inspect=9222 --respawn --transpile-only examples/index.ts",
+    "dev": "npm run build && ts-node-dev --respawn --transpile-only examples/all.ts",
+    "dev:debug": "npm run build && ts-node-dev --inspect=9222 --respawn --transpile-only examples/all.ts",
     "doc": "typedoc src"
   },
   "engines": {
