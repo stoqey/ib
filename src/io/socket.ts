@@ -2,6 +2,8 @@ import net from "net";
 import { IBApiCreationOptions } from "../api/api";
 import * as C from "../constants";
 import { Controller } from "./controller";
+import { Config } from "./config";
+import { MIN_SERVER_VER } from "../api/minServerVer";
 
 /** @hidden */
 const EOL = "\0";
@@ -23,6 +25,10 @@ export class Socket {
   constructor(
     private controller: Controller,
     private options?: IBApiCreationOptions) {
+      this.options = this.options ?? {};
+      this.options.clientId = this.options.clientId ?? Config.DEFAULT_CLIENT_ID;
+      this.options.host = this.options.host ?? Config.DEFAULT_HOST;
+      this.options.port = this.options.port ?? Config.DEFAULT_PORT;
   }
 
   /** The TCP client socket. */
@@ -191,10 +197,10 @@ export class Socket {
 
     const VERSION = 2;
     if(this.serverVersion >= 3) {
-      if(this.serverVersion < C.MIN_SERVER_VER.LINKING) {
+      if(this.serverVersion < MIN_SERVER_VER.LINKING) {
         this.send([this.options.clientId]);
       } else {
-          if (this.serverVersion >= C.MIN_SERVER_VER.OPTIONAL_CAPABILITIES) {
+          if (this.serverVersion >= MIN_SERVER_VER.OPTIONAL_CAPABILITIES) {
             this.send([C.OUTGOING.START_API, VERSION, this.options.clientId, ""]);
           } else {
             this.send([C.OUTGOING.START_API, VERSION, this.options.clientId]);
@@ -214,7 +220,7 @@ export class Socket {
 
     // send back client version as first data on the connection
 
-    this.send([C.CLIENT_VERSION]);
+    this.send([Config.CLIENT_VERSION]);
   }
 
   /**

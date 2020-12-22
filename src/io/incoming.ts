@@ -15,6 +15,7 @@ import { DeltaNeutralContract } from "../api/contract/deltaNeutralContract";
 import { OrderState } from "../api/order/orderState";
 import { TickType } from "../api/market/tickType";
 import { EventName, SoftDollarTier, TagValue, NewsProvider, FamilyCode, DepthMktDataDescription } from "../api/api";
+import { MIN_SERVER_VER } from "../api/minServerVer";
 
 /**
  * @internal
@@ -91,7 +92,7 @@ enum MSG_ID {
   HISTORICAL_TICKS = 96,
   HISTORICAL_TICKS_BID_ASK = 97,
   HISTORICAL_TICKS_LAST = 98,
-  TICK_BY_TICK = 99
+  TICK_BY_TICK = 99,
 }
 
 /**
@@ -347,7 +348,7 @@ export class Incoming {
     }
 
     let mktCapPrice = Number.MAX_VALUE;
-		if (this.controller.serverVersion >= C.MIN_SERVER_VER.MARKET_CAP_PRICE) {
+		if (this.controller.serverVersion >= MIN_SERVER_VER.MARKET_CAP_PRICE) {
 		    mktCapPrice = this.dequeueFloat();
     }
 
@@ -491,7 +492,7 @@ export class Incoming {
 
     const orderState: OrderState = {};
 
-    if (this.controller.serverVersion >= C.MIN_SERVER_VER.WHAT_IF_EXT_FIELDS) {
+    if (this.controller.serverVersion >= MIN_SERVER_VER.WHAT_IF_EXT_FIELDS) {
       orderState.initMarginBefore = this.dequeue();
       orderState.maintMarginBefore = this.dequeue();
       orderState.equityWithLoanBefore = this.dequeue();
@@ -558,7 +559,7 @@ export class Incoming {
     }
 
     let position: number;
-    if (this.controller.serverVersion >= C.MIN_SERVER_VER.FRACTIONAL_POSITIONS) {
+    if (this.controller.serverVersion >= MIN_SERVER_VER.FRACTIONAL_POSITIONS) {
       position = this.dequeueFloat();
     } else {
       position = this.dequeueInt();
@@ -635,7 +636,7 @@ export class Incoming {
     contract.contract.tradingClass = this.dequeue();
     contract.contract.conId = this.dequeueInt();
     contract.minTick = this.dequeueFloat();
-    if (this.controller.serverVersion >= C.MIN_SERVER_VER.MD_SIZE_MULTIPLIER) {
+    if (this.controller.serverVersion >= MIN_SERVER_VER.MD_SIZE_MULTIPLIER) {
 			contract.mdSizeMultiplier = this.dequeueInt();
 		}
     contract.contract.multiplier = this.dequeueInt();
@@ -683,20 +684,20 @@ export class Incoming {
         }
       }
 
-      if (this.controller.serverVersion >= C.MIN_SERVER_VER.AGG_GROUP) {
+      if (this.controller.serverVersion >= MIN_SERVER_VER.AGG_GROUP) {
         contract.aggGroup = this.dequeueInt();
       }
 
-      if (this.controller.serverVersion >= C.MIN_SERVER_VER.UNDERLYING_INFO) {
+      if (this.controller.serverVersion >= MIN_SERVER_VER.UNDERLYING_INFO) {
         contract.underSymbol = this.dequeue();
         contract.underSecType = this.dequeue();
       }
 
-      if (this.controller.serverVersion >= C.MIN_SERVER_VER.MARKET_RULES) {
+      if (this.controller.serverVersion >= MIN_SERVER_VER.MARKET_RULES) {
         contract.marketRuleIds = this.dequeue();
       }
 
-      if (this.controller.serverVersion >= C.MIN_SERVER_VER.REAL_EXPIRATION_DATE) {
+      if (this.controller.serverVersion >= MIN_SERVER_VER.REAL_EXPIRATION_DATE) {
         contract.realExpirationDate = this.dequeue();
       }
     }
@@ -710,7 +711,7 @@ export class Incoming {
   private decodeMsg_EXECUTION_DATA(): void {
 
     let version = this.controller.serverVersion;
-    if (version < C.MIN_SERVER_VER.LAST_LIQUIDITY) {
+    if (version < MIN_SERVER_VER.LAST_LIQUIDITY) {
       version = this.dequeueInt();
     }
 
@@ -783,11 +784,11 @@ export class Incoming {
       exec.evMultiplier = this.dequeueFloat();
     }
 
-    if (this.controller.serverVersion >= C.MIN_SERVER_VER.MODELS_SUPPORT) {
+    if (this.controller.serverVersion >= MIN_SERVER_VER.MODELS_SUPPORT) {
 			exec.modelCode = this.dequeue();
 		}
 
-    if (this.controller.serverVersion >= C.MIN_SERVER_VER.LAST_LIQUIDITY) {
+    if (this.controller.serverVersion >= MIN_SERVER_VER.LAST_LIQUIDITY) {
         exec.lastLiquidity = { value: this.dequeueInt() };
     }
 
@@ -822,7 +823,7 @@ export class Incoming {
     const size = this.dequeueInt();
 
     let isSmartDepth = false;
-    if (this.controller.serverVersion >= C.MIN_SERVER_VER.SMART_DEPTH) {
+    if (this.controller.serverVersion >= MIN_SERVER_VER.SMART_DEPTH) {
       isSmartDepth = this.dequeueBool();
     }
 
@@ -868,7 +869,7 @@ export class Incoming {
    */
   private decodeMsg_HISTORICAL_DATA() {
     let version = Number.MAX_VALUE;
-    if (this.controller.serverVersion < C.MIN_SERVER_VER.SYNT_REALTIME_BARS) {
+    if (this.controller.serverVersion < MIN_SERVER_VER.SYNT_REALTIME_BARS) {
       version = this.dequeueInt();
     }
 
@@ -941,7 +942,7 @@ export class Incoming {
     contract.contract.tradingClass = this.dequeue();
     contract.contract.conId = this.dequeueInt();
     contract.minTick = this.dequeueFloat();
-    if (this.controller.serverVersion >= C.MIN_SERVER_VER.MD_SIZE_MULTIPLIER) {
+    if (this.controller.serverVersion >= MIN_SERVER_VER.MD_SIZE_MULTIPLIER) {
       contract.mdSizeMultiplier = this.dequeueInt();
     }
     contract.orderTypes = this.dequeue();
@@ -977,11 +978,11 @@ export class Incoming {
       }
     }
 
-    if (this.controller.serverVersion >= C.MIN_SERVER_VER.AGG_GROUP) {
+    if (this.controller.serverVersion >= MIN_SERVER_VER.AGG_GROUP) {
       contract.aggGroup = this.dequeueInt();
     }
 
-    if (this.controller.serverVersion >= C.MIN_SERVER_VER.MARKET_RULES) {
+    if (this.controller.serverVersion >= MIN_SERVER_VER.MARKET_RULES) {
       contract.marketRuleIds = this.dequeue();
     }
 
@@ -1303,7 +1304,7 @@ export class Incoming {
       contract.tradingClass = this.dequeue();
     }
 
-    const pos = this.controller.serverVersion >= C.MIN_SERVER_VER.FRACTIONAL_POSITIONS ? this.dequeueFloat() : this.dequeueInt();
+    const pos = this.controller.serverVersion >= MIN_SERVER_VER.FRACTIONAL_POSITIONS ? this.dequeueFloat() : this.dequeueInt();
 
     let avgCost = 0;
     if (version >= 3) {
@@ -1539,7 +1540,7 @@ export class Incoming {
     const nDepthMktDataDescriptions = this.dequeueInt();
     const depthMktDataDescriptions: DepthMktDataDescription[] = new Array(nDepthMktDataDescriptions);
     for (let i = 0; i < nDepthMktDataDescriptions; i++) {
-      if (this.controller.serverVersion >= C.MIN_SERVER_VER.SERVICE_DATA_TYPE) {
+      if (this.controller.serverVersion >= MIN_SERVER_VER.SERVICE_DATA_TYPE) {
         depthMktDataDescriptions[i] = {
           exchange: this.dequeue(),
           secType: this.dequeue() as SecType,
@@ -1696,10 +1697,10 @@ export class Incoming {
     let unrealizedPnL = Number.MAX_VALUE;
     let realizedPnL = Number.MAX_VALUE;
 
-    if (this.controller.serverVersion >= C.MIN_SERVER_VER.UNREALIZED_PNL) {
+    if (this.controller.serverVersion >= MIN_SERVER_VER.UNREALIZED_PNL) {
       unrealizedPnL = this.dequeueFloat();
     }
-    if (this.controller.serverVersion >= C.MIN_SERVER_VER.REALIZED_PNL) {
+    if (this.controller.serverVersion >= MIN_SERVER_VER.REALIZED_PNL) {
       realizedPnL = this.dequeueFloat();
     }
 
@@ -1717,10 +1718,10 @@ export class Incoming {
     let unrealizedPnL = Number.MAX_VALUE;
     let realizedPnL = Number.MAX_VALUE;
 
-    if (this.controller.serverVersion >= C.MIN_SERVER_VER.UNREALIZED_PNL) {
+    if (this.controller.serverVersion >= MIN_SERVER_VER.UNREALIZED_PNL) {
       unrealizedPnL = this.dequeueFloat();
     }
-    if (this.controller.serverVersion >= C.MIN_SERVER_VER.REALIZED_PNL) {
+    if (this.controller.serverVersion >= MIN_SERVER_VER.REALIZED_PNL) {
       realizedPnL = this.dequeueFloat();
     }
 
@@ -1894,7 +1895,7 @@ export class Incoming {
 
     order.action = this.dequeue();
 
-    if (this.controller.serverVersion >= C.MIN_SERVER_VER.FRACTIONAL_POSITIONS)	{
+    if (this.controller.serverVersion >= MIN_SERVER_VER.FRACTIONAL_POSITIONS)	{
       order.totalQuantity = this.dequeueFloat();
     } else {
       order.totalQuantity = this.dequeueInt();
@@ -1938,7 +1939,7 @@ export class Incoming {
     order.shortSaleSlot = this.dequeueInt();
     order.designatedLocation = this.dequeue();
 
-    if (this.controller.serverVersion === C.MIN_SERVER_VER.SSHORTX_OLD) {
+    if (this.controller.serverVersion === MIN_SERVER_VER.SSHORTX_OLD) {
       this.dequeueInt();  // exemptCode
     } else if (version >= 23) {
       order.exemptCode = this.dequeueInt();

@@ -23,10 +23,6 @@ export class Controller {
   constructor(
     private ib: IBApi,
     private options?: IBApiCreationOptions) {
-      this.options = this.options ?? {};
-      this.options.clientId = this.options.clientId ?? C.DEFAULT_CLIENT_ID;
-      this.options.host = this.options.host ?? C.DEFAULT_HOST;
-      this.options.port = this.options.port ?? C.DEFAULT_PORT;
       this.socket = new Socket(this, this.options);
   }
 
@@ -192,7 +188,7 @@ export class Controller {
   }
 
   /**
-   * Send an API command.
+   * Send an API command to the server connection.
    *
    * @param funcName API function name.
    * @param funcName API arguments.
@@ -208,16 +204,15 @@ export class Controller {
   }
 
   /**
-   * Send a command a server command.
+   * Send raw token data to the server connection.
    *
-   * @param funcName Function name.
-   * @param funcName Arguments.
+   * @param tokens Array of tokens to send.
    *
-   * @see [[api]]
+   * @see [[send]]
    */
-  private executeSend(args: unknown[]): void {
+  private executeSend(tokens: unknown[]): void {
     if (this.socket.connected) {
-      this.socket.send(args);
+      this.socket.send(tokens);
     } else {
       this.emitError("Cannot send data when disconnected.");
     }
