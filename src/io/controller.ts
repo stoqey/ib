@@ -2,7 +2,7 @@
 import CommandBuffer from "command-buffer";
 import rateLimit from "function-rate-limit";
 import { Socket } from "./socket";
-import { Decoder } from "./decoder";
+import { Decoder, DecoderCallbacks } from "./decoder";
 import { Encoder, EncoderCallbacks } from "./encoder";
 import { EventName, IBApi, IBApiCreationOptions } from "../api/api";
 import { Config } from "../config";
@@ -13,7 +13,7 @@ import { Config } from "../config";
  * This class implements the dispatcher between public API and the
  * underlying I/O code.
  */
-export class Controller implements EncoderCallbacks {
+export class Controller implements EncoderCallbacks, DecoderCallbacks {
 
   /**
    *
@@ -57,13 +57,13 @@ export class Controller implements EncoderCallbacks {
     })();
   }
 
-  /**
+ /**
    * Emit an event to public API interface.
    *
+   * @param eventName Event name.
    * @param args Event arguments.
-   * First argument is the event name, followed by event arguments.
    */
-  emit(eventName: EventName, ...args: unknown[]): void {
+  emitEvent(eventName: EventName, ...args: unknown[]): void {
 
     // emit the event
 
@@ -89,7 +89,7 @@ export class Controller implements EncoderCallbacks {
    * @param errMsg The message text.
    */
   emitInfo(message: string): void {
-    this.emit(EventName.info, message);
+    this.emitEvent(EventName.info, message);
   }
 
   /**
@@ -100,9 +100,9 @@ export class Controller implements EncoderCallbacks {
    */
   emitError(errMsg: string, data?: unknown): void {
     if (data === undefined) {
-      this.emit(EventName.error, new Error(errMsg));
+      this.emitEvent(EventName.error, new Error(errMsg));
     } else {
-      this.emit(EventName.error, new Error(errMsg), data);
+      this.emitEvent(EventName.error, new Error(errMsg), data);
     }
   }
 

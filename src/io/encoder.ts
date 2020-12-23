@@ -1,4 +1,4 @@
-import { Contract } from "../api/contract/contract";
+import { Contract, SecType } from "../api/contract/contract";
 import { FADataType, LogLevel, OptionExerciseAction, TagValue, MIN_SERVER_VER } from "../api/api";
 import { Order } from "../api/order/order";
 import { ExecutionFilter } from "../api/report/executionFilter";
@@ -10,7 +10,7 @@ import { ScannerSubscription } from "../api/market/scannerSubscription";
  *
  * Helper function to nullify a number of Number.MAX_VALUE
  */
-function _nullifyMax(number) {
+function nullifyMax(number) {
   if (number === Number.MAX_VALUE) {
     return null;
   } else {
@@ -21,7 +21,7 @@ function _nullifyMax(number) {
 /**
  * @@internal
  *
- * Convert an array of [[TagValue]] to a flat [tag,value] tuple array.
+ * Helper function convert an array of [[TagValue]] to a flat [tag,value] tuple array.
  */
 function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   const result: unknown[] = new Array(tagValues.length * 2);
@@ -32,13 +32,6 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   }
   return result;
 }
-
-/**
- * @internal
- *
- * Security type of bag contracts.
- */
-export const BAG_SEC_TYPE = "BAG";
 
 /**
  * @internal
@@ -155,7 +148,7 @@ export interface EncoderCallbacks {
 export class Encoder {
 
   /**
-   * Create an [[Outgoing]] object for encoding messages to token data.
+   * Create an [[Encoder]] object for encoding messages to token data.
    *
    * @param callback A [[EncoderCallbacks]] implementation.
    */
@@ -637,7 +630,7 @@ export class Encoder {
     }
 
     if (this.serverVersion < MIN_SERVER_VER.ORDER_COMBO_LEGS_PRICE &&
-      BAG_SEC_TYPE.toUpperCase() === contract.secType?.toUpperCase()) {
+      SecType.BAG === contract.secType?.toUpperCase()) {
       order.orderComboLegs?.forEach((orderComboLeg) => {
         if (orderComboLeg.price !== undefined) {
            return this.emitError("It does not support per-leg prices for order combo legs.");
@@ -703,12 +696,12 @@ export class Encoder {
     if (this.serverVersion < MIN_SERVER_VER.ORDER_COMBO_LEGS_PRICE) {
       tokens.push(order.lmtPrice ?? 0);
     } else {
-      tokens.push(_nullifyMax(order.lmtPrice));
+      tokens.push(nullifyMax(order.lmtPrice));
     }
     if (this.serverVersion < MIN_SERVER_VER.TRAILING_PERCENT) {
       tokens.push(order.auxPrice ?? 0);
     } else {
-      tokens.push(_nullifyMax(order.auxPrice));
+      tokens.push(nullifyMax(order.auxPrice));
     }
 
     // send extended order fields
@@ -741,7 +734,7 @@ export class Encoder {
     }
 
     // Send combo legs for BAG requests
-    if (this.serverVersion >= 8 && BAG_SEC_TYPE.toUpperCase() === contract.secType?.toUpperCase()) {
+    if (this.serverVersion >= 8 && SecType.BAG === contract.secType?.toUpperCase()) {
       if (!contract.comboLegs?.length) {
         tokens.push(0);
       } else {
@@ -766,19 +759,19 @@ export class Encoder {
 
     // Send order combo legs for BAG requests
     if (this.serverVersion >= MIN_SERVER_VER.ORDER_COMBO_LEGS_PRICE &&
-      BAG_SEC_TYPE.toUpperCase() === contract.secType?.toUpperCase()) {
+      SecType.BAG === contract.secType?.toUpperCase()) {
       if (!order.orderComboLegs?.length) {
         tokens.push(0);
       } else {
         tokens.push(order.orderComboLegs.length);
         order.orderComboLegs.forEach(function (orderComboLeg) {
-          tokens.push(_nullifyMax(orderComboLeg.price));
+          tokens.push(nullifyMax(orderComboLeg.price));
         });
       }
     }
 
     if (this.serverVersion >= MIN_SERVER_VER.SMART_COMBO_ROUTING_PARAMS &&
-      BAG_SEC_TYPE.toUpperCase() === contract.secType?.toUpperCase()) {
+      SecType.BAG === contract.secType?.toUpperCase()) {
       const smartComboRoutingParamsCount = !order.smartComboRoutingParams? 0 : order.smartComboRoutingParams.length;
       tokens.push(smartComboRoutingParamsCount);
       if (smartComboRoutingParamsCount > 0) {
@@ -830,15 +823,15 @@ export class Encoder {
       tokens.push(order.rule80A);
       tokens.push(order.settlingFirm);
       tokens.push(order.allOrNone);
-      tokens.push(_nullifyMax(order.minQty));
-      tokens.push(_nullifyMax(order.percentOffset));
+      tokens.push(nullifyMax(order.minQty));
+      tokens.push(nullifyMax(order.percentOffset));
       tokens.push(order.eTradeOnly);
       tokens.push(order.firmQuoteOnly);
-      tokens.push(_nullifyMax(order.nbboPriceCap));
-      tokens.push(_nullifyMax(order.auctionStrategy));
-      tokens.push(_nullifyMax(order.startingPrice));
-      tokens.push(_nullifyMax(order.stockRefPrice));
-      tokens.push(_nullifyMax(order.delta));
+      tokens.push(nullifyMax(order.nbboPriceCap));
+      tokens.push(nullifyMax(order.auctionStrategy));
+      tokens.push(nullifyMax(order.startingPrice));
+      tokens.push(nullifyMax(order.stockRefPrice));
+      tokens.push(nullifyMax(order.delta));
 
       // Volatility orders had specific watermark price attribs in server version 26
       const lower = (this.serverVersion === 26 && order.orderType === "VOL") ? undefined : order.stockRangeLower;
@@ -852,14 +845,14 @@ export class Encoder {
     }
 
     if (this.serverVersion >= 26) { // Volatility orders
-      tokens.push(_nullifyMax(order.volatility));
-      tokens.push(_nullifyMax(order.volatilityType));
+      tokens.push(nullifyMax(order.volatility));
+      tokens.push(nullifyMax(order.volatilityType));
 
       if (this.serverVersion < 28) {
         tokens.push(order.deltaNeutralOrderType.toUpperCase() === "MKT");
       } else {
         tokens.push(order.deltaNeutralOrderType);
-        tokens.push(_nullifyMax(order.deltaNeutralAuxPrice));
+        tokens.push(nullifyMax(order.deltaNeutralAuxPrice));
 
         if (this.serverVersion >= MIN_SERVER_VER.DELTA_NEUTRAL_CONID && !!order.deltaNeutralOrderType) {
           tokens.push(order.deltaNeutralConId);
@@ -882,41 +875,41 @@ export class Encoder {
         // Volatility orders had specific watermark price attribs in server version 26
         const lower = (order.orderType === "VOL" ? order.stockRangeLower : Number.MAX_VALUE);
         const upper = (order.orderType === "VOL" ? order.stockRangeUpper : Number.MAX_VALUE);
-        tokens.push(_nullifyMax(lower));
-        tokens.push(_nullifyMax(upper));
+        tokens.push(nullifyMax(lower));
+        tokens.push(nullifyMax(upper));
       }
 
-      tokens.push(_nullifyMax(order.referencePriceType));
+      tokens.push(nullifyMax(order.referencePriceType));
     }
 
     if (this.serverVersion >= 30) { // TRAIL_STOP_LIMIT stop price
-      tokens.push(_nullifyMax(order.trailStopPrice));
+      tokens.push(nullifyMax(order.trailStopPrice));
     }
 
     if (this.serverVersion >= MIN_SERVER_VER.TRAILING_PERCENT) {
-      tokens.push(_nullifyMax(order.trailingPercent));
+      tokens.push(nullifyMax(order.trailingPercent));
     }
 
     if (this.serverVersion >= MIN_SERVER_VER.SCALE_ORDERS) {
       if (this.serverVersion >= MIN_SERVER_VER.SCALE_ORDERS2) {
-        tokens.push(_nullifyMax(order.scaleInitLevelSize));
-        tokens.push(_nullifyMax(order.scaleSubsLevelSize));
+        tokens.push(nullifyMax(order.scaleInitLevelSize));
+        tokens.push(nullifyMax(order.scaleSubsLevelSize));
       } else {
         tokens.push("");
-        tokens.push(_nullifyMax(order.scaleInitLevelSize));
+        tokens.push(nullifyMax(order.scaleInitLevelSize));
       }
-      tokens.push(_nullifyMax(order.scalePriceIncrement));
+      tokens.push(nullifyMax(order.scalePriceIncrement));
     }
 
     if (this.serverVersion >= MIN_SERVER_VER.SCALE_ORDERS3 &&
       order.scalePriceIncrement > 0.0 &&
       order.scalePriceIncrement !== Number.MAX_VALUE) {
-      tokens.push(_nullifyMax(order.scalePriceAdjustValue));
-      tokens.push(_nullifyMax(order.scalePriceAdjustInterval));
-      tokens.push(_nullifyMax(order.scaleProfitOffset));
+      tokens.push(nullifyMax(order.scalePriceAdjustValue));
+      tokens.push(nullifyMax(order.scalePriceAdjustInterval));
+      tokens.push(nullifyMax(order.scaleProfitOffset));
       tokens.push(order.scaleAutoReset);
-      tokens.push(_nullifyMax(order.scaleInitPosition));
-      tokens.push(_nullifyMax(order.scaleInitFillQty));
+      tokens.push(nullifyMax(order.scaleInitPosition));
+      tokens.push(nullifyMax(order.scaleInitFillQty));
       tokens.push(order.scaleRandomPercent);
     }
 
@@ -1335,7 +1328,7 @@ export class Encoder {
       args.push(formatDate);
     }
 
-    if (BAG_SEC_TYPE.toUpperCase() === contract.secType?.toUpperCase()) {
+    if (SecType.BAG === contract.secType?.toUpperCase()) {
       if (!contract.comboLegs) {
         args.push(0);
       } else {
@@ -1404,7 +1397,7 @@ export class Encoder {
     args.push(whatToShow);
     args.push(useRTH);
 
-    if (BAG_SEC_TYPE.toUpperCase() === contract.secType.toUpperCase()) {
+    if (SecType.BAG === contract.secType.toUpperCase()) {
       if (!contract.comboLegs) {
         args.push(0);
       } else {
@@ -1572,8 +1565,7 @@ export class Encoder {
       args.push(contract.tradingClass);
     }
 
-    if (this.serverVersion >= 8 &&
-      BAG_SEC_TYPE.toUpperCase() === contract.secType?.toUpperCase()) {
+    if (this.serverVersion >= 8 && SecType.BAG === contract.secType?.toUpperCase()) {
       if (!contract.comboLegs) {
         args.push(0);
       } else {
@@ -1814,27 +1806,27 @@ export class Encoder {
 
     const args: unknown[] = [OUT_MSG_ID.REQ_SCANNER_SUBSCRIPTION, version, tickerId];
 
-    args.push(_nullifyMax(subscription.numberOfRows));
+    args.push(nullifyMax(subscription.numberOfRows));
     args.push(subscription.instrument);
     args.push(subscription.locationCode);
     args.push(subscription.scanCode);
-    args.push(_nullifyMax(subscription.abovePrice));
-    args.push(_nullifyMax(subscription.belowPrice));
-    args.push(_nullifyMax(subscription.aboveVolume));
-    args.push(_nullifyMax(subscription.marketCapAbove));
-    args.push(_nullifyMax(subscription.marketCapBelow));
+    args.push(nullifyMax(subscription.abovePrice));
+    args.push(nullifyMax(subscription.belowPrice));
+    args.push(nullifyMax(subscription.aboveVolume));
+    args.push(nullifyMax(subscription.marketCapAbove));
+    args.push(nullifyMax(subscription.marketCapBelow));
     args.push(subscription.moodyRatingAbove);
     args.push(subscription.moodyRatingBelow);
     args.push(subscription.spRatingAbove);
     args.push(subscription.spRatingBelow);
     args.push(subscription.maturityDateAbove);
     args.push(subscription.maturityDateBelow);
-    args.push(_nullifyMax(subscription.couponRateAbove));
-    args.push(_nullifyMax(subscription.couponRateBelow));
+    args.push(nullifyMax(subscription.couponRateAbove));
+    args.push(nullifyMax(subscription.couponRateBelow));
     args.push(subscription.excludeConvertible);
 
     if (this.serverVersion >= 25) {
-      args.push(_nullifyMax(subscription.averageOptionVolumeAbove));
+      args.push(nullifyMax(subscription.averageOptionVolumeAbove));
       args.push(subscription.scannerSettingPairs);
     }
 

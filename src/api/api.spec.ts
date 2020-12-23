@@ -29,30 +29,30 @@ describe("IBApi Tests", () => {
     ib.connect();
   });
 
+  // keep an open connection for the following tests
+
   it("Test reqPositions / cancelPositions", (done) => {
 
     const ib = new IBApi({
       host: TEST_SERVER_HOST,
       port: TEST_SERVER_POST
-    });
+    }).connect();
 
     let positionsCount = 0;
 
-    ib.on(EventName.connected, () => {
-      ib.reqPositions();
-    }).on(EventName.error, (err: Error) => {
+    ib.on(EventName.error, (err: Error) => {
       assert.fail(err.message);
     }).on(EventName.position, () => {
       positionsCount++;
     }).on(EventName.positionEnd, () => {
       if (positionsCount) {
+        ib.disconnect();
         done();
       } else {
         assert.fail("No Positions received");
       }
-      ib.disconnect();
     });
 
-    ib.connect();
+    ib.reqPositions();
   });
 });

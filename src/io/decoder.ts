@@ -1,6 +1,5 @@
 import { Contract, OptionType, SecType,} from "../api/contract/contract";
 import { ContractDescription } from "../api/contract/contractDescription";
-import { Controller } from "./controller";
 import { HistoricalTick } from "../api/historical/historicalTick";
 import { HistoricalTickBidAsk } from "../api/historical/historicalTickBidAsk";
 import { HistoricalTickLast } from "../api/historical/historicalTickLast";
@@ -14,7 +13,6 @@ import { DeltaNeutralContract } from "../api/contract/deltaNeutralContract";
 import { OrderState } from "../api/order/orderState";
 import { TickType } from "../api/market/tickType";
 import { EventName, SoftDollarTier, TagValue, NewsProvider, FamilyCode, DepthMktDataDescription, MIN_SERVER_VER } from "../api/api";
-import { EAGAIN } from "constants";
 import { OrderType } from "../api/order/oderType";
 
 /**
@@ -127,6 +125,42 @@ interface EmitQueueItem {
   args: unknown[];
 }
 
+
+/**
+ * @internal
+ *
+ * Callback interface of the [[Decoder]].
+ */
+export interface DecoderCallbacks {
+
+  /** Get the IB API server version. */
+  readonly serverVersion: number;
+
+  /**
+   * Emit an event to public API interface.
+   *
+   * @param eventName Event name.
+   * @param args Event arguments.
+   */
+  emitEvent(eventName: EventName, ...args: unknown[]): void;
+
+  /**
+   * Emit an error event to public API interface.
+   *
+   * @param errMsg The error test message.
+   * @param data Additional error data (optional).
+   */
+  emitError(errMsg: string, data?: unknown): void;
+
+   /**
+   * Emit an information message event to public API interface.
+   *
+   * @param errMsg The message text.
+   */
+  emitInfo(message: string): void;
+}
+
+
 /**
  * @internal
  *
@@ -138,9 +172,9 @@ export class Decoder {
   /**
    * Create an [[Incoming]] object.
    *
-   * @param controller The parent [[Controller]] object.
+    * @param callback A [[DecoderCallbacks]] implementation.
    */
-  constructor(private controller: Controller) { }
+  constructor(private callback: DecoderCallbacks) { }
 
   /** Data input queue (data that has arrived from server). */
   private dataQueue: string[] = [];
@@ -180,14 +214,14 @@ export class Decoder {
 
         const constKey = IN_MSG_ID[token];
         if (!constKey) {
-          this.controller.emitError(`Received unsupported token: ${constKey} (${token}).`);
+          this.callback.emitError(`Received unsupported token: ${constKey} (${token}).`);
           continue;
         }
 
         if (constKey && this["decodeMsg_"+constKey] !== undefined) {
           this["decodeMsg_"+constKey]();
         } else {
-          this.controller.emitError(`No parser implementation found for token: ${constKey} (${token}).`);
+          this.callback.emitError(`No parser implementation found for token: ${constKey} (${token}).`);
         }
 
       } catch (e) {
@@ -205,8 +239,16 @@ export class Decoder {
 
       const toEmit = this.emitQueue;
       this.emitQueue = [];
-      toEmit.forEach((item) => this.controller.emit(item.name, item.args));
+      toEmit.forEach((item) => this.callback.emitEvent(item.name, item.args));
     }
+  }
+
+
+  /**
+   * Get the API server version.
+   */
+  private get serverVersion(): number {
+    return this.callback.serverVersion;
   }
 
   /**
@@ -390,7 +432,7 @@ export class Decoder {
     }
 
     let mktCapPrice = Number.MAX_VALUE;
-		if (this.controller.serverVersion >= MIN_SERVER_VER.MARKET_CAP_PRICE) {
+		if (this.serverVersion >= MIN_SERVER_VER.MARKET_CAP_PRICE) {
 		    mktCapPrice = this.readDouble();
     }
 
@@ -405,15 +447,15 @@ export class Decoder {
     const version = this.readInt();
     if (version < 2) {
       const errorMsg = this.readStr();
-      this.controller.emitError(errorMsg);
+      this.callback.emitError(errorMsg);
     } else {
       const id = this.readInt();
       const code = this.readInt();
       const msg = this.readStr();
       if (id === -1) {
-        this.controller.emitInfo(msg);
+        this.callback.emitInfo(msg);
       } else {
-        this.controller.emitError(msg, {
+        this.callback.emitError(msg, {
           id: id,
           code: code
         });
@@ -538,7 +580,7 @@ export class Decoder {
 
     const orderState: OrderState = {};
 
-    if (this.controller.serverVersion >= MIN_SERVER_VER.WHAT_IF_EXT_FIELDS) {
+    if (this.serverVersion >= MIN_SERVER_VER.WHAT_IF_EXT_FIELDS) {
       orderState.initMarginBefore = this.readStr();
       orderState.maintMarginBefore = this.readStr();
       orderState.equityWithLoanBefore = this.readStr();
@@ -605,7 +647,7 @@ export class Decoder {
     }
 
     let position: number;
-    if (this.controller.serverVersion >= MIN_SERVER_VER.FRACTIONAL_POSITIONS) {
+    if (this.serverVersion >= MIN_SERVER_VER.FRACTIONAL_POSITIONS) {
       position = this.readDouble();
     } else {
       position = this.readInt();
@@ -627,7 +669,7 @@ export class Decoder {
       accountName = this.readStr();
     }
 
-    if (version === 6 && this.controller.serverVersion === 39) {
+    if (version === 6 && this.serverVersion === 39) {
       contract.primaryExch = this.readStr();
     }
 
@@ -682,7 +724,7 @@ export class Decoder {
     contract.contract.tradingClass = this.readStr();
     contract.contract.conId = this.readInt();
     contract.minTick = this.readDouble();
-    if (this.controller.serverVersion >= MIN_SERVER_VER.MD_SIZE_MULTIPLIER) {
+    if (this.serverVersion >= MIN_SERVER_VER.MD_SIZE_MULTIPLIER) {
 			contract.mdSizeMultiplier = this.readInt();
 		}
     contract.contract.multiplier = this.readInt();
@@ -730,20 +772,20 @@ export class Decoder {
         }
       }
 
-      if (this.controller.serverVersion >= MIN_SERVER_VER.AGG_GROUP) {
+      if (this.serverVersion >= MIN_SERVER_VER.AGG_GROUP) {
         contract.aggGroup = this.readInt();
       }
 
-      if (this.controller.serverVersion >= MIN_SERVER_VER.UNDERLYING_INFO) {
+      if (this.serverVersion >= MIN_SERVER_VER.UNDERLYING_INFO) {
         contract.underSymbol = this.readStr();
         contract.underSecType = this.readStr();
       }
 
-      if (this.controller.serverVersion >= MIN_SERVER_VER.MARKET_RULES) {
+      if (this.serverVersion >= MIN_SERVER_VER.MARKET_RULES) {
         contract.marketRuleIds = this.readStr();
       }
 
-      if (this.controller.serverVersion >= MIN_SERVER_VER.REAL_EXPIRATION_DATE) {
+      if (this.serverVersion >= MIN_SERVER_VER.REAL_EXPIRATION_DATE) {
         contract.realExpirationDate = this.readStr();
       }
     }
@@ -756,7 +798,7 @@ export class Decoder {
    */
   private decodeMsg_EXECUTION_DATA(): void {
 
-    let version = this.controller.serverVersion;
+    let version = this.serverVersion;
     if (version < MIN_SERVER_VER.LAST_LIQUIDITY) {
       version = this.readInt();
     }
@@ -830,11 +872,11 @@ export class Decoder {
       exec.evMultiplier = this.readDouble();
     }
 
-    if (this.controller.serverVersion >= MIN_SERVER_VER.MODELS_SUPPORT) {
+    if (this.serverVersion >= MIN_SERVER_VER.MODELS_SUPPORT) {
 			exec.modelCode = this.readStr();
 		}
 
-    if (this.controller.serverVersion >= MIN_SERVER_VER.LAST_LIQUIDITY) {
+    if (this.serverVersion >= MIN_SERVER_VER.LAST_LIQUIDITY) {
         exec.lastLiquidity = { value: this.readInt() };
     }
 
@@ -869,7 +911,7 @@ export class Decoder {
     const size = this.readInt();
 
     let isSmartDepth = false;
-    if (this.controller.serverVersion >= MIN_SERVER_VER.SMART_DEPTH) {
+    if (this.serverVersion >= MIN_SERVER_VER.SMART_DEPTH) {
       isSmartDepth = this.readBool();
     }
 
@@ -915,7 +957,7 @@ export class Decoder {
    */
   private decodeMsg_HISTORICAL_DATA() {
     let version = Number.MAX_VALUE;
-    if (this.controller.serverVersion < MIN_SERVER_VER.SYNT_REALTIME_BARS) {
+    if (this.serverVersion < MIN_SERVER_VER.SYNT_REALTIME_BARS) {
       version = this.readInt();
     }
 
@@ -988,7 +1030,7 @@ export class Decoder {
     contract.contract.tradingClass = this.readStr();
     contract.contract.conId = this.readInt();
     contract.minTick = this.readDouble();
-    if (this.controller.serverVersion >= MIN_SERVER_VER.MD_SIZE_MULTIPLIER) {
+    if (this.serverVersion >= MIN_SERVER_VER.MD_SIZE_MULTIPLIER) {
       contract.mdSizeMultiplier = this.readInt();
     }
     contract.orderTypes = this.readStr();
@@ -1024,11 +1066,11 @@ export class Decoder {
       }
     }
 
-    if (this.controller.serverVersion >= MIN_SERVER_VER.AGG_GROUP) {
+    if (this.serverVersion >= MIN_SERVER_VER.AGG_GROUP) {
       contract.aggGroup = this.readInt();
     }
 
-    if (this.controller.serverVersion >= MIN_SERVER_VER.MARKET_RULES) {
+    if (this.serverVersion >= MIN_SERVER_VER.MARKET_RULES) {
       contract.marketRuleIds = this.readStr();
     }
 
@@ -1350,7 +1392,7 @@ export class Decoder {
       contract.tradingClass = this.readStr();
     }
 
-    const pos = this.controller.serverVersion >= MIN_SERVER_VER.FRACTIONAL_POSITIONS ? this.readDouble() : this.readInt();
+    const pos = this.serverVersion >= MIN_SERVER_VER.FRACTIONAL_POSITIONS ? this.readDouble() : this.readInt();
 
     let avgCost = 0;
     if (version >= 3) {
@@ -1586,7 +1628,7 @@ export class Decoder {
     const nDepthMktDataDescriptions = this.readInt();
     const depthMktDataDescriptions: DepthMktDataDescription[] = new Array(nDepthMktDataDescriptions);
     for (let i = 0; i < nDepthMktDataDescriptions; i++) {
-      if (this.controller.serverVersion >= MIN_SERVER_VER.SERVICE_DATA_TYPE) {
+      if (this.serverVersion >= MIN_SERVER_VER.SERVICE_DATA_TYPE) {
         depthMktDataDescriptions[i] = {
           exchange: this.readStr(),
           secType: this.readStr() as SecType,
@@ -1743,10 +1785,10 @@ export class Decoder {
     let unrealizedPnL = Number.MAX_VALUE;
     let realizedPnL = Number.MAX_VALUE;
 
-    if (this.controller.serverVersion >= MIN_SERVER_VER.UNREALIZED_PNL) {
+    if (this.serverVersion >= MIN_SERVER_VER.UNREALIZED_PNL) {
       unrealizedPnL = this.readDouble();
     }
-    if (this.controller.serverVersion >= MIN_SERVER_VER.REALIZED_PNL) {
+    if (this.serverVersion >= MIN_SERVER_VER.REALIZED_PNL) {
       realizedPnL = this.readDouble();
     }
 
@@ -1764,10 +1806,10 @@ export class Decoder {
     let unrealizedPnL = Number.MAX_VALUE;
     let realizedPnL = Number.MAX_VALUE;
 
-    if (this.controller.serverVersion >= MIN_SERVER_VER.UNREALIZED_PNL) {
+    if (this.serverVersion >= MIN_SERVER_VER.UNREALIZED_PNL) {
       unrealizedPnL = this.readDouble();
     }
-    if (this.controller.serverVersion >= MIN_SERVER_VER.REALIZED_PNL) {
+    if (this.serverVersion >= MIN_SERVER_VER.REALIZED_PNL) {
       realizedPnL = this.readDouble();
     }
 
@@ -1926,31 +1968,54 @@ export class Decoder {
     const orderState: OrderState = {};
 
 
-    contract.conId = this.serverVersion >= 12 ? this.readInt() : undefined;
+    if (this.serverVersion >= 12) {
+      contract.conId = this.readInt();
+    }
     contract.symbol = this.readStr();
     contract.secType = this.readStr() as SecType;
     contract.lastTradeDateOrContractMonth = this.readStr();
     contract.strike = this.readDouble();
     contract.right = this.readStr() as OptionType;
-    contract.multiplier = this.serverVersion >= 32 ? this.readDouble() : undefined;
+    if (this.serverVersion >= 32) {
+      contract.multiplier = this.readDouble();
+    }
     contract.exchange = this.readStr();
     contract.currency = this.readStr();
-    contract.localSymbol = this.serverVersion >= 2 ? this.readStr() : undefined;
-    contract.tradingClass = this.serverVersion >= 32 ? this.readStr() : undefined;
-
+    if (this.serverVersion >= 2) {
+      contract.localSymbol = this.readStr();
+    }
+    if (this.serverVersion >= 32) {
+      contract.tradingClass = this.readStr();
+    }
     order.action = this.readStr();
-    order.totalQuantity = this.serverVersion >= MIN_SERVER_VER.FRACTIONAL_POSITIONS ? this.readDouble(): this.readInt();
+    if (this.serverVersion >= MIN_SERVER_VER.FRACTIONAL_POSITIONS) {
+      order.totalQuantity = this.readDouble();
+    } else {
+      order.totalQuantity = this.readInt();
+    }
     order.orderType = this.readStr();
-    order.lmtPrice = this.serverVersion < 29 ? this.readDouble(): this.readDoubleMax();
-    order.auxPrice = this.serverVersion < 30 ? this.readDouble(): this.readDoubleMax();
+    if (this.serverVersion < 29) {
+      order.lmtPrice = this.readDouble();
+    } else {
+      order.lmtPrice = this.readDoubleMax();
+    }
+    if (this.serverVersion < 30) {
+      order.auxPrice = this.readDouble();
+    } else {
+      order.auxPrice = this.readDoubleMax();
+    }
     order.tif = this.readStr();
     order.ocaGroup = this.readStr();
     order.account = this.readStr();
     order.openClose = this.readStr();
     order.origin = this.readInt();
     order.orderRef = this.readStr();
-    order.permId = this.serverVersion >= 3 ? this.readInt() : undefined;
-    order.hidden = this.serverVersion >= 4 ? this.readBool() : undefined;
+    if (this.serverVersion >= 3) {
+      order.permId = this.readInt();
+    }
+    if (this.serverVersion >= 4) {
+      order.hidden = this.readBool();
+    }
     order.discretionaryAmt = this.serverVersion >= 4 ? this.readDouble() : undefined;
     order.goodAfterTime = this.serverVersion >= 4 ? this.readStr() : undefined;
 
@@ -1971,14 +2036,19 @@ export class Decoder {
       order.faProfile = this.readStr();
     }
 
-    order.modelCode = this.serverVersion >= MIN_SERVER_VER.MODELS_SUPPORT ? this.readStr() : undefined;
-    order.goodTillDate = this.serverVersion >= 8 ? this.readStr() : undefined;
+    if (this.serverVersion >= MIN_SERVER_VER.MODELS_SUPPORT) {
+      order.modelCode = this.readStr();
+    }
+
+    if (this.serverVersion >= 8) {
+      order.goodTillDate = this.readStr();
+    }
 
     if (this.serverVersion >= 9) {
 
-      order.rule80A = this.serverVersion >= 9 ? this.readStr() : undefined;
-      order.percentOffset = this.serverVersion >= 9 ? this.readDoubleMax() : undefined;
-      order.settlingFirm = this.serverVersion >= 9 ? this.readStr() : undefined;
+      order.rule80A = this.readStr();
+      order.percentOffset = this.readDoubleMax();
+      order.settlingFirm = this.readStr();
 
       order.shortSaleSlot = this.readInt();
       order.designatedLocation = this.readStr();
@@ -2032,10 +2102,18 @@ export class Decoder {
       order.referencePriceType = this.readInt();
     }
 
-    order.trailStopPrice = this.serverVersion >= 13 ? this.readDoubleMax() : undefined;
-    order.trailingPercent = this.serverVersion >= 30 ? this.readDoubleMax() : undefined;
+    if (this.serverVersion >= 13) {
+      order.trailStopPrice = this.readDoubleMax();
+    }
 
-    contract.comboLegsDescription = this.serverVersion >= 14 ? this.readStr() : undefined;
+    if (this.serverVersion >= 30) {
+      order.trailStopPrice = this.readDoubleMax();
+    }
+
+    if (this.serverVersion >= 1) {
+      contract.comboLegsDescription = this.readStr();
+    }
+
     if (this.serverVersion >= 29) {
       const comboLegsCount = this.readInt();
       contract.comboLegs = new Array(comboLegsCount);
@@ -2152,9 +2230,10 @@ export class Decoder {
       for (let i = 0; i < nConditions; i++) {
 
         const type = this.readInt();
-
-        let conjunctionConnection = this.readStr();
-        conjunctionConnection = !conjunctionConnection ? undefined : conjunctionConnection.toLocaleLowerCase();
+        let conjunctionConnection = this.readStr()?.toLocaleLowerCase();
+        if (conjunctionConnection === "") {
+          conjunctionConnection = undefined;
+        }
 
         switch(type) {
           case OrderConditionType.Execution: {
@@ -2269,13 +2348,6 @@ export class Decoder {
   }
 
   /**
-   * The API server version.
-   */
-  private get serverVersion(): number {
-    return this.controller.serverVersion;
-  }
-
-  /**
    * Decode a [[Contract]] object from data queue.
    */
   private decodeContract(version: number): Contract {
@@ -2311,7 +2383,7 @@ export class Decoder {
 
     order.action = this.readStr();
 
-    if (this.controller.serverVersion >= MIN_SERVER_VER.FRACTIONAL_POSITIONS)	{
+    if (this.serverVersion >= MIN_SERVER_VER.FRACTIONAL_POSITIONS)	{
       order.totalQuantity = this.readDouble();
     } else {
       order.totalQuantity = this.readInt();
@@ -2355,7 +2427,7 @@ export class Decoder {
     order.shortSaleSlot = this.readInt();
     order.designatedLocation = this.readStr();
 
-    if (this.controller.serverVersion === MIN_SERVER_VER.SSHORTX_OLD) {
+    if (this.serverVersion === MIN_SERVER_VER.SSHORTX_OLD) {
       this.readInt();  // exemptCode
     } else if (version >= 23) {
       order.exemptCode = this.readInt();

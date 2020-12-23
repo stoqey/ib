@@ -128,7 +128,7 @@ export class Socket {
     const data = tokens.join(EOL) + EOL;
 
     this.client.write(data);
-    this.controller.emit(EventName.sent, tokens, data);
+    this.controller.emitEvent(EventName.sent, tokens, data);
   }
 
   /**
@@ -149,7 +149,7 @@ export class Socket {
 
     tokens = tokens.slice(0, -1);
 
-    this.controller.emit(EventName.received, tokens.slice(0), data);
+    this.controller.emitEvent(EventName.received, tokens.slice(0), data);
 
     // handle message data
 
@@ -165,8 +165,8 @@ export class Socket {
 
       this.startAPI();
 
-      this.controller.emit(EventName.connected);
-      this.controller.emit(EventName.server, this.serverVersion, this.serverConnectionTime);
+      this.controller.emitEvent(EventName.connected);
+      this.controller.emitEvent(EventName.server, this.serverVersion, this.serverConnectionTime);
 
     } else {
 
@@ -232,7 +232,7 @@ export class Socket {
     const wasConnected = this._connected;
     this._connected = false;
     if (wasConnected) {
-      this.controller.emit(EventName.disconnected);
+      this.controller.emitEvent(EventName.disconnected);
     }
 
     // resume controller (drain queue into disconnected socket)
@@ -247,7 +247,7 @@ export class Socket {
 
     // emit error event
 
-    this.controller.emit(EventName.error, err);
+    this.controller.emitEvent(EventName.error, err);
   }
 
   /**
