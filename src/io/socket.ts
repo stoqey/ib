@@ -1,8 +1,16 @@
 import net from "net";
-import { EventName, IBApiCreationOptions, MIN_SERVER_VER } from "../api/api";
+import { EventName, IBApiCreationOptions, MAX_SUPPORTED_SERVER_VERSION, MIN_SERVER_VER, MIN_SERVER_VER_SUPPORTED } from "../api/api";
 import { Controller } from "./controller";
 import { Config } from "../config";
 import { OUT_MSG_ID } from "./encoder";
+import { TextDecoder, TextEncoder } from "util";
+
+
+/**
+ * @hidden
+ * envelope encoding, applicable to useV100Plus mode only
+ */
+const MIN_VERSION_V100 = 100;
 
 /** @hidden */
 const EOL = "\0";
@@ -51,6 +59,9 @@ export class Socket {
   /** `true` if waiting for completion of an async operation, `false` otherwise.  */
   private waitingAsync = false;
 
+  /** `true` if V!00Pls protocol shall be used, `false` otherwise.  */
+  private useV100Plus = true;
+
   /** Returns `true` if connected to TWS/IB Gateway, `false` otherwise.  */
   get connected(): boolean {
     return this._connected;
@@ -64,6 +75,13 @@ export class Socket {
   /** The server connection time. */
   get serverConnectionTime(): string {
     return this._serverConnectionTime;
+  }
+
+  /**
+   * Disable usage of V100Plus protocol.
+   */
+  disableUseV100Plus(): void {
+    this.useV100Plus = false;
   }
 
   /**
@@ -112,8 +130,6 @@ export class Socket {
    */
   send(tokens: unknown[]): void {
 
-    // TODO add support for V100Plus (https://github.com/stoqey/ib/issues/3)
-
     // flatten arrays and convert boolean types to 0/1
 
     tokens = this.flattenDeep(tokens);
@@ -123,12 +139,34 @@ export class Socket {
       }
     });
 
-    // join tokens to text string, send to socket and emit event
+    let stringData = tokens.join(EOL);
 
-    const data = tokens.join(EOL) + EOL;
+    if (this.useV100Plus) {
 
-    this.client.write(data);
-    this.controller.emitEvent(EventName.sent, tokens, data);
+      let utf8Data;
+
+      if (tokens[0] === "API\0") {
+
+        // this is the initial API version message, which is special:
+        // length is encoded after the 'API\0', followed by the actual tokens.
+
+        const skip = 5; // 1 x 'API\0' token + 4 x length tokens
+        stringData = tokens.slice(skip)[0] as string;
+
+        utf8Data = [...this.stringToUTF8Array(tokens[0]), ...tokens.slice(1, skip), ...this.stringToUTF8Array(stringData)];
+      } else {
+        utf8Data = this.stringToUTF8Array(stringData);
+      }
+
+      // add length prefix only if not a string (strings use pre-V100 style)
+      if (typeof tokens[0] !== "string") {
+        utf8Data = [...this.numberTo32BitBigEndian(utf8Data.length + 1), ...utf8Data, 0];
+      }
+
+      this.client.write(new Uint8Array(utf8Data));
+    }
+
+    this.controller.emitEvent(EventName.sent, tokens, stringData);
   }
 
   /**
@@ -136,9 +174,33 @@ export class Socket {
    */
   private onData(data: Buffer): void {
 
-    // TODO add support for V100Plus (https://github.com/stoqey/ib/issues/3)
+    if (this.useV100Plus) {
 
-    const dataWithFragment = this.dataFragment + data.toString();
+      let ofs = 0;
+      let strData: string;
+
+      while (ofs < data.length) {
+        const msgSize = data.readInt32BE(ofs); ofs += 4;
+        const utf8Data: number[] = new Array(msgSize);
+        for (let i = 0; i < msgSize; i++) {
+          utf8Data[i] = data.readUInt8(ofs++);
+        }
+        strData = new TextDecoder().decode(new Uint8Array(utf8Data));
+        this.onMessage(strData);
+      }
+    } else {
+       this.onMessage(data.toString());
+    }
+  }
+
+  /**
+   * Called when a message has been arrived.
+   */
+  private onMessage(data: string): void {
+
+    // tokenize
+
+    const dataWithFragment = this.dataFragment + data;
 
     let tokens = dataWithFragment.split(EOL);
     if (tokens[tokens.length - 1] !== "") {
@@ -148,7 +210,6 @@ export class Socket {
     }
 
     tokens = tokens.slice(0, -1);
-
     this.controller.emitEvent(EventName.received, tokens.slice(0), data);
 
     // handle message data
@@ -158,21 +219,14 @@ export class Socket {
        // first message
 
       this.neverReceived = false;
-      this._connected = true;
 
-      this._serverVersion = parseInt(tokens[0], 10);
-      this._serverConnectionTime = tokens[1];
-
-      this.startAPI();
-
-      this.controller.emitEvent(EventName.connected);
-      this.controller.emitEvent(EventName.server, this.serverVersion, this.serverConnectionTime);
+      this.onServerVersion(tokens);
 
     } else {
 
       // post to queue
 
-      this.controller.onDataIngress(tokens);
+      this.controller.onMessage(tokens);
 
       // process queue
 
@@ -185,6 +239,34 @@ export class Socket {
       this.waitingAsync = false;
       this.controller.resume();
     }
+  }
+
+  /**
+   * Called when first data has arrived on the connection.
+   */
+  private onServerVersion(tokens: string[]): void {
+
+    this._connected = true;
+
+    this._serverVersion = parseInt(tokens[0], 10);
+    this._serverConnectionTime = tokens[1];
+
+    if (this.useV100Plus && (this._serverVersion < MIN_VERSION_V100 || this._serverVersion > MAX_SUPPORTED_SERVER_VERSION)) {
+      this.disconnect();
+      this.controller.emitError("Unsupported Version");
+      return;
+    }
+
+    if (this._serverVersion < MIN_SERVER_VER_SUPPORTED) {
+      this.disconnect();
+      this.controller.emitError("The TWS is out of date and must be upgraded.");
+      return;
+    }
+
+    this.startAPI();
+
+    this.controller.emitEvent(EventName.connected);
+    this.controller.emitEvent(EventName.server, this.serverVersion, this.serverConnectionTime);
   }
 
   /**
@@ -217,9 +299,15 @@ export class Socket {
    */
   private onConnect(): void {
 
-    // send back client version as first data on the connection
-
-    this.send([Config.CLIENT_VERSION]);
+    // send client version (unless Version > 100)
+    if (!this.useV100Plus) {
+      this.send([Config.CLIENT_VERSION]);  // Do not add length prefix here, because Server does not know Client's version yet
+    } else {
+      // Switch to GW API (Version 100+ requires length prefix)
+      const config = this.buildVersionString(MIN_VERSION_V100, MAX_SUPPORTED_SERVER_VERSION);
+      // config = config + connectOptions --- connectOptions are for IB internal use only: not supported
+      this.send(["API\0", ...this.numberTo32BitBigEndian(config.length), config]);
+    }
   }
 
   /**
@@ -227,15 +315,11 @@ export class Socket {
    */
   private onEnd () {
 
-    // change connected state and emit disconnected event
-
     const wasConnected = this._connected;
     this._connected = false;
     if (wasConnected) {
       this.controller.emitEvent(EventName.disconnected);
     }
-
-    // resume controller (drain queue into disconnected socket)
 
     this.controller.resume();
   }
@@ -244,26 +328,50 @@ export class Socket {
    * Called when an error occurred on the TCP socket connection.
    */
   private onError(err: Error) {
-
-    // emit error event
-
     this.controller.emitEvent(EventName.error, err);
   }
 
   /**
-  * Flatten an array.
-  *
-  * Also works for nested arrays (i.e. arrays inside arrays inside arrays)
-  */
- private flattenDeep(arr: unknown[], result: unknown[] = []): unknown[] {
-   for (let i = 0, length = arr.length; i < length; i++) {
-     const value = arr[i];
-     if (Array.isArray(value)) {
-       this.flattenDeep(value, result);
-     } else {
-       result.push(value);
-     }
-   }
-   return result;
+   * Build a V100Plus API version string.
+   */
+  private buildVersionString(minVersion: number, maxVersion: number): string {
+    return "v" + ((minVersion < maxVersion) ? minVersion + ".." + maxVersion : minVersion);
+  }
+
+  /**
+   * Convert a (integer) number to a 4-byte big endian byte array.
+   */
+  private numberTo32BitBigEndian(val: number): number[] {
+    const result: number[] = new Array(4);
+    let pos = 0;
+    result[pos++] = (0xff & (val >> 24));
+    result[pos++] = (0xff & (val >> 16));
+    result[pos++] = (0xff & (val >> 8));
+    result[pos++] = (0xff & val);
+    return result;
+  }
+
+  /**
+   * Encode a string to a UTF8 byte array.
+   */
+  private stringToUTF8Array(val: string): number[] {
+    return Array.from(new TextEncoder().encode(val));
+  }
+
+  /**
+   * Flatten an array.
+   *
+   * Also works for nested arrays (i.e. arrays inside arrays inside arrays)
+   */
+  private flattenDeep(arr: unknown[], result: unknown[] = []): unknown[] {
+    for (let i = 0, length = arr.length; i < length; i++) {
+      const value = arr[i];
+      if (Array.isArray(value)) {
+        this.flattenDeep(value, result);
+      } else {
+        result.push(value);
+      }
+    }
+    return result;
  }
 }

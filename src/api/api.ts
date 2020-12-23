@@ -263,6 +263,13 @@ export enum MIN_SERVER_VER {
   PRICE_MGMT_ALGO = 151
 }
 
+/** Maximum supported version. */
+export const MAX_SUPPORTED_SERVER_VERSION = MIN_SERVER_VER.PRICE_MGMT_ALGO;
+
+/** Minimum supported version. */
+export const MIN_SERVER_VER_SUPPORTED = 38;
+
+
 /**
  * Typescript implementation of the Interactive Brokers TWS (or IB Gateway) API.
  *
@@ -284,6 +291,29 @@ export class IBApi extends EventEmitter  {
   private controller: Controller; // TODO replace with Controller type as soon as available
 
   /**
+   * Get the IB API Server version.
+   *
+   * @see [[MIN_SERVER_VER]]
+   */
+  get serverVersion(): number {
+    return this.controller.serverVersion;
+  }
+
+  /**
+   * Returns `true` if currently connected to server, `false` otherwise.
+   */
+  get isConnected(): boolean {
+    return this.controller.connected;
+  }
+
+  /**
+   * Allows to switch between different current (V100+) and previous connection mechanisms.
+   */
+  disableUseV100Plus(): void {
+    return this.controller.disableUseV100Plus();
+  }
+
+  /**
    * Connect to the TWS or IB Gateway.
    */
   connect(): IBApi {
@@ -297,15 +327,6 @@ export class IBApi extends EventEmitter  {
   disconnect(): IBApi {
     this.controller.disconnect();
     return this;
-  }
-
-  /**
-   * Get the IB API Server version.
-   *
-   * @see [[MIN_SERVER_VER]]
-   */
-  get serverVersion(): number {
-    return this.controller.serverVersion;
   }
 
   /**

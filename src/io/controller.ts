@@ -93,9 +93,9 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
   }
 
   /**
-   * Called when new data has been arrived from on the API server connection.
+   * Called when a message has been arrived on the API server connection.
    */
-  onDataIngress(tokens: string[]): void {
+  onMessage(tokens: string[]): void {
     this.decoder.enqueue(tokens);
   }
 
@@ -107,6 +107,20 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
    */
   get serverVersion(): number {
     return this.socket.serverVersion;
+  }
+
+  /**
+   * Returns `true` if currently connected to server, `false` otherwise.
+   */
+  get connected(): boolean {
+    return this.socket.connected;
+  }
+
+  /**
+   * Disable usage of V100Plus protocol.
+   */
+  disableUseV100Plus(): void {
+    return this.socket.disableUseV100Plus();
   }
 
   /**
