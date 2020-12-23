@@ -4,5 +4,5 @@
   ],
   "exclude": "**/*+(index|.spec|.e2e).ts",
   "mode": "file",
-  "out": "doc"
+  "out": "pages/ib-doc"
 }
