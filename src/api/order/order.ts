@@ -1,4 +1,5 @@
 import { SoftDollarTier, TagValue } from "../api";
+import { SecType } from "../contract/contract";
 import { OrderComboLeg } from "./orderComboLeg";
 
 /**
@@ -24,7 +25,7 @@ export enum OrderConditionType {
 /**
  * Order condition conjunction connections.
  */
-export enum OrderConditionConjunction {
+export enum ConjunctionConnection {
   AND = "a",
   OR = "o",
 }
@@ -37,8 +38,161 @@ export interface OrderCondition {
   /** Condition type */
   type: OrderConditionType;
 
-  /** Condition conjunction type. */
-  conjunctionConnection: OrderConditionConjunction;
+  /**
+   * Conjunction connection type.
+   *
+   * If `undefined`, there are no more conjunctions.
+   */
+  conjunctionConnection?: ConjunctionConnection;
+}
+
+/**
+ * An order execution condition with contract details.
+ */
+export interface ContractCondition {
+
+  /** The contract id. */
+  conId: number;
+
+  /** The exchange code. */
+  exchange: string;
+}
+
+/**
+ * This class represents a condition requiring a specific execution event to be fulfilled.
+ *
+ * Orders can be activated or canceled if a set of given conditions is met.
+ * An ExecutionCondition is met whenever a trade occurs on a certain product at the given exchange.
+ */
+export class ExecutionCondition implements OrderCondition {
+  type = OrderConditionType.Execution;
+
+  /**
+   * Create a [[ExecutionCondition]] object.
+   *
+   * @param exchange Exchange where the symbol needs to be traded.
+   * @param secType Kind of instrument being monitored.
+   * @param symbol 	Instrument's symbol.
+   * @param conjunctionConnection Conjunction connection type.
+   */
+  constructor(
+    public exchange: string,
+    public secType: SecType,
+    public symbol: string,
+    public conjunctionConnection?: ConjunctionConnection) { }
+}
+
+/**
+ * TODO document
+ */
+export class MarginCondition implements OrderCondition {
+  type = OrderConditionType.Margin;
+
+  /**
+   * Create a [[MarginCondition]] object.
+   *
+   * @param percent TODO document
+   * @param conjunctionConnection Conjunction connection type.
+   */
+  constructor(
+    public percent: number,
+    public conjunctionConnection?: ConjunctionConnection) { }
+}
+
+/**
+ * Used with conditional orders to place or submit an order based on a percentage change of an instrument to the last close price.
+ */
+export class PercentChangeCondition  implements ContractCondition {
+  type = OrderConditionType.PercentChange;
+
+  /**
+   * Create a [[PercentChangeCondition]] object.
+   *
+   * @param percent TODO document
+   * @param conId The contract id.
+   * @param exchange The exchange code.
+   * @param conjunctionConnection Conjunction connection type.
+   */
+  constructor(
+    public percent: number,
+    public conId: number,
+    public exchange: string,
+    public conjunctionConnection?: ConjunctionConnection) { }
+}
+
+/**
+ * [[PriceCondition]] trigger method.
+ */
+export enum TriggerMethod {
+  Default = 0,
+  DoubleBidAsk = 1,
+  Last = 2,
+  DoubleLast = 3,
+  BidAsk = 4,
+  LastOfBidAsk = 7,
+  MidPoint = 8
+}
+
+/**
+ * Used with conditional orders to cancel or submit order based on price of an instrument.
+ */
+export class PriceCondition implements ContractCondition {
+  type = OrderConditionType.Price;
+
+  /**
+   * Create a [[PriceCondition]] object.
+   *
+   * @param conId The contract id.
+   * @param exchange The exchange code.
+   * @param price TODO document
+   * @param triggerMethod TODO document
+   * @param conjunctionConnection Conjunction connection type.
+   */
+  constructor(
+    public price: number,
+    public triggerMethod: TriggerMethod,
+    public conId: number,
+    public exchange: string,
+    public conjunctionConnection?: ConjunctionConnection) { }
+}
+
+/**
+ * TODO document
+ */
+export class TimeCondition implements OrderCondition {
+  type = OrderConditionType.Time;
+
+  /**
+   * Create a [[TimeCondition]] object.
+   *
+   * @param time Time field used in conditional order logic. Valid format: YYYYMMDD HH:MM:SS.
+   * @param conjunctionConnection Conjunction connection type.
+   */
+  constructor(
+    public time: string,
+    public conjunctionConnection?: ConjunctionConnection) { }
+}
+
+/**
+ * Used with conditional orders to submit or cancel an order based on a specified volume change in a security.
+ */
+export class VolumeCondition implements ContractCondition {
+  type = OrderConditionType.Volume;
+
+  /**
+   * Create a [[PriceCondition]] object.
+   *
+   * @param volume TODO document
+   * @param conId The contract id.
+   * @param exchange The exchange code.
+   * @param triggerMethod TODO document
+   * @param conjunctionConnection Conjunction connection type.
+   */
+  constructor(
+    public volume: number,
+    public conId: number,
+    public exchange: string,
+    public conjunctionConnection?: ConjunctionConnection) { }
 }
 
 /**
@@ -699,7 +853,7 @@ export interface Order {
   routeMarketableToBbo?: boolean;
 
   /** TODO: document */
-  parentPermId?: BigInt;
+  parentPermId?: number;
 
   /** TODO: document */
   randomizeSize?: boolean;
@@ -714,13 +868,13 @@ export interface Order {
   isPeggedChangeAmountDecrease?: boolean;
 
   /** Pegged-to-benchmark orders: amount by which the order's pegged price should move. */
-  peggedChangeAmount?: boolean;
+  peggedChangeAmount?: number;
 
   /** Pegged-to-benchmark orders: the amount the reference contract needs to move to adjust the pegged order. */
   referenceChangeAmount?: number;
 
   /** Pegged-to-benchmark orders: the exchange against which we want to observe the reference contract. */
-  referenceExchange?: string;
+  referenceExchangeId?: string;
 
   /** Adjusted Stop orders: the parent order will be adjusted to the given type when the adjusted trigger price is penetrated. */
  	adjustedOrderType?: string;

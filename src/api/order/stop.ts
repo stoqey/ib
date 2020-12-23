@@ -19,6 +19,6 @@ export class StopOrder {
       this.tif = this.tif ?? "DAY";
     }
 
-  public orderType = OrderType.Stop;
+  public orderType = OrderType.STP;
 }
 

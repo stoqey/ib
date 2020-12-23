@@ -17,5 +17,5 @@ export class MarketOrder {
       this.goodTillDate = this.goodTillDate ?? "";
     }
 
-  public orderType = OrderType.Market;
+  public orderType = OrderType.MKT;
 }

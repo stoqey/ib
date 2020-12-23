@@ -72,7 +72,7 @@ export { ScannerSubscription } from "./api/market/scannerSubscription";
 export { Liquidities, Execution } from "./api/order/execution";
 export { LimitOrder } from "./api/order/limit";
 export { MarketCloseOrder } from "./api/order/marketClose";
-export { OrderAction, OrderConditionType, OrderConditionConjunction, OrderCondition, Order } from "./api/order/order";
+export { OrderAction, OrderConditionType, ConjunctionConnection, OrderCondition, Order } from "./api/order/order";
 export { OrderComboLeg } from "./api/order/orderComboLeg";
 export { OrderState } from "./api/order/orderState";
 export { StopOrder } from "./api/order/stop";

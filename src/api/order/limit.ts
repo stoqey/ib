@@ -12,5 +12,5 @@ export class LimitOrder {
     public totalQuantity: number,
     public transmit: boolean = true) { }
 
-  public orderType = OrderType.Limit;
+  public orderType = OrderType.LMT;
 }

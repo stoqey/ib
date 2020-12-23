@@ -6,7 +6,7 @@ import { HistoricalTickBidAsk } from "../api/historical/historicalTickBidAsk";
 import { HistoricalTickLast } from "../api/historical/historicalTickLast";
 import { CommissionReport } from "../api/report/commissionReport";
 import { Execution } from "../api/order/execution";
-import { Order } from "../api/order/order";
+import { ExecutionCondition, Order, ConjunctionConnection, OrderConditionType, MarginCondition, PercentChangeCondition, TriggerMethod, PriceCondition, TimeCondition, VolumeCondition } from "../api/order/order";
 import { HistogramEntry } from "../api/historical/histogramEntry";
 import { ComboLeg } from "../api/contract/comboLeg";
 import { ContractDetails } from "../api/contract/contractDetails";
@@ -14,6 +14,8 @@ import { DeltaNeutralContract } from "../api/contract/deltaNeutralContract";
 import { OrderState } from "../api/order/orderState";
 import { TickType } from "../api/market/tickType";
 import { EventName, SoftDollarTier, TagValue, NewsProvider, FamilyCode, DepthMktDataDescription, MIN_SERVER_VER } from "../api/api";
+import { EAGAIN } from "constants";
+import { OrderType } from "../api/order/oderType";
 
 /**
  * @internal
@@ -91,6 +93,9 @@ enum IN_MSG_ID {
   HISTORICAL_TICKS_BID_ASK = 97,
   HISTORICAL_TICKS_LAST = 98,
   TICK_BY_TICK = 99,
+  ORDER_BOUND = 100,
+  COMPLETED_ORDER = 101,
+  COMPLETED_ORDERS_END = 102
 }
 
 /**
@@ -171,7 +176,7 @@ export class Decoder {
 
         // dequeue command code token
 
-        const token = this.dequeueInt();
+        const token = this.readInt();
 
         const constKey = IN_MSG_ID[token];
         if (!constKey) {
@@ -205,9 +210,9 @@ export class Decoder {
   }
 
   /**
-   * De-queue a string value from data queue.
+   * Read a string token from queue.
    */
-  private dequeue(): string {
+  private readStr(): string {
     if (this.dataQueue.length === 0) {
       throw new UnderrunError();
     }
@@ -215,24 +220,63 @@ export class Decoder {
   }
 
   /**
-   * De-queue a boolean value from data queue.
+   * Read a token from queue and return it as boolean value.
    */
-  private dequeueBool(): boolean {
-    return !!parseInt(this.dequeue(), 10);
+  private readBool(): boolean {
+    return !!parseInt(this.readStr(), 10);
   }
 
   /**
-   * De-queue a floating point type from data queue.
+   * Read a token from queue and return it as floating point value.
+   *
+   * Returns 0 if the token is empty.
    */
-  private dequeueFloat(): number {
-    return parseFloat(this.dequeue());
+  private readDouble(): number {
+    const token = this.readStr();
+    if (token === null || token === "") {
+      return 0;
+    }
+    return parseFloat(token);
+  }
+
+
+  /**
+   * Read a token from queue and return it as floating point value.
+   *
+   * Returns Number.MAX_VALUE if the token is empty.
+   */
+  private readDoubleMax(): number {
+    const token = this.readStr();
+    if (token === null || token === "") {
+      return Number.MAX_VALUE;
+    }
+    return parseFloat(token);
   }
 
   /**
-   * De-queue an integer type from data queue.
+   * Read a token from queue and return it as integer value.
+   *
+   * Returns 0 if the token is empty.
    */
-  private dequeueInt() {
-    return parseInt(this.dequeue(), 10);
+  private readInt(): number|undefined {
+    const token = this.readStr();
+    if (token === null || token === "") {
+      return 0;
+    }
+    return parseInt(token, 10);
+  }
+
+  /**
+   * Read a token from queue and return it as integer value.
+   *
+   * Returns Number.MAX_VALUE if the token is empty.
+   */
+  private readIntMax(): number|undefined {
+    const token = this.readStr();
+    if (token === null || token === "") {
+      return Number.MAX_VALUE;
+    }
+    return parseInt(token, 10);
   }
 
   /**
@@ -249,19 +293,19 @@ export class Decoder {
 
     // read from input queue
 
-    const version = this.dequeueInt();
-    const tickerId = this.dequeueInt();
-    const tickType = this.dequeueInt();
-    const price = this.dequeueFloat();
+    const version = this.readInt();
+    const tickerId = this.readInt();
+    const tickType = this.readInt();
+    const price = this.readDouble();
 
     let size = 0;
     if (version >= 2) {
-      size = this.dequeueInt();
+      size = this.readInt();
     }
 
     let canAutoExecute = false;
     if (version >= 3) {
-      canAutoExecute = this.dequeueBool();
+      canAutoExecute = this.readBool();
     }
 
     // emit events
@@ -301,10 +345,10 @@ export class Decoder {
    * Decode a TICK_SIZE message from data queue and emit an tickSize event.
    */
   private decodeMsg_TICK_SIZE() {
-    this.dequeueInt(); // version
-    const tickerId = this.dequeueInt();
-    const tickType = this.dequeueInt();
-    const size = this.dequeueInt();
+    this.readInt(); // version
+    const tickerId = this.readInt();
+    const tickType = this.readInt();
+    const size = this.readInt();
 
     this.emit(EventName.tickSize, tickerId, tickType, size);
   }
@@ -313,41 +357,41 @@ export class Decoder {
    * Decode a ORDER_STATUS message from data queue and emit an orderStatus event.
    */
   private decodeMsg_ORDER_STATUS() {
-    const version = this.dequeueInt();
-    const id = this.dequeueInt();
-    const status = this.dequeue();
-    const filled = this.dequeueInt();
-    const remaining = this.dequeueInt();
-    const avgFillPrice = this.dequeueFloat();
+    const version = this.readInt();
+    const id = this.readInt();
+    const status = this.readStr();
+    const filled = this.readInt();
+    const remaining = this.readInt();
+    const avgFillPrice = this.readDouble();
 
     let permId = 0;
     if (version >= 2) {
-      permId = this.dequeueInt();
+      permId = this.readInt();
     }
 
     let parentId = 0;
     if (version >= 3) {
-      parentId = this.dequeueInt();
+      parentId = this.readInt();
     }
 
     let lastFillPrice = 0;
     if (version >= 4) {
-      lastFillPrice = this.dequeueFloat();
+      lastFillPrice = this.readDouble();
     }
 
     let clientId = 0;
     if (version >= 5) {
-      clientId = this.dequeueInt();
+      clientId = this.readInt();
     }
 
     let whyHeld = null;
     if (version >= 6) {
-      whyHeld = this.dequeue();
+      whyHeld = this.readStr();
     }
 
     let mktCapPrice = Number.MAX_VALUE;
 		if (this.controller.serverVersion >= MIN_SERVER_VER.MARKET_CAP_PRICE) {
-		    mktCapPrice = this.dequeueFloat();
+		    mktCapPrice = this.readDouble();
     }
 
     this.emit(EventName.orderStatus, id, status, filled, remaining, avgFillPrice,
@@ -358,14 +402,14 @@ export class Decoder {
    * Decode a ERR_MSG message from data queue and emit and error event.
    */
   private decodeMsg_ERR_MSG() {
-    const version = this.dequeueInt();
+    const version = this.readInt();
     if (version < 2) {
-      const errorMsg = this.dequeue();
+      const errorMsg = this.readStr();
       this.controller.emitError(errorMsg);
     } else {
-      const id = this.dequeueInt();
-      const code = this.dequeueInt();
-      const msg = this.dequeue();
+      const id = this.readInt();
+      const code = this.readInt();
+      const msg = this.readStr();
       if (id === -1) {
         this.controller.emitInfo(msg);
       } else {
@@ -381,105 +425,105 @@ export class Decoder {
    * Decode a OPEN_ORDER message from data queue and emit a openOrder event.
    */
   private decodeMsg_OPEN_ORDER(): void {
-    const version = this.dequeueInt();
-    const orderId = this.dequeueInt();
+    const version = this.readInt();
+    const orderId = this.readInt();
     const contract: Contract = this.decodeContract(version);
     const order = this.decodeOrder(version);
     order.orderId = orderId;
 
     if (version >= 14) {
-      contract.comboLegsDescription = this.dequeue();
+      contract.comboLegsDescription = this.readStr();
     }
 
     if (version >= 29) {
-      const comboLegsCount = this.dequeueInt();
+      const comboLegsCount = this.readInt();
       if (comboLegsCount > 0) {
         contract.comboLegs = [];
         for (let i = 0; i < comboLegsCount; ++i) {
           contract.comboLegs.push(this.decodeComboLeg());
         }
       }
-      const orderComboLegsCount = this.dequeueInt();
+      const orderComboLegsCount = this.readInt();
       if (orderComboLegsCount > 0) {
         order.orderComboLegs = [];
         for (let i = 0; i < orderComboLegsCount; ++i) {
           order.orderComboLegs.push({
-            price: this.dequeueFloat() || Number.MAX_VALUE
+            price: this.readDouble() || Number.MAX_VALUE
           });
         }
       }
     }
 
     if (version >= 26) {
-      const smartComboRoutingParamsCount = this.dequeueInt();
+      const smartComboRoutingParamsCount = this.readInt();
       if (smartComboRoutingParamsCount > 0) {
         order.smartComboRoutingParams = [];
         for (let i = 0; i < smartComboRoutingParamsCount; ++i) {
           order.smartComboRoutingParams.push({
-            tag: this.dequeue(),
-            value: this.dequeue()
+            tag: this.readStr(),
+            value: this.readStr()
           });
         }
       }
     }
 
     if (version >= 20) {
-      order.scaleInitLevelSize = this.dequeueInt() || Number.MAX_VALUE;
-      order.scaleSubsLevelSize = this.dequeueInt() || Number.MAX_VALUE;
+      order.scaleInitLevelSize = this.readInt() || Number.MAX_VALUE;
+      order.scaleSubsLevelSize = this.readInt() || Number.MAX_VALUE;
     } else {
-      this.dequeueInt(); // notSuppScaleNumComponents
-      order.scaleInitLevelSize = this.dequeueInt() || Number.MAX_VALUE;
+      this.readInt(); // notSuppScaleNumComponents
+      order.scaleInitLevelSize = this.readInt() || Number.MAX_VALUE;
     }
 
-    order.scalePriceIncrement = this.dequeueFloat() || Number.MAX_VALUE;
+    order.scalePriceIncrement = this.readDouble() || Number.MAX_VALUE;
 
     if (version >= 28 && order.scalePriceIncrement > 0.0 && order.scalePriceIncrement !== Number.MAX_VALUE) {
-      order.scalePriceAdjustValue = this.dequeueFloat() || Number.MAX_VALUE;
-      order.scalePriceAdjustInterval = this.dequeueInt() || Number.MAX_VALUE;
-      order.scaleProfitOffset = this.dequeueFloat() || Number.MAX_VALUE;
-      order.scaleAutoReset = this.dequeueBool();
-      order.scaleInitPosition = this.dequeueInt() || Number.MAX_VALUE;
-      order.scaleInitFillQty = this.dequeueInt() || Number.MAX_VALUE;
-      order.scaleRandomPercent = this.dequeueBool();
+      order.scalePriceAdjustValue = this.readDouble() || Number.MAX_VALUE;
+      order.scalePriceAdjustInterval = this.readInt() || Number.MAX_VALUE;
+      order.scaleProfitOffset = this.readDouble() || Number.MAX_VALUE;
+      order.scaleAutoReset = this.readBool();
+      order.scaleInitPosition = this.readInt() || Number.MAX_VALUE;
+      order.scaleInitFillQty = this.readInt() || Number.MAX_VALUE;
+      order.scaleRandomPercent = this.readBool();
     }
 
     if (version >= 24) {
-      order.hedgeType = this.dequeue();
+      order.hedgeType = this.readStr();
       if (order.hedgeType?.length) {
-        order.hedgeParam = this.dequeue();
+        order.hedgeParam = this.readStr();
       }
     }
 
     if (version >= 25) {
-      order.optOutSmartRouting = this.dequeueBool();
+      order.optOutSmartRouting = this.readBool();
     }
 
-    order.clearingAccount = this.dequeue();
-    order.clearingIntent = this.dequeue();
+    order.clearingAccount = this.readStr();
+    order.clearingIntent = this.readStr();
 
     if (version >= 22) {
-      order.notHeld = this.dequeueBool();
+      order.notHeld = this.readBool();
     }
 
     if (version >= 20) {
-      if (this.dequeueBool()) {
+      if (this.readBool()) {
         contract.deltaNeutralContract = {
-          conId: this.dequeueInt(),
-          delta: this.dequeueFloat(),
-          price: this.dequeueFloat(),
+          conId: this.readInt(),
+          delta: this.readDouble(),
+          price: this.readDouble(),
         };
       }
     }
     if (version >= 21) {
-      order.algoStrategy = this.dequeue();
+      order.algoStrategy = this.readStr();
       if (order?.algoStrategy.length) {
-        const algoParamsCount = this.dequeueInt();
+        const algoParamsCount = this.readInt();
         if (algoParamsCount > 0) {
           order.algoParams = [];
           for (let i = 0; i < algoParamsCount; ++i) {
             order.algoParams.push({
-              tag: this.dequeue(),
-              value: this.dequeue()
+              tag: this.readStr(),
+              value: this.readStr()
             });
           }
         }
@@ -487,31 +531,31 @@ export class Decoder {
     }
 
     if (version >= 33) {
-      order.solicited = this.dequeueBool();
+      order.solicited = this.readBool();
     }
 
-    order.whatIf = this.dequeueBool();
+    order.whatIf = this.readBool();
 
     const orderState: OrderState = {};
 
     if (this.controller.serverVersion >= MIN_SERVER_VER.WHAT_IF_EXT_FIELDS) {
-      orderState.initMarginBefore = this.dequeue();
-      orderState.maintMarginBefore = this.dequeue();
-      orderState.equityWithLoanBefore = this.dequeue();
-      orderState.initMarginChange = this.dequeue();
-      orderState.maintMarginChange = this.dequeue();
-      orderState.equityWithLoanChange = this.dequeue();
+      orderState.initMarginBefore = this.readStr();
+      orderState.maintMarginBefore = this.readStr();
+      orderState.equityWithLoanBefore = this.readStr();
+      orderState.initMarginChange = this.readStr();
+      orderState.maintMarginChange = this.readStr();
+      orderState.equityWithLoanChange = this.readStr();
     }
 
-    orderState.initMarginAfter = this.dequeue();
-    orderState.maintMarginAfter = this.dequeue();
-    orderState.equityWithLoanAfter = this.dequeue();
-    orderState.commission = this.dequeueFloat() || Number.MAX_VALUE;
-    orderState.minCommission = this.dequeueFloat() || Number.MAX_VALUE;
-    orderState.maxCommission = this.dequeueFloat() || Number.MAX_VALUE;
-    orderState.minCommission = this.dequeueFloat() || Number.MAX_VALUE;
-    orderState.commissionCurrency = this.dequeue();
-    orderState.warningText = this.dequeue();
+    orderState.initMarginAfter = this.readStr();
+    orderState.maintMarginAfter = this.readStr();
+    orderState.equityWithLoanAfter = this.readStr();
+    orderState.commission = this.readDouble() || Number.MAX_VALUE;
+    orderState.minCommission = this.readDouble() || Number.MAX_VALUE;
+    orderState.maxCommission = this.readDouble() || Number.MAX_VALUE;
+    orderState.minCommission = this.readDouble() || Number.MAX_VALUE;
+    orderState.commissionCurrency = this.readStr();
+    orderState.warningText = this.readStr();
 
     this.emit(EventName.openOrder, order.orderId, contract, order, orderState);
   }
@@ -520,11 +564,11 @@ export class Decoder {
    * Decode a OPEN_ORDER message from data queue and emit a updateAccountValue event.
    */
   private decodeMsg_ACCT_VALUE(): void {
-    this.dequeueInt(); // version
-    const key = this.dequeue();
-    const value = this.dequeue();
-    const currency = this.dequeue();
-    const accountName = this.dequeue();
+    this.readInt(); // version
+    const key = this.readStr();
+    const value = this.readStr();
+    const currency = this.readStr();
+    const accountName = this.readStr();
 
     this.emit(EventName.updateAccountValue, key, value, currency, accountName);
   }
@@ -533,58 +577,58 @@ export class Decoder {
    * Decode a PORTFOLIO_VALUE message from data queue and emit a updatePortfolio event.
    */
   private decodeMsg_PORTFOLIO_VALUE(): void {
-    const version = this.dequeueInt();
+    const version = this.readInt();
 
     const contract: Contract = {};
     if (version >= 6) {
-      contract.conId = this.dequeueInt();
+      contract.conId = this.readInt();
     }
-    contract.symbol = this.dequeue();
-    contract.secType = this.dequeue() as SecType;
-    contract.lastTradeDateOrContractMonth = this.dequeue();
-    contract.strike = this.dequeueFloat();
-    contract.right = this.dequeue() as OptionType;
+    contract.symbol = this.readStr();
+    contract.secType = this.readStr() as SecType;
+    contract.lastTradeDateOrContractMonth = this.readStr();
+    contract.strike = this.readDouble();
+    contract.right = this.readStr() as OptionType;
 
     if (version >= 7) {
-      contract.multiplier = this.dequeueInt();
-      contract.primaryExch = this.dequeue();
+      contract.multiplier = this.readInt();
+      contract.primaryExch = this.readStr();
     }
 
-    contract.currency = this.dequeue();
+    contract.currency = this.readStr();
 
     if (version >= 2) {
-      contract.localSymbol = this.dequeue();
+      contract.localSymbol = this.readStr();
     }
 
     if (version >= 8) {
-      contract.tradingClass = this.dequeue();
+      contract.tradingClass = this.readStr();
     }
 
     let position: number;
     if (this.controller.serverVersion >= MIN_SERVER_VER.FRACTIONAL_POSITIONS) {
-      position = this.dequeueFloat();
+      position = this.readDouble();
     } else {
-      position = this.dequeueInt();
+      position = this.readInt();
     }
 
-    const marketPrice = this.dequeueFloat();
-    const marketValue = this.dequeueFloat();
+    const marketPrice = this.readDouble();
+    const marketValue = this.readDouble();
     let averageCost = Number.MAX_VALUE;
     let unrealizedPNL = Number.MAX_VALUE;
     let realizedPNL = Number.MAX_VALUE;
     if (version >= 3) {
-      averageCost = this.dequeueFloat();
-      unrealizedPNL = this.dequeueFloat();
-      realizedPNL = this.dequeueFloat();
+      averageCost = this.readDouble();
+      unrealizedPNL = this.readDouble();
+      realizedPNL = this.readDouble();
     }
 
     let accountName: string = undefined;
     if (version >= 4) {
-      accountName = this.dequeue();
+      accountName = this.readStr();
     }
 
     if (version === 6 && this.controller.serverVersion === 39) {
-      contract.primaryExch = this.dequeue();
+      contract.primaryExch = this.readStr();
     }
 
     this.emit(EventName.updatePortfolio, contract, position, marketPrice, marketValue,
@@ -595,8 +639,8 @@ export class Decoder {
    * Decode a ACCT_UPDATE_TIME message from data queue and emit a updateAccountTime event.
    */
   private decodeMsg_ACCT_UPDATE_TIME(): void {
-    this.dequeueInt(); // version
-    const timeStamp = this.dequeue();
+    this.readInt(); // version
+    const timeStamp = this.readStr();
 
     this.emit(EventName.updateAccountTime, timeStamp);
   }
@@ -605,8 +649,8 @@ export class Decoder {
    * Decode a NEXT_VALID_ID message from data queue and emit a nextValidId event.
    */
   private decodeMsg_NEXT_VALID_ID(): void {
-    this.dequeueInt(); // version
-    const orderId = this.dequeueInt();
+    this.readInt(); // version
+    const orderId = this.readInt();
 
     this.emit(EventName.nextValidId, orderId);
   }
@@ -615,92 +659,92 @@ export class Decoder {
    * Decode a CONTRACT_DATA message from data queue and emit a contractDetails event.
    */
   private decodeMsg_CONTRACT_DATA(): void {
-    const version = this.dequeueInt();
+    const version = this.readInt();
 
     let reqId = -1;
     if (version >= 3) {
-      reqId = this.dequeueInt();
+      reqId = this.readInt();
     }
 
     const contract: ContractDetails = {
       contract: {}
     };
 
-    contract.contract.symbol = this.dequeue();
-    contract.contract.secType = this.dequeue() as SecType;
+    contract.contract.symbol = this.readStr();
+    contract.contract.secType = this.readStr() as SecType;
     this.readLastTradeDate(contract, false);
-    contract.contract.strike = this.dequeueFloat();
-    contract.contract.right = this.dequeue() as OptionType;
-    contract.contract.exchange = this.dequeue();
-    contract.contract.currency = this.dequeue();
-    contract.contract.localSymbol = this.dequeue();
-    contract.marketName = this.dequeue();
-    contract.contract.tradingClass = this.dequeue();
-    contract.contract.conId = this.dequeueInt();
-    contract.minTick = this.dequeueFloat();
+    contract.contract.strike = this.readDouble();
+    contract.contract.right = this.readStr() as OptionType;
+    contract.contract.exchange = this.readStr();
+    contract.contract.currency = this.readStr();
+    contract.contract.localSymbol = this.readStr();
+    contract.marketName = this.readStr();
+    contract.contract.tradingClass = this.readStr();
+    contract.contract.conId = this.readInt();
+    contract.minTick = this.readDouble();
     if (this.controller.serverVersion >= MIN_SERVER_VER.MD_SIZE_MULTIPLIER) {
-			contract.mdSizeMultiplier = this.dequeueInt();
+			contract.mdSizeMultiplier = this.readInt();
 		}
-    contract.contract.multiplier = this.dequeueInt();
-    contract.orderTypes = this.dequeue();
-    contract.validExchanges = this.dequeue();
+    contract.contract.multiplier = this.readInt();
+    contract.orderTypes = this.readStr();
+    contract.validExchanges = this.readStr();
 
     if (version >= 2) {
-      contract.priceMagnifier = this.dequeueInt();
+      contract.priceMagnifier = this.readInt();
     }
 
     if (version >= 4) {
-      contract.underConId = this.dequeueInt();
+      contract.underConId = this.readInt();
     }
 
     if (version >= 5) {
-      contract.longName = this.dequeue();
-      contract.contract.primaryExch = this.dequeue();
+      contract.longName = this.readStr();
+      contract.contract.primaryExch = this.readStr();
     }
 
     if (version >= 6) {
-      contract.contractMonth = this.dequeue();
-      contract.industry = this.dequeue();
-      contract.category = this.dequeue();
-      contract.subcategory = this.dequeue();
-      contract.timeZoneId = this.dequeue();
-      contract.tradingHours = this.dequeue();
-      contract.liquidHours = this.dequeue();
+      contract.contractMonth = this.readStr();
+      contract.industry = this.readStr();
+      contract.category = this.readStr();
+      contract.subcategory = this.readStr();
+      contract.timeZoneId = this.readStr();
+      contract.tradingHours = this.readStr();
+      contract.liquidHours = this.readStr();
     }
 
     if (version >= 8) {
-      contract.evRule = this.dequeue();
-      contract.evMultiplier = this.dequeueFloat();
+      contract.evRule = this.readStr();
+      contract.evMultiplier = this.readDouble();
     }
 
     if (version >= 7) {
-      const secIdListCount = this.dequeueInt();
+      const secIdListCount = this.readInt();
       if (secIdListCount > 0) {
         contract.secIdList = [];
         for (let i = 0; i < secIdListCount; ++i) {
           const tagValue: TagValue = {
-            tag: this.dequeue(),
-            value: this.dequeue()
+            tag: this.readStr(),
+            value: this.readStr()
           };
           contract.secIdList.push(tagValue);
         }
       }
 
       if (this.controller.serverVersion >= MIN_SERVER_VER.AGG_GROUP) {
-        contract.aggGroup = this.dequeueInt();
+        contract.aggGroup = this.readInt();
       }
 
       if (this.controller.serverVersion >= MIN_SERVER_VER.UNDERLYING_INFO) {
-        contract.underSymbol = this.dequeue();
-        contract.underSecType = this.dequeue();
+        contract.underSymbol = this.readStr();
+        contract.underSecType = this.readStr();
       }
 
       if (this.controller.serverVersion >= MIN_SERVER_VER.MARKET_RULES) {
-        contract.marketRuleIds = this.dequeue();
+        contract.marketRuleIds = this.readStr();
       }
 
       if (this.controller.serverVersion >= MIN_SERVER_VER.REAL_EXPIRATION_DATE) {
-        contract.realExpirationDate = this.dequeue();
+        contract.realExpirationDate = this.readStr();
       }
     }
 
@@ -714,84 +758,84 @@ export class Decoder {
 
     let version = this.controller.serverVersion;
     if (version < MIN_SERVER_VER.LAST_LIQUIDITY) {
-      version = this.dequeueInt();
+      version = this.readInt();
     }
 
     let reqId = -1;
     if (version >= 7) {
-      reqId = this.dequeueInt();
+      reqId = this.readInt();
     }
 
-    const orderId = this.dequeueInt();
+    const orderId = this.readInt();
 
     // read contract fields
     const contract: Contract = {};
 
     if (version >= 5) {
-      contract.conId = this.dequeueInt();
+      contract.conId = this.readInt();
     }
 
-    contract.symbol = this.dequeue();
-    contract.secType = this.dequeue() as SecType;
-    contract.lastTradeDateOrContractMonth = this.dequeue();
-    contract.strike = this.dequeueFloat();
-    contract.right = this.dequeue() as OptionType;
+    contract.symbol = this.readStr();
+    contract.secType = this.readStr() as SecType;
+    contract.lastTradeDateOrContractMonth = this.readStr();
+    contract.strike = this.readDouble();
+    contract.right = this.readStr() as OptionType;
 
     if (version >= 9) {
-      contract.multiplier = this.dequeueInt();
+      contract.multiplier = this.readInt();
     }
 
-    contract.exchange = this.dequeue();
-    contract.currency = this.dequeue();
-    contract.localSymbol = this.dequeue();
+    contract.exchange = this.readStr();
+    contract.currency = this.readStr();
+    contract.localSymbol = this.readStr();
 
     if (version >= 10) {
-      contract.tradingClass = this.dequeue();
+      contract.tradingClass = this.readStr();
     }
 
     const exec: Execution = {};
 
     exec.orderId = orderId;
-    exec.execId = this.dequeue();
-    exec.time = this.dequeue();
-    exec.acctNumber = this.dequeue();
-    exec.exchange = this.dequeue();
-    exec.side = this.dequeue();
-    exec.shares = this.dequeueInt();
-    exec.price = this.dequeueFloat();
+    exec.execId = this.readStr();
+    exec.time = this.readStr();
+    exec.acctNumber = this.readStr();
+    exec.exchange = this.readStr();
+    exec.side = this.readStr();
+    exec.shares = this.readInt();
+    exec.price = this.readDouble();
 
     if (version >= 2) {
-      exec.permId = this.dequeueInt();
+      exec.permId = this.readInt();
     }
 
     if (version >= 3) {
-      exec.clientId = this.dequeueInt();
+      exec.clientId = this.readInt();
     }
 
     if (version >= 4) {
-      exec.liquidation = this.dequeueInt();
+      exec.liquidation = this.readInt();
     }
 
     if (version >= 6) {
-      exec.cumQty = this.dequeueInt();
-      exec.avgPrice = this.dequeueFloat();
+      exec.cumQty = this.readInt();
+      exec.avgPrice = this.readDouble();
     }
 
     if (version >= 8) {
-      exec.orderRef = this.dequeue();
+      exec.orderRef = this.readStr();
     }
 
     if (version >= 9) {
-      exec.evRule = this.dequeue();
-      exec.evMultiplier = this.dequeueFloat();
+      exec.evRule = this.readStr();
+      exec.evMultiplier = this.readDouble();
     }
 
     if (this.controller.serverVersion >= MIN_SERVER_VER.MODELS_SUPPORT) {
-			exec.modelCode = this.dequeue();
+			exec.modelCode = this.readStr();
 		}
 
     if (this.controller.serverVersion >= MIN_SERVER_VER.LAST_LIQUIDITY) {
-        exec.lastLiquidity = { value: this.dequeueInt() };
+        exec.lastLiquidity = { value: this.readInt() };
     }
 
     this.emit(EventName.execDetails, reqId, contract, exec);
@@ -801,13 +845,13 @@ export class Decoder {
    * Decode a MARKET_DEPTH message from data queue and emit a updateMktDepth event.
    */
   private decodeMsg_MARKET_DEPTH(): void {
-    this.dequeueInt(); // version
-    const id = this.dequeueInt();
-    const position = this.dequeueInt();
-    const operation = this.dequeueInt();
-    const side = this.dequeueInt();
-    const price = this.dequeueFloat();
-    const size = this.dequeueInt();
+    this.readInt(); // version
+    const id = this.readInt();
+    const position = this.readInt();
+    const operation = this.readInt();
+    const side = this.readInt();
+    const price = this.readDouble();
+    const size = this.readInt();
 
     this.emit(EventName.updateMktDepth, id, position, operation, side, price, size);
   }
@@ -816,17 +860,17 @@ export class Decoder {
    * Decode a MARKET_DEPTH_L2 message from data queue and emit a updateMktDepthL2 event.
    */
   private decodeMsg_MARKET_DEPTH_L2(): void {
-    this.dequeueInt(); // version
-    const id = this.dequeueInt();
-    const position = this.dequeueInt();
-    const operation = this.dequeueInt();
-    const side = this.dequeueInt();
-    const price = this.dequeueFloat();
-    const size = this.dequeueInt();
+    this.readInt(); // version
+    const id = this.readInt();
+    const position = this.readInt();
+    const operation = this.readInt();
+    const side = this.readInt();
+    const price = this.readDouble();
+    const size = this.readInt();
 
     let isSmartDepth = false;
     if (this.controller.serverVersion >= MIN_SERVER_VER.SMART_DEPTH) {
-      isSmartDepth = this.dequeueBool();
+      isSmartDepth = this.readBool();
     }
 
     this.emit(EventName.updateMktDepthL2, id, position, operation, side, price, size, isSmartDepth);
@@ -836,11 +880,11 @@ export class Decoder {
    * Decode a NEWS_BULLETINS message from data queue and emit a updateNewsBulletin event.
    */
   private decodeMsg_NEWS_BULLETINS(): void {
-    this.dequeueInt(); // version
-    const newsMsgId = this.dequeueInt();
-    const newsMsgType = this.dequeueInt();
-    const newsMessage = this.dequeue();
-    const originatingExch = this.dequeue();
+    this.readInt(); // version
+    const newsMsgId = this.readInt();
+    const newsMsgType = this.readInt();
+    const newsMessage = this.readStr();
+    const originatingExch = this.readStr();
 
     this.emit(EventName.updateNewsBulletin, newsMsgId, newsMsgType, newsMessage, originatingExch);
   }
@@ -849,8 +893,8 @@ export class Decoder {
    * Decode a MANAGED_ACCTS message from data queue and emit a managedAccounts event.
    */
   private decodeMsg_MANAGED_ACCTS(): void {
-    this.dequeueInt(); // version
-    const accountsList = this.dequeue();
+    this.readInt(); // version
+    const accountsList = this.readStr();
 
     this.emit(EventName.managedAccounts, accountsList);
   }
@@ -859,9 +903,9 @@ export class Decoder {
    * Decode a RECEIVE_FA message from data queue and emit a receiveFA event.
    */
   private decodeMsg_RECEIVE_FA(): void {
-    this.dequeueInt(); // version
-    const faDataType = this.dequeueInt();
-    const xml = this.dequeue();
+    this.readInt(); // version
+    const faDataType = this.readInt();
+    const xml = this.readStr();
 
     this.emit(EventName.receiveFA, faDataType, xml);
   }
@@ -872,35 +916,35 @@ export class Decoder {
   private decodeMsg_HISTORICAL_DATA() {
     let version = Number.MAX_VALUE;
     if (this.controller.serverVersion < MIN_SERVER_VER.SYNT_REALTIME_BARS) {
-      version = this.dequeueInt();
+      version = this.readInt();
     }
 
-    const reqId = this.dequeueInt();
+    const reqId = this.readInt();
 
     let completedIndicator = "finished";
     let startDateStr = "";
     let endDateStr = "";
     if (version >= 2) {
-      startDateStr = this.dequeue();
-      endDateStr = this.dequeue();
+      startDateStr = this.readStr();
+      endDateStr = this.readStr();
       completedIndicator += "-" + startDateStr + "-" + endDateStr;
     }
 
-    let itemCount = this.dequeueInt();
+    let itemCount = this.readInt();
 
     while (itemCount--) {
-      const date = this.dequeue();
-      const open = this.dequeueFloat();
-      const high = this.dequeueFloat();
-      const low = this.dequeueFloat();
-      const close = this.dequeueFloat();
-      const volume = this.dequeueInt();
-      const WAP = this.dequeueFloat();
-      const hasGaps = this.dequeueBool();
+      const date = this.readStr();
+      const open = this.readDouble();
+      const high = this.readDouble();
+      const low = this.readDouble();
+      const close = this.readDouble();
+      const volume = this.readInt();
+      const WAP = this.readDouble();
+      const hasGaps = this.readBool();
 
       let barCount = -1;
       if (version >= 3) {
-        barCount = this.dequeueInt();
+        barCount = this.readInt();
       }
 
       this.emit(EventName.historicalData, reqId, date, open, high, low, close, volume, barCount, WAP, hasGaps);
@@ -914,66 +958,66 @@ export class Decoder {
    * Decode a BOND_CONTRACT_DATA message from data queue and emit a bondContractDetails event.
    */
   private decodeMsg_BOND_CONTRACT_DATA(): void {
-    const version = this.dequeueInt();
+    const version = this.readInt();
 
     let reqId = -1;
     if (version >= 3) {
-      reqId = this.dequeueInt();
+      reqId = this.readInt();
     }
 
     const contract: ContractDetails = {
       contract: {}
     };
 
-    contract.contract.symbol = this.dequeue();
-    contract.contract.secType = this.dequeue() as SecType;
-    contract.cusip = this.dequeue();
-    contract.coupon = this.dequeueFloat();
+    contract.contract.symbol = this.readStr();
+    contract.contract.secType = this.readStr() as SecType;
+    contract.cusip = this.readStr();
+    contract.coupon = this.readDouble();
     this.readLastTradeDate(contract, true);
-    contract.issueDate = this.dequeue();
-    contract.ratings = this.dequeue();
-    contract.bondType = this.dequeue();
-    contract.couponType = this.dequeue();
-    contract.convertible = this.dequeueBool();
-    contract.callable = this.dequeueBool();
-    contract.putable = this.dequeueBool();
-    contract.descAppend = this.dequeue();
-    contract.contract.exchange = this.dequeue();
-    contract.contract.currency = this.dequeue();
-    contract.marketName = this.dequeue();
-    contract.contract.tradingClass = this.dequeue();
-    contract.contract.conId = this.dequeueInt();
-    contract.minTick = this.dequeueFloat();
+    contract.issueDate = this.readStr();
+    contract.ratings = this.readStr();
+    contract.bondType = this.readStr();
+    contract.couponType = this.readStr();
+    contract.convertible = this.readBool();
+    contract.callable = this.readBool();
+    contract.putable = this.readBool();
+    contract.descAppend = this.readStr();
+    contract.contract.exchange = this.readStr();
+    contract.contract.currency = this.readStr();
+    contract.marketName = this.readStr();
+    contract.contract.tradingClass = this.readStr();
+    contract.contract.conId = this.readInt();
+    contract.minTick = this.readDouble();
     if (this.controller.serverVersion >= MIN_SERVER_VER.MD_SIZE_MULTIPLIER) {
-      contract.mdSizeMultiplier = this.dequeueInt();
+      contract.mdSizeMultiplier = this.readInt();
     }
-    contract.orderTypes = this.dequeue();
-    contract.validExchanges = this.dequeue();
+    contract.orderTypes = this.readStr();
+    contract.validExchanges = this.readStr();
 
     if (version >= 2) {
-      contract.nextOptionDate = this.dequeue();
-      contract.nextOptionType = this.dequeue();
-      contract.nextOptionPartial = this.dequeueBool();
-      contract.notes = this.dequeue();
+      contract.nextOptionDate = this.readStr();
+      contract.nextOptionType = this.readStr();
+      contract.nextOptionPartial = this.readBool();
+      contract.notes = this.readStr();
     }
 
     if (version >= 4) {
-      contract.longName = this.dequeue();
+      contract.longName = this.readStr();
     }
 
     if (version >= 6) {
-      contract.evRule = this.dequeue();
-      contract.evMultiplier = this.dequeueFloat();
+      contract.evRule = this.readStr();
+      contract.evMultiplier = this.readDouble();
     }
 
     if (version >= 5) {
-      let secIdListCount = this.dequeueInt();
+      let secIdListCount = this.readInt();
       if (secIdListCount > 0) {
         contract.secIdList = [];
         while (secIdListCount--) {
           const tagValue: TagValue = {
-            tag: this.dequeue(),
-            value: this.dequeue()
+            tag: this.readStr(),
+            value: this.readStr()
           };
           contract.secIdList.push(tagValue);
         }
@@ -981,11 +1025,11 @@ export class Decoder {
     }
 
     if (this.controller.serverVersion >= MIN_SERVER_VER.AGG_GROUP) {
-      contract.aggGroup = this.dequeueInt();
+      contract.aggGroup = this.readInt();
     }
 
     if (this.controller.serverVersion >= MIN_SERVER_VER.MARKET_RULES) {
-      contract.marketRuleIds = this.dequeue();
+      contract.marketRuleIds = this.readStr();
     }
 
     this.emit(EventName.bondContractDetails, reqId, contract);
@@ -995,8 +1039,8 @@ export class Decoder {
    * Decode a SCANNER_PARAMETERS message from data queue and emit a scannerParameters event.
    */
   private decodeMsg_SCANNER_PARAMETERS(): void {
-    this.dequeueInt(); // version
-    const xml = this.dequeue();
+    this.readInt(); // version
+    const xml = this.readStr();
 
     this.emit(EventName.scannerParameters, xml);
   }
@@ -1005,38 +1049,38 @@ export class Decoder {
    * Decode a SCANNER_DATA message from data queue and emit a scannerData and scannerDataEnd event.
    */
   private decodeMsg_SCANNER_DATA(): void {
-    const version = this.dequeueInt();
-    const tickerId = this.dequeueInt();
-    let numberOfElements = this.dequeueInt();
+    const version = this.readInt();
+    const tickerId = this.readInt();
+    let numberOfElements = this.readInt();
 
     while (numberOfElements--) {
       const contract: ContractDetails = {
         contract: {}
       };
 
-      const rank = this.dequeueInt();
+      const rank = this.readInt();
       if (version >= 3) {
-        contract.contract.conId = this.dequeueInt();
+        contract.contract.conId = this.readInt();
       }
 
-      contract.contract.symbol = this.dequeue();
-      contract.contract.secType = this.dequeue() as SecType;
+      contract.contract.symbol = this.readStr();
+      contract.contract.secType = this.readStr() as SecType;
       this.readLastTradeDate(contract, false);
-      contract.contract.strike = this.dequeueFloat();
-      contract.contract.right = this.dequeue() as OptionType;
-      contract.contract.exchange = this.dequeue();
-      contract.contract.currency = this.dequeue();
-      contract.contract.localSymbol = this.dequeue();
-      contract.marketName = this.dequeue();
-      contract.contract.tradingClass = this.dequeue();
+      contract.contract.strike = this.readDouble();
+      contract.contract.right = this.readStr() as OptionType;
+      contract.contract.exchange = this.readStr();
+      contract.contract.currency = this.readStr();
+      contract.contract.localSymbol = this.readStr();
+      contract.marketName = this.readStr();
+      contract.contract.tradingClass = this.readStr();
 
-      const distance = this.dequeue();
-      const benchmark = this.dequeue();
-      const projection = this.dequeue();
+      const distance = this.readStr();
+      const benchmark = this.readStr();
+      const projection = this.readStr();
 
       let legsStr = undefined;
       if (version >= 2) {
-        legsStr = this.dequeue();
+        legsStr = this.readStr();
       }
 
       this.emit(EventName.scannerData, tickerId, rank, contract, distance,
@@ -1050,16 +1094,16 @@ export class Decoder {
    * Decode a TICK_OPTION_COMPUTATION message from data queue and emit a tickOptionComputation event.
    */
   private decodeMsg_TICK_OPTION_COMPUTATION(): void {
-    const version = this.dequeueInt();
-    const tickerId = this.dequeueInt();
-    const tickType = this.dequeueInt();
+    const version = this.readInt();
+    const tickerId = this.readInt();
+    const tickType = this.readInt();
 
-    let impliedVol = this.dequeueFloat();
+    let impliedVol = this.readDouble();
     if (impliedVol == -1) {  // -1 is the "not yet computed" indicator
       impliedVol = Number.MAX_VALUE;
     }
 
-    let delta = this.dequeueFloat();
+    let delta = this.readDouble();
     if (delta == -2) {  // -2 is the "not yet computed" indicator
       delta = Number.MAX_VALUE;
     }
@@ -1072,34 +1116,34 @@ export class Decoder {
     let undPrice = Number.MAX_VALUE;
 
     if (version >= 6 || tickType === TickType.MODEL_OPTION || tickType === TickType.DELAYED_MODEL_OPTION) {
-      optPrice = this.dequeueFloat();
+      optPrice = this.readDouble();
       if (optPrice == -1) {  // -1 is the "not yet computed" indicator
         optPrice = Number.MAX_VALUE;
       }
 
-      pvDividend = this.dequeueFloat();
+      pvDividend = this.readDouble();
       if (pvDividend == -1) {  // -1 is the "not yet computed" indicator
         pvDividend = Number.MAX_VALUE;
       }
     }
 
     if (version >= 6) {
-      gamma = this.dequeueFloat();
+      gamma = this.readDouble();
       if (gamma == -2) {  // -2 is the "not yet computed" indicator
         gamma = Number.MAX_VALUE;
       }
 
-      vega = this.dequeueFloat();
+      vega = this.readDouble();
       if (vega == -2) {  // -2 is the "not yet computed" indicator
         vega = Number.MAX_VALUE;
       }
 
-      theta = this.dequeueFloat();
+      theta = this.readDouble();
       if (theta == -2) {  // -2 is the "not yet computed" indicator
         theta = Number.MAX_VALUE;
       }
 
-      undPrice = this.dequeueFloat();
+      undPrice = this.readDouble();
       if (undPrice == -1) {  // -1 is the "not yet computed" indicator
         undPrice = Number.MAX_VALUE;
       }
@@ -1112,10 +1156,10 @@ export class Decoder {
    * Decode a TICK_GENERIC message from data queue and emit a tickGeneric event.
    */
   private decodeMsg_TICK_GENERIC(): void {
-    this.dequeueInt(); // version
-    const tickerId = this.dequeueInt();
-    const tickType = this.dequeueInt();
-    const value = this.dequeueFloat();
+    this.readInt(); // version
+    const tickerId = this.readInt();
+    const tickType = this.readInt();
+    const value = this.readDouble();
 
     this.emit(EventName.tickGeneric, tickerId, tickType, value);
   }
@@ -1124,10 +1168,10 @@ export class Decoder {
    * Decode a TICK_STRING message from data queue and emit a tickString event.
    */
   private decodeMsg_TICK_STRING(): void {
-    this.dequeueInt(); // version
-    const tickerId = this.dequeueInt();
-    const tickType = this.dequeueInt();
-    const value = this.dequeue();
+    this.readInt(); // version
+    const tickerId = this.readInt();
+    const tickType = this.readInt();
+    const value = this.readStr();
 
     this.emit(EventName.tickString, tickerId, tickType, value);
   }
@@ -1136,16 +1180,16 @@ export class Decoder {
    * Decode a TICK_EFP message from data queue and emit a tickEFP event.
    */
   private decodeMsg_TICK_EFP(): void {
-    this.dequeueInt(); // version
-    const tickerId = this.dequeueInt();
-    const tickType = this.dequeueInt();
-    const basisPoints = this.dequeueFloat();
-    const formattedBasisPoints = this.dequeue();
-    const impliedFuturesPrice = this.dequeueFloat();
-    const holdDays = this.dequeueInt();
-    const futureExpiry = this.dequeue();
-    const dividendImpact = this.dequeueFloat();
-    const dividendsToExpiry = this.dequeueFloat();
+    this.readInt(); // version
+    const tickerId = this.readInt();
+    const tickType = this.readInt();
+    const basisPoints = this.readDouble();
+    const formattedBasisPoints = this.readStr();
+    const impliedFuturesPrice = this.readDouble();
+    const holdDays = this.readInt();
+    const futureExpiry = this.readStr();
+    const dividendImpact = this.readDouble();
+    const dividendsToExpiry = this.readDouble();
 
     this.emit(EventName.tickEFP, tickerId, tickType, basisPoints, formattedBasisPoints,
       impliedFuturesPrice, holdDays, futureExpiry,
@@ -1156,8 +1200,8 @@ export class Decoder {
    * Decode a CURRENT_TIME message from data queue and emit a currentTime event.
    */
   private decodeMsg_CURRENT_TIME(): void {
-    this.dequeueInt(); //  version
-    const time = this.dequeueInt();
+    this.readInt(); //  version
+    const time = this.readInt();
 
     this.emit(EventName.currentTime, time);
   }
@@ -1166,16 +1210,16 @@ export class Decoder {
    * Decode a REAL_TIME_BARS message from data queue and emit a realtimeBar event.
    */
   private decodeMsg_REAL_TIME_BARS(): void {
-    this.dequeueInt(); // version
-    const reqId = this.dequeueInt();
-    const time = this.dequeueInt();
-    const open = this.dequeueFloat();
-    const high = this.dequeueFloat();
-    const low = this.dequeueFloat();
-    const close = this.dequeueFloat();
-    const volume = this.dequeueInt();
-    const wap = this.dequeueFloat();
-    const count = this.dequeueInt();
+    this.readInt(); // version
+    const reqId = this.readInt();
+    const time = this.readInt();
+    const open = this.readDouble();
+    const high = this.readDouble();
+    const low = this.readDouble();
+    const close = this.readDouble();
+    const volume = this.readInt();
+    const wap = this.readDouble();
+    const count = this.readInt();
 
     this.emit(EventName.realtimeBar, reqId, time, open, high, low, close, volume, wap, count);
   }
@@ -1184,9 +1228,9 @@ export class Decoder {
    * Decode a REAL_TIME_BARS message from data queue and emit a fundamentalData event.
    */
   private decodeMsg_FUNDAMENTAL_DATA(): void {
-    this.dequeueInt(); // version
-    const reqId = this.dequeueInt();
-    const data = this.dequeue();
+    this.readInt(); // version
+    const reqId = this.readInt();
+    const data = this.readStr();
 
     this.emit(EventName.fundamentalData, reqId, data);
   }
@@ -1195,8 +1239,8 @@ export class Decoder {
    * Decode a CONTRACT_DATA_END message from data queue and emit a contractDetailsEnd event.
    */
   private decodeMsg_CONTRACT_DATA_END(): void {
-    this.dequeueInt(); // version
-    const reqId = this.dequeueInt();
+    this.readInt(); // version
+    const reqId = this.readInt();
 
     this.emit(EventName.contractDetailsEnd, reqId);
   }
@@ -1205,7 +1249,7 @@ export class Decoder {
    * Decode a OPEN_ORDER_END message from data queue and emit a openOrderEnd event.
    */
   private decodeMsg_OPEN_ORDER_END(): void {
-    this.dequeueInt(); // version
+    this.readInt(); // version
 
     this.emit(EventName.openOrderEnd);
   }
@@ -1214,8 +1258,8 @@ export class Decoder {
    * Decode a ACCT_DOWNLOAD_END  message from data queue and emit a accountDownloadEnd event.
    */
   private decodeMsg_ACCT_DOWNLOAD_END(): void {
-    this.dequeueInt(); // version
-    const accountName = this.dequeue();
+    this.readInt(); // version
+    const accountName = this.readStr();
 
     this.emit(EventName.accountDownloadEnd, accountName);
   }
@@ -1224,8 +1268,8 @@ export class Decoder {
    * Decode a EXECUTION_DATA_END  message from data queue and emit a execDetailsEnd event.
    */
   private decodeMsg_EXECUTION_DATA_END(): void {
-    this.dequeueInt(); // version
-    const reqId = this.dequeueInt();
+    this.readInt(); // version
+    const reqId = this.readInt();
 
     this.emit(EventName.execDetailsEnd, reqId);
   }
@@ -1234,12 +1278,12 @@ export class Decoder {
    * Decode a DELTA_NEUTRAL_VALIDATION message from data queue and emit a deltaNeutralValidation event.
    */
   private decodeMsg_DELTA_NEUTRAL_VALIDATION(): void {
-    this.dequeueInt(); // version
-    const reqId = this.dequeueInt();
+    this.readInt(); // version
+    const reqId = this.readInt();
     const underComp: DeltaNeutralContract = {
-      conId: this.dequeueInt(),
-      delta: this.dequeueFloat(),
-      price: this.dequeueFloat()
+      conId: this.readInt(),
+      delta: this.readDouble(),
+      price: this.readDouble()
     };
 
     this.emit(EventName.deltaNeutralValidation, reqId, underComp);
@@ -1249,8 +1293,8 @@ export class Decoder {
    * Decode a TICK_SNAPSHOT_END message from data queue and emit a tickSnapshotEnd event.
    */
   private decodeMsg_TICK_SNAPSHOT_END(): void {
-    this.dequeueInt(); // version
-    const reqId = this.dequeueInt();
+    this.readInt(); // version
+    const reqId = this.readInt();
 
     this.emit(EventName.tickSnapshotEnd, reqId);
   }
@@ -1259,9 +1303,9 @@ export class Decoder {
    * Decode a MARKET_DATA_TYPE message from data queue and emit a marketDataType event.
    */
   private decodeMsg_MARKET_DATA_TYPE(): void {
-    this.dequeueInt(); // version
-    const reqId = this.dequeueInt();
-    const marketDataType = this.dequeueInt();
+    this.readInt(); // version
+    const reqId = this.readInt();
+    const marketDataType = this.readInt();
 
     this.emit(EventName.marketDataType, reqId, marketDataType);
   }
@@ -1271,15 +1315,15 @@ export class Decoder {
    * Decode a COMMISSION_REPORT message from data queue and emit a commissionReport event.
    */
   private decodeMsg_COMMISSION_REPORT(): void {
-    this.dequeueInt(); // version
+    this.readInt(); // version
 
     const commissionReport: CommissionReport = {};
-    commissionReport.execId = this.dequeue();
-    commissionReport.commission = this.dequeueFloat();
-    commissionReport.currency = this.dequeue();
-    commissionReport.realizedPNL = this.dequeueFloat();
-    commissionReport.yield = this.dequeueFloat();
-    commissionReport.yieldRedemptionDate = this.dequeueInt();
+    commissionReport.execId = this.readStr();
+    commissionReport.commission = this.readDouble();
+    commissionReport.currency = this.readStr();
+    commissionReport.realizedPNL = this.readDouble();
+    commissionReport.yield = this.readDouble();
+    commissionReport.yieldRedemptionDate = this.readInt();
 
     this.emit(EventName.commissionReport, commissionReport);
   }
@@ -1288,29 +1332,29 @@ export class Decoder {
    * Decode a POSITION message from data queue and emit a position event.
    */
   private decodeMsg_POSITION(): void {
-    const version = this.dequeueInt();
-    const account = this.dequeue();
+    const version = this.readInt();
+    const account = this.readStr();
     const contract: Contract = {};
 
-    contract.conId = this.dequeueInt();
-    contract.symbol = this.dequeue();
-    contract.secType = this.dequeue() as SecType;
-    contract.lastTradeDateOrContractMonth = this.dequeue();
-    contract.strike = this.dequeueFloat();
-    contract.right = this.dequeue() as OptionType;
-    contract.multiplier = this.dequeueInt();
-    contract.exchange = this.dequeue();
-    contract.currency = this.dequeue();
-    contract.localSymbol = this.dequeue();
+    contract.conId = this.readInt();
+    contract.symbol = this.readStr();
+    contract.secType = this.readStr() as SecType;
+    contract.lastTradeDateOrContractMonth = this.readStr();
+    contract.strike = this.readDouble();
+    contract.right = this.readStr() as OptionType;
+    contract.multiplier = this.readInt();
+    contract.exchange = this.readStr();
+    contract.currency = this.readStr();
+    contract.localSymbol = this.readStr();
     if (version >= 2) {
-      contract.tradingClass = this.dequeue();
+      contract.tradingClass = this.readStr();
     }
 
-    const pos = this.controller.serverVersion >= MIN_SERVER_VER.FRACTIONAL_POSITIONS ? this.dequeueFloat() : this.dequeueInt();
+    const pos = this.controller.serverVersion >= MIN_SERVER_VER.FRACTIONAL_POSITIONS ? this.readDouble() : this.readInt();
 
     let avgCost = 0;
     if (version >= 3) {
-      avgCost = this.dequeueFloat();
+      avgCost = this.readDouble();
     }
 
     this.emit(EventName.position, account, contract, pos, avgCost);
@@ -1320,7 +1364,7 @@ export class Decoder {
    * Decode a POSITION_END message from data queue and emit a positionEnd event.
    */
   private decodeMsg_POSITION_END(): void {
-    this.dequeueInt(); // version
+    this.readInt(); // version
 
     this.emit(EventName.positionEnd);
   }
@@ -1329,12 +1373,12 @@ export class Decoder {
    * Decode a ACCOUNT_SUMMARY message from data queue and emit a accountSummary event.
    */
   private decodeMsg_ACCOUNT_SUMMARY() {
-    this.dequeueInt(); // version
-    const reqId = this.dequeueInt();
-    const account = this.dequeue();
-    const tag = this.dequeue();
-    const value = this.dequeue();
-    const currency = this.dequeue();
+    this.readInt(); // version
+    const reqId = this.readInt();
+    const account = this.readStr();
+    const tag = this.readStr();
+    const value = this.readStr();
+    const currency = this.readStr();
 
     this.emit(EventName.accountSummary, reqId, account, tag, value, currency);
   }
@@ -1343,8 +1387,8 @@ export class Decoder {
    * Decode a ACCOUNT_SUMMARY message from data queue and emit a accountSummaryEnd event.
    */
   private decodeMsg_ACCOUNT_SUMMARY_END(): void {
-    this.dequeueInt(); // version
-    const reqId = this.dequeueInt();
+    this.readInt(); // version
+    const reqId = this.readInt();
 
     this.emit(EventName.accountSummaryEnd, reqId);
   }
@@ -1353,9 +1397,9 @@ export class Decoder {
    * Decode a DISPLAY_GROUP_LIST message from data queue and emit a displayGroupList event.
    */
   private decodeMsg_DISPLAY_GROUP_LIST(): void {
-    this.dequeueInt(); // version
-    const reqId = this.dequeueInt();
-    const list = this.dequeue();
+    this.readInt(); // version
+    const reqId = this.readInt();
+    const list = this.readStr();
 
     this.emit(EventName.displayGroupList, reqId, list);
   }
@@ -1364,9 +1408,9 @@ export class Decoder {
    * Decode a DISPLAY_GROUP_UPDATED message from data queue and emit a displayGroupUpdated event.
    */
   private decodeMsg_DISPLAY_GROUP_UPDATED(): void {
-    this.dequeueInt(); // version
-    const reqId = this.dequeueInt();
-    const contractInfo = this.dequeue();
+    this.readInt(); // version
+    const reqId = this.readInt();
+    const contractInfo = this.readStr();
 
     this.emit(EventName.displayGroupUpdated, reqId, contractInfo);
   }
@@ -1375,25 +1419,25 @@ export class Decoder {
    * Decode a POSITION_MULTI message from data queue and emit a accountSummary event.
    */
   private decodeMsg_POSITION_MULTI(): void {
-    this.dequeueInt(); // version
-    const reqId = this.dequeueInt();
-    const account = this.dequeue();
+    this.readInt(); // version
+    const reqId = this.readInt();
+    const account = this.readStr();
     const modelCode = null;
     const contract: Contract = {};
 
-    contract.conId = this.dequeueInt();
-    contract.symbol = this.dequeue();
-    contract.secType = this.dequeue() as SecType;
-    contract.lastTradeDateOrContractMonth = this.dequeue();
-    contract.strike = this.dequeueFloat();
-    contract.right = this.dequeue() as OptionType;
-    contract.multiplier = this.dequeueInt();
-    contract.exchange = this.dequeue();
-    contract.currency = this.dequeue();
-    contract.localSymbol = this.dequeue();
-    contract.tradingClass = this.dequeue();
-    const pos = this.dequeueInt();
-    const avgCost = this.dequeueFloat();
+    contract.conId = this.readInt();
+    contract.symbol = this.readStr();
+    contract.secType = this.readStr() as SecType;
+    contract.lastTradeDateOrContractMonth = this.readStr();
+    contract.strike = this.readDouble();
+    contract.right = this.readStr() as OptionType;
+    contract.multiplier = this.readInt();
+    contract.exchange = this.readStr();
+    contract.currency = this.readStr();
+    contract.localSymbol = this.readStr();
+    contract.tradingClass = this.readStr();
+    const pos = this.readInt();
+    const avgCost = this.readDouble();
 
     this.emit(EventName.positionMulti, reqId, account, modelCode, contract, pos, avgCost);
   }
@@ -1402,8 +1446,8 @@ export class Decoder {
    * Decode a POSITION_MULTI_END message from data queue and emit a positionMultiEnd event.
    */
   private decodeMsg_POSITION_MULTI_END(): void {
-    this.dequeueInt(); // version
-    const reqId = this.dequeueInt();
+    this.readInt(); // version
+    const reqId = this.readInt();
 
     this.emit(EventName.positionMultiEnd, reqId);
   }
@@ -1412,13 +1456,13 @@ export class Decoder {
    * Decode a ACCOUNT_UPDATE_MULTI message from data queue and emit a accountUpdateMulti event.
    */
   private decodeMsg_ACCOUNT_UPDATE_MULTI(): void {
-    this.dequeueInt(); // version
-    const reqId = this.dequeueInt();
-    const account = this.dequeue();
-    const modelCode = this.dequeue();
-    const key = this.dequeue();
-    const value = this.dequeue();
-    const currency = this.dequeue();
+    this.readInt(); // version
+    const reqId = this.readInt();
+    const account = this.readStr();
+    const modelCode = this.readStr();
+    const key = this.readStr();
+    const value = this.readStr();
+    const currency = this.readStr();
 
     this.emit(EventName.accountUpdateMulti, reqId, account, modelCode, key, value, currency);
   }
@@ -1427,8 +1471,8 @@ export class Decoder {
    * Decode a ACCOUNT_UPDATE_MULTI_END message from data queue and emit a accountUpdateMultiEnd event.
    */
   private decodeMsg_ACCOUNT_UPDATE_MULTI_END(): void {
-    this.dequeueInt(); // version
-    const reqId = this.dequeue();
+    this.readInt(); // version
+    const reqId = this.readStr();
 
     this.emit(EventName.accountUpdateMultiEnd, reqId);
   }
@@ -1437,22 +1481,22 @@ export class Decoder {
    * Decode a SECURITY_DEFINITION_OPTION_PARAMETER message from data queue and emit a securityDefinitionOptionParameter event.
    */
   private decodeMsg_SECURITY_DEFINITION_OPTION_PARAMETER(): void {
-    const reqId = this.dequeueInt();
-    const exchange = this.dequeue();
-    const underlyingConId = this.dequeueInt();
-    const tradingClass = this.dequeue();
-    const multiplier = this.dequeue();
-    const expCount = this.dequeueInt();
+    const reqId = this.readInt();
+    const exchange = this.readStr();
+    const underlyingConId = this.readInt();
+    const tradingClass = this.readStr();
+    const multiplier = this.readStr();
+    const expCount = this.readInt();
     const expirations = [];
 
     for (let i = 0; i < expCount; i++) {
-      expirations.push(this.dequeue());
+      expirations.push(this.readStr());
     }
 
-    const strikeCount = this.dequeueInt();
+    const strikeCount = this.readInt();
     const strikes = [];
     for (let j = 0; j < strikeCount; j++) {
-      strikes.push(this.dequeueFloat());
+      strikes.push(this.readDouble());
     }
 
     this.emit(EventName.securityDefinitionOptionParameter, reqId, exchange, underlyingConId, tradingClass, multiplier, expirations, strikes);
@@ -1462,7 +1506,7 @@ export class Decoder {
    * Decode a SECURITY_DEFINITION_OPTION_PARAMETER_END message from data queue and emit a securityDefinitionOptionParameterEnd event.
    */
   private decodeMsg_SECURITY_DEFINITION_OPTION_PARAMETER_END(): void {
-    const reqId = this.dequeueInt();
+    const reqId = this.readInt();
 
     this.emit(EventName.securityDefinitionOptionParameterEnd, reqId);
   }
@@ -1471,15 +1515,15 @@ export class Decoder {
    * Decode a SOFT_DOLLAR_TIERS message from data queue and emit a softDollarTiers event.
    */
   private decodeMsg_SOFT_DOLLAR_TIERS(): void {
-    const reqId = this.dequeueInt();
-    const nTiers = this.dequeueInt();
+    const reqId = this.readInt();
+    const nTiers = this.readInt();
 
 		const tiers: SoftDollarTier[] = new Array(nTiers);
 		for (let i = 0; i < nTiers; i++) {
 			tiers[i] = {
-        name: this.dequeue(),
-        value: this.dequeue(),
-        displayName: this.dequeue()
+        name: this.readStr(),
+        value: this.readStr(),
+        displayName: this.readStr()
       };
     }
 
@@ -1490,13 +1534,13 @@ export class Decoder {
    * Decode a FAMILY_CODES message from data queue and emit a familyCodes event.
    */
   private decodeMsg_FAMILY_CODES(): void {
-    const nFamilyCodes = this.dequeueInt();
+    const nFamilyCodes = this.readInt();
 
 		const familyCodes: FamilyCode[] = new Array(nFamilyCodes);
 		for (let i = 0; i < nFamilyCodes; i++) {
 			familyCodes[i] = {
-        accountID: this.dequeue(),
-        familyCode: this.dequeue()
+        accountID: this.readStr(),
+        familyCode: this.readStr()
       };
     }
 
@@ -1507,23 +1551,23 @@ export class Decoder {
    * Decode a SYMBOL_SAMPLES message from data queue and emit a symbolSamples event.
    */
   private decodeMsg_SYMBOL_SAMPLES(): void {
-    const reqId = this.dequeueInt();
+    const reqId = this.readInt();
 
-    const nContractDescriptions = this.dequeueInt();
+    const nContractDescriptions = this.readInt();
     const contractDescriptions: ContractDescription[] = new Array(nContractDescriptions);
     for (let i = 0; i < nContractDescriptions; i++) {
       const contract: Contract = {
-        conId: this.dequeueInt(),
-        symbol:  this.dequeue(),
-        secType: this.dequeue() as SecType,
-        primaryExch: this.dequeue(),
-         currency: this.dequeue()
+        conId: this.readInt(),
+        symbol:  this.readStr(),
+        secType: this.readStr() as SecType,
+        primaryExch: this.readStr(),
+         currency: this.readStr()
       };
 
-      const nDerivativeSecTypes = this.dequeueInt();
+      const nDerivativeSecTypes = this.readInt();
       const derivativeSecTypes: SecType[] = new Array(nDerivativeSecTypes);
       for (let j = 0; j < nDerivativeSecTypes; j++) {
-        derivativeSecTypes[j] = this.dequeue() as SecType;
+        derivativeSecTypes[j] = this.readStr() as SecType;
       }
 
       contractDescriptions[i] = {
@@ -1539,23 +1583,23 @@ export class Decoder {
    * Decode a MKT_DEPTH_EXCHANGES message from data queue and emit a mktDepthExchanges event.
    */
   private decodeMsg_MKT_DEPTH_EXCHANGES(): void {
-    const nDepthMktDataDescriptions = this.dequeueInt();
+    const nDepthMktDataDescriptions = this.readInt();
     const depthMktDataDescriptions: DepthMktDataDescription[] = new Array(nDepthMktDataDescriptions);
     for (let i = 0; i < nDepthMktDataDescriptions; i++) {
       if (this.controller.serverVersion >= MIN_SERVER_VER.SERVICE_DATA_TYPE) {
         depthMktDataDescriptions[i] = {
-          exchange: this.dequeue(),
-          secType: this.dequeue() as SecType,
-          listingExch: this.dequeue(),
-          serviceDataType: this.dequeue(),
-          aggGroup: this.dequeueInt() || Number.MAX_VALUE
+          exchange: this.readStr(),
+          secType: this.readStr() as SecType,
+          listingExch: this.readStr(),
+          serviceDataType: this.readStr(),
+          aggGroup: this.readInt() || Number.MAX_VALUE
         };
       } else {
         depthMktDataDescriptions[i] = {
-          exchange: this.dequeue(),
-          secType: this.dequeue() as SecType,
+          exchange: this.readStr(),
+          secType: this.readStr() as SecType,
           listingExch: "",
-          serviceDataType: this.dequeueBool() ? "Deep2" : "Deep",
+          serviceDataType: this.readBool() ? "Deep2" : "Deep",
           aggGroup: Number.MAX_VALUE
         };
       }
@@ -1568,10 +1612,10 @@ export class Decoder {
    * Decode a TICK_REQ_PARAMS message from data queue and emit a tickReqParams event.
    */
   private decodeMsg_TICK_REQ_PARAMS(): void {
-    const tickerId = this.dequeueInt();
-    const minTick = this.dequeueInt();
-    const bboExchange = this.dequeue();
-    const snapshotPermissions = this.dequeueInt();
+    const tickerId = this.readInt();
+    const minTick = this.readInt();
+    const bboExchange = this.readStr();
+    const snapshotPermissions = this.readInt();
 
     this.emit(EventName.tickReqParams, tickerId, minTick, bboExchange, snapshotPermissions);
   }
@@ -1580,14 +1624,14 @@ export class Decoder {
    * Decode a SMART_COMPONENTS message from data queue and emit a smartComponents event.
    */
   private decodeMsg_SMART_COMPONENTS(): void {
-    const reqId = this.dequeueInt();
-    const nCount = this.dequeueInt();
+    const reqId = this.readInt();
+    const nCount = this.readInt();
 
     const theMap: Map<number, [string, string]> = new Map();
     for (let i = 0; i < nCount; i++) {
-      const bitNumber = this.dequeueInt();
-      const exchange = this.dequeue();
-      const exchangeLetter = this.dequeue();
+      const bitNumber = this.readInt();
+      const exchange = this.readStr();
+      const exchangeLetter = this.readStr();
       theMap.set(bitNumber, [exchange, exchangeLetter]);
     }
 
@@ -1598,9 +1642,9 @@ export class Decoder {
    * Decode a NEWS_ARTICLE message from data queue and emit a newsArticle event.
    */
   private decodeMsg_NEWS_ARTICLE(): void {
-    const reqId = this.dequeueInt();
-    const articleType = this.dequeueInt();
-    const articleText = this.dequeue();
+    const reqId = this.readInt();
+    const articleType = this.readInt();
+    const articleText = this.readStr();
 
     this.emit(EventName.newsArticle, reqId, articleType, articleText);
   }
@@ -1609,12 +1653,12 @@ export class Decoder {
    * Decode a TICK_NEWS message from data queue and emit a tickNews event.
    */
   private decodeMsg_TICK_NEWS(): void {
-    const tickerId = this.dequeueInt();
-    const timeStamp = this.dequeueInt();
-    const providerCode = this.dequeue();
-    const articleId = this.dequeue();
-    const headline = this.dequeue();
-    const extraData = this.dequeue();
+    const tickerId = this.readInt();
+    const timeStamp = this.readInt();
+    const providerCode = this.readStr();
+    const articleId = this.readStr();
+    const headline = this.readStr();
+    const extraData = this.readStr();
 
     this.emit(EventName.tickNews, tickerId, timeStamp, providerCode, articleId, headline, extraData);
   }
@@ -1623,12 +1667,12 @@ export class Decoder {
    * Decode a NEWS_PROVIDERS message from data queue and emit a newsProviders event.
    */
   private decodeMsg_NEWS_PROVIDERS(): void {
-    const nNewsProviders = this.dequeueInt();
+    const nNewsProviders = this.readInt();
     const newProviders: NewsProvider[] = new Array(nNewsProviders);
     for (let i = 0; i < nNewsProviders; i++) {
       newProviders[i] = {
-        providerCode: this.dequeue(),
-        providerName: this.dequeue()
+        providerCode: this.readStr(),
+        providerName: this.readStr()
       };
     }
 
@@ -1639,12 +1683,12 @@ export class Decoder {
    * Decode a HISTORICAL_NEWS message from data queue and emit a historicalNews event.
    */
   private decodeMsg_HISTORICAL_NEWS(): void {
-    const nNewsProviders = this.dequeueInt();
+    const nNewsProviders = this.readInt();
     const newProviders: NewsProvider[] = new Array(nNewsProviders);
     for (let i = 0; i < nNewsProviders; i++) {
       newProviders[i] = {
-        providerCode: this.dequeue(),
-        providerName: this.dequeue()
+        providerCode: this.readStr(),
+        providerName: this.readStr()
       };
     }
 
@@ -1655,8 +1699,8 @@ export class Decoder {
    * Decode a HISTORICAL_NEWS_END message from data queue and emit a historicalNewsEnd event.
    */
   private decodeMsg_HISTORICAL_NEWS_END(): void {
-    const reqId = this.dequeueInt();
-    const hasMore = this.dequeueBool();
+    const reqId = this.readInt();
+    const hasMore = this.readBool();
 
     this.emit(EventName.historicalNewsEnd, reqId, hasMore);
   }
@@ -1665,8 +1709,8 @@ export class Decoder {
    * Decode a HEAD_TIMESTAMP message from data queue and emit a headTimestamp event.
    */
   private decodeMsg_HEAD_TIMESTAMP(): void {
-    const reqId = this.dequeueInt();
-    const headTimestamp = this.dequeue();
+    const reqId = this.readInt();
+    const headTimestamp = this.readStr();
 
     this.emit(EventName.headTimestamp, reqId, headTimestamp);
   }
@@ -1675,14 +1719,14 @@ export class Decoder {
    * Decode a HISTOGRAM_DATA message from data queue and emit a histogramData event.
    */
   private decodeMsg_HISTOGRAM_DATA(): void {
-    const reqId = this.dequeueInt();
-    const count = this.dequeueInt();
+    const reqId = this.readInt();
+    const count = this.readInt();
 
     const items: HistogramEntry[] = new Array(count);
     for (let i = 0; i < count; i++) {
       items[i] = {
-        price:  this.dequeueFloat(),
-        size: this.dequeueInt()
+        price:  this.readDouble(),
+        size: this.readInt()
       };
     }
 
@@ -1693,17 +1737,17 @@ export class Decoder {
    * Decode a PNL message from data queue and emit a pnl event.
    */
   private decodeMsg_PNL(): void {
-    const reqId = this.dequeueInt();
-    const dailyPnL = this.dequeueFloat();
+    const reqId = this.readInt();
+    const dailyPnL = this.readDouble();
 
     let unrealizedPnL = Number.MAX_VALUE;
     let realizedPnL = Number.MAX_VALUE;
 
     if (this.controller.serverVersion >= MIN_SERVER_VER.UNREALIZED_PNL) {
-      unrealizedPnL = this.dequeueFloat();
+      unrealizedPnL = this.readDouble();
     }
     if (this.controller.serverVersion >= MIN_SERVER_VER.REALIZED_PNL) {
-      realizedPnL = this.dequeueFloat();
+      realizedPnL = this.readDouble();
     }
 
     this.emit(EventName.pnl, reqId, dailyPnL, unrealizedPnL, realizedPnL);
@@ -1713,21 +1757,21 @@ export class Decoder {
    * Decode a PNL_SINGLE message from data queue and emit a pnlSingle event.
    */
   private decodeMsg_PNL_SINGLE(): void {
-    const reqId = this.dequeueInt();
-    const pos = this.dequeueInt();
-    const dailyPnL = this.dequeueFloat();
+    const reqId = this.readInt();
+    const pos = this.readInt();
+    const dailyPnL = this.readDouble();
 
     let unrealizedPnL = Number.MAX_VALUE;
     let realizedPnL = Number.MAX_VALUE;
 
     if (this.controller.serverVersion >= MIN_SERVER_VER.UNREALIZED_PNL) {
-      unrealizedPnL = this.dequeueFloat();
+      unrealizedPnL = this.readDouble();
     }
     if (this.controller.serverVersion >= MIN_SERVER_VER.REALIZED_PNL) {
-      realizedPnL = this.dequeueFloat();
+      realizedPnL = this.readDouble();
     }
 
-    const value = this.dequeueFloat();
+    const value = this.readDouble();
 
     this.emit(EventName.pnlSingle, reqId, pos, dailyPnL, unrealizedPnL, realizedPnL, value);
   }
@@ -1736,17 +1780,17 @@ export class Decoder {
    * Decode a HISTORICAL_TICKS message from data queue and emit a historicalTicks event.
    */
   private decodeMsg_HISTORICAL_TICKS(): void {
-    const reqId = this.dequeueInt();
-    const tickCount = this.dequeueInt();
+    const reqId = this.readInt();
+    const tickCount = this.readInt();
     const ticks: HistoricalTick[] = new Array(tickCount);
     for (let i = 0; i < tickCount; i++) {
       ticks[i] = {
-        time: this.dequeueInt(),
-        price: this.dequeueFloat(),
-        size: this.dequeueInt()
+        time: this.readInt(),
+        price: this.readDouble(),
+        size: this.readInt()
       };
     }
-    const done = this.dequeueBool();
+    const done = this.readBool();
 
     this.emit(EventName.historicalTicks, reqId, ticks, done);
   }
@@ -1755,16 +1799,16 @@ export class Decoder {
    * Decode a HISTORICAL_TICKS_BID_ASK message from data queue and emit a historicalTicksBidAsk event.
    */
   private decodeMsg_HISTORICAL_TICKS_BID_ASK(): void {
-    const reqId = this.dequeueInt();
-    const tickCount = this.dequeueInt();
+    const reqId = this.readInt();
+    const tickCount = this.readInt();
     const ticks: HistoricalTickBidAsk[] = new Array(tickCount);
     for (let i = 0; i < tickCount; i++) {
-      const time = this.dequeueInt();
-      const flags = this.dequeueInt();
-      const priceBid = this.dequeueFloat();
-      const priceAsk = this.dequeueFloat();
-      const sizeBid = this.dequeueInt();
-      const sizeAsk = this.dequeueInt();
+      const time = this.readInt();
+      const flags = this.readInt();
+      const priceBid = this.readDouble();
+      const priceAsk = this.readDouble();
+      const sizeBid = this.readInt();
+      const sizeAsk = this.readInt();
       ticks[i] = {
         time: time,
         tickAttribBidAsk: {
@@ -1777,7 +1821,7 @@ export class Decoder {
         sizeAsk: sizeAsk
       };
     }
-    const done = this.dequeueBool();
+    const done = this.readBool();
 
     this.emit(EventName.historicalTicksBidAsk, reqId, ticks, done);
   }
@@ -1786,16 +1830,16 @@ export class Decoder {
    * Decode a HISTORICAL_TICKS_LAST message from data queue and emit a historicalTicksLast event.
    */
   private decodeMsg_HISTORICAL_TICKS_LAST(): void {
-    const reqId = this.dequeueInt();
-    const tickCount = this.dequeueInt();
+    const reqId = this.readInt();
+    const tickCount = this.readInt();
     const ticks: HistoricalTickLast[] = new Array(tickCount);
     for (let i = 0; i < tickCount; i++) {
-      const time = this.dequeueInt();
-      const mask = this.dequeueInt();
-      const price = this.dequeueFloat();
-      const size = this.dequeueInt();
-      const exchange = this.dequeue();
-      const specialConditions = this.dequeue();
+      const time = this.readInt();
+      const mask = this.readInt();
+      const price = this.readDouble();
+      const size = this.readInt();
+      const exchange = this.readStr();
+      const specialConditions = this.readStr();
       ticks[i] = {
         time: time,
         tickAttribBidAsk: {
@@ -1808,7 +1852,7 @@ export class Decoder {
         specialConditions: specialConditions
       };
     }
-    const done = this.dequeueBool();
+    const done = this.readBool();
 
     this.emit(EventName.historicalTicksLast, reqId, ticks, done);
   }
@@ -1816,10 +1860,10 @@ export class Decoder {
   /**
    * Decode a TICK_BY_TICK message from data queue and a emit tickByTickAllLast, tickByTickBidAsk or tickByTickMidPoint event.
    */
-  private decodeMsg_TICK_BY_TICK() : void{
-    const reqId = this.dequeueInt();
-    const tickType = this.dequeueInt();
-    const time = this.dequeue();
+  private decodeMsg_TICK_BY_TICK(): void {
+    const reqId = this.readInt();
+    const tickType = this.readInt();
+    const time = this.readStr();
 
     switch (tickType) {
       case 0: // None
@@ -1827,24 +1871,24 @@ export class Decoder {
       case 1: // Last
       case 2: // All-last
       {
-        const price = this.dequeueFloat();
-        const size = this.dequeueInt();
-        const mask = this.dequeueInt();
+        const price = this.readDouble();
+        const size = this.readInt();
+        const mask = this.readInt();
         const pastLimit = (mask & (1 << 0)) !== 0;
         const unreported = (mask & (1 << 1)) !== 0;
-        const exchange = this.dequeue();
-        const specialConditions = this.dequeue();
+        const exchange = this.readStr();
+        const specialConditions = this.readStr();
 
         this.emit(EventName.tickByTickAllLast, reqId, tickType, time, price, size, { pastLimit, unreported }, exchange, specialConditions);
         break;
       }
       case 3: // BidAsk
       {
-        const bidPrice = this.dequeueFloat();
-        const askPrice = this.dequeueFloat();
-        const bidSize = this.dequeueInt();
-        const askSize = this.dequeueInt();
-        const mask = this.dequeueInt();
+        const bidPrice = this.readDouble();
+        const askPrice = this.readDouble();
+        const bidSize = this.readInt();
+        const askSize = this.readInt();
+        const mask = this.readInt();
         const bidPastLow = (mask & (1 << 0)) !== 0;
         const askPastHigh = (mask & (1 << 1)) !== 0;
 
@@ -1853,7 +1897,7 @@ export class Decoder {
       }
       case 4: // MidPoint
       {
-        const midPoint = this.dequeueFloat();
+        const midPoint = this.readDouble();
 
         this.emit(EventName.tickByTickMidPoint, reqId, time, midPoint);
         break;
@@ -1862,28 +1906,398 @@ export class Decoder {
   }
 
   /**
+   * Decode a ORDER_BOUND message from data queue and a emit orderBound event.
+   */
+  private decodeMsg_ORDER_BOUND(): void{
+    const orderId = this.readInt();
+    const apiClientId = this.readDouble();
+    const apiOrderId = this.readInt();
+
+    this.emit(EventName.orderBound, orderId, apiClientId, apiOrderId);
+  }
+
+  /**
+   * Decode a COMPLETED_ORDER message from data queue and a emit completedOrder event.
+   */
+  private decodeMsg_COMPLETED_ORDERS_END(): void {
+
+    const contract: Contract = {};
+    const order: Order = {};
+    const orderState: OrderState = {};
+
+
+    contract.conId = this.serverVersion >= 12 ? this.readInt() : undefined;
+    contract.symbol = this.readStr();
+    contract.secType = this.readStr() as SecType;
+    contract.lastTradeDateOrContractMonth = this.readStr();
+    contract.strike = this.readDouble();
+    contract.right = this.readStr() as OptionType;
+    contract.multiplier = this.serverVersion >= 32 ? this.readDouble() : undefined;
+    contract.exchange = this.readStr();
+    contract.currency = this.readStr();
+    contract.localSymbol = this.serverVersion >= 2 ? this.readStr() : undefined;
+    contract.tradingClass = this.serverVersion >= 32 ? this.readStr() : undefined;
+
+    order.action = this.readStr();
+    order.totalQuantity = this.serverVersion >= MIN_SERVER_VER.FRACTIONAL_POSITIONS ? this.readDouble(): this.readInt();
+    order.orderType = this.readStr();
+    order.lmtPrice = this.serverVersion < 29 ? this.readDouble(): this.readDoubleMax();
+    order.auxPrice = this.serverVersion < 30 ? this.readDouble(): this.readDoubleMax();
+    order.tif = this.readStr();
+    order.ocaGroup = this.readStr();
+    order.account = this.readStr();
+    order.openClose = this.readStr();
+    order.origin = this.readInt();
+    order.orderRef = this.readStr();
+    order.permId = this.serverVersion >= 3 ? this.readInt() : undefined;
+    order.hidden = this.serverVersion >= 4 ? this.readBool() : undefined;
+    order.discretionaryAmt = this.serverVersion >= 4 ? this.readDouble() : undefined;
+    order.goodAfterTime = this.serverVersion >= 4 ? this.readStr() : undefined;
+
+    if(this.serverVersion >= 4 ) {
+      if (this.serverVersion < 18) {
+        // will never happen
+        /* ignoreRth = */ this.readBool();
+      }
+      else {
+        order.outsideRth = this.readBool();
+      }
+    }
+
+    if (this.serverVersion >= 7) {
+      order.faGroup = this.readStr();
+      order.faMethod = this.readStr();
+      order.faPercentage = this.readStr();
+      order.faProfile = this.readStr();
+    }
+
+    order.modelCode = this.serverVersion >= MIN_SERVER_VER.MODELS_SUPPORT ? this.readStr() : undefined;
+    order.goodTillDate = this.serverVersion >= 8 ? this.readStr() : undefined;
+
+    if (this.serverVersion >= 9) {
+
+      order.rule80A = this.serverVersion >= 9 ? this.readStr() : undefined;
+      order.percentOffset = this.serverVersion >= 9 ? this.readDoubleMax() : undefined;
+      order.settlingFirm = this.serverVersion >= 9 ? this.readStr() : undefined;
+
+      order.shortSaleSlot = this.readInt();
+      order.designatedLocation = this.readStr();
+      if (this.serverVersion == 51) {
+        this.readInt(); // exemptCode
+      } else if ( this.serverVersion >= 23){
+        order.exemptCode = this.readInt();
+      }
+
+      order.startingPrice = this.readDoubleMax();
+      order.stockRefPrice = this.readDoubleMax();
+      order.delta = this.readDoubleMax();
+
+      order.stockRangeLower = this.readDoubleMax();
+      order.stockRangeUpper = this.readDoubleMax();
+
+      order.displaySize = this.readInt();
+
+      order.sweepToFill = this.readBool();
+      order.allOrNone = this.readBool();
+      order.minQty = this.readIntMax();
+      order.ocaType = this.readInt();
+    }
+
+    order.triggerMethod = this.serverVersion >= 10 ? this.readInt() : undefined;
+
+    if (this.serverVersion >= 11) {
+      order.volatility = this.readDoubleMax();
+      order.volatilityType = this.readInt();
+      if (this.serverVersion == 11) {
+        order.deltaNeutralOrderType = (this.readInt() == 0) ? "NONE" : "MKT";
+      } else {
+        order.deltaNeutralOrderType = this.readStr();
+        order.deltaNeutralAuxPrice = this.readDoubleMax();
+
+        if (this.serverVersion >= 27 && order.deltaNeutralOrderType !== "") {
+          order.deltaNeutralConId = this.readInt();
+        }
+
+        if (this.serverVersion >= 31 && order.deltaNeutralOrderType !== "") {
+          order.deltaNeutralShortSale = this.readBool();
+          order.deltaNeutralShortSaleSlot = this.readInt();
+          order.deltaNeutralDesignatedLocation = this.readStr();
+        }
+      }
+      order.continuousUpdate = this.readInt();
+      if (this.serverVersion == 26) {
+        order.stockRangeLower = this.readDouble();
+        order.stockRangeUpper = this.readDouble();
+      }
+      order.referencePriceType = this.readInt();
+    }
+
+    order.trailStopPrice = this.serverVersion >= 13 ? this.readDoubleMax() : undefined;
+    order.trailingPercent = this.serverVersion >= 30 ? this.readDoubleMax() : undefined;
+
+    contract.comboLegsDescription = this.serverVersion >= 14 ? this.readStr() : undefined;
+    if (this.serverVersion >= 29) {
+      const comboLegsCount = this.readInt();
+      contract.comboLegs = new Array(comboLegsCount);
+      contract.comboLegs.forEach((leg) => {
+        leg.conId = this.readInt();
+        leg.ratio = this.readInt();
+        leg.action = this.readStr();
+        leg.exchange = this.readStr();
+        leg.openClose = this.readInt();
+        leg.shortSaleSlot = this.readInt();
+        leg.designatedLocation = this.readStr();
+        leg.exemptCode = this.readInt();
+      });
+
+      const orderComboLegsCount = this.readInt();
+      order.orderComboLegs = new Array(orderComboLegsCount);
+      order.orderComboLegs.forEach((leg) =>  {
+        leg.price = this.readDoubleMax();
+      });
+    }
+
+    if (this.serverVersion >= 26) {
+      const smartComboRoutingParamsCount = this.readInt();
+      order.smartComboRoutingParams = new Array(smartComboRoutingParamsCount);
+      order.smartComboRoutingParams.forEach((param) => {
+        param.tag = this.readStr();
+        param.value = this.readStr();
+      });
+    }
+
+    if (this.serverVersion >= 15) {
+      if (this.serverVersion >= 20) {
+        order.scaleInitLevelSize = this.readIntMax();
+        order.scaleSubsLevelSize = this.readIntMax();
+      } else {
+        /* notSuppScaleNumComponents = */ this.readIntMax();
+        order.scaleSubsLevelSize = this.readIntMax();
+      }
+      order.scalePriceIncrement = this.readDoubleMax();
+    }
+
+    if (this.serverVersion >= 28 && order.scalePriceIncrement > 0 && order.scalePriceIncrement !== Number.MAX_VALUE) {
+      order.scalePriceAdjustValue = this.readDoubleMax();
+      order.scalePriceAdjustInterval = this.readIntMax();
+      order.scaleProfitOffset = this.readDoubleMax();
+      order.scaleAutoReset = this.readBool();
+      order.scaleInitPosition = this.readIntMax();
+      order.scaleInitFillQty = this.readIntMax();
+      order.scaleRandomPercent = this.readBool();
+    }
+
+    if(this.serverVersion >= 24) {
+      order.hedgeType = this.readStr();
+      if (order.hedgeType !== "") {
+        order.hedgeParam = this.readStr();
+      }
+    }
+
+    if(this.serverVersion >= 19) {
+      order.clearingAccount = this.readStr();
+      order.clearingIntent = this.readStr();
+    }
+
+    if(this.serverVersion >= 22) {
+      order.notHeld = this.readBool();
+    }
+
+    if(this.serverVersion >= 20) {
+      if (this.readBool()) {
+        contract.deltaNeutralContract = {
+          conId: this.readInt(),
+          delta: this.readDouble(),
+          price: this.readDouble()
+        };
+      }
+    }
+
+    if(this.serverVersion >= 21) {
+      order.algoStrategy = this.readStr();
+      if (order.algoStrategy !== "") {
+        const algoParamsCount = this.readInt();
+        order.algoParams = new Array(algoParamsCount);
+        order.algoParams.forEach((param) => {
+          param.tag = this.readStr();
+          param.value = this.readStr();
+        });
+      }
+    }
+
+    if(this.serverVersion >= 33) {
+      order.solicited = this.readBool();
+    }
+
+    orderState.status = this.readStr();
+
+    if(this.serverVersion >= 34) {
+      order.randomizeSize = this.readBool();
+      order.randomizePrice = this.readBool();
+    }
+
+    if(this.serverVersion >= MIN_SERVER_VER.PEGGED_TO_BENCHMARK) {
+
+      if (order.orderType == OrderType.PEG_BENCH) {
+        order.referenceContractId = this.readInt();
+        order.isPeggedChangeAmountDecrease = this.readBool();
+        order.peggedChangeAmount = this.readDouble();
+        order.referenceChangeAmount = this.readDouble();
+        order.referenceExchangeId = this.readStr();
+      }
+
+      const nConditions = this.readInt();
+      order.conditions = new Array(nConditions);
+
+      for (let i = 0; i < nConditions; i++) {
+
+        const type = this.readInt();
+
+        let conjunctionConnection = this.readStr();
+        conjunctionConnection = !conjunctionConnection ? undefined : conjunctionConnection.toLocaleLowerCase();
+
+        switch(type) {
+          case OrderConditionType.Execution: {
+            const secType = this.readStr() as SecType;
+            const exchange = this.readStr();
+            const symbol = this.readStr();
+
+            order.conditions[i] = new ExecutionCondition(exchange, secType, symbol, conjunctionConnection as ConjunctionConnection);
+            break;
+          }
+
+          case OrderConditionType.Margin: {
+            /*
+             * FIXME: this seems to be a bug on current Java client implementation as MarginCondition.java has no readFrom function
+             */
+            order.conditions[i] = new MarginCondition(
+              Number.MAX_VALUE, // where does this come from ??
+              conjunctionConnection as ConjunctionConnection);
+            break;
+          }
+
+          case OrderConditionType.PercentChange: {
+            const condId = this.readInt();
+            const exchange = this.readStr();
+            /*
+             * FIXME: this seems to be a bug on current Java client implementation as PercentChangeCondition.java has no readFrom function
+             */
+            order.conditions[i] = new PercentChangeCondition(
+              Number.MAX_VALUE, // TODO: where does this come from ??
+              condId,
+              exchange,
+              conjunctionConnection as ConjunctionConnection);
+            break;
+          }
+
+          case OrderConditionType.Price: {
+            const condId = this.readInt();
+            const exchange = this.readStr();
+            const triggerMethod = this.readInt() as TriggerMethod;
+
+            order.conditions[i] = new PriceCondition(
+              Number.MAX_VALUE, // TODO: where does this come from ??
+              triggerMethod,
+              condId,
+              exchange,
+              conjunctionConnection as ConjunctionConnection);
+            break;
+          }
+
+          case OrderConditionType.Time: {
+            /*
+             * FIXME: this seems to be a bug on current Java client implementation as TimeCondition.java has no readFrom function
+             */
+            order.conditions[i] = new TimeCondition(
+              "", // TODO: where does this come from ??
+              conjunctionConnection as ConjunctionConnection);
+            break;
+          }
+
+          case OrderConditionType.Volume: {
+            const condId = this.readInt();
+            const exchange = this.readStr();
+            /*
+             * FIXME: this seems to be a bug on current Java client implementation as VolumeCondition.java has no readFrom function
+             */
+            order.conditions[i] = new VolumeCondition(
+              Number.MAX_VALUE, // TODO: where does this come from ??
+              condId,
+              exchange,
+              conjunctionConnection as ConjunctionConnection);
+            break;
+          }
+        }
+      }
+
+      if (order.conditions.length) {
+        order.conditionsIgnoreRth = this.readBool();
+        order.conditionsCancelOrder = this.readBool();
+      }
+    }
+
+    order.trailStopPrice = this.readDoubleMax();
+    order.lmtPriceOffset = this.readDoubleMax();
+
+    if (this.serverVersion >= MIN_SERVER_VER.CASH_QTY) {
+      order.cashQty = this.readDoubleMax();
+    }
+
+    if (this.serverVersion >= MIN_SERVER_VER.ORDER_CONTAINER) {
+      order.isOmsContainer = this.readBool();
+    }
+
+    order.autoCancelDate = this.readStr();
+    order.filledQuantity = this.readDoubleMax();
+    order.refFuturesConId = this.readInt();
+    order.autoCancelParent = this.readBool();
+    order.shareholder = this.readStr();
+    order.imbalanceOnly = this.readBool();
+    order.routeMarketableToBbo = this.readBool();
+    order.parentPermId = this.readInt();
+    orderState.completedTime = this.readStr();
+    orderState.completedStatus = this.readStr();
+
+    this.emit(EventName.completedOrder, contract, order, orderState);
+  }
+
+  /**
+   * Decode a COMPLETED_ORDER_END message from data queue and a emit completedOrdersEnd event.
+   */
+  private decodeMsg_COMPLETED_ORDER_END(): void {
+    this.emit(EventName.completedOrdersEnd);
+  }
+
+  /**
+   * The API server version.
+   */
+  private get serverVersion(): number {
+    return this.controller.serverVersion;
+  }
+
+  /**
    * Decode a [[Contract]] object from data queue.
    */
   private decodeContract(version: number): Contract {
     const contract: Contract = {};
 
-    contract.conId = this.dequeueInt();
-    contract.symbol = this.dequeue();
-    contract.secType = this.dequeue() as SecType;
-    contract.lastTradeDateOrContractMonth = this.dequeue();
-    contract.strike = this.dequeueFloat();
-    contract.right = this.dequeue() as OptionType;
+    contract.conId = this.readInt();
+    contract.symbol = this.readStr();
+    contract.secType = this.readStr() as SecType;
+    contract.lastTradeDateOrContractMonth = this.readStr();
+    contract.strike = this.readDouble();
+    contract.right = this.readStr() as OptionType;
 
     if (version >= 32) {
-      contract.multiplier = this.dequeueInt();
+      contract.multiplier = this.readInt();
     }
 
-    contract.exchange = this.dequeue();
-    contract.currency = this.dequeue();
-    contract.localSymbol = this.dequeue();
+    contract.exchange = this.readStr();
+    contract.currency = this.readStr();
+    contract.localSymbol = this.readStr();
 
     if (version >= 32) {
-      contract.tradingClass = this.dequeue();
+      contract.tradingClass = this.readStr();
     }
 
     return contract;
@@ -1895,104 +2309,104 @@ export class Decoder {
   private decodeOrder(version: number): Order {
     const order: Order = {};
 
-    order.action = this.dequeue();
+    order.action = this.readStr();
 
     if (this.controller.serverVersion >= MIN_SERVER_VER.FRACTIONAL_POSITIONS)	{
-      order.totalQuantity = this.dequeueFloat();
+      order.totalQuantity = this.readDouble();
     } else {
-      order.totalQuantity = this.dequeueInt();
+      order.totalQuantity = this.readInt();
     }
 
-    order.orderType = this.dequeue();
+    order.orderType = this.readStr();
 
     if (version < 29) {
-      order.lmtPrice = this.dequeueFloat();
+      order.lmtPrice = this.readDouble();
     } else {
-      order.lmtPrice = this.dequeueFloat() || Number.MAX_VALUE;
+      order.lmtPrice = this.readDouble() || Number.MAX_VALUE;
     }
 
     if (version < 30) {
-      order.auxPrice = this.dequeueFloat();
+      order.auxPrice = this.readDouble();
     } else {
-      order.auxPrice = this.dequeueFloat() || Number.MAX_VALUE;
+      order.auxPrice = this.readDouble() || Number.MAX_VALUE;
     }
 
-    order.tif = this.dequeue();
-    order.ocaGroup = this.dequeue();
-    order.account = this.dequeue();
-    order.openClose = this.dequeue();
-    order.origin = this.dequeueInt();
-    order.orderRef = this.dequeue();
-    order.clientId = this.dequeueInt();
-    order.permId = this.dequeueInt();
-    order.outsideRth = this.dequeueBool();
-    order.hidden = this.dequeueBool();
-    order.discretionaryAmt = this.dequeueFloat();
-    order.goodAfterTime = this.dequeue();
-    this.dequeue(); // skip deprecated sharesAllocation field
-    order.faGroup = this.dequeue();
-    order.faMethod = this.dequeue();
-    order.faPercentage = this.dequeue();
-    order.faProfile = this.dequeue();
-    order.goodTillDate = this.dequeue();
-    order.rule80A = this.dequeue();
-    order.percentOffset = this.dequeueFloat() || Number.MAX_VALUE;
-    order.settlingFirm = this.dequeue();
-    order.shortSaleSlot = this.dequeueInt();
-    order.designatedLocation = this.dequeue();
+    order.tif = this.readStr();
+    order.ocaGroup = this.readStr();
+    order.account = this.readStr();
+    order.openClose = this.readStr();
+    order.origin = this.readInt();
+    order.orderRef = this.readStr();
+    order.clientId = this.readInt();
+    order.permId = this.readInt();
+    order.outsideRth = this.readBool();
+    order.hidden = this.readBool();
+    order.discretionaryAmt = this.readDouble();
+    order.goodAfterTime = this.readStr();
+    this.readStr(); // skip deprecated sharesAllocation field
+    order.faGroup = this.readStr();
+    order.faMethod = this.readStr();
+    order.faPercentage = this.readStr();
+    order.faProfile = this.readStr();
+    order.goodTillDate = this.readStr();
+    order.rule80A = this.readStr();
+    order.percentOffset = this.readDouble() || Number.MAX_VALUE;
+    order.settlingFirm = this.readStr();
+    order.shortSaleSlot = this.readInt();
+    order.designatedLocation = this.readStr();
 
     if (this.controller.serverVersion === MIN_SERVER_VER.SSHORTX_OLD) {
-      this.dequeueInt();  // exemptCode
+      this.readInt();  // exemptCode
     } else if (version >= 23) {
-      order.exemptCode = this.dequeueInt();
+      order.exemptCode = this.readInt();
     }
 
-    order.auctionStrategy = this.dequeueInt();
-    order.startingPrice = this.dequeueFloat() || Number.MAX_VALUE;
-    order.stockRefPrice = this.dequeueFloat() || Number.MAX_VALUE;
-    order.delta = this.dequeueFloat() || Number.MAX_VALUE;
-    order.stockRangeLower = this.dequeueFloat() || Number.MAX_VALUE;
-    order.stockRangeUpper = this.dequeueFloat() || Number.MAX_VALUE;
-    order.displaySize = this.dequeueInt();
-    order.blockOrder = this.dequeueBool();
-    order.sweepToFill = this.dequeueBool();
-    order.allOrNone = this.dequeueBool();
-    order.minQty = this.dequeueInt() || Number.MAX_VALUE;
-    order.ocaType = this.dequeueInt();
-    order.eTradeOnly = this.dequeueBool();
-    order.firmQuoteOnly = this.dequeueBool();
-    order.nbboPriceCap = this.dequeueFloat() || Number.MAX_VALUE;
-    order.parentId = this.dequeueInt();
-    order.triggerMethod = this.dequeueInt();
-    order.volatility = this.dequeueFloat() || Number.MAX_VALUE;
-    order.volatilityType = this.dequeueInt();
-    order.deltaNeutralOrderType = this.dequeue();
-    order.deltaNeutralAuxPrice = this.dequeueFloat() || Number.MAX_VALUE;
+    order.auctionStrategy = this.readInt();
+    order.startingPrice = this.readDouble() || Number.MAX_VALUE;
+    order.stockRefPrice = this.readDouble() || Number.MAX_VALUE;
+    order.delta = this.readDouble() || Number.MAX_VALUE;
+    order.stockRangeLower = this.readDouble() || Number.MAX_VALUE;
+    order.stockRangeUpper = this.readDouble() || Number.MAX_VALUE;
+    order.displaySize = this.readInt();
+    order.blockOrder = this.readBool();
+    order.sweepToFill = this.readBool();
+    order.allOrNone = this.readBool();
+    order.minQty = this.readInt() || Number.MAX_VALUE;
+    order.ocaType = this.readInt();
+    order.eTradeOnly = this.readBool();
+    order.firmQuoteOnly = this.readBool();
+    order.nbboPriceCap = this.readDouble() || Number.MAX_VALUE;
+    order.parentId = this.readInt();
+    order.triggerMethod = this.readInt();
+    order.volatility = this.readDouble() || Number.MAX_VALUE;
+    order.volatilityType = this.readInt();
+    order.deltaNeutralOrderType = this.readStr();
+    order.deltaNeutralAuxPrice = this.readDouble() || Number.MAX_VALUE;
 
     if (version >= 27 && order?.deltaNeutralOrderType.length) {
-      order.deltaNeutralConId = this.dequeueInt();
-      order.deltaNeutralSettlingFirm = this.dequeue();
-      order.deltaNeutralClearingAccount = this.dequeue();
-      order.deltaNeutralClearingIntent = this.dequeue();
+      order.deltaNeutralConId = this.readInt();
+      order.deltaNeutralSettlingFirm = this.readStr();
+      order.deltaNeutralClearingAccount = this.readStr();
+      order.deltaNeutralClearingIntent = this.readStr();
     }
 
     if (version >= 31 && order?.deltaNeutralOrderType.length) {
-      order.deltaNeutralOpenClose = this.dequeue();
-      order.deltaNeutralShortSale = this.dequeueBool();
-      order.deltaNeutralShortSaleSlot = this.dequeueInt();
-      order.deltaNeutralDesignatedLocation = this.dequeue();
+      order.deltaNeutralOpenClose = this.readStr();
+      order.deltaNeutralShortSale = this.readBool();
+      order.deltaNeutralShortSaleSlot = this.readInt();
+      order.deltaNeutralDesignatedLocation = this.readStr();
     }
 
-    order.continuousUpdate = this.dequeueInt();
-    order.referencePriceType = this.dequeueInt();
-    order.trailStopPrice = this.dequeueFloat() || Number.MAX_VALUE;
+    order.continuousUpdate = this.readInt();
+    order.referencePriceType = this.readInt();
+    order.trailStopPrice = this.readDouble() || Number.MAX_VALUE;
 
     if (version >= 30) {
-      order.trailingPercent = this.dequeueFloat() || Number.MAX_VALUE;
+      order.trailingPercent = this.readDouble() || Number.MAX_VALUE;
     }
 
-    order.basisPoints = this.dequeueFloat() || Number.MAX_VALUE;
-    order.basisPointsType = this.dequeueInt() || Number.MAX_VALUE;
+    order.basisPoints = this.readDouble() || Number.MAX_VALUE;
+    order.basisPointsType = this.readInt() || Number.MAX_VALUE;
 
     return order;
   }
@@ -2002,14 +2416,14 @@ export class Decoder {
    */
   private decodeComboLeg(): ComboLeg {
     return {
-      conId: this.dequeueInt(),
-      ratio: this.dequeueInt(),
-      action: this.dequeue(),
-      exchange: this.dequeue(),
-      openClose: this.dequeueInt(),
-      shortSaleSlot: this.dequeueInt(),
-      designatedLocation: this.dequeue(),
-      exemptCode: this.dequeueInt()
+      conId: this.readInt(),
+      ratio: this.readInt(),
+      action: this.readStr(),
+      exchange: this.readStr(),
+      openClose: this.readInt(),
+      shortSaleSlot: this.readInt(),
+      designatedLocation: this.readStr(),
+      exemptCode: this.readInt()
     };
   }
 
@@ -2017,7 +2431,7 @@ export class Decoder {
    * Read last trade date, parse it and assign to proper [[ContractDetails]] attributes.
    */
   private readLastTradeDate(contract: ContractDetails, isBond: boolean): void {
-    const lastTradeDateOrContractMonth = this.dequeue();
+    const lastTradeDateOrContractMonth = this.readStr();
     if (lastTradeDateOrContractMonth?.length) {
 
         const tokens = lastTradeDateOrContractMonth.split("\\s+");

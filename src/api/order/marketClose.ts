@@ -11,5 +11,5 @@ export class MarketCloseOrder {
     public totalQuantity: number,
     public transmit: boolean = true) { }
 
-  public orderType = OrderType.MarketClose;
+  public orderType = OrderType.MOC;
 }

@@ -18,5 +18,5 @@ export class TrailingStopOrder {
       this.tif = this.tif ?? "DAY";
     }
 
-  public orderType = OrderType.TrailingStop;
+  public orderType = OrderType.TRAIL;
 }

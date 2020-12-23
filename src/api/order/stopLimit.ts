@@ -19,5 +19,5 @@ export class StopLimitOrder {
       this.tif = this.tif ?? "DAY";
     }
 
-  public orderType = OrderType.StopLimit;
+  public orderType = OrderType.STP_LMT;
 }
