@@ -12,11 +12,11 @@
   ],
   "scripts": {
     "lint": "eslint . --ext .ts",
-    "build": "rimraf dist && tsc -p . && typedoc src --stripInternal",
-    "prepare": "npm run build",
-    "dev": "npm run build && ts-node-dev --respawn --transpile-only examples/all.ts",
-    "dev:debug": "npm run build && ts-node-dev --inspect=9222 --respawn --transpile-only examples/all.ts",
-    "doc": "typedoc src"
+    "test": "mocha -r ts-node/register src/**/*.spec.ts",
+    "build": "rimraf dist && tsc -p .",
+    "release": "npm test && npm run doc && npm run build",
+    "doc": "typedoc src --stripInternal",
+    "doc:dev": "typedoc src --out ./doc-dev"
   },
   "engines": {
     "node": ">=4.2.0"
@@ -73,7 +73,6 @@
     "mocha": "^7.1.1",
     "rimraf": "^2.7.1",
     "ts-node": "^8.4.1",
-    "ts-node-dev": "^1.1.1",
     "typedoc": "^0.19.2",
     "typescript": "^3.2.4"
   },

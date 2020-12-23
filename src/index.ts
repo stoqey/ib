@@ -30,23 +30,20 @@
 
 export {
   IBApi,
-  IBApi as IB, // IB alias exists for backwards compatibility reason
+  EventName,
   LogLevel,
   OptionExerciseAction,
   FADataType,
-  SoftDollarTier
+  SoftDollarTier,
+  MIN_SERVER_VER,
 } from "./api/api";
-
-// export minimum server versions
-
-export { MIN_SERVER_VER } from "./api/minServerVer";
 
 // export contract types
 
 export { CFD } from "./api/contract/cfd";
 export { Combo } from "./api/contract/combo";
 export { ComboLeg } from "./api/contract/comboLeg";
-export { Contract } from "./api/contract/contract";
+export { Contract, SecType, OptionType } from "./api/contract/contract";
 export { ContractDescription } from "./api/contract/contractDescription";
 export { ContractDetails } from "./api/contract/contractDetails";
 export { DeltaNeutralContract } from "./api/contract/deltaNeutralContract";
@@ -68,3 +65,21 @@ export { HistoricalTickLast } from "./api/historical/historicalTickLast";
 // export realtime market-data types
 
 export { TickType, TickByTickDataType } from "./api/market/tickType";
+export { ScannerSubscription } from "./api/market/scannerSubscription";
+
+// export order types
+
+export { Liquidities, Execution } from "./api/order/execution";
+export { LimitOrder } from "./api/order/limit";
+export { MarketCloseOrder } from "./api/order/marketClose";
+export { OrderAction, OrderConditionType, OrderConditionConjunction, OrderCondition, Order } from "./api/order/order";
+export { OrderComboLeg } from "./api/order/orderComboLeg";
+export { OrderState } from "./api/order/orderState";
+export { StopOrder } from "./api/order/stop";
+export { StopLimitOrder } from "./api/order/stopLimit";
+export { TrailingStopOrder } from "./api/order/trailingStop";
+
+// export report types
+
+export { CommissionReport } from "./api/report/commissionReport";
+export { ExecutionFilter } from "./api/report/executionFilter";

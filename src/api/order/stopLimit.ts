@@ -1,4 +1,4 @@
-import { OrderAction } from "./oder";
+import { OrderAction } from "./order";
 import { OrderType } from "./oderType";
 
 /**

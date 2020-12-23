@@ -1,11 +1,11 @@
 
 import CommandBuffer from "command-buffer";
-import * as C from "../constants";
+import rateLimit from "function-rate-limit";
 import { Socket } from "./socket";
-import { Incoming } from "./incoming";
-import Outgoing from "./outgoing";
-
-import { IBApi, IBApiCreationOptions } from "../api/api";
+import { Decoder } from "./decoder";
+import { Encoder, EncoderCallbacks } from "./encoder";
+import { EventName, IBApi, IBApiCreationOptions } from "../api/api";
+import { Config } from "../config";
 
 /**
  * @internal
@@ -13,7 +13,7 @@ import { IBApi, IBApiCreationOptions } from "../api/api";
  * This class implements the dispatcher between public API and the
  * underlying I/O code.
  */
-export class Controller {
+export class Controller implements EncoderCallbacks {
 
   /**
    *
@@ -32,15 +32,29 @@ export class Controller {
   /** The command buffer. */
   private readonly commands = new CommandBuffer(Controller.execute, this);
 
-  /** The API message serializer. */
-  private readonly outgoing = new Outgoing(this);
+  /** The API message encoder. */
+  private readonly encoder = new Encoder(this);
 
-  /** The API message de-serializer. */
-  private readonly incoming = new Incoming(this);
+  /** The API message decoder. */
+  private readonly decoder = new Decoder(this);
 
   /** Get the API server version. */
   get serverVersion(): number {
     return this.socket.serverVersion;
+  }
+
+  /**
+   * Send a message to the server connection.
+   *
+   * This function is called from the [[Encoder]] (via [EncoderCallbacks.sendMsg]).
+   *
+   * @param args Array of tokens to send.
+   * Can contain nested arrays.
+   */
+  sendMsg(...tokens: unknown[]): void {
+    rateLimit(Config.MAX_REQ_PER_SECOND, 1000, () => {
+      this.socket.send(tokens);
+    })();
   }
 
   /**
@@ -49,14 +63,7 @@ export class Controller {
    * @param args Event arguments.
    * First argument is the event name, followed by event arguments.
    */
-  emit(eventName: string, ...args: unknown[]): void {
-
-    // resolve message on Error object to a token
-
-    if (eventName === "error" &&
-    ((args[0] instanceof Error) || (args[0] as Record<string, string>).message !== undefined)) {
-      args[1] = (args[1] as Record<string, string>).message;
-    }
+  emit(eventName: EventName, ...args: unknown[]): void {
 
     // emit the event
 
@@ -64,29 +71,38 @@ export class Controller {
 
     // emit 'result' and 'all' event
 
-    if (eventName !== "connected" &&
-        eventName !== "disconnected" &&
-        eventName !== "error" &&
-        eventName !== "received" &&
-        eventName !== "sent" &&
-        eventName !== "server") {
-      this.ib.emit("result", eventName, args);
+    if (eventName !== EventName.connected &&
+        eventName !== EventName.disconnected &&
+        eventName !== EventName.error &&
+        eventName !== EventName.received &&
+        eventName !== EventName.sent &&
+        eventName !== EventName.server) {
+      this.ib.emit(EventName.result, eventName, args);
     }
 
-    this.ib.emit("all", eventName, args);
+    this.ib.emit(EventName.all, eventName, args);
+  }
+
+   /**
+   * Emit an information message event to public API interface.
+   *
+   * @param errMsg The message text.
+   */
+  emitInfo(message: string): void {
+    this.emit(EventName.info, message);
   }
 
   /**
    * Emit an error event to public API interface.
    *
    * @param errMsg The error test message.
-  * @param data Additional error data (optional).
+   * @param data Additional error data (optional).
    */
   emitError(errMsg: string, data?: unknown): void {
     if (data === undefined) {
-      this.emit("error", new Error(errMsg));
+      this.emit(EventName.error, new Error(errMsg));
     } else {
-      this.emit("error", new Error(errMsg), data);
+      this.emit(EventName.error, new Error(errMsg), data);
     }
   }
 
@@ -141,14 +157,14 @@ export class Controller {
    * Progress the ingress data queue.
    */
   processIngressQueue(): void {
-    this.incoming.process();
+    this.decoder.process();
   }
 
   /**
    * Called when new data has been arrived from on the API server connection.
    */
   onDataIngress(tokens: string[]): void {
-    this.incoming.enqueue(tokens);
+    this.decoder.enqueue(tokens);
   }
 
   /**
@@ -196,8 +212,8 @@ export class Controller {
    * @see [[api]]
    */
   private executeApi(funcName: string, args: unknown[]): void {
-    if (this.outgoing[funcName] instanceof Function) {
-      this.outgoing[funcName](args);
+    if (this.encoder[funcName] instanceof Function) {
+      this.encoder[funcName](args);
     } else {
       throw new Error("Unknown outgoing func - " + funcName);
     }

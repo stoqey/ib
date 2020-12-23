@@ -1,9 +1,8 @@
 import net from "net";
-import { IBApiCreationOptions } from "../api/api";
-import * as C from "../constants";
+import { EventName, IBApiCreationOptions, MIN_SERVER_VER } from "../api/api";
 import { Controller } from "./controller";
-import { Config } from "./config";
-import { MIN_SERVER_VER } from "../api/minServerVer";
+import { Config } from "../config";
+import { OUT_MSG_ID } from "./encoder";
 
 /** @hidden */
 const EOL = "\0";
@@ -34,7 +33,7 @@ export class Socket {
   /** The TCP client socket. */
   private client: net.Socket;
 
-  /** `true` if the TCP socket is connected and START_API has been sent, `false` otherwise.  */
+  /** `true` if the TCP socket is connected and [[OUT_MSG_ID.START_API]] has been sent, `false` otherwise.  */
   private _connected = false;
 
   /** The IB API Server version, or 0 if not connected yet. */
@@ -129,7 +128,7 @@ export class Socket {
     const data = tokens.join(EOL) + EOL;
 
     this.client.write(data);
-    this.controller.emit("sent", tokens, data);
+    this.controller.emit(EventName.sent, tokens, data);
   }
 
   /**
@@ -150,7 +149,7 @@ export class Socket {
 
     tokens = tokens.slice(0, -1);
 
-    this.controller.emit("received", tokens.slice(0), data);
+    this.controller.emit(EventName.received, tokens.slice(0), data);
 
     // handle message data
 
@@ -166,8 +165,8 @@ export class Socket {
 
       this.startAPI();
 
-      this.controller.emit("connected");
-      this.controller.emit("server", this.serverVersion, this.serverConnectionTime);
+      this.controller.emit(EventName.connected);
+      this.controller.emit(EventName.server, this.serverVersion, this.serverConnectionTime);
 
     } else {
 
@@ -201,9 +200,9 @@ export class Socket {
         this.send([this.options.clientId]);
       } else {
           if (this.serverVersion >= MIN_SERVER_VER.OPTIONAL_CAPABILITIES) {
-            this.send([C.OUTGOING.START_API, VERSION, this.options.clientId, ""]);
+            this.send([OUT_MSG_ID.START_API, VERSION, this.options.clientId, ""]);
           } else {
-            this.send([C.OUTGOING.START_API, VERSION, this.options.clientId]);
+            this.send([OUT_MSG_ID.START_API, VERSION, this.options.clientId]);
           }
       }
     }
@@ -233,7 +232,7 @@ export class Socket {
     const wasConnected = this._connected;
     this._connected = false;
     if (wasConnected) {
-      this.controller.emit("disconnected");
+      this.controller.emit(EventName.disconnected);
     }
 
     // resume controller (drain queue into disconnected socket)
@@ -248,7 +247,7 @@ export class Socket {
 
     // emit error event
 
-    this.controller.emit("error", err);
+    this.controller.emit(EventName.error, err);
   }
 
   /**
