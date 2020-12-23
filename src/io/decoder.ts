@@ -2226,14 +2226,11 @@ export class Decoder {
 
       const nConditions = this.readInt();
       order.conditions = new Array(nConditions);
-
       for (let i = 0; i < nConditions; i++) {
-
         const type = this.readInt();
-        let conjunctionConnection = this.readStr()?.toLocaleLowerCase();
-        if (conjunctionConnection === "") {
-          conjunctionConnection = undefined;
-        }
+
+        // OrderCondition
+        const conjunctionConnection = this.readStr()?.toLocaleLowerCase();
 
         switch(type) {
           case OrderConditionType.Execution: {
@@ -2241,68 +2238,88 @@ export class Decoder {
             const exchange = this.readStr();
             const symbol = this.readStr();
 
-            order.conditions[i] = new ExecutionCondition(exchange, secType, symbol, conjunctionConnection as ConjunctionConnection);
+            order.conditions[i] = new ExecutionCondition(
+              exchange,
+              secType,
+              symbol,
+              conjunctionConnection as ConjunctionConnection);
             break;
           }
 
           case OrderConditionType.Margin: {
-            /*
-             * FIXME: this seems to be a bug on current Java client implementation as MarginCondition.java has no readFrom function
-             */
+            // OperatorCondition
+            const isMore = this.readBool();
+            const value = this.readInt();
+
             order.conditions[i] = new MarginCondition(
-              Number.MAX_VALUE, // where does this come from ??
+              value,
+              isMore,
               conjunctionConnection as ConjunctionConnection);
             break;
           }
 
           case OrderConditionType.PercentChange: {
+            // OperatorCondition
+            const isMore = this.readBool();
+            const value = this.readDouble();
+            // ContractCondition
             const condId = this.readInt();
             const exchange = this.readStr();
-            /*
-             * FIXME: this seems to be a bug on current Java client implementation as PercentChangeCondition.java has no readFrom function
-             */
+
             order.conditions[i] = new PercentChangeCondition(
-              Number.MAX_VALUE, // TODO: where does this come from ??
+              value,
               condId,
-              exchange,
-              conjunctionConnection as ConjunctionConnection);
+               exchange,
+               isMore,
+               conjunctionConnection as ConjunctionConnection);
             break;
           }
 
           case OrderConditionType.Price: {
+            // OperatorCondition
+            const isMore = this.readBool();
+            const value = this.readDouble();
+            // ContractCondition
             const condId = this.readInt();
             const exchange = this.readStr();
+            // PriceCondition
             const triggerMethod = this.readInt() as TriggerMethod;
 
             order.conditions[i] = new PriceCondition(
-              Number.MAX_VALUE, // TODO: where does this come from ??
+              value,
               triggerMethod,
               condId,
               exchange,
+              isMore,
               conjunctionConnection as ConjunctionConnection);
             break;
           }
 
           case OrderConditionType.Time: {
-            /*
-             * FIXME: this seems to be a bug on current Java client implementation as TimeCondition.java has no readFrom function
-             */
+            // OperatorCondition
+            const isMore = this.readBool();
+            const value = this.readStr();
+
             order.conditions[i] = new TimeCondition(
-              "", // TODO: where does this come from ??
+              value,
+              isMore,
               conjunctionConnection as ConjunctionConnection);
             break;
           }
 
           case OrderConditionType.Volume: {
+            // OperatorCondition
+            const isMore = this.readBool();
+            const value = this.readInt();
+            // ContractCondition
             const condId = this.readInt();
             const exchange = this.readStr();
-            /*
-             * FIXME: this seems to be a bug on current Java client implementation as VolumeCondition.java has no readFrom function
-             */
+
             order.conditions[i] = new VolumeCondition(
-              Number.MAX_VALUE, // TODO: where does this come from ??
+              value,
               condId,
               exchange,
+              isMore,
               conjunctionConnection as ConjunctionConnection);
             break;
           }

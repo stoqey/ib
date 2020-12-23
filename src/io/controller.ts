@@ -33,78 +33,10 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
   private readonly commands = new CommandBuffer(Controller.execute, this);
 
   /** The API message encoder. */
-  private readonly encoder = new Encoder(this);
+  readonly encoder = new Encoder(this);
 
   /** The API message decoder. */
-  private readonly decoder = new Decoder(this);
-
-  /** Get the API server version. */
-  get serverVersion(): number {
-    return this.socket.serverVersion;
-  }
-
-  /**
-   * Send a message to the server connection.
-   *
-   * This function is called from the [[Encoder]] (via [EncoderCallbacks.sendMsg]).
-   *
-   * @param args Array of tokens to send.
-   * Can contain nested arrays.
-   */
-  sendMsg(...tokens: unknown[]): void {
-    rateLimit(Config.MAX_REQ_PER_SECOND, 1000, () => {
-      this.socket.send(tokens);
-    })();
-  }
-
- /**
-   * Emit an event to public API interface.
-   *
-   * @param eventName Event name.
-   * @param args Event arguments.
-   */
-  emitEvent(eventName: EventName, ...args: unknown[]): void {
-
-    // emit the event
-
-    this.ib.emit(eventName, ...args);
-
-    // emit 'result' and 'all' event
-
-    if (eventName !== EventName.connected &&
-        eventName !== EventName.disconnected &&
-        eventName !== EventName.error &&
-        eventName !== EventName.received &&
-        eventName !== EventName.sent &&
-        eventName !== EventName.server) {
-      this.ib.emit(EventName.result, eventName, args);
-    }
-
-    this.ib.emit(EventName.all, eventName, args);
-  }
-
-   /**
-   * Emit an information message event to public API interface.
-   *
-   * @param errMsg The message text.
-   */
-  emitInfo(message: string): void {
-    this.emitEvent(EventName.info, message);
-  }
-
-  /**
-   * Emit an error event to public API interface.
-   *
-   * @param errMsg The error test message.
-   * @param data Additional error data (optional).
-   */
-  emitError(errMsg: string, data?: unknown): void {
-    if (data === undefined) {
-      this.emitEvent(EventName.error, new Error(errMsg));
-    } else {
-      this.emitEvent(EventName.error, new Error(errMsg), data);
-    }
-  }
+  readonly decoder = new Decoder(this);
 
   /**
    * Pause command processing.
@@ -140,8 +72,8 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
    * @param funcName API function name.
    * @param data Array of tokens to send.
    */
-  api(funcName: string, ...args: unknown[]): void {
-    this.commands.schedule(() => this.executeApi(funcName, args));
+  schedule(func: () => void): void {
+    this.commands.schedule(() => func());
   }
 
   /**
@@ -165,6 +97,86 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
    */
   onDataIngress(tokens: string[]): void {
     this.decoder.enqueue(tokens);
+  }
+
+  /**
+   * Get the API server version.
+   *
+   * This function is called from the [[Decoder]] and [[Encoder]]
+   * (via [DecoderCallbacks.serverVersion] and [DecoderCallbacks.serverVersion]).
+   */
+  get serverVersion(): number {
+    return this.socket.serverVersion;
+  }
+
+  /**
+   * Send a message to the server connection.
+   *
+   * This function is called from the [[Encoder]] (via [EncoderCallbacks.sendMsg]).
+   *
+   * @param args Array of tokens to send.
+   * Can contain nested arrays.
+   */
+  sendMsg(...tokens: unknown[]): void {
+    rateLimit(Config.MAX_REQ_PER_SECOND, 1000, () => {
+      this.socket.send(tokens);
+    })();
+  }
+
+ /**
+   * Emit an event to public API interface.
+   *
+   * This function is called from the [[Decoder]] (via [DecoderCallbacks.emitEvent]).
+   *
+   * @param eventName Event name.
+   * @param args Event arguments.
+   */
+  emitEvent(eventName: EventName, ...args: unknown[]): void {
+
+    // emit the event
+
+    this.ib.emit(eventName, ...args);
+
+    // emit 'result' and 'all' event
+
+    if (eventName !== EventName.connected &&
+        eventName !== EventName.disconnected &&
+        eventName !== EventName.error &&
+        eventName !== EventName.received &&
+        eventName !== EventName.sent &&
+        eventName !== EventName.server) {
+      this.ib.emit(EventName.result, eventName, args);
+    }
+
+    this.ib.emit(EventName.all, eventName, args);
+  }
+
+   /**
+   * Emit an information message event to public API interface.
+   *
+   * This function is called from the [[Decoder]] (via [DecoderCallbacks.emitInfo]).
+   *
+   * @param errMsg The message text.
+   */
+  emitInfo(message: string): void {
+    this.emitEvent(EventName.info, message);
+  }
+
+  /**
+   * Emit an error event to public API interface.
+   *
+   * This function is called from the [[Decoder]] and [[Encoder]]
+   * (via [DecoderCallbacks.emitError] and [DecoderCallbacks.emitError]).
+   *
+   * @param errMsg The error test message.
+   * @param data Additional error data (optional).
+   */
+  emitError(errMsg: string, data?: unknown): void {
+    if (data === undefined) {
+      this.emitEvent(EventName.error, new Error(errMsg));
+    } else {
+      this.emitEvent(EventName.error, new Error(errMsg), data);
+    }
   }
 
   /**
@@ -211,13 +223,14 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
    *
    * @see [[api]]
    */
+  /*
   private executeApi(funcName: string, args: unknown[]): void {
     if (this.encoder[funcName] instanceof Function) {
       this.encoder[funcName](args);
     } else {
       throw new Error("Unknown outgoing func - " + funcName);
     }
-  }
+  }*/
 
   /**
    * Send raw token data to the server connection.

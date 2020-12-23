@@ -38,18 +38,26 @@ export interface OrderCondition {
   /** Condition type */
   type: OrderConditionType;
 
-  /**
-   * Conjunction connection type.
-   *
-   * If `undefined`, there are no more conjunctions.
-   */
-  conjunctionConnection?: ConjunctionConnection;
+  /** Conjunction connection type. */
+  conjunctionConnection: ConjunctionConnection;
+}
+
+/**
+ * TODO document
+ */
+export interface OperatorCondition extends OrderCondition {
+
+  /** TODO document */
+  isMore: boolean;
+
+  /** Value as string representation. */
+  readonly strValue: string;
 }
 
 /**
  * An order execution condition with contract details.
  */
-export interface ContractCondition {
+export interface ContractCondition extends OperatorCondition {
 
   /** The contract id. */
   conId: number;
@@ -79,13 +87,13 @@ export class ExecutionCondition implements OrderCondition {
     public exchange: string,
     public secType: SecType,
     public symbol: string,
-    public conjunctionConnection?: ConjunctionConnection) { }
+    public conjunctionConnection: ConjunctionConnection) { }
 }
 
 /**
  * TODO document
  */
-export class MarginCondition implements OrderCondition {
+export class MarginCondition implements OperatorCondition {
   type = OrderConditionType.Margin;
 
   /**
@@ -96,7 +104,12 @@ export class MarginCondition implements OrderCondition {
    */
   constructor(
     public percent: number,
-    public conjunctionConnection?: ConjunctionConnection) { }
+    public isMore: boolean,
+    public conjunctionConnection: ConjunctionConnection) { }
+
+  get strValue(): string {
+    return ""+this.percent;
+  }
 }
 
 /**
@@ -117,7 +130,12 @@ export class PercentChangeCondition  implements ContractCondition {
     public percent: number,
     public conId: number,
     public exchange: string,
-    public conjunctionConnection?: ConjunctionConnection) { }
+    public isMore: boolean,
+    public conjunctionConnection: ConjunctionConnection) { }
+
+  get strValue(): string {
+    return ""+this.percent;
+  }
 }
 
 /**
@@ -153,13 +171,18 @@ export class PriceCondition implements ContractCondition {
     public triggerMethod: TriggerMethod,
     public conId: number,
     public exchange: string,
-    public conjunctionConnection?: ConjunctionConnection) { }
+    public isMore: boolean,
+    public conjunctionConnection: ConjunctionConnection) { }
+
+  get strValue(): string {
+    return ""+this.price;
+  }
 }
 
 /**
  * TODO document
  */
-export class TimeCondition implements OrderCondition {
+export class TimeCondition implements OperatorCondition {
   type = OrderConditionType.Time;
 
   /**
@@ -170,7 +193,12 @@ export class TimeCondition implements OrderCondition {
    */
   constructor(
     public time: string,
-    public conjunctionConnection?: ConjunctionConnection) { }
+    public isMore: boolean,
+    public conjunctionConnection: ConjunctionConnection) { }
+
+  get strValue(): string {
+    return this.time;
+  }
 }
 
 /**
@@ -192,7 +220,12 @@ export class VolumeCondition implements ContractCondition {
     public volume: number,
     public conId: number,
     public exchange: string,
-    public conjunctionConnection?: ConjunctionConnection) { }
+    public isMore: boolean,
+    public conjunctionConnection: ConjunctionConnection) { }
+
+  get strValue(): string {
+    return ""+this.volume;
+  }
 }
 
 /**
@@ -792,6 +825,9 @@ export interface Order {
 
   /** This is a regulatory attribute that applies to all US Commodity (Futures) Exchanges, provided to allow client to comply with CFTC Tag 50 Rules. */
   extOperator?: string;
+
+  /** Define the Soft Dollar Tier used for the order. Only provided for registered professional advisors and hedge and mutual funds. */
+  softDollarTier?: SoftDollarTier;
 
   /** The native cash quantity. */
   cashQty?: number;
