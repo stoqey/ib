@@ -35,7 +35,7 @@ Some more breaking interface changes will be introduced before the public interf
 	
 ## API Documenation
 
-<b>[See API documentation here.](doc/index.html)</b>
+<b>[See API documentation here.](https://htmlpreview.github.io/?https://github.com/stoqey/ib/blob/overhaul/port-ts/doc/index.html)</b>
 
 ## Usage
 
