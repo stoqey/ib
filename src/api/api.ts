@@ -15,6 +15,7 @@ import { TickByTickDataType, TickType } from "./market/tickType";
 import { ContractDetails } from "./contract/contractDetails";
 import { ExecutionFilter } from "./report/executionFilter";
 import { ScannerSubscription } from "./market/scannerSubscription";
+import { ErrorCode } from "./errorCode";
 
 /**
  * TWS / IB Gateway log levels.
@@ -1752,8 +1753,12 @@ export declare interface IBApi {
    *
    * @param listener
    * error: The error details.
+   *
+   * code: The code identifying the error.
+   *
+   * reqId: The request identifier which generated the error.
    */
-  on(event: EventName.error, listener: (error: Error) => void): this;
+  on(event: EventName.error, listener: (error: Error, code: ErrorCode, reqId: number) => void): this;
 
   /**
    * Notifies about the API server version.

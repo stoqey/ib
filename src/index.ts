@@ -38,6 +38,8 @@ export {
   MIN_SERVER_VER,
 } from "./api/api";
 
+export { ErrorCode } from "./api/errorCode";
+
 // export contract types
 
 export { CFD } from "./api/contract/cfd";

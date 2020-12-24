@@ -82,12 +82,9 @@
   "dependencies": {
     "@typescript-eslint/eslint-plugin": "^4.10.0",
     "@typescript-eslint/parser": "^4.10.0",
-    "chalk": "^4.0.0",
     "command-buffer": "^0.1.0",
     "dotenv": "^8.2.0",
     "eslint": "^7.16.0",
-    "function-rate-limit": "^1.1.0",
-    "lodash": "^4.17.20",
-    "moment": "^2.24.0"
+    "function-rate-limit": "^1.1.0"
   }
 }

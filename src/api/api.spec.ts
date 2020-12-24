@@ -4,7 +4,7 @@
 
 
 import { assert } from "chai";
-import { IBApi, EventName }  from "..";
+import { IBApi, EventName, ErrorCode }  from "..";
 
 const TEST_SERVER_HOST = "localhost";
 const TEST_SERVER_POST = 4001;
@@ -22,8 +22,8 @@ describe("IBApi Tests", () => {
       ib.disconnect();
     }).on(EventName.disconnected, () => {
       done();
-    }).on(EventName.error, (err: Error) => {
-      assert.fail(err.message);
+    }).on(EventName.error, (err: Error, code: ErrorCode, id: number) => {
+      assert.fail(`${err.message} - code: ${code} - id: ${id}`);
     });
 
     ib.connect();
@@ -40,8 +40,8 @@ describe("IBApi Tests", () => {
 
     let positionsCount = 0;
 
-    ib.on(EventName.error, (err: Error) => {
-      assert.fail(err.message);
+    ib.on(EventName.error, (err: Error, code: ErrorCode, id: number) => {
+      assert.fail(`${err.message} - code: ${code} - id: ${id}`);
     }).on(EventName.position, () => {
       positionsCount++;
     }).on(EventName.positionEnd, () => {

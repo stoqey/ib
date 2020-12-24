@@ -14,6 +14,7 @@ import { OrderState } from "../api/order/orderState";
 import { TickType } from "../api/market/tickType";
 import { EventName, SoftDollarTier, TagValue, NewsProvider, FamilyCode, DepthMktDataDescription, MIN_SERVER_VER } from "../api/api";
 import { OrderType } from "../api/order/oderType";
+import { ErrorCode } from "../api/errorCode";
 
 /**
  * @internal
@@ -148,9 +149,10 @@ export interface DecoderCallbacks {
    * Emit an error event to public API interface.
    *
    * @param errMsg The error test message.
-   * @param data Additional error data (optional).
+   * @param code The code identifying the error.
+   * @param reqId The request identifier which generated the error.
    */
-  emitError(errMsg: string, data?: unknown): void;
+  emitError(errMsg: string, code: number, reqId: number): void;
 
    /**
    * Emit an information message event to public API interface.
@@ -214,14 +216,14 @@ export class Decoder {
 
         const constKey = IN_MSG_ID[token];
         if (!constKey) {
-          this.callback.emitError(`Received unsupported token: ${constKey} (${token}).`);
+          this.callback.emitError(`Received unsupported token: ${constKey} (${token}).`, ErrorCode.UNKNOWN_ID, -1);
           continue;
         }
 
         if (constKey && this["decodeMsg_"+constKey] !== undefined) {
           this["decodeMsg_"+constKey]();
         } else {
-          this.callback.emitError(`No parser implementation found for token: ${constKey} (${token}).`);
+          this.callback.emitError(`No parser implementation found for token: ${constKey} (${token}).`,  ErrorCode.UNKNOWN_ID, -1);
         }
 
       } catch (e) {
@@ -447,7 +449,7 @@ export class Decoder {
     const version = this.readInt();
     if (version < 2) {
       const errorMsg = this.readStr();
-      this.callback.emitError(errorMsg);
+      this.callback.emitError(errorMsg, -1, -1);
     } else {
       const id = this.readInt();
       const code = this.readInt();
@@ -455,10 +457,7 @@ export class Decoder {
       if (id === -1) {
         this.callback.emitInfo(msg);
       } else {
-        this.callback.emitError(msg, {
-          id: id,
-          code: code
-        });
+        this.callback.emitError(msg, code, id);
       }
     }
   }

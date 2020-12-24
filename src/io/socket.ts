@@ -4,6 +4,7 @@ import { Controller } from "./controller";
 import { Config } from "../config";
 import { OUT_MSG_ID } from "./encoder";
 import { TextDecoder, TextEncoder } from "util";
+import { ErrorCode } from "../api/errorCode";
 
 
 /**
@@ -253,13 +254,13 @@ export class Socket {
 
     if (this.useV100Plus && (this._serverVersion < MIN_VERSION_V100 || this._serverVersion > MAX_SUPPORTED_SERVER_VERSION)) {
       this.disconnect();
-      this.controller.emitError("Unsupported Version");
+      this.controller.emitError("Unsupported Version", ErrorCode.UNSUPPORTED_VERSION, -1);
       return;
     }
 
     if (this._serverVersion < MIN_SERVER_VER_SUPPORTED) {
       this.disconnect();
-      this.controller.emitError("The TWS is out of date and must be upgraded.");
+      this.controller.emitError("The TWS is out of date and must be upgraded.", ErrorCode.UPDATE_TWS, -1);
       return;
     }
 
@@ -328,7 +329,7 @@ export class Socket {
    * Called when an error occurred on the TCP socket connection.
    */
   private onError(err: Error) {
-    this.controller.emitEvent(EventName.error, err);
+    this.controller.emitError(err.message, ErrorCode.CONNECT_FAIL, -1);
   }
 
   /**

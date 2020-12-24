@@ -6,6 +6,7 @@ import { Decoder, DecoderCallbacks } from "./decoder";
 import { Encoder, EncoderCallbacks } from "./encoder";
 import { EventName, IBApi, IBApiCreationOptions } from "../api/api";
 import { Config } from "../config";
+import { ErrorCode } from "../api/errorCode";
 
 /**
  * @internal
@@ -185,12 +186,8 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
    * @param errMsg The error test message.
    * @param data Additional error data (optional).
    */
-  emitError(errMsg: string, data?: unknown): void {
-    if (data === undefined) {
-      this.emitEvent(EventName.error, new Error(errMsg));
-    } else {
-      this.emitEvent(EventName.error, new Error(errMsg), data);
-    }
+  emitError(errMsg: string, code: number, reqId: number): void {
+    this.emitEvent(EventName.error, new Error(errMsg), code, reqId);
   }
 
   /**
@@ -212,7 +209,7 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
     if (!this.socket.connected) {
       this.socket.connect();
     } else {
-      this.emitError("Cannot connect if already connected.");
+      this.emitError("Cannot connect if already connected.", ErrorCode.CONNECT_FAIL, -1);
     }
   }
 
@@ -225,7 +222,7 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
     if (this.socket.connected) {
       this.socket.disconnect();
     } else {
-      this.emitError("Cannot disconnect if already disconnected.");
+      this.emitError("Cannot disconnect if already disconnected.", ErrorCode.NOT_CONNECTED, -1);
     }
   }
 
@@ -257,7 +254,7 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
     if (this.socket.connected) {
       this.socket.send(tokens);
     } else {
-      this.emitError("Cannot send data when disconnected.");
+      this.emitError("Cannot send data when disconnected.", ErrorCode.NOT_CONNECTED, -1);
     }
   }
 }
