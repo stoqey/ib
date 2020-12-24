@@ -28,7 +28,7 @@ The module makes a socket connection to TWS (or IB Gateway) using the [net](http
 
 /* Example: Print all portfolio posistions to console. */
 
-import { IBApi, EventName, ErrorCode } from "@stoqey/ib";
+import { IBApi, EventName, ErrorCode, Contract } from "@stoqey/ib";
 
 // create IBApi object
 
