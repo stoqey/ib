@@ -66,12 +66,11 @@ ib.reqPositions();
 ## How to contribute
 
 IB does regularly release new API version, so this library will need permanent maintenance in oder to stay up-to-date with latest TWS features.<br/>
-Also, there is not much testing code yet. Ideally there should by one at least one test-case per for each public functions.<br/>
+Also, there is not much testing code yet. Ideally there should be at least one test-case for each public function.<br/>
 In addition to that.. a little demo / example app would be nice, to demonstrate API usage (something like a little live-portoflio-viewer app for node.js console?).<br/>
 Any kind of bugfixes are welcome as well.
 
-If you want to contribute, read:
-[Developer Guide](https://github.com/stoqey/ib/wiki/Developer-Guide) and start coding.
+If you want to contribute, read the [Developer Guide](https://github.com/stoqey/ib/wiki/Developer-Guide) and start coding.
 
 
 ## License
