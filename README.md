@@ -1,33 +1,21 @@
 <div align="center">
   <img src="https://www.interactivebrokers.com/images/web/logos/ib-logo-text-black.svg"></img>
   <p align="center">
-  <h1 align="center">Typescript API</h1>
-</p>
-
+    <h1 align="center">Typescript API</h1>
+  </p>
   <div style="display: flex;justify-content:center;">
     <img alt="NPM" src="https://img.shields.io/npm/dt/@stoqey/ib.svg"></img>
   </div>
 </div>
 
-`@stoqey/ib` is an <b>unofficial</b> [Interactive Brokers](http://interactivebrokers.com/) TWS (or IB Gateway) Typescript API client library for [Node.js](http://nodejs.org/).
+`@stoqey/ib` is an <ins>unofficial</ins> [Interactive Brokers](http://interactivebrokers.com/) TWS (or IB Gateway) Typescript API client library for [Node.js](http://nodejs.org/).
+
+This is a direct port of Interactive Brokers' Java Client Version 9.76 from May 08 2019.
 
 Refer to the [Trader Workstation API](https://interactivebrokers.github.io/tws-api/) for official documentation and the C#/Java/VB/C++/Python client.
 
-This is a direct port of Interactive Brokers' official Java client in Typescript.<br/>
-It makes a socket connection to TWS (or IB Gateway) using the [net](http://nodejs.org/api/net.html) module, and all messages are entirely processed in Typescript. It uses [EventEmitter](http://nodejs.org/api/events.html) to pass the result back to user.
-
-### _WORK IN PROGRESS_
-
-The library is a fork of the JScript client and porting to Typescript + current API version is still work in progress.
-
-Some more breaking interface changes will be introduced before the public interface will be final:
-
-- EventEmitter interface will be removed and be replace by rjxs.
-  API Functions will return Observable objects directly, rather than having to register event callback functions.
-
-- Not all functions / events are implemented yet.
-  After finished, this library will implement TWS API Version 9.76 (https://www.interactivebrokers.com/en/index.php?f=23565).
-  Not finished yet.
+The module makes a socket connection to TWS (or IB Gateway) using the [net](http://nodejs.org/api/net.html) module, and all messages are entirely processed in Typescript.<br/>
+It uses [EventEmitter](http://nodejs.org/api/events.html) to pass the result back to user.
 
 ## Installation
 
@@ -37,39 +25,53 @@ Some more breaking interface changes will be introduced before the public interf
 
 <b>[See API documentation here.](https://stoqey.github.io/ib-doc/)</b>
 
-## Usage
+## Example
 
 ```js
-import { IBApi, EventName, Stock, LimitOrder } from "@stoqey/ib";
+
+/* Example: Print all portfolio posistions to console. */
+
+import { IBApi, EventName, ErrorCode } from "@stoqey/ib";
+
+// create IBApi object
 
 const ib = new IBApi({
   // clientId: 0,
   // host: '127.0.0.1',
   port: 7497,
+});
+
+// register event handler
+
+let positionsCount = 0;
+
+ib.on(EventName.error, (err: Error, code: ErrorCode, reqId: number) => {
+  console.error(`${err.message} - code: ${code} - reqId: ${id}`);
 })
-.on(EventName.error, (err) => {
-  console.error("error --- %s", err.message);
+.on(EventName.position, (account: string, contract: Contract, pos: number, avgCost: number) => {
+  console.log(`${account}: ${pos} x ${contract.symbol} @ ${avgCost}`);
+  positionsCount++:
 })
-.on(EventName.result, function (event, args) {
-  console.log("%s --- %s", event, JSON.stringify(args));
-})
-.once(EventName.nextValidId, (orderId) => {
-  ib.placeOrder(
-    orderId,
-    new Stock("AAPL"),
-    new LimitOrder(OrderAction.BUY, 1, 0.01) // safe, unreal value used for demo
-  );
-  ib.reqOpenOrders();
-})
-.once(EventName.openOrderEnd, () => {
+.once(EventName.positionEnd, () => {
+  console.log(`Total: ${positionsCount} posistions.`);
   ib.disconnect();
 });
 
+// call API functions
+
 ib.connect();
-ib.reqIds(1);
+ib.reqPositions();
 ```
 
-- [See more comprehensive examples here.](https://github.com/stoqey/ib/tree/master/examples)
+## How to contribute
+
+IB does regularly release new API version, so this library will need permanent maintenance in oder to stay up-to-date with latest TWS features.<br/>
+Also, there is not much testing code yet. Ideally there should by one at least one test-case per for each public functions.<br/>
+In addition to that.. a little demo / example app would be nice, to demonstrate API usage (something like a little live-portoflio-viewer app for node.js console?).<br/>
+Any kind of bugfixes are welcome as well.
+
+If you want to contribute, read:
+[Developer Guide](https://github.com/stoqey/ib/wiki/Developer-Guide) and start coding.
 
 
 ## License
