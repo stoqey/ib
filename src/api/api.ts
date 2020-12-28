@@ -2768,7 +2768,7 @@ export declare interface IBApi {
    *
    * @see [[reqTickByTickData]]
    */
-  on(event: EventName.tickGeneric, listener: (tickerId: number, field: number, value: number) => void): this;
+  on(event: EventName.tickGeneric, listener: (tickerId: number, field: TickType, value: number) => void): this;
 
   /**
    * Provides a news headline tick.
@@ -2819,7 +2819,7 @@ export declare interface IBApi {
    *
    * @see [[reqMktData]]
    */
-  on(event: EventName.tickOptionComputation, listener: (tickerId: number, field: number, tickAttrib: number, impliedVolatility: number, delta: number, optPrice: number, pvDividend: number, gamma: number, vega: number, theta: number, undPrice: number) => void): this;
+  on(event: EventName.tickOptionComputation, listener: (tickerId: number, field: TickType, tickAttrib: number, impliedVolatility: number, delta: number, optPrice: number, pvDividend: number, gamma: number, vega: number, theta: number, undPrice: number) => void): this;
 
   /**
    * Market data tick price callback. Handles all price related ticks.
@@ -2864,7 +2864,7 @@ export declare interface IBApi {
    *
    * @see [[reqMktData]]
    */
-  on(event: EventName.tickSize, listener: (tickerId: number, field: number, value: number) => void): this;
+  on(event: EventName.tickSize, listener: (tickerId: number, field: TickType, value: number) => void): this;
 
   /**
    * Market data callback. Every tickPrice is followed by a tickSize.
@@ -2879,7 +2879,7 @@ export declare interface IBApi {
    *
    * @see [[reqMktData]]
    */
-  on(event: EventName.tickString, listener: (tickerId: number, field: number, value: string) => void): this;
+  on(event: EventName.tickString, listener: (tickerId: number, field: TickType, value: string) => void): this;
 
   /**
    * Receives the last time on which the account was updated.
