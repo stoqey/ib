@@ -43,7 +43,7 @@ const ib = new IBApi({
 let positionsCount = 0;
 
 ib.on(EventName.error, (err: Error, code: ErrorCode, reqId: number) => {
-  console.error(`${err.message} - code: ${code} - reqId: ${id}`);
+  console.error(`${err.message} - code: ${code} - reqId: ${reqId}`);
 })
 .on(EventName.position, (account: string, contract: Contract, pos: number, avgCost: number) => {
   console.log(`${account}: ${pos} x ${contract.symbol} @ ${avgCost}`);
