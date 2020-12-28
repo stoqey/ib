@@ -26,6 +26,8 @@
  * ````
  */
 
+import { IBApi } from "./api/api";
+
 // export the IB Api class and function argument types
 
 export {
@@ -74,7 +76,13 @@ export { ScannerSubscription } from "./api/market/scannerSubscription";
 export { Liquidities, Execution } from "./api/order/execution";
 export { LimitOrder } from "./api/order/limit";
 export { MarketCloseOrder } from "./api/order/marketClose";
-export { OrderAction, OrderConditionType, ConjunctionConnection, OrderCondition, Order } from "./api/order/order";
+export {
+  OrderAction,
+  OrderConditionType,
+  ConjunctionConnection,
+  OrderCondition,
+  Order,
+} from "./api/order/order";
 export { OrderComboLeg } from "./api/order/orderComboLeg";
 export { OrderState } from "./api/order/orderState";
 export { StopOrder } from "./api/order/stop";
@@ -85,3 +93,5 @@ export { TrailingStopOrder } from "./api/order/trailingStop";
 
 export { CommissionReport } from "./api/report/commissionReport";
 export { ExecutionFilter } from "./api/report/executionFilter";
+
+export default IBApi;
