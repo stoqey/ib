@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
+/* Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.client;
@@ -8,10 +8,13 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutput;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /** This class is used to build messages so the entire message can be
  *  sent to the socket in a single write. */
-public class Builder implements ObjectOutput {
+class Builder implements ObjectOutput {
 	private static final char SEP = 0;
 	private static final byte[] EMPTY_LENGTH_HEADER = new byte[ 4 ];
 
@@ -37,8 +40,8 @@ public class Builder implements ObjectOutput {
 		send( a == Double.MAX_VALUE ? "" : String.valueOf( a) );
 	}
 
-	public void send( boolean a) {
-		send( a ? 1 : 0);
+	public void send(Boolean a) {
+		sendMax(a == null ? Integer.MAX_VALUE : a ? 1 : 0);
 	}
 
 	public void send( IApiEnum a) {
@@ -58,6 +61,29 @@ public class Builder implements ObjectOutput {
             m_sb.write(  bytes, 0, bytes.length );
         }
     }
+	
+	public void send(List<TagValue> miscOptions) {
+        String miscOptionsString = Optional.ofNullable(miscOptions).orElse(new ArrayList<TagValue>()).stream().
+                map(option -> option.m_tag + "=" + option.m_value + ";").reduce("", (sum, option) -> sum + option);
+
+        send(miscOptionsString);
+	}
+	
+	public void send(Contract contract) {
+        send(contract.conid());
+        send(contract.symbol());
+        send(contract.getSecType());
+        send(contract.lastTradeDateOrContractMonth());
+        send(contract.strike());
+        send(contract.getRight());
+        send(contract.multiplier());
+        send(contract.exchange());
+        send(contract.primaryExch());
+        send(contract.currency());
+        send(contract.localSymbol());
+        send(contract.tradingClass());
+        send(contract.includeExpired() ? 1 : 0);
+	}
 
     public int allocateLengthHeader() {
         int lengthHeaderPosition = m_sb.size();

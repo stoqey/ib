@@ -1,0 +1,8 @@
+{
+  "inputFiles": [
+    "./src"
+  ],
+  "exclude": "**/*+(index|.spec|.e2e).ts",
+  "mode": "file",
+  "out": "pages/ib-doc"
+}

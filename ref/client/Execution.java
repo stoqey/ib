@@ -1,7 +1,41 @@
-/* Copyright (C) 2013 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
+/* Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.client;
+
+enum Liquidities {
+    None,
+    Added("Added Liquidity"),
+    Removed("Removed Liquidity"),
+    RoudedOut("Liquidity Routed Out");
+    
+    private String m_text;
+    
+    Liquidities(String text) {
+        m_text = text;
+    }
+    
+    Liquidities() {
+        m_text = "None";
+    }
+    
+    @Override
+    public String toString() {
+        return m_text;
+    }
+    
+    public static Liquidities fromInt(int n) {
+        if (n < 0 || n > Liquidities.values().length) {
+            return Liquidities.None;
+        }
+        
+        return Liquidities.values()[n];
+    }
+    
+    public static int toInt(Liquidities l) {
+        return l.ordinal();
+    }
+}
 
 public class Execution {
     private int 	m_orderId;
@@ -20,7 +54,8 @@ public class Execution {
     private String  m_orderRef;
     private String 	m_evRule;
     private double 	m_evMultiplier;
-    private String m_modelCode;
+    private String  m_modelCode;
+    private Liquidities     m_lastLiquidity;
 
     // Get
     public int orderId()         { return m_orderId; }
@@ -40,6 +75,8 @@ public class Execution {
     public String evRule()       { return m_evRule; }
     public double evMultiplier() { return m_evMultiplier; }
     public String modelCode()    { return m_modelCode; }
+    public Liquidities lastLiquidity()   { return m_lastLiquidity; }
+    public String lastLiquidityStr()     { return m_lastLiquidity.toString(); }
     
     // Set 
     public void orderId(int orderId)              { m_orderId = orderId; }
@@ -59,6 +96,7 @@ public class Execution {
     public void evRule(String evRule)             { m_evRule = evRule; }
     public void evMultiplier(double evMultiplier) { m_evMultiplier = evMultiplier; }
     public void modelCode(String modelCode)       { m_modelCode = modelCode; }
+    public void lastLiquidity(int v)              { m_lastLiquidity = Liquidities.fromInt(v); }
     
     public Execution() {
         m_orderId = 0;
@@ -70,6 +108,7 @@ public class Execution {
         m_cumQty = 0;
         m_avgPrice = 0;
         m_evMultiplier = 0;
+        m_lastLiquidity = Liquidities.None;
     }
 
     public Execution( int p_orderId, int p_clientId, String p_execId, String p_time,

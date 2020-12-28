@@ -1,16 +1,16 @@
-/* Copyright (C) 2013 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
+/* Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.client;
 
 public class CommissionReport {
 
-    public String m_execId;
-    public double m_commission;
-    public String m_currency;
-    public double m_realizedPNL;
-    public double m_yield;
-    public int    m_yieldRedemptionDate; // YYYYMMDD format
+    private String m_execId;
+    private double m_commission;
+    private String m_currency;
+    private double m_realizedPNL;
+    private double m_yield;
+    private int    m_yieldRedemptionDate; // YYYYMMDD format
 
     public CommissionReport() {
         m_commission = 0;
@@ -36,4 +36,53 @@ public class CommissionReport {
         // Since equals() uses m_execId only, the hashCode should do as well.
         return m_execId == null ? 0 : m_execId.hashCode();
     }
+
+	public String execId() {
+		return m_execId;
+	}
+
+	public void execId(String execId) {
+		this.m_execId = execId;
+	}
+
+	public double commission() {
+		return m_commission;
+	}
+
+	public void commission(double commission) {
+		this.m_commission = commission;
+	}
+
+	public String currency() {
+		return m_currency;
+	}
+
+	public void currency(String currency) {
+		this.m_currency = currency;
+	}
+
+	public double realizedPNL() {
+		return m_realizedPNL;
+	}
+
+	public void realizedPNL(double realizedPNL) {
+		this.m_realizedPNL = realizedPNL;
+	}
+
+	public double yield() {
+		return m_yield;
+	}
+
+	public void yield(double yield) {
+		this.m_yield = yield;
+	}
+
+	public int yieldRedemptionDate() {
+		return m_yieldRedemptionDate;
+	}
+
+	public void yieldRedemptionDate(int yieldRedemptionDate) {
+		this.m_yieldRedemptionDate = yieldRedemptionDate;
+	}
+    
 }

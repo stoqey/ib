@@ -1,3 +1,6 @@
+/* Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+ * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
+
 package com.ib.client;
 
 public enum OrderConditionType {
@@ -22,7 +25,15 @@ public enum OrderConditionType {
 		for (OrderConditionType i : OrderConditionType.values())
 			if (i.val() == n)
 				return i;
-		
-		throw new NumberFormatException();
+
+		throw new IllegalArgumentException("Error: " + n + " is not a valid value for enum OrderConditionType");
+	}
+
+	public static OrderConditionType fromString(String s) {
+	    for (OrderConditionType i : OrderConditionType.values())
+	        if (i.name().equalsIgnoreCase(s))
+	            return i;
+
+	    throw new RuntimeException("Invalid order condition type: " + s);
 	}
 }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2013 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
+/* Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.client;
@@ -24,7 +24,7 @@ public class ScannerSubscription {
     private String m_maturityDateBelow;
     private double m_couponRateAbove = Double.MAX_VALUE;
     private double m_couponRateBelow = Double.MAX_VALUE;
-    private String m_excludeConvertible;
+    private boolean m_excludeConvertible;
     private String m_scannerSettingPairs;
     private String m_stockTypeFilter;
 
@@ -47,7 +47,7 @@ public class ScannerSubscription {
     public String maturityDateBelow()           { return m_maturityDateBelow; }
     public double couponRateAbove()             { return m_couponRateAbove; }
     public double couponRateBelow()             { return m_couponRateBelow; }
-    public String excludeConvertible()          { return m_excludeConvertible; }
+    public boolean excludeConvertible()         { return m_excludeConvertible; }
     public String scannerSettingPairs()         { return m_scannerSettingPairs; }
     public String stockTypeFilter()             { return m_stockTypeFilter; }
 
@@ -70,7 +70,7 @@ public class ScannerSubscription {
     public void maturityDateBelow(String d)    { m_maturityDateBelow = d; }
     public void couponRateAbove(double r)      { m_couponRateAbove = r; }
     public void couponRateBelow(double r)      { m_couponRateBelow = r; }
-    public void excludeConvertible(String c)   { m_excludeConvertible = c; }
+    public void excludeConvertible(boolean c)  { m_excludeConvertible = c; }
     public void scannerSettingPairs(String val) { m_scannerSettingPairs = val; }
     public void stockTypeFilter(String val)    { m_stockTypeFilter = val; }
 }

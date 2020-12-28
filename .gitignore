@@ -6,4 +6,4 @@ coverage/
 npm-debug.log*
 yarn-error.log*
 dist/
-typedoc
+doc-dev/

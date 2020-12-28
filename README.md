@@ -1,239 +1,73 @@
-
-<p align="center">
-  <h1 align="center">Interactive Brokers Typescript</h1>
-</p>
-
-
-
 <div align="center">
-
-<img src="./docs/ib-logo-stacked.png"></img>
-
-<div style="display: flex;justify-content:center;">
-
-<img alt="NPM" src="https://img.shields.io/npm/dt/@stoqey/ib.svg"></img>
- 
-
+  <img src="https://www.interactivebrokers.com/images/web/logos/ib-logo-text-black.svg"></img>
+  <p align="center">
+    <h1 align="center">Typescript API</h1>
+  </p>
+  <div style="display: flex;justify-content:center;">
+    <img alt="NPM" src="https://img.shields.io/npm/dt/@stoqey/ib.svg"></img>
+  </div>
 </div>
 
-</div>
+`@stoqey/ib` is an <ins>unofficial</ins> [Interactive Brokers](http://interactivebrokers.com/) TWS (or IB Gateway) Typescript API client library for [Node.js](http://nodejs.org/). It is a direct port of Interactive Brokers' Java Client Version 9.76 from May 08 2019.
 
-`ib` is an [Interactive Brokers](http://interactivebrokers.com/) TWS (or IB Gateway) API client library for [Node.js](http://nodejs.org/). Refer to the official [Trader Workstation API](https://interactivebrokers.github.io/tws-api/) documentation for details.
+Refer to the [Trader Workstation API](https://interactivebrokers.github.io/tws-api/) for official documentation and the C#/Java/VB/C++/Python client.
 
-This is a direct port of Interactive Brokers' official Java client. There is no C++/Java library dependency. It makes a socket connection to TWS (or IB Gateway) using the [net](http://nodejs.org/api/net.html) module, and all messages are entirely processed in JavaScript. It uses [EventEmitter](http://nodejs.org/api/events.html) to pass the result back to user.
-
-
-### _MAINTAINERS NEEDED_
-
-The library is lagging behind the official Java reference and  This means that some newer features aren't implemented:
-* [reqHistoricalNews and reqNewsArticle](https://github.com/pilwon/node-ib/issues/130)
-* [time and sales data](https://github.com/pilwon/node-ib/issues/111)
-* [trailing stop limit orders](https://github.com/pilwon/node-ib/issues/145)
-  
+The module makes a socket connection to TWS (or IB Gateway) using the [net](http://nodejs.org/api/net.html) module and all messages are entirely processed in Typescript. It uses [EventEmitter](http://nodejs.org/api/events.html) to pass the result back to user.
 
 ## Installation
 
     $ npm install @stoqey/ib
+	
+## API Documenation
 
+<b>[See API documentation here.](https://stoqey.github.io/ib-doc/)</b>
 
-## Usage
+## Example
 
 ```js
-var ib = new (require('ib'))({
+
+/* Example: Print all portfolio posistions to console. */
+
+import { IBApi, EventName, ErrorCode, Contract } from "@stoqey/ib";
+
+// create IBApi object
+
+const ib = new IBApi({
   // clientId: 0,
   // host: '127.0.0.1',
-  port: 7497
-}).on('error', function (err) {
-  console.error('error --- %s', err.message);
-}).on('result', function (event, args) {
-  console.log('%s --- %s', event, JSON.stringify(args));
-}).once('nextValidId', function (orderId) {
-  ib.placeOrder(
-    orderId,
-    ib.contract.stock('AAPL'),
-    ib.order.limit('BUY', 1, 0.01)  // safe, unreal value used for demo
-  );
-  ib.reqOpenOrders();
-}).once('openOrderEnd', function () {
-  ib.disconnect();
+  port: 7497,
+});
+
+// register event handler
+
+let positionsCount = 0;
+
+ib.on(EventName.error, (err: Error, code: ErrorCode, reqId: number) => {
+  console.error(`${err.message} - code: ${code} - reqId: ${id}`);
 })
+.on(EventName.position, (account: string, contract: Contract, pos: number, avgCost: number) => {
+  console.log(`${account}: ${pos} x ${contract.symbol} @ ${avgCost}`);
+  positionsCount++:
+})
+.once(EventName.positionEnd, () => {
+  console.log(`Total: ${positionsCount} posistions.`);
+  ib.disconnect();
+});
 
-ib.connect()
-  .reqIds(1);
+// call API functions
+
+ib.connect();
+ib.reqPositions();
 ```
 
-* [See more comprehensive examples here.](https://github.com/stoqey/ib/tree/master/examples)
+## How to contribute
 
+IB does regularly release new API versions, so this library will need permanent maintenance in oder to stay up-to-date with latest TWS features.<br/>
+Also, there is not much testing code yet. Ideally there should be at least one test-case for each public function.<br/>
+In addition to that.. a little demo / example app would be nice, to demonstrate API usage (something like a little live-portoflio-viewer app for node.js console?).<br/>
+Any kind of bugfixes are welcome as well.
 
-## API
-
-### Connection
-
-```js
-.connect()
-.disconnect()
-```
-
-### Commands
-
-```js
-.calculateImpliedVolatility(reqId, contract, optionPrice, underPrice)
-.calculateOptionPrice(reqId, contract, volatility, underPrice)
-.cancelAccountSummary(reqId)
-.cancelAccountUpdatesMulti(requestId)
-.cancelCalculateImpliedVolatility(reqId)
-.cancelCalculateOptionPrice(reqId)
-.cancelFundamentalData(reqId)
-.cancelHistoricalData(tickerId)
-.cancelMktData(tickerId)
-.cancelMktDepth(tickerId)
-.cancelNewsBulletins()
-.cancelOrder(id)
-.cancelPnL(reqId);
-.cancelSinglePnL(reqId);
-.cancelPositions()
-.cancelPositionsMulti(requestId)
-.cancelRealTimeBars(tickerId)
-.cancelScannerSubscription(tickerId)
-.cancelTickByTickData(tickerId)
-.exerciseOptions(tickerId, contract, exerciseAction, exerciseQuantity, account, override)
-.placeOrder(id, contract, order)
-.replaceFA(faDataType, xml)
-.reqAccountSummary(reqId, group, tags)
-.reqAccountUpdates(subscribe, acctCode)
-.reqAccountUpdatesMulti(requestId, account, modelCode, ledgerAndNLV)
-.reqAllOpenOrders()
-.reqAutoOpenOrders(bAutoBind)
-.reqContractDetails(reqId, contract)
-.reqCurrentTime()
-.reqExecutions(reqId, filter)
-.reqFundamentalData(reqId, contract, reportType)
-.reqGlobalCancel()
-.reqHistoricalData(tickerId, contract, endDateTime, durationStr, barSizeSetting, whatToShow, useRTH, formatDate, keepUpToDate)
-.reqHistoricalTicks(tickerId, contract, startDateTime, endDateTime, numberOfTicks, whatToShow, useRTH, ignoreSize)
-.reqTickByTickData(tickerId, contract, tickType, numberOfTicks, ignoreSize)
-.reqIds(numIds)
-.reqManagedAccts()
-.reqMarketDataType(marketDataType)
-.reqMktData(tickerId, contract, genericTickList, snapshot, regulatorySnapshot)
-.reqMktDepth(tickerId, contract, numRows)
-.reqNewsBulletins(allMsgs)
-.reqOpenOrders()
-.reqPnL(reqId, account, modelCode)
-.reqPnLSingle(reqId, account, modelCode, conId)
-.reqPositions()
-.reqPositionsMulti(requestId, account, modelCode)
-.reqRealTimeBars(tickerId, contract, barSize, whatToShow, useRTH)
-.reqScannerParameters()
-.reqScannerSubscription(tickerId, subscription)
-.requestFA(faDataType)
-.queryDisplayGroups(reqId)
-.subscribeToGroupEvents(reqId, group)
-.unsubscribeToGroupEvents(reqId)
-.updateDisplayGroup(reqId, contract)
-.setServerLogLevel(logLevel)
-```
-
-### Events
-
-```js
-// General
-.on('error', function (err, data))
-.on('result', function (event, args))  // exclude connection
-.on('all', function (event, args))  // error + connection + result
-
-// Connection
-.on('connected', function ())
-.on('disconnected', function ())
-.on('received', function (tokens, data))
-.on('sent', function (tokens, data))
-.on('server', function (version, connectionTime))
-
-// Result
-.on('accountDownloadEnd', function (accountName))
-.on('accountUpdateMulti', function (reqId, account, modelCode, key, value, currency))
-.on('accountUpdateMultiEnd', function (reqId))
-.on('accountSummary', function (reqId, account, tag, value, currency))
-.on('accountSummaryEnd', function (reqId))
-.on('bondContractDetails', function (reqId, contract))
-.on('commissionReport', function (commissionReport))
-.on('contractDetails', function (reqId, contract))
-.on('contractDetailsEnd', function (reqId))
-.on('currentTime', function (time))
-.on('deltaNeutralValidation', function (reqId, underComp))
-.on('execDetails', function (reqId, contract, exec))
-.on('execDetailsEnd', function (reqId))
-.on('fundamentalData', function (reqId, data))
-.on('historicalData', function (reqId, date, open, high, low, close, volume, count, WAP, hasGaps))
-.on('historicalTickTradeData', (reqId, timestamp, mask, price, size, exchange, specialConditions))
-.on('historicalTickBidAskData', (reqId, timestamp, mask, priceBid, priceAsk, sizeBid, sizeAsk))
-.on('historicalTickMidPointData', (reqId, timestamp, price, size))
-.on('tickByTickAllLast', reqId, tickType, time, price, size, { pastLimit, unreported }, exchange, specialConditions)
-.on('tickByTickBidAsk', reqId, time, bidPrice, askPrice, bidSize, askSize, { bidPastLow, askPastHigh })
-.on('tickByTickMidPoint', reqId, time, midPoint))
-.on('managedAccounts', function (accountsList))
-.on('marketDataType', function (reqId, marketDataType))
-.on('nextValidId', function (orderId))
-.on('openOrder', function (orderId, contract, order, orderState))
-.on('openOrderEnd', function ())
-.on('orderStatus', function (id, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld))
-.on('pnl', function (reqId, dailyPnL))
-.on('pnlSingle', function (reqId, pos, dailyPnL, unrealizedPnL, realizedPnL, value))
-.on('position', function (account, contract, pos, avgCost))
-.on('positionEnd', function ())
-.on('positionMulti', function (reqId, account, modelCode, contract, pos, avgCost))
-.on('positionMultiEnd', function (reqId))
-.on('realtimeBar', function (reqId, time, open, high, low, close, volume, wap, count))
-.on('receiveFA', function (faDataType, xml))
-.on('scannerData', function (tickerId, rank, contract, distance, benchmark, projection, legsStr))
-.on('scannerDataEnd', function (tickerId))
-.on('scannerParameters', function (xml))
-.on('tickEFP', function (tickerId, tickType, basisPoints, formattedBasisPoints, impliedFuturesPrice, holdDays, futureExpiry, dividendImpact, dividendsToExpiry))
-.on('tickGeneric', function (tickerId, tickType, value))
-.on('tickOptionComputation', function (tickerId, tickType, impliedVol, delta, optPrice, pvDividend, gamma, vega, theta, undPrice))
-.on('tickPrice', function (tickerId, tickType, price, canAutoExecute))
-.on('tickSize', function (tickerId, sizeTickType, size))
-.on('tickSnapshotEnd', function (reqId))
-.on('tickString', function (tickerId, tickType, value))
-.on('updateAccountTime', function (timeStamp))
-.on('updateAccountValue', function (key, value, currency, accountName))
-.on('updateMktDepth', function (id, position, operation, side, price, size))
-.on('updateMktDepthL2', function (id, position, marketMaker, operation, side, price, size))
-.on('updateNewsBulletin', function (newsMsgId, newsMsgType, newsMessage, originatingExch))
-.on('updatePortfolio', function (contract, position, marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL, accountName))
-.on('displayGroupList', function(id, list))
-.on('displayGroupUpdated', function(id, contract))
-```
-
-* [See Java client code for argument types (Boolean/Number/String)](https://github.com/stoqey/ib/blob/master/ref/client/EWrapper.java)
-
-### Builders
-
-```js
-// Contract
-.contract.combo(symbol, currency, exchange)
-.contract.forex(symbol, currency)
-.contract.future(symbol, expiry, currency, exchange)
-.contract.option(symbol, expiry, strike, right, exchange, currency)
-.contract.stock(symbol, exchange, currency)
-
-// Order
-.order.limit(action, quantity, price, transmitOrder)
-.order.market(action, quantity, transmitOrder, goodAfterTime, goodTillDate)
-.order.marketClose(action, quantity, price, transmitOrder)
-.order.stop(action, quantity, price, transmitOrder, parentId, tif)
-.order.stopLimit(action, quantity, limitPrice, stopPrice, transmitOrder, parentId, tif)
-.order.trailingStop(action, quantity, auxPrice, tif, transmitOrder, parentId)
-```
-
-### Util
-
-```js
-.incomingToString(incoming)
-.numberToString(number)
-.outgoingToString(outgoing)
-.tickTypeToString(tickType)
-```
+If you want to contribute, read the [Developer Guide](https://github.com/stoqey/ib/wiki/Developer-Guide) and start coding.
 
 
 ## License

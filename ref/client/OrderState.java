@@ -1,4 +1,4 @@
-/* Copyright (C) 2013 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
+/* Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.client;
@@ -6,55 +6,91 @@ package com.ib.client;
 
 public class OrderState {
     private String m_status;
-    private String m_initMargin;
-    private String m_maintMargin;
-    private String m_equityWithLoan;
+    private String m_initMarginBefore;
+    private String m_maintMarginBefore;
+    private String m_equityWithLoanBefore;
+    private String m_initMarginChange;
+    private String m_maintMarginChange;
+    private String m_equityWithLoanChange;
+    private String m_initMarginAfter;
+    private String m_maintMarginAfter;
+    private String m_equityWithLoanAfter;
     private double m_commission;
     private double m_minCommission;
     private double m_maxCommission;
     private String m_commissionCurrency;
     private String m_warningText;
+    private String m_completedTime;
+    private String m_completedStatus;
 
     // Get
-    public double commission()         { return m_commission; }
-    public double maxCommission()      { return m_maxCommission; }
-    public double minCommission()      { return m_minCommission; }
-    public OrderStatus status()        { return OrderStatus.get(m_status); }
-    public String getStatus()          { return m_status; }
-    public String commissionCurrency() { return m_commissionCurrency; }
-    public String equityWithLoan()     { return m_equityWithLoan; }
-    public String initMargin()         { return m_initMargin; }
-    public String maintMargin()        { return m_maintMargin; }
-    public String warningText()        { return m_warningText; }
+    public double commission()           { return m_commission; }
+    public double maxCommission()        { return m_maxCommission; }
+    public double minCommission()        { return m_minCommission; }
+    public OrderStatus status()          { return OrderStatus.get(m_status); }
+    public String getStatus()            { return m_status; }
+    public String commissionCurrency()   { return m_commissionCurrency; }
+    public String initMarginBefore()     { return m_initMarginBefore; }
+    public String maintMarginBefore()    { return m_maintMarginBefore; }
+    public String equityWithLoanBefore() { return m_equityWithLoanBefore; }
+    public String initMarginChange()     { return m_initMarginChange; }
+    public String maintMarginChange()    { return m_maintMarginChange; }
+    public String equityWithLoanChange() { return m_equityWithLoanChange; }
+    public String initMarginAfter()      { return m_initMarginAfter; }
+    public String maintMarginAfter()     { return m_maintMarginAfter; }
+    public String equityWithLoanAfter()  { return m_equityWithLoanAfter; }
+    public String warningText()          { return m_warningText; }
+    public String completedTime()        { return m_completedTime; }
+    public String completedStatus()      { return m_completedStatus; }
 
     // Set
-    public void commission(double v)         { m_commission = v; }
-    public void commissionCurrency(String v) { m_commissionCurrency = v; }
-    public void equityWithLoan(String v)     { m_equityWithLoan = v; }
-    public void initMargin(String v)         { m_initMargin = v; }
-    public void maintMargin(String v)        { m_maintMargin = v; }
-    public void maxCommission(double v)      { m_maxCommission = v; }
-    public void minCommission(double v)      { m_minCommission = v; }
-    public void status(OrderStatus v)        { m_status = ( v == null ) ? null : v.name(); }
-    public void status(String v)             { m_status = v; }
-    public void warningText(String v)        { m_warningText = v; }
-
+    public void commission(double v)           { m_commission = v; }
+    public void commissionCurrency(String v)   { m_commissionCurrency = v; }
+    public void initMarginBefore(String v)     { m_initMarginBefore = v; }
+    public void maintMarginBefore(String v)    { m_maintMarginBefore = v; }
+    public void equityWithLoanBefore(String v) { m_equityWithLoanBefore = v; }
+    public void initMarginChange(String v)     { m_initMarginChange = v; }
+    public void maintMarginChange(String v)    { m_maintMarginChange = v; }
+    public void equityWithLoanChange(String v) { m_equityWithLoanChange = v; }
+    public void initMarginAfter(String v)      { m_initMarginAfter = v; }
+    public void maintMarginAfter(String v)     { m_maintMarginAfter = v; }
+    public void equityWithLoanAfter(String v)  { m_equityWithLoanAfter = v; }
+    public void maxCommission(double v)        { m_maxCommission = v; }
+    public void minCommission(double v)        { m_minCommission = v; }
+    public void status(OrderStatus v)          { m_status = ( v == null ) ? null : v.name(); }
+    public void status(String v)               { m_status = v; }
+    public void warningText(String v)          { m_warningText = v; }
+    public void completedTime(String v)        { m_completedTime = v; }
+    public void completedStatus(String v)      { m_completedStatus = v; }
+    
 	OrderState() {
-		this (null, null, null, null, 0.0, 0.0, 0.0, null, null);
+		this (null, null, null, null, null, null, null, null, null, null, 0.0, 0.0, 0.0, null, null, null, null);
 	}
 
-	OrderState(String status, String initMargin, String maintMargin,
-			String equityWithLoan, double commission, double minCommission,
-			double maxCommission, String commissionCurrency, String warningText) {
-	    m_status = status;
-	    m_initMargin = initMargin;
-		m_maintMargin = maintMargin;
-		m_equityWithLoan = equityWithLoan;
+	OrderState(String status, 
+			String initMarginBefore, String maintMarginBefore, String equityWithLoanBefore, 
+			String initMarginChange, String maintMarginChange, String equityWithLoanChange, 
+			String initMarginAfter, String maintMarginAfter, String equityWithLoanAfter, 
+			double commission, double minCommission,
+			double maxCommission, String commissionCurrency, String warningText, 
+			String completedTime, String completedStatus) {
+		m_status = status;
+		m_initMarginBefore = initMarginBefore;
+		m_maintMarginBefore = maintMarginBefore;
+		m_equityWithLoanBefore = equityWithLoanBefore;
+		m_initMarginChange = initMarginChange;
+		m_maintMarginChange = maintMarginChange;
+		m_equityWithLoanChange = equityWithLoanChange;
+		m_initMarginAfter = initMarginAfter;
+		m_maintMarginAfter = maintMarginAfter;
+		m_equityWithLoanAfter = equityWithLoanAfter;
 		m_commission = commission;
 		m_minCommission = minCommission;
 		m_maxCommission = maxCommission;
 		m_commissionCurrency = commissionCurrency;
 		m_warningText = warningText;
+		m_completedTime = completedTime;
+		m_completedStatus = completedStatus;
 	}
 
 	@Override
@@ -74,10 +110,18 @@ public class OrderState {
         }
 
         if (Util.StringCompare(m_status, state.m_status) != 0 ||
-        	Util.StringCompare(m_initMargin, state.m_initMargin) != 0 ||
-        	Util.StringCompare(m_maintMargin, state.m_maintMargin) != 0 ||
-        	Util.StringCompare(m_equityWithLoan, state.m_equityWithLoan) != 0 ||
-        	Util.StringCompare(m_commissionCurrency, state.m_commissionCurrency) != 0) {
+            Util.StringCompare(m_initMarginBefore, state.m_initMarginBefore) != 0 ||
+            Util.StringCompare(m_maintMarginBefore, state.m_maintMarginBefore) != 0 ||
+            Util.StringCompare(m_equityWithLoanBefore, state.m_equityWithLoanBefore) != 0 ||
+            Util.StringCompare(m_initMarginChange, state.m_initMarginChange) != 0 ||
+            Util.StringCompare(m_maintMarginChange, state.m_maintMarginChange) != 0 ||
+            Util.StringCompare(m_equityWithLoanChange, state.m_equityWithLoanChange) != 0 ||
+            Util.StringCompare(m_initMarginAfter, state.m_initMarginAfter) != 0 ||
+            Util.StringCompare(m_maintMarginAfter, state.m_maintMarginAfter) != 0 ||
+            Util.StringCompare(m_equityWithLoanAfter, state.m_equityWithLoanAfter) != 0 ||
+        	Util.StringCompare(m_commissionCurrency, state.m_commissionCurrency) != 0 ||
+            Util.StringCompare(m_completedTime, state.m_completedTime) != 0
+        	) {
         	return false;
         }
         return true;

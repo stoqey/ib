@@ -1,4 +1,4 @@
-/* Copyright (C) 2013 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
+/* Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.client;
@@ -8,11 +8,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-class DefaultEWrapper implements EWrapper {
+public class DefaultEWrapper implements EWrapper {
 
 	@Override
 	public void tickPrice(int tickerId, int field, double price,
-			TickAttr attribs) {
+			TickAttrib attribs) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -55,7 +55,7 @@ class DefaultEWrapper implements EWrapper {
 	@Override
 	public void orderStatus(int orderId, String status, double filled,
 			double remaining, double avgFillPrice, int permId, int parentId,
-			double lastFillPrice, int clientId, String whyHeld) {
+			double lastFillPrice, int clientId, String whyHeld, double mktCapPrice) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -145,7 +145,7 @@ class DefaultEWrapper implements EWrapper {
 
 	@Override
 	public void updateMktDepthL2(int tickerId, int position,
-			String marketMaker, int operation, int side, double price, int size) {
+			String marketMaker, int operation, int side, double price, int size, boolean isSmartDepth) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -215,7 +215,7 @@ class DefaultEWrapper implements EWrapper {
 	}
 
 	@Override
-	public void deltaNeutralValidation(int reqId, DeltaNeutralContract underComp) {
+	public void deltaNeutralValidation(int reqId, DeltaNeutralContract deltaNeutralContract) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -459,7 +459,7 @@ class DefaultEWrapper implements EWrapper {
     }
 
     @Override
-    public void pnl(int reqId, double dailyPnL, double unrealizedPnL) {
+    public void pnl(int reqId, double dailyPnL, double unrealizedPnL, double realizedPnL) {
         // TODO Auto-generated method stub
         
     }
@@ -483,8 +483,59 @@ class DefaultEWrapper implements EWrapper {
 	}
 
     @Override
-    public void pnlSingle(int reqId, int pos, double dailyPnL, double unrealizedPnL, double value) {
+    public void pnlSingle(int reqId, int pos, double dailyPnL, double unrealizedPnL, double realizedPnL, double value) {
         // TODO Auto-generated method stub
         
+    }
+
+    @Override
+    public void historicalTicks(int reqId, List<HistoricalTick> ticks, boolean last) {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    @Override
+    public void historicalTicksBidAsk(int reqId, List<HistoricalTickBidAsk> ticks, boolean done) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void historicalTicksLast(int reqId, List<HistoricalTickLast> ticks, boolean done) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void tickByTickAllLast(int reqId, int tickType, long time, double price, int size, TickAttribLast tickAttribLast,
+             String exchange, String specialConditions) {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void tickByTickBidAsk(int reqId, long time, double bidPrice, double askPrice, int bidSize, int askSize,
+            TickAttribBidAsk tickAttribBidAsk) {
+        // TODO Auto-generated method stub
+	}
+
+    @Override
+    public void tickByTickMidPoint(int reqId, long time, double midPoint) {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void orderBound(long orderId, int apiClientId, int apiOrderId) {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void completedOrder(Contract contract, Order order, OrderState orderState) {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void completedOrdersEnd() {
+        // TODO Auto-generated method stub
     }
 }

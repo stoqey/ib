@@ -1,4 +1,4 @@
-/* Copyright (C) 2013 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
+/* Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.client;
@@ -59,9 +59,9 @@ public enum TickType {
     ASK_YIELD( 51, "askYield" ),
     LAST_YIELD( 52, "lastYield" ),
     CUST_OPTION_COMPUTATION( 53, "custOptComp" ),
-    TRADE_COUNT( 54, "trades" ),
-    TRADE_RATE( 55, "trades/min" ),
-    VOLUME_RATE( 56, "volume/min" ),
+    TRADE_COUNT( 54, "tradeCount" ),
+    TRADE_RATE( 55, "tradeRate" ),
+    VOLUME_RATE( 56, "volumeRate" ),
     LAST_RTH_TRADE( 57, "lastRTHTrade" ),
     RT_HISTORICAL_VOL( 58, "RTHistoricalVol" ),
     IB_DIVIDENDS( 59, "IBDividends" ),
@@ -92,6 +92,9 @@ public enum TickType {
     LAST_EXCH(84, "lastExchange"),
     LAST_REG_TIME(85, "lastRegTime"),
     FUTURES_OPEN_INTEREST(86, "futuresOpenInterest"),
+    AVG_OPT_VOLUME(87, "avgOptVolume"),
+    DELAYED_LAST_TIMESTAMP(88, "delayedLastTimestamp"),
+    SHORTABLE_SHARES(89, "shortableShares"),
 
     UNKNOWN( Integer.MAX_VALUE , "unknown" );
 
@@ -118,5 +121,14 @@ public enum TickType {
 
     public static String getField(int tickType) {
         return get(tickType).field();
+    }
+    
+    public static int getType(String name) {
+        for( TickType tt : values() ) {
+            if( tt.m_field.equalsIgnoreCase(name)) {
+                return tt.m_ndx;
+            }
+        }
+        return UNKNOWN.m_ndx;
     }
 }

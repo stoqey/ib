@@ -1,4 +1,4 @@
-/* Copyright (C) 2013 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
+/* Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.controller;
@@ -25,14 +25,6 @@ public class Position {
 	public double unrealPnl() 		{ return m_unrealPnl;}
 	public double position() 			{ return m_position;}
 	public String account() 		{ return m_account;}
-
-//	public void account(String v) 		{ m_account = v;}
-//	public void averageCost(double v) 	{ m_averageCost = v;}
-//	public void marketPrice(double v) 	{ m_marketPrice = v;}
-//	public void marketValue(double v) 	{ m_marketValue = v;}
-//	public void position(int v) 		{ m_position = v;}
-//	public void realPnl(double v) 		{ m_realPnl = v;}
-//	public void unrealPnl(double v) 	{ m_unrealPnl = v;}
 
 	public Position( Contract contract, String account, double position, double marketPrice, double marketValue, double averageCost, double unrealPnl, double realPnl) {
 		m_contract = contract;
