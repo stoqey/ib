@@ -241,7 +241,7 @@ export class Decoder {
 
       const toEmit = this.emitQueue;
       this.emitQueue = [];
-      toEmit.forEach((item) => this.callback.emitEvent(item.name, item.args));
+      toEmit.forEach((item) => this.callback.emitEvent(item.name, ...item.args));
     }
   }
 
