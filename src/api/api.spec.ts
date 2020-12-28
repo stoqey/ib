@@ -11,12 +11,12 @@ const TEST_SERVER_POST = 4001;
 
 describe("IBApi Tests", () => {
 
-  let client_id = 0; // ensure unique client
+  let _clientId = 0; // ensure unique client
 
   it("Test connect / disconnect", (done) => {
 
     const ib = new IBApi({
-      clientId: client_id++,
+      clientId: _clientId++,
       host: TEST_SERVER_HOST,
       port: TEST_SERVER_POST
     });
@@ -32,12 +32,13 @@ describe("IBApi Tests", () => {
     ib.connect();
   });
 
-  // keep an open connection for the following tests
+  let _account: string; // maintain account name for further tests
+  let _conId: number; // maintain for conId for  further tests
 
   it("Test reqPositions / cancelPositions", (done) => {
 
     const ib = new IBApi({
-      clientId: client_id++,
+      clientId: _clientId++,
       host: TEST_SERVER_HOST,
       port: TEST_SERVER_POST
     }).connect();
@@ -47,6 +48,12 @@ describe("IBApi Tests", () => {
     ib.on(EventName.error, (err: Error, code: ErrorCode, id: number) => {
       assert.fail(`${err.message} - code: ${code} - id: ${id}`);
     }).on(EventName.position, (account: string, contract: Contract, pos: number, avgCost: number) => {
+      if (_account === undefined) {
+        _account = account;
+      }
+      if (_conId === undefined) {
+        _conId = contract.conId;
+      }
       assert.isDefined(account);
       assert.isDefined(contract);
       assert.isDefined(pos);
@@ -62,5 +69,61 @@ describe("IBApi Tests", () => {
     });
 
     ib.reqPositions();
+  });
+
+  it("Test reqPnL / cancelPositions", (done) => {
+
+    const ib = new IBApi({
+      clientId: _clientId++,
+      host: TEST_SERVER_HOST,
+      port: TEST_SERVER_POST
+    }).connect();
+
+    let received = false;
+
+    ib.on(EventName.error, (err: Error, code: ErrorCode, id: number) => {
+      assert.fail(`${err.message} - code: ${code} - id: ${id}`);
+    }).on(EventName.pnl, (reqId: number, pnl: number) => {
+      assert.equal(43, reqId);
+      assert.isDefined(pnl);
+      if (!received) {
+        ib.cancelPnL(reqId);
+        ib.disconnect();
+        done();
+      }
+      received = true;
+    });
+
+    ib.reqPnL(43, _account);
+  });
+
+  it("Test reqPnLSingle / cancelPnLSingle", (done) => {
+
+    const ib = new IBApi({
+      clientId: _clientId++,
+      host: TEST_SERVER_HOST,
+      port: TEST_SERVER_POST
+    }).connect();
+
+    let received = false;
+
+    ib.on(EventName.error, (err: Error, code: ErrorCode, id: number) => {
+      assert.fail(`${err.message} - code: ${code} - id: ${id}`);
+    }).on(EventName.pnlSingle, (reqId: number, pos: number, dailyPnL: number, unrealizedPnL: number, realizedPnL: number, value: number) => {
+      assert.equal(44, reqId);
+      assert.isDefined(pos);
+      assert.isDefined(dailyPnL);
+      assert.isDefined(unrealizedPnL);
+      assert.isDefined(realizedPnL);
+      assert.isDefined(value);
+      if (!received) {
+        ib.cancelPnLSingle(reqId);
+        ib.disconnect();
+        done();
+      }
+      received = true;
+    });
+
+    ib.reqPnLSingle(44, _account, null, _conId);
   });
 });
