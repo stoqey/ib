@@ -14,6 +14,7 @@
     "lint": "eslint . --ext .ts",
     "test": "mocha -r ts-node/register src/**/*.spec.ts",
     "build": "rimraf dist && tsc -p .",
+    "prepublishOnly": "npm run build",
     "release": "npm run lint && npm test && npm run doc && npm run build",
     "doc": "typedoc src --stripInternal",
     "doc:dev": "typedoc src --out ./doc-dev"
