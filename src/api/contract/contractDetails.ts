@@ -7,7 +7,7 @@ import { Contract } from "./contract";
 export interface ContractDetails {
 
   /** A fully-defined [[Contract]] object. */
-  contract?: Contract;
+  contract: Contract;
 
   /** The market name for this product. */
  	marketName?: string;

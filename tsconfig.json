@@ -5,6 +5,7 @@
       "es2015",
       "ES6"
     ],
+    "strict": true,
     "rootDir": "src",
     "outDir": "dist",
     "module": "commonjs",

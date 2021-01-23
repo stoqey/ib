@@ -32,15 +32,14 @@ export class Socket {
    */
   constructor(
     private controller: Controller,
-    private options?: IBApiCreationOptions) {
-      this.options = this.options ?? {};
+    private options: IBApiCreationOptions = {}) {
       this.options.clientId = this.options.clientId ?? Config.DEFAULT_CLIENT_ID;
-      this.options.host = this.options.host ?? Config.DEFAULT_HOST;
-      this.options.port = this.options.port ?? Config.DEFAULT_PORT;
+      this.options.host = this.options.host;
+      this.options.port = this.options.port;
   }
 
   /** The TCP client socket. */
-  private client: net.Socket;
+  private client?: net.Socket;
 
   /** `true` if the TCP socket is connected and [[OUT_MSG_ID.START_API]] has been sent, `false` otherwise.  */
   private _connected = false;
@@ -103,8 +102,8 @@ export class Socket {
     // create and connect TCP socket
 
     this.client = net.connect({
-      host: this.options.host,
-      port: this.options.port
+      host: this.options.host ?? Config.DEFAULT_HOST,
+      port: this.options.port ?? Config.DEFAULT_PORT,
     }, () => this.onConnect())
     .on("data", (data) => this.onData(data))
     .on("close", () => this.onEnd())
@@ -123,7 +122,7 @@ export class Socket {
 
     // disconnect TCP socket.
 
-    this.client.end();
+    this.client?.end();
   }
 
   /**
@@ -164,7 +163,7 @@ export class Socket {
         utf8Data = [...this.numberTo32BitBigEndian(utf8Data.length + 1), ...utf8Data, 0];
       }
 
-      this.client.write(new Uint8Array(utf8Data));
+      this.client?.write(new Uint8Array(utf8Data));
     }
 
     this.controller.emitEvent(EventName.sent, tokens, stringData);
@@ -314,7 +313,7 @@ export class Socket {
   /**
    * Called when TCP socket connection has been closed.
    */
-  private onEnd () {
+  private onEnd(): void {
 
     const wasConnected = this._connected;
     this._connected = false;
@@ -328,7 +327,7 @@ export class Socket {
   /**
    * Called when an error occurred on the TCP socket connection.
    */
-  private onError(err: Error) {
+  private onError(err: Error): void {
     this.controller.emitError(err.message, ErrorCode.CONNECT_FAIL, -1);
   }
 

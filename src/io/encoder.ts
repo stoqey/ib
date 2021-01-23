@@ -96,7 +96,7 @@ export enum OUT_MSG_ID {
  *
  * Helper function to nullify a number of Number.MAX_VALUE
  */
-function nullifyMax(number) {
+function nullifyMax(number): number|null {
   if (number === Number.MAX_VALUE) {
     return null;
   } else {
@@ -156,7 +156,7 @@ export class Encoder {
    *
    * @param args Array of tokens to send.
    */
-  private sendMsg(...args: unknown[]) {
+  private sendMsg(...args: unknown[]): void {
     this.callback.sendMsg(args);
   }
 
@@ -195,7 +195,7 @@ export class Encoder {
   /**
    * Encode a [[TagValue]] array to a string token.
    */
-  private encodeTagValues(tagValues: TagValue[]): string {
+  private encodeTagValues(tagValues: TagValue[]|undefined): string {
     let result = "";
     tagValues?.forEach((tv) => {
       result += `${tv.tag}=${tv.value};`;
@@ -517,7 +517,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     if (this.serverVersion < MIN_SERVER_VER.TRADING_CLASS) {
-      if (!!contract.tradingClass || contract.conId > 0) {
+      if (!!contract.tradingClass || contract.conId != undefined) {
         return this.emitError("It does not support conId and tradingClass parameters in exerciseOptions.", ErrorCode.UPDATE_TWS, tickerId);
       }
     }
@@ -608,7 +608,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     if (this.serverVersion < MIN_SERVER_VER.PLACE_ORDER_CONID) {
-      if (contract.conId > 0) {
+      if (contract.conId != undefined) {
         return this.emitError("It does not support conId parameter.", ErrorCode.UPDATE_TWS, id);
       }
     }
@@ -640,7 +640,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     if (this.serverVersion < MIN_SERVER_VER.DELTA_NEUTRAL_CONID) {
-      if (order.deltaNeutralConId > 0 ||
+      if (order.deltaNeutralConId != undefined ||
         !!order.deltaNeutralSettlingFirm ||
         !!order.deltaNeutralClearingAccount ||
         !!order.deltaNeutralClearingIntent) {
@@ -651,14 +651,14 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     if (this.serverVersion < MIN_SERVER_VER.DELTA_NEUTRAL_OPEN_CLOSE) {
       if (!!order.deltaNeutralOpenClose ||
         order.deltaNeutralShortSale ||
-        order.deltaNeutralShortSaleSlot > 0 ||
+        order.deltaNeutralShortSaleSlot != undefined ||
         !!order.deltaNeutralDesignatedLocation) {
         return this.emitError("It does not support deltaNeutral parameters: OpenClose, ShortSale, ShortSaleSlot, DesignatedLocation.", ErrorCode.UPDATE_TWS, id);
       }
     }
 
     if (this.serverVersion < MIN_SERVER_VER.SCALE_ORDERS3) {
-      if (order.scalePriceIncrement > 0 && order.scalePriceIncrement !== undefined) {
+      if (order.scalePriceIncrement != undefined && order.scalePriceIncrement !== undefined) {
         if (order.scalePriceAdjustValue !== undefined ||
           order.scalePriceAdjustInterval !== undefined ||
           order.scaleProfitOffset !== undefined ||
@@ -804,7 +804,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     if (this.serverVersion >= MIN_SERVER_VER.FRACTIONAL_POSITIONS) {
       tokens.push(order.totalQuantity);
     } else {
-      tokens.push(Math.round(order.totalQuantity));
+      tokens.push(order.totalQuantity?Math.round(order.totalQuantity):undefined);
     }
 
     tokens.push(order.orderType);
@@ -888,7 +888,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       const smartComboRoutingParamsCount = !order.smartComboRoutingParams ? 0 : order.smartComboRoutingParams.length;
       tokens.push(smartComboRoutingParamsCount);
       if (smartComboRoutingParamsCount > 0) {
-        order.smartComboRoutingParams.forEach((param) => {
+        order.smartComboRoutingParams?.forEach((param) => {
           tokens.push(param.tag);
           tokens.push(param.value);
         });
@@ -963,7 +963,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       tokens.push(nullifyMax(order.volatilityType));
 
       if (this.serverVersion < 28) {
-        tokens.push(order.deltaNeutralOrderType.toUpperCase() === "MKT");
+        tokens.push(order.deltaNeutralOrderType?.toUpperCase() === "MKT");
       } else {
         tokens.push(order.deltaNeutralOrderType);
         tokens.push(nullifyMax(order.deltaNeutralAuxPrice));
@@ -1015,7 +1015,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       tokens.push(nullifyMax(order.scalePriceIncrement));
     }
 
-    if (this.serverVersion >= MIN_SERVER_VER.SCALE_ORDERS3 && order.scalePriceIncrement > 0.0 && order.scalePriceIncrement !== Number.MAX_VALUE) {
+    if (this.serverVersion >= MIN_SERVER_VER.SCALE_ORDERS3 && order.scalePriceIncrement != null && order.scalePriceIncrement !== Number.MAX_VALUE) {
       tokens.push(nullifyMax(order.scalePriceAdjustValue));
       tokens.push(nullifyMax(order.scalePriceAdjustInterval));
       tokens.push(nullifyMax(order.scaleProfitOffset));
@@ -1065,10 +1065,10 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     if (this.serverVersion >= MIN_SERVER_VER.ALGO_ORDERS) {
       tokens.push(order.algoStrategy);
       if (!!order.algoStrategy) {
-        const algoParamsCount = order.algoParams?.length ? 0 : order.algoParams.length;
+        const algoParamsCount = order.algoParams?.length ? order.algoParams.length : 0;
         tokens.push(algoParamsCount);
         if (algoParamsCount > 0) {
-          order.algoParams.forEach((param) => {
+          order.algoParams?.forEach((param) => {
             tokens.push(param.tag);
             tokens.push(param.value);
           });
@@ -1195,8 +1195,8 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     if (this.serverVersion >= MIN_SERVER_VER.SOFT_DOLLAR_TIER) {
-      tokens.push(order.softDollarTier.name);
-      tokens.push(order.softDollarTier.value);
+      tokens.push(order.softDollarTier?.name ? order.softDollarTier.name : "");
+      tokens.push(order.softDollarTier?.value ? order.softDollarTier.value: "");
     }
 
     if (this.serverVersion >= MIN_SERVER_VER.CASH_QTY) {
@@ -1509,7 +1509,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     if (this.serverVersion < MIN_SERVER_VER.TRADING_CLASS) {
-      if (contract.conId > 0) {
+      if (contract.conId != undefined) {
         return this.emitError("It does not support conId parameter in reqFundamentalData.", ErrorCode.UPDATE_TWS, reqId);
       }
     }
@@ -1576,7 +1576,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     if (this.serverVersion < MIN_SERVER_VER.TRADING_CLASS) {
-      if (!!contract.tradingClass || contract.conId > 0) {
+      if (!!contract.tradingClass || contract.conId != undefined) {
         return this.emitError("It does not support conId and tradingClass parameters in reqHistoricalData.", ErrorCode.UPDATE_TWS, tickerId);
       }
     }
@@ -1881,7 +1881,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     if (this.serverVersion < MIN_SERVER_VER.TRADING_CLASS) {
-      if (!!contract.tradingClass || contract.conId > 0) {
+      if (!!contract.tradingClass || contract.conId != undefined) {
         return this.emitError("It does not support conId and tradingClass parameters in reqMktDepth.", ErrorCode.UPDATE_TWS, tickerId);
       }
     }
@@ -2015,7 +2015,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     if (this.serverVersion < MIN_SERVER_VER.TRADING_CLASS) {
-      if (!!contract.tradingClass || contract.conId > 0) {
+      if (!!contract.tradingClass || contract.conId != undefined) {
         return this.emitError("It does not support conId and tradingClass parameters in reqRealTimeBars.", ErrorCode.UPDATE_TWS, tickerId);
       }
     }
