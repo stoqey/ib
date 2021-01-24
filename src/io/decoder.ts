@@ -1463,7 +1463,6 @@ export class Decoder {
     this.readInt(); // version
     const reqId = this.readInt();
     const account = this.readStr();
-    const modelCode = null;
     const contract: Contract = {};
 
     contract.conId = this.readInt();
@@ -1479,6 +1478,7 @@ export class Decoder {
     contract.tradingClass = this.readStr();
     const pos = this.readInt();
     const avgCost = this.readDouble();
+    const modelCode = this.readStr();
 
     this.emit(EventName.positionMulti, reqId, account, modelCode, contract, pos, avgCost);
   }
