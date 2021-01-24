@@ -213,6 +213,10 @@ export class Decoder {
         // dequeue command code token
 
         const token = this.readInt();
+        if (token == undefined) {
+          this.callback.emitError("Failed to decode token value.", ErrorCode.UNKNOWN_ID, -1);
+          continue;
+        }
 
         const constKey = IN_MSG_ID[token];
         if (!constKey) {
@@ -260,7 +264,7 @@ export class Decoder {
     if (this.dataQueue.length === 0) {
       throw new UnderrunError();
     }
-    return this.dataQueue.shift();
+    return this.dataQueue.shift()??"";
   }
 
   /**
@@ -302,7 +306,7 @@ export class Decoder {
    *
    * Returns 0 if the token is empty.
    */
-  private readInt(): number|undefined {
+  private readInt(): number {
     const token = this.readStr();
     if (token === null || token === "") {
       return 0;
@@ -315,7 +319,7 @@ export class Decoder {
    *
    * Returns Number.MAX_VALUE if the token is empty.
    */
-  private readIntMax(): number|undefined {
+  private readIntMax(): number {
     const token = this.readStr();
     if (token === null || token === "") {
       return Number.MAX_VALUE;
@@ -326,7 +330,7 @@ export class Decoder {
   /**
    * Add tokens to the emit queue.
    */
-  private emit(eventName: EventName, ...args: unknown[]) {
+  private emit(eventName: EventName, ...args: unknown[]): void {
     this.emitQueue.push({name: eventName, args: args});
   }
 
@@ -388,7 +392,7 @@ export class Decoder {
   /**
    * Decode a TICK_SIZE message from data queue and emit an tickSize event.
    */
-  private decodeMsg_TICK_SIZE() {
+  private decodeMsg_TICK_SIZE(): void {
     this.readInt(); // version
     const tickerId = this.readInt();
     const tickType = this.readInt();
@@ -400,7 +404,7 @@ export class Decoder {
   /**
    * Decode a ORDER_STATUS message from data queue and emit an orderStatus event.
    */
-  private decodeMsg_ORDER_STATUS() {
+  private decodeMsg_ORDER_STATUS(): void {
     const version = this.readInt();
     const id = this.readInt();
     const status = this.readStr();
@@ -428,7 +432,7 @@ export class Decoder {
       clientId = this.readInt();
     }
 
-    let whyHeld = null;
+    let whyHeld: string|undefined = undefined;
     if (version >= 6) {
       whyHeld = this.readStr();
     }
@@ -445,7 +449,7 @@ export class Decoder {
   /**
    * Decode a ERR_MSG message from data queue and emit and error event.
    */
-  private decodeMsg_ERR_MSG() {
+  private decodeMsg_ERR_MSG(): void {
     const version = this.readInt();
     if (version < 2) {
       const errorMsg = this.readStr();
@@ -663,7 +667,7 @@ export class Decoder {
       realizedPNL = this.readDouble();
     }
 
-    let accountName: string = undefined;
+    let accountName: string|undefined = undefined;
     if (version >= 4) {
       accountName = this.readStr();
     }
@@ -954,7 +958,7 @@ export class Decoder {
   /**
    * Decode a HISTORICAL_DATA message from data queue and emit historicalData events.
    */
-  private decodeMsg_HISTORICAL_DATA() {
+  private decodeMsg_HISTORICAL_DATA(): void {
     let version = Number.MAX_VALUE;
     if (this.serverVersion < MIN_SERVER_VER.SYNT_REALTIME_BARS) {
       version = this.readInt();
@@ -1119,7 +1123,7 @@ export class Decoder {
       const benchmark = this.readStr();
       const projection = this.readStr();
 
-      let legsStr = undefined;
+      let legsStr: string|undefined = undefined;
       if (version >= 2) {
         legsStr = this.readStr();
       }
@@ -1413,7 +1417,7 @@ export class Decoder {
   /**
    * Decode a ACCOUNT_SUMMARY message from data queue and emit a accountSummary event.
    */
-  private decodeMsg_ACCOUNT_SUMMARY() {
+  private decodeMsg_ACCOUNT_SUMMARY(): void {
     this.readInt(); // version
     const reqId = this.readInt();
     const account = this.readStr();
@@ -1528,14 +1532,14 @@ export class Decoder {
     const tradingClass = this.readStr();
     const multiplier = this.readStr();
     const expCount = this.readInt();
-    const expirations = [];
+    const expirations: unknown[] = [];
 
     for (let i = 0; i < expCount; i++) {
       expirations.push(this.readStr());
     }
 
     const strikeCount = this.readInt();
-    const strikes = [];
+    const strikes: number[] = [];
     for (let j = 0; j < strikeCount; j++) {
       strikes.push(this.readDouble());
     }
@@ -2154,7 +2158,7 @@ export class Decoder {
       order.scalePriceIncrement = this.readDoubleMax();
     }
 
-    if (this.serverVersion >= 28 && order.scalePriceIncrement > 0 && order.scalePriceIncrement !== Number.MAX_VALUE) {
+    if (this.serverVersion >= 28 && order.scalePriceIncrement != undefined && order.scalePriceIncrement !== Number.MAX_VALUE) {
       order.scalePriceAdjustValue = this.readDoubleMax();
       order.scalePriceAdjustInterval = this.readIntMax();
       order.scaleProfitOffset = this.readDoubleMax();

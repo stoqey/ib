@@ -196,7 +196,7 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
    * @param callback Callback function to invoke.
    * @param data Command data.
    */
-  private static execute(callback: (data: unknown) => void, data: unknown) {
+  private static execute(callback: (data: unknown) => void, data: unknown): void {
     callback(data);
   }
 
@@ -205,7 +205,7 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
    *
    * @see [[connect]]
    */
-  private executeConnect() {
+  private executeConnect(): void {
     if (!this.socket.connected) {
       this.socket.connect();
     } else {
@@ -218,7 +218,7 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
    *
    * @see [[disconnect]]
    */
-  private executeDisconnect() {
+  private executeDisconnect(): void {
     if (this.socket.connected) {
       this.socket.disconnect();
     } else {
