@@ -777,7 +777,7 @@ export class Decoder {
 
       if (this.serverVersion >= MIN_SERVER_VER.UNDERLYING_INFO) {
         contract.underSymbol = this.readStr();
-        contract.underSecType = this.readStr();
+        contract.underSecType = this.readStr() as SecType;
       }
 
       if (this.serverVersion >= MIN_SERVER_VER.MARKET_RULES) {

@@ -1,5 +1,5 @@
 import { TagValue } from "../api";
-import { Contract } from "./contract";
+import { Contract, SecType } from "./contract";
 
 /**
  * Extended contract details.
@@ -134,7 +134,7 @@ export interface ContractDetails {
  	underSymbol?: string;
 
   /**	For derivatives, returns the underlying security type. */
- 	underSecType?: string;
+ 	underSecType?: SecType;
 
   /** The list of market rule IDs separated by comma Market rule IDs can be used to determine the minimum price increment at a given price. */
  	marketRuleIds?: string;
