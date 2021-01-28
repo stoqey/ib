@@ -162,7 +162,6 @@ export interface DecoderCallbacks {
   emitInfo(message: string): void;
 }
 
-
 /**
  * @internal
  *
@@ -178,16 +177,34 @@ export class Decoder {
    */
   constructor(private callback: DecoderCallbacks) { }
 
-  /** Data input queue (data that has arrived from server). */
-  private dataQueue: string[] = [];
+  /**
+   * Input data queue.
+   *
+   * If the value is a string, this is a tokens as received from TWS / IB Gateway.
+   * If the value is undefined, this signals the boundary (start or end) of a message (used with V100 protocol only).
+   */
+  private dataQueue: (string|undefined)[] = [];
 
   /** Data emit queue (data to be emitted to controller). */
   private emitQueue: EmitQueueItem[] = [];
 
   /**
-   * Add new tokens to queue.
+   * Add a new message to queue.
+   *
+   * Used on V100 protocol.
    */
-  enqueue(tokens: string[]): void {
+  enqueueMessage(tokens: string[]): void {
+    this.dataQueue .push(undefined); // signal start boundary
+    this.dataQueue = this.dataQueue.concat(tokens);
+    this.dataQueue .push(undefined); // signal end boundary
+  }
+
+  /**
+   * Add new tokens to queue.
+   *
+   * Used on pre-V100 protocol.
+   */
+  enqueueTokens(tokens: string[]): void {
     this.dataQueue = this.dataQueue.concat(tokens);
   }
 
@@ -198,41 +215,74 @@ export class Decoder {
 
     while (true) {
 
+      // verify there is data to process
+
       if (!this.dataQueue.length) {
         break;
       }
 
+      // clear event queue and take a snapshot for roll-back in case of error
+
+      this.emitQueue = [];
+
       const dataQueueSnapshot = this.dataQueue.slice();
+
+      // check if there is a message boundary marker
+
+      let verifyMessageBoundary = false;
+      if (this.dataQueue[0] === undefined) {
+        verifyMessageBoundary = true;
+        this.dataQueue.shift();
+      }
+
+      // dequeue command code token
+
+      const commandCode = this.readInt();
+      if (commandCode == undefined) {
+        this.callback.emitError("Received empty command code.", ErrorCode.UNKNOWN_ID, -1);
+        continue;
+      }
+
+      // lookup decoder function
+
+      const constKey = IN_MSG_ID[commandCode];
+      if (!constKey) {
+        this.callback.emitError(`Received unsupported command code: ${commandCode}).`, ErrorCode.UNKNOWN_ID, -1);
+        return;
+      }
+
+      const decoderFunction = "decodeMsg_"+constKey;
 
       try {
 
-        // Clear the Emit Queue; if this doesn't get cleared, it piles up whenever there's an error (added by heberallred)
+        // invoke decoder function
 
-        this.emitQueue = [];
-
-        // dequeue command code token
-
-        const token = this.readInt();
-        if (token == undefined) {
-          this.callback.emitError("Failed to decode token value.", ErrorCode.UNKNOWN_ID, -1);
-          continue;
-        }
-
-        const constKey = IN_MSG_ID[token];
-        if (!constKey) {
-          this.callback.emitError(`Received unsupported token: ${constKey} (${token}).`, ErrorCode.UNKNOWN_ID, -1);
-          continue;
-        }
-
-        if (constKey && this["decodeMsg_"+constKey] !== undefined) {
-          this["decodeMsg_"+constKey]();
+        if (constKey && this[decoderFunction] !== undefined) {
+          this[decoderFunction]();
         } else {
-          this.callback.emitError(`No parser implementation found for token: ${constKey} (${token}).`,  ErrorCode.UNKNOWN_ID, -1);
+          this.callback.emitError(`No parser implementation found for token: ${constKey} (${commandCode}).`,  ErrorCode.UNKNOWN_ID, -1);
+        }
+
+        // check if all of the message data was processed and drain any remaining tokens
+
+        if (verifyMessageBoundary) {
+
+          if (this.dataQueue[0] !== undefined) {
+            this.callback.emitError(`Decoding error on ${decoderFunction}: unprocessed data left on queue. Please report to https://github.com/stoqey/ib`,
+             ErrorCode.UNKNOWN_ID, -1);
+          }
+
+          this.drainQueue();
         }
 
       } catch (e) {
-        if (!(e instanceof UnderrunError)) {
+
+        if (e.name !== "UnderrunError") {
           throw e;
+        }
+
+        if (verifyMessageBoundary) {
+          this.callback.emitError(`Underrun error on ${decoderFunction}: ${e.message} Please report to https://github.com/stoqey/ib`, ErrorCode.UNKNOWN_ID, -1);
         }
 
         // Put data back in the queue, and don't emit any events.
@@ -264,7 +314,11 @@ export class Decoder {
     if (this.dataQueue.length === 0) {
       throw new UnderrunError();
     }
-    return this.dataQueue.shift()??"";
+    const val = this.dataQueue.shift();
+    if (val === undefined) {
+      throw new UnderrunError("End of message reached.");
+    }
+    return val;
   }
 
   /**
@@ -325,6 +379,25 @@ export class Decoder {
       return Number.MAX_VALUE;
     }
     return parseInt(token, 10);
+  }
+
+  /**
+   * Drain all tokens on queue until the start marker of a new message or until queue is empty.
+   */
+  private drainQueue(): void {
+
+    // drain data up to message end marker or until queue is empty
+
+    while(this.dataQueue.length && this.dataQueue[0] !== undefined) {
+      this.dataQueue.shift();
+    }
+
+    if (this.dataQueue.length) {
+
+      // drain the end marker
+
+      this.dataQueue.shift();
+    }
   }
 
   /**

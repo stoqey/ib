@@ -194,7 +194,7 @@ export class Socket {
   }
 
   /**
-   * Called when a message has been arrived.
+   * Called when new tokens have been received from server.
    */
   private onMessage(data: string): void {
 
@@ -226,7 +226,11 @@ export class Socket {
 
       // post to queue
 
-      this.controller.onMessage(tokens);
+      if (this.useV100Plus) {
+        this.controller.onMessage(tokens);
+      } else {
+        this.controller.onTokens(tokens);
+      }
 
       // process queue
 

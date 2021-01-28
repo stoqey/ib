@@ -95,10 +95,22 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
 
   /**
    * Called when a message has been arrived on the API server connection.
+   *
+   * Used on V100 protocol.
    */
   onMessage(tokens: string[]): void {
-    this.decoder.enqueue(tokens);
+    this.decoder.enqueueMessage(tokens);
   }
+
+  /**
+   * Called when a message has been arrived on the API server connection.
+   *
+   * Used on pre-V100 protocol.
+   */
+  onTokens(tokens: string[]): void {
+    this.decoder.enqueueTokens(tokens);
+  }
+
 
   /**
    * Get the API server version.
@@ -225,23 +237,6 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
       this.emitError("Cannot disconnect if already disconnected.", ErrorCode.NOT_CONNECTED, -1);
     }
   }
-
-  /**
-   * Send an API command to the server connection.
-   *
-   * @param funcName API function name.
-   * @param funcName API arguments.
-   *
-   * @see [[api]]
-   */
-  /*
-  private executeApi(funcName: string, args: unknown[]): void {
-    if (this.encoder[funcName] instanceof Function) {
-      this.encoder[funcName](args);
-    } else {
-      throw new Error("Unknown outgoing func - " + funcName);
-    }
-  }*/
 
   /**
    * Send raw token data to the server connection.
