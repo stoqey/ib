@@ -261,7 +261,7 @@ export interface Order {
    *
    * SLONG is available in specially-configured institutional accounts to indicate that long position not yet delivered is being sold.
    */
-  action?: string;
+  action?: OrderAction;
 
   /** The number of positions being bought/sold. */
   totalQuantity?: number;
