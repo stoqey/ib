@@ -1,6 +1,6 @@
 import { SoftDollarTier, TagValue } from "../api";
 import { SecType } from "../contract/contract";
-import { OrderType } from "./oderType";
+import { OrderType } from "./orderType";
 import { OrderComboLeg } from "./orderComboLeg";
 
 /**
