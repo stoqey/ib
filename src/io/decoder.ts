@@ -16,6 +16,7 @@ import {
   PriceCondition,
   TimeCondition,
   VolumeCondition,
+  OrderAction,
 } from "../api/order/order";
 import { HistogramEntry } from "../api/historical/histogramEntry";
 import { ComboLeg } from "../api/contract/comboLeg";
@@ -2280,13 +2281,13 @@ export class Decoder {
     if (this.serverVersion >= 32) {
       contract.tradingClass = this.readStr();
     }
-    order.action = this.readStr();
+    order.action = this.readStr() as OrderAction;
     if (this.serverVersion >= MIN_SERVER_VER.FRACTIONAL_POSITIONS) {
       order.totalQuantity = this.readDouble();
     } else {
       order.totalQuantity = this.readInt();
     }
-    order.orderType = this.readStr();
+    order.orderType = this.readStr() as OrderType;
     if (this.serverVersion < 29) {
       order.lmtPrice = this.readDouble();
     } else {
@@ -2699,7 +2700,7 @@ export class Decoder {
   private decodeOrder(version: number): Order {
     const order: Order = {};
 
-    order.action = this.readStr();
+    order.action = this.readStr() as OrderAction;
 
     if (this.serverVersion >= MIN_SERVER_VER.FRACTIONAL_POSITIONS) {
       order.totalQuantity = this.readDouble();
@@ -2707,7 +2708,7 @@ export class Decoder {
       order.totalQuantity = this.readInt();
     }
 
-    order.orderType = this.readStr();
+    order.orderType = this.readStr() as OrderType;
 
     if (version < 29) {
       order.lmtPrice = this.readDouble();
