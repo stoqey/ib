@@ -1180,6 +1180,10 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       tokens.push(order.faProfile);
     }
 
+    if (this.serverVersion >=MIN_SERVER_VER.MODELS_SUPPORT) {
+      tokens.push(order.modelCode);
+    }
+
     if (this.serverVersion >= 18) {
       // institutional short sale slot fields.
       tokens.push(order.shortSaleSlot); // 0 only for retail, 1 or 2 only for institution.
