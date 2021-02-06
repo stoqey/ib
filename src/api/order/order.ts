@@ -1,5 +1,6 @@
 import { SoftDollarTier, TagValue } from "../api";
 import { SecType } from "../contract/contract";
+import { OrderType } from "./orderType";
 import { OrderComboLeg } from "./orderComboLeg";
 
 /**
@@ -19,7 +20,7 @@ export enum OrderConditionType {
   Margin = 4,
   Execution = 5,
   Volume = 6,
-  PercentChange = 7
+  PercentChange = 7,
 }
 
 /**
@@ -34,7 +35,6 @@ export enum ConjunctionConnection {
  * An order execution condition
  */
 export interface OrderCondition {
-
   /** Condition type */
   type: OrderConditionType;
 
@@ -46,7 +46,6 @@ export interface OrderCondition {
  * TODO document
  */
 export interface OperatorCondition extends OrderCondition {
-
   /** TODO document */
   isMore: boolean;
 
@@ -58,7 +57,6 @@ export interface OperatorCondition extends OrderCondition {
  * An order execution condition with contract details.
  */
 export interface ContractCondition extends OperatorCondition {
-
   /** The contract id. */
   conId: number;
 
@@ -87,7 +85,8 @@ export class ExecutionCondition implements OrderCondition {
     public exchange: string,
     public secType: SecType,
     public symbol: string,
-    public conjunctionConnection: ConjunctionConnection) { }
+    public conjunctionConnection: ConjunctionConnection
+  ) {}
 }
 
 /**
@@ -105,17 +104,18 @@ export class MarginCondition implements OperatorCondition {
   constructor(
     public percent: number,
     public isMore: boolean,
-    public conjunctionConnection: ConjunctionConnection) { }
+    public conjunctionConnection: ConjunctionConnection
+  ) {}
 
   get strValue(): string {
-    return ""+this.percent;
+    return "" + this.percent;
   }
 }
 
 /**
  * Used with conditional orders to place or submit an order based on a percentage change of an instrument to the last close price.
  */
-export class PercentChangeCondition  implements ContractCondition {
+export class PercentChangeCondition implements ContractCondition {
   type = OrderConditionType.PercentChange;
 
   /**
@@ -131,10 +131,11 @@ export class PercentChangeCondition  implements ContractCondition {
     public conId: number,
     public exchange: string,
     public isMore: boolean,
-    public conjunctionConnection: ConjunctionConnection) { }
+    public conjunctionConnection: ConjunctionConnection
+  ) {}
 
   get strValue(): string {
-    return ""+this.percent;
+    return "" + this.percent;
   }
 }
 
@@ -148,7 +149,7 @@ export enum TriggerMethod {
   DoubleLast = 3,
   BidAsk = 4,
   LastOfBidAsk = 7,
-  MidPoint = 8
+  MidPoint = 8,
 }
 
 /**
@@ -172,10 +173,11 @@ export class PriceCondition implements ContractCondition {
     public conId: number,
     public exchange: string,
     public isMore: boolean,
-    public conjunctionConnection: ConjunctionConnection) { }
+    public conjunctionConnection: ConjunctionConnection
+  ) {}
 
   get strValue(): string {
-    return ""+this.price;
+    return "" + this.price;
   }
 }
 
@@ -194,7 +196,8 @@ export class TimeCondition implements OperatorCondition {
   constructor(
     public time: string,
     public isMore: boolean,
-    public conjunctionConnection: ConjunctionConnection) { }
+    public conjunctionConnection: ConjunctionConnection
+  ) {}
 
   get strValue(): string {
     return this.time;
@@ -221,10 +224,11 @@ export class VolumeCondition implements ContractCondition {
     public conId: number,
     public exchange: string,
     public isMore: boolean,
-    public conjunctionConnection: ConjunctionConnection) { }
+    public conjunctionConnection: ConjunctionConnection
+  ) {}
 
   get strValue(): string {
-    return ""+this.volume;
+    return "" + this.volume;
   }
 }
 
@@ -232,7 +236,6 @@ export class VolumeCondition implements ContractCondition {
  * The order's description.
  */
 export interface Order {
-
   /** The API client's order id. */
   orderId?: number;
 
@@ -258,13 +261,13 @@ export interface Order {
    *
    * SLONG is available in specially-configured institutional accounts to indicate that long position not yet delivered is being sold.
    */
-  action?: string;
+  action?: OrderAction;
 
   /** The number of positions being bought/sold. */
   totalQuantity?: number;
 
   /** The order's type. */
-  orderType?: string;
+  orderType?: OrderType;
 
   /**
    * The LIMIT price.
@@ -360,7 +363,7 @@ export interface Order {
   triggerMethod?: number;
 
   /** If set to `true`, allows orders to also trigger or fill outside of regular trading hours. */
-  outsideRth?: boolean
+  outsideRth?: boolean;
 
   /**
    * If set to `true`, the order will not be visible when viewing the market depth.
@@ -713,7 +716,7 @@ export interface Order {
    *
    * For more information about IB's API algorithms, refer to https://www.interactivebrokers.com/en/software/api/apiguide/tables/ibalgo_parameters.htm.
    */
-  algoStrategy?: string,
+  algoStrategy?: string;
 
   /**
    * The list of parameters for the IB algorithm.
@@ -876,13 +879,13 @@ export interface Order {
   /** TODO: document */
   refFuturesConId?: number;
 
-    /** TODO: document */
-  autoCancelParent?: boolean
+  /** TODO: document */
+  autoCancelParent?: boolean;
 
-    /** TODO: document */
+  /** TODO: document */
   shareholder?: string;
 
-    /** TODO: document */
+  /** TODO: document */
   imbalanceOnly?: boolean;
 
   /** TODO: document */
@@ -913,7 +916,7 @@ export interface Order {
   referenceExchangeId?: string;
 
   /** Adjusted Stop orders: the parent order will be adjusted to the given type when the adjusted trigger price is penetrated. */
- 	adjustedOrderType?: string;
+  adjustedOrderType?: string;
 
   /** TODO: document */
   triggerPrice?: number;
@@ -925,7 +928,7 @@ export interface Order {
   adjustedStopPrice?: number;
 
   /** Adjusted Stop orders: specifies the stop limit price of the adjusted (STPL LMT) parent. */
- 	adjustedStopLimitPrice?: number;
+  adjustedStopLimitPrice?: number;
 
   /** Adjusted Stop orders: specifies the trailing amount of the adjusted (TRAIL) parent. */
   adjustedTrailingAmount?: number;
@@ -934,7 +937,7 @@ export interface Order {
   adjustableTrailingUnit?: number;
 
   /** Conditions determining when the order will be activated or canceled. */
-  conditions?: OrderCondition[]
+  conditions?: OrderCondition[];
 
   /** Indicates whether or not conditions will also be valid outside Regular Trading Hours. */
   conditionsIgnoreRth?: boolean;
