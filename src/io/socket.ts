@@ -164,6 +164,8 @@ export class Socket {
       }
 
       this.client?.write(new Uint8Array(utf8Data));
+    } else {
+      this.client?.write(stringData + EOL);
     }
 
     this.controller.emitEvent(EventName.sent, tokens, stringData);
@@ -305,7 +307,8 @@ export class Socket {
 
     // send client version (unless Version > 100)
     if (!this.useV100Plus) {
-      this.send([Config.CLIENT_VERSION]);  // Do not add length prefix here, because Server does not know Client's version yet
+      this.send([Config.CLIENT_VERSION]);
+      this.send([this.options.clientId]);
     } else {
       // Switch to GW API (Version 100+ requires length prefix)
       const config = this.buildVersionString(MIN_VERSION_V100, MAX_SUPPORTED_SERVER_VERSION);
