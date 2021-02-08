@@ -2257,7 +2257,7 @@ export class Decoder {
   /**
    * Decode a COMPLETED_ORDER message from data queue and a emit completedOrder event.
    */
-  private decodeMsg_COMPLETED_ORDERS_END(): void {
+  private decodeMsg_COMPLETED_ORDER(): void {
     const contract: Contract = {};
     const order: Order = {};
     const orderState: OrderState = {};
