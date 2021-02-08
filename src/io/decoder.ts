@@ -2739,6 +2739,9 @@ export class Decoder {
     order.faMethod = this.readStr();
     order.faPercentage = this.readStr();
     order.faProfile = this.readStr();
+    if (this.serverVersion >= MIN_SERVER_VER.MODELS_SUPPORT) {
+      order.modelCode = this.readStr();
+    }
     order.goodTillDate = this.readStr();
     order.rule80A = this.readStr();
     order.percentOffset = this.readDouble() || Number.MAX_VALUE;
