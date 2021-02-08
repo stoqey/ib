@@ -1,8 +1,7 @@
 /**
  * Attributes of a [[HistoricalTickBidAsk]].
  */
-export interface TickAttribBidAsk  {
-
+export interface TickAttribBidAsk {
   /** TODO document */
   bidPastLow?: boolean;
 
@@ -15,8 +14,7 @@ export interface TickAttribBidAsk  {
  *
  * Used when requesting historical tick data with whatToShow = BID_ASK.
  */
-export interface HistoricalTickBidAsk  {
-
+export interface HistoricalTickBidAsk {
   /** The UNIX timestamp of the historical tick. */
   time?: number;
 

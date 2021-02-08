@@ -4,7 +4,6 @@ import { Contract, SecType } from "./contract";
  * A container for storing Soft Dollar Tier information.
  */
 export interface ContractDescription {
-
   /** The underlying contract. */
   contract?: Contract;
 

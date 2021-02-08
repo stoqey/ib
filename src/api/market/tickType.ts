@@ -4,12 +4,11 @@
  * @see https://interactivebrokers.github.io/tws-api/tick_types.html
  */
 export enum TickType {
-
   /** Number of contracts or lots offered at the bid price. */
   BID_SIZE = 0,
 
   /** Highest priced bid for the contract. */
-  BID  = 1,
+  BID = 1,
 
   /** Lowest price offer on the contract.. */
   ASK = 2,
@@ -334,7 +333,7 @@ export enum TickType {
   /** The low price of ETF's Net Asset Value (NAV). */
   ETF_NAV_LOW = 99,
 
-  UNKNOWN = 2147483647 // MAX int32
+  UNKNOWN = 2147483647, // MAX int32
 }
 
 /**
@@ -344,5 +343,5 @@ export enum TickByTickDataType {
   Last = "Last",
   AllLast = "AllLast",
   BidAsk = "BidAsk",
-  MidPoint = "MidPoint"
+  MidPoint = "MidPoint",
 }

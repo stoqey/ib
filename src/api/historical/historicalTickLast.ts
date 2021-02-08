@@ -1,8 +1,7 @@
 /**
  * Attributes of a [[HistoricalTickBidAsk]].
  */
-export interface TickAttribBidAsk  {
-
+export interface TickAttribBidAsk {
   /** TODO document */
   pastLimit?: boolean;
 
@@ -16,7 +15,6 @@ export interface TickAttribBidAsk  {
  * Used when requesting historical tick data with whatToShow = TRADES.
  */
 export interface HistoricalTickLast {
-
   /** The UNIX timestamp of the historical tick. */
   time?: number;
 
@@ -36,6 +34,6 @@ export interface HistoricalTickLast {
    * The conditions of the historical tick.
    *
    * Refer to Trade Conditions page for more details: https://www.interactivebrokers.com/en/index.php?f=7235.
-  */
+   */
   specialConditions?: string;
 }

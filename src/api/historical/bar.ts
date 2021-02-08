@@ -2,7 +2,6 @@
  * The historical data bar's description.
  */
 export interface Bar {
-
   /**
    * The bar's date and time (either as a yyyymmss hh:mm:ss formatted string or as system time according to the request).
    *

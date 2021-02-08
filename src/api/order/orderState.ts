@@ -2,12 +2,11 @@
  * Provides an active order's current state.
  */
 export interface OrderState {
-
   /** The order's current status. */
   status?: string;
 
   /** The account's current initial margin. */
- 	initMarginBefore?: string;
+  initMarginBefore?: string;
 
   /** The account's current maintenance margin. */
   maintMarginBefore?: string;
@@ -40,16 +39,16 @@ export interface OrderState {
   minCommission?: number;
 
   /** The executions maximum commission. */
- 	maxCommission?: number;
+  maxCommission?: number;
 
   /** The generated commission currency. */
- 	commissionCurrency?: string;
+  commissionCurrency?: string;
 
   /** If the order is warranted, a descriptive message will be provided. */
- 	warningText?: string;
+  warningText?: string;
 
   /** TODO document */
-	completedTime?: string;
+  completedTime?: string;
 
   /** TODO document */
   completedStatus?: string;

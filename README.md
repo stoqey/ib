@@ -31,7 +31,9 @@ The module makes a socket connection to TWS (or IB Gateway) using the [net](http
 |TWS Live Account          | 7496 |
 |TWS papertrading account  | 7497 |
 
+## Important
 
+API is returning `Number.MAX_SAFE_INTEGER` when there is no value from IB, commonly seen when there is no bid / offer or other missing market data.
 
 
 ## Example

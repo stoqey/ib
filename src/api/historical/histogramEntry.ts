@@ -2,7 +2,6 @@
  * A container for storing Histogram Entry information.
  */
 export interface HistogramEntry {
-
   /** Trade price. */
   price?: number;
 

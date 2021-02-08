@@ -2,7 +2,6 @@
  * Delta-Neutral Contract.
  */
 export interface DeltaNeutralContract {
-
   /**
    * The unique contract identifier specifying the security.
    * Used for Delta-Neutral Combo contracts.

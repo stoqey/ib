@@ -1,11 +1,9 @@
-
 /**
  * @internal
  *
  * The API client configuration.
  */
 export class Config {
-
   /** Default TWS / IB Gateway hostname. */
   static readonly DEFAULT_HOST = "127.0.0.1";
 
@@ -20,5 +18,4 @@ export class Config {
 
   /** Maximum of requests send per second. */
   static readonly MAX_REQ_PER_SECOND = 40;
-
 }

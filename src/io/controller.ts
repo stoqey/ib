@@ -1,4 +1,3 @@
-
 import CommandBuffer from "command-buffer";
 import rateLimit from "function-rate-limit";
 import { Socket } from "./socket";
@@ -15,16 +14,13 @@ import { ErrorCode } from "../api/errorCode";
  * underlying I/O code.
  */
 export class Controller implements EncoderCallbacks, DecoderCallbacks {
-
   /**
    *
    * @param ib The [[IBApi]] object.
    * @param _options The [[IBApi]] creation options.
    */
-  constructor(
-    private ib: IBApi,
-    private options?: IBApiCreationOptions) {
-      this.socket = new Socket(this, this.options);
+  constructor(private ib: IBApi, private options?: IBApiCreationOptions) {
+    this.socket = new Socket(this, this.options);
   }
 
   /** The API socket object. */
@@ -111,7 +107,6 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
     this.decoder.enqueueTokens(tokens);
   }
 
-
   /**
    * Get the API server version.
    *
@@ -150,7 +145,7 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
     })();
   }
 
- /**
+  /**
    * Emit an event to public API interface.
    *
    * This function is called from the [[Decoder]] (via [DecoderCallbacks.emitEvent]).
@@ -159,26 +154,27 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
    * @param args Event arguments.
    */
   emitEvent(eventName: EventName, ...args: unknown[]): void {
-
     // emit the event
 
     this.ib.emit(eventName, ...args);
 
     // emit 'result' and 'all' event
 
-    if (eventName !== EventName.connected &&
-        eventName !== EventName.disconnected &&
-        eventName !== EventName.error &&
-        eventName !== EventName.received &&
-        eventName !== EventName.sent &&
-        eventName !== EventName.server) {
+    if (
+      eventName !== EventName.connected &&
+      eventName !== EventName.disconnected &&
+      eventName !== EventName.error &&
+      eventName !== EventName.received &&
+      eventName !== EventName.sent &&
+      eventName !== EventName.server
+    ) {
       this.ib.emit(EventName.result, eventName, args);
     }
 
     this.ib.emit(EventName.all, eventName, args);
   }
 
-   /**
+  /**
    * Emit an information message event to public API interface.
    *
    * This function is called from the [[Decoder]] (via [DecoderCallbacks.emitInfo]).
@@ -208,7 +204,10 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
    * @param callback Callback function to invoke.
    * @param data Command data.
    */
-  private static execute(callback: (data: unknown) => void, data: unknown): void {
+  private static execute(
+    callback: (data: unknown) => void,
+    data: unknown
+  ): void {
     callback(data);
   }
 
@@ -221,7 +220,11 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
     if (!this.socket.connected) {
       this.socket.connect();
     } else {
-      this.emitError("Cannot connect if already connected.", ErrorCode.CONNECT_FAIL, -1);
+      this.emitError(
+        "Cannot connect if already connected.",
+        ErrorCode.CONNECT_FAIL,
+        -1
+      );
     }
   }
 
@@ -234,7 +237,11 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
     if (this.socket.connected) {
       this.socket.disconnect();
     } else {
-      this.emitError("Cannot disconnect if already disconnected.", ErrorCode.NOT_CONNECTED, -1);
+      this.emitError(
+        "Cannot disconnect if already disconnected.",
+        ErrorCode.NOT_CONNECTED,
+        -1
+      );
     }
   }
 
@@ -249,7 +256,11 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
     if (this.socket.connected) {
       this.socket.send(tokens);
     } else {
-      this.emitError("Cannot send data when disconnected.", ErrorCode.NOT_CONNECTED, -1);
+      this.emitError(
+        "Cannot send data when disconnected.",
+        ErrorCode.NOT_CONNECTED,
+        -1
+      );
     }
   }
 }
