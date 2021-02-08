@@ -2,7 +2,6 @@
  * Type describing the liquidity type of an execution
  */
 export interface Liquidities {
-
   /** The value of the liquidity type. */
   value: number;
 }
@@ -11,7 +10,6 @@ export interface Liquidities {
  * Type describing an order's execution.
  */
 export interface Execution {
-
   /** The API client's order Id. May not be unique to an account. */
   orderId?: number;
 
@@ -86,4 +84,3 @@ export interface Execution {
    */
   lastLiquidity?: Liquidities;
 }
-

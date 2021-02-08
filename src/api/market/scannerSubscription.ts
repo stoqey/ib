@@ -1,9 +1,7 @@
-
 /**
  * Defines a market scanner request.
  */
-export interface ScannerSubscription   {
-
+export interface ScannerSubscription {
   /** The number of rows to be returned for the query. */
   numberOfRows?: number;
 

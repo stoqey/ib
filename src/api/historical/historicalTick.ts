@@ -3,8 +3,7 @@
  *
  * Used when requesting historical tick data with whatToShow = MIDPOINT.
  */
-export interface HistoricalTick  {
-
+export interface HistoricalTick {
   /** The UNIX timestamp of the historical tick. */
   time: number;
 

@@ -5,7 +5,6 @@ import { DeltaNeutralContract } from "./deltaNeutralContract";
  * Security types.
  */
 export enum SecType {
-
   /** Stock (or ETF) */
   STK = "STK",
 
@@ -43,26 +42,24 @@ export enum SecType {
   NEWS = "NEWS",
 
   /** Mutual fund. */
-  FUND = "FUND"
+  FUND = "FUND",
 }
 
 /**
  * Option types.
  */
 export enum OptionType {
-
   /** Put option. */
-   Put = "P",
+  Put = "P",
 
-   /** Call option. */
-   Call = "C"
+  /** Call option. */
+  Call = "C",
 }
 
 /**
  * An instrument's definition.
  */
 export interface Contract {
-
   /** The unique IB contract identifier. */
   conId?: number;
 
@@ -111,7 +108,7 @@ export interface Contract {
    * If set to `true`, contract details requests and historical data queries can be performed pertaining to expired futures contracts.
    * Expired options or other instrument types are not available.
    */
-  includeExpired?: boolean
+  includeExpired?: boolean;
 
   /**
    * Security's identifier when querying contract's details or placing orders
@@ -137,4 +134,3 @@ export interface Contract {
    */
   deltaNeutralContract?: DeltaNeutralContract;
 }
-

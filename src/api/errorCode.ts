@@ -2,7 +2,6 @@
  * [[IBApi]] error event codes.
  */
 export enum ErrorCode {
-
   /** Already connected. */
   ALREADY_CONNECTED = 501,
 
@@ -238,5 +237,5 @@ export enum ErrorCode {
   FAIL_SEND_CANTICKBYTICK = 571,
 
   /** Request Completed Orders Sending Error. */
-  FAIL_SEND_REQ_COMPLETED_ORDERS = 572
+  FAIL_SEND_REQ_COMPLETED_ORDERS = 572,
 }

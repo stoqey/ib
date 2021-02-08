@@ -2,7 +2,6 @@
  * A leg within combo orders.
  */
 export interface ComboLeg {
-
   /** The Contract's IB's unique id. */
   conId?: number;
 

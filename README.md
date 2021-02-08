@@ -17,10 +17,24 @@ The module makes a socket connection to TWS (or IB Gateway) using the [net](http
 ## Installation
 
     $ npm install @stoqey/ib
-	
+
 ## API Documenation
 
 <b>[See API documentation here.](https://stoqey.github.io/ib-doc/)</b>
+
+## IB socket ports
+
+| Platform  |  Port |
+|---|---|
+|IB Gateway live account   | 4001 |
+|IB Gateway paper account  | 4002 |
+|TWS Live Account          | 7496 |
+|TWS papertrading account  | 7497 |
+
+## Important
+
+API is returning `Number.MAX_SAFE_INTEGER` when there is no value from IB, commonly seen when there is no bid / offer or other missing market data.
+
 
 ## Example
 

@@ -1180,7 +1180,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       tokens.push(order.faProfile);
     }
 
-    if (this.serverVersion >=MIN_SERVER_VER.MODELS_SUPPORT) {
+    if (this.serverVersion >= MIN_SERVER_VER.MODELS_SUPPORT) {
       tokens.push(order.modelCode);
     }
 

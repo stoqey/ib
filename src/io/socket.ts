@@ -1,11 +1,16 @@
 import net from "net";
-import { EventName, IBApiCreationOptions, MAX_SUPPORTED_SERVER_VERSION, MIN_SERVER_VER, MIN_SERVER_VER_SUPPORTED } from "../api/api";
+import {
+  EventName,
+  IBApiCreationOptions,
+  MAX_SUPPORTED_SERVER_VERSION,
+  MIN_SERVER_VER,
+  MIN_SERVER_VER_SUPPORTED,
+} from "../api/api";
 import { Controller } from "./controller";
 import { Config } from "../config";
 import { OUT_MSG_ID } from "./encoder";
 import { TextDecoder, TextEncoder } from "util";
 import { ErrorCode } from "../api/errorCode";
-
 
 /**
  * @hidden
@@ -23,7 +28,6 @@ const EOL = "\0";
  * TWS/IB Gateway API server.
  */
 export class Socket {
-
   /**
    * Create a new [[Socket]] object.
    *
@@ -32,10 +36,11 @@ export class Socket {
    */
   constructor(
     private controller: Controller,
-    private options: IBApiCreationOptions = {}) {
-      this.options.clientId = this.options.clientId ?? Config.DEFAULT_CLIENT_ID;
-      this.options.host = this.options.host;
-      this.options.port = this.options.port;
+    private options: IBApiCreationOptions = {}
+  ) {
+    this.options.clientId = this.options.clientId ?? Config.DEFAULT_CLIENT_ID;
+    this.options.host = this.options.host;
+    this.options.port = this.options.port;
   }
 
   /** The TCP client socket. */
@@ -88,7 +93,6 @@ export class Socket {
    * Connect to the API server.
    */
   connect(): void {
-
     // pause controller while API startup sequence
 
     this.controller.pause();
@@ -101,21 +105,24 @@ export class Socket {
 
     // create and connect TCP socket
 
-    this.client = net.connect({
-      host: this.options.host ?? Config.DEFAULT_HOST,
-      port: this.options.port ?? Config.DEFAULT_PORT,
-    }, () => this.onConnect())
-    .on("data", (data) => this.onData(data))
-    .on("close", () => this.onEnd())
-    .on("end", () => this.onEnd())
-    .on("error", (error) => this.onError(error));
+    this.client = net
+      .connect(
+        {
+          host: this.options.host ?? Config.DEFAULT_HOST,
+          port: this.options.port ?? Config.DEFAULT_PORT,
+        },
+        () => this.onConnect()
+      )
+      .on("data", (data) => this.onData(data))
+      .on("close", () => this.onEnd())
+      .on("end", () => this.onEnd())
+      .on("error", (error) => this.onError(error));
   }
 
   /**
    * Disconnect from API server.
    */
   disconnect(): void {
-
     // pause controller while connection is down.
 
     this.controller.pause();
@@ -129,7 +136,6 @@ export class Socket {
    * Send tokens to API server.
    */
   send(tokens: unknown[]): void {
-
     // flatten arrays and convert boolean types to 0/1
 
     tokens = this.flattenDeep(tokens);
@@ -142,25 +148,31 @@ export class Socket {
     let stringData = tokens.join(EOL);
 
     if (this.useV100Plus) {
-
       let utf8Data;
 
       if (tokens[0] === "API\0") {
-
         // this is the initial API version message, which is special:
         // length is encoded after the 'API\0', followed by the actual tokens.
 
         const skip = 5; // 1 x 'API\0' token + 4 x length tokens
         stringData = tokens.slice(skip)[0] as string;
 
-        utf8Data = [...this.stringToUTF8Array(tokens[0]), ...tokens.slice(1, skip), ...this.stringToUTF8Array(stringData)];
+        utf8Data = [
+          ...this.stringToUTF8Array(tokens[0]),
+          ...tokens.slice(1, skip),
+          ...this.stringToUTF8Array(stringData),
+        ];
       } else {
         utf8Data = this.stringToUTF8Array(stringData);
       }
 
       // add length prefix only if not a string (strings use pre-V100 style)
       if (typeof tokens[0] !== "string") {
-        utf8Data = [...this.numberTo32BitBigEndian(utf8Data.length + 1), ...utf8Data, 0];
+        utf8Data = [
+          ...this.numberTo32BitBigEndian(utf8Data.length + 1),
+          ...utf8Data,
+          0,
+        ];
       }
 
       this.client?.write(new Uint8Array(utf8Data));
@@ -175,14 +187,13 @@ export class Socket {
    * Called when data on the TCP socket has been arrived.
    */
   private onData(data: Buffer): void {
-
     if (this.useV100Plus) {
-
       let ofs = 0;
       let strData: string;
 
       while (ofs < data.length) {
-        const msgSize = data.readInt32BE(ofs); ofs += 4;
+        const msgSize = data.readInt32BE(ofs);
+        ofs += 4;
         const utf8Data: number[] = new Array(msgSize);
         for (let i = 0; i < msgSize; i++) {
           utf8Data[i] = data.readUInt8(ofs++);
@@ -191,7 +202,7 @@ export class Socket {
         this.onMessage(strData);
       }
     } else {
-       this.onMessage(data.toString());
+      this.onMessage(data.toString());
     }
   }
 
@@ -199,7 +210,6 @@ export class Socket {
    * Called when new tokens have been received from server.
    */
   private onMessage(data: string): void {
-
     // tokenize
 
     const dataWithFragment = this.dataFragment + data;
@@ -217,15 +227,12 @@ export class Socket {
     // handle message data
 
     if (this.neverReceived) {
-
-       // first message
+      // first message
 
       this.neverReceived = false;
 
       this.onServerVersion(tokens);
-
     } else {
-
       // post to queue
 
       if (this.useV100Plus) {
@@ -251,47 +258,61 @@ export class Socket {
    * Called when first data has arrived on the connection.
    */
   private onServerVersion(tokens: string[]): void {
-
     this._connected = true;
 
     this._serverVersion = parseInt(tokens[0], 10);
     this._serverConnectionTime = tokens[1];
 
-    if (this.useV100Plus && (this._serverVersion < MIN_VERSION_V100 || this._serverVersion > MAX_SUPPORTED_SERVER_VERSION)) {
+    if (
+      this.useV100Plus &&
+      (this._serverVersion < MIN_VERSION_V100 ||
+        this._serverVersion > MAX_SUPPORTED_SERVER_VERSION)
+    ) {
       this.disconnect();
-      this.controller.emitError("Unsupported Version", ErrorCode.UNSUPPORTED_VERSION, -1);
+      this.controller.emitError(
+        "Unsupported Version",
+        ErrorCode.UNSUPPORTED_VERSION,
+        -1
+      );
       return;
     }
 
     if (this._serverVersion < MIN_SERVER_VER_SUPPORTED) {
       this.disconnect();
-      this.controller.emitError("The TWS is out of date and must be upgraded.", ErrorCode.UPDATE_TWS, -1);
+      this.controller.emitError(
+        "The TWS is out of date and must be upgraded.",
+        ErrorCode.UPDATE_TWS,
+        -1
+      );
       return;
     }
 
     this.startAPI();
 
     this.controller.emitEvent(EventName.connected);
-    this.controller.emitEvent(EventName.server, this.serverVersion, this.serverConnectionTime);
+    this.controller.emitEvent(
+      EventName.server,
+      this.serverVersion,
+      this.serverConnectionTime
+    );
   }
 
   /**
    * Start the TWS/IB Gateway API.
    */
   private startAPI(): void {
-
     // start API
 
     const VERSION = 2;
-    if(this.serverVersion >= 3) {
-      if(this.serverVersion < MIN_SERVER_VER.LINKING) {
+    if (this.serverVersion >= 3) {
+      if (this.serverVersion < MIN_SERVER_VER.LINKING) {
         this.send([this.options.clientId]);
       } else {
-          if (this.serverVersion >= MIN_SERVER_VER.OPTIONAL_CAPABILITIES) {
-            this.send([OUT_MSG_ID.START_API, VERSION, this.options.clientId, ""]);
-          } else {
-            this.send([OUT_MSG_ID.START_API, VERSION, this.options.clientId]);
-          }
+        if (this.serverVersion >= MIN_SERVER_VER.OPTIONAL_CAPABILITIES) {
+          this.send([OUT_MSG_ID.START_API, VERSION, this.options.clientId, ""]);
+        } else {
+          this.send([OUT_MSG_ID.START_API, VERSION, this.options.clientId]);
+        }
       }
     }
 
@@ -304,16 +325,22 @@ export class Socket {
    * Called when TCP socket has been connected.
    */
   private onConnect(): void {
-
     // send client version (unless Version > 100)
     if (!this.useV100Plus) {
       this.send([Config.CLIENT_VERSION]);
       this.send([this.options.clientId]);
     } else {
       // Switch to GW API (Version 100+ requires length prefix)
-      const config = this.buildVersionString(MIN_VERSION_V100, MAX_SUPPORTED_SERVER_VERSION);
+      const config = this.buildVersionString(
+        MIN_VERSION_V100,
+        MAX_SUPPORTED_SERVER_VERSION
+      );
       // config = config + connectOptions --- connectOptions are for IB internal use only: not supported
-      this.send(["API\0", ...this.numberTo32BitBigEndian(config.length), config]);
+      this.send([
+        "API\0",
+        ...this.numberTo32BitBigEndian(config.length),
+        config,
+      ]);
     }
   }
 
@@ -321,7 +348,6 @@ export class Socket {
    * Called when TCP socket connection has been closed.
    */
   private onEnd(): void {
-
     const wasConnected = this._connected;
     this._connected = false;
     if (wasConnected) {
@@ -342,7 +368,10 @@ export class Socket {
    * Build a V100Plus API version string.
    */
   private buildVersionString(minVersion: number, maxVersion: number): string {
-    return "v" + ((minVersion < maxVersion) ? minVersion + ".." + maxVersion : minVersion);
+    return (
+      "v" +
+      (minVersion < maxVersion ? minVersion + ".." + maxVersion : minVersion)
+    );
   }
 
   /**
@@ -351,10 +380,10 @@ export class Socket {
   private numberTo32BitBigEndian(val: number): number[] {
     const result: number[] = new Array(4);
     let pos = 0;
-    result[pos++] = (0xff & (val >> 24));
-    result[pos++] = (0xff & (val >> 16));
-    result[pos++] = (0xff & (val >> 8));
-    result[pos++] = (0xff & val);
+    result[pos++] = 0xff & (val >> 24);
+    result[pos++] = 0xff & (val >> 16);
+    result[pos++] = 0xff & (val >> 8);
+    result[pos++] = 0xff & val;
     return result;
   }
 
@@ -380,5 +409,5 @@ export class Socket {
       }
     }
     return result;
- }
+  }
 }
