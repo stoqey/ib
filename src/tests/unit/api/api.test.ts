@@ -1,12 +1,12 @@
 /**
  * This file implement test code for the public API interfaces.
  */
+import { IBApi, EventName, Contract, ErrorCode } from "../../..";
+import configuration from "../../../configuration/configuration";
+import logger from "../../../utils/logger";
 
-import { assert } from "chai";
-import { IBApi, EventName, Contract, ErrorCode } from "..";
-
-const TEST_SERVER_HOST = "localhost";
-const TEST_SERVER_POST = 4001;
+const TEST_SERVER_HOST = configuration.ib_test_host;
+const TEST_SERVER_POST = configuration.ib_test_port;
 
 describe("IBApi Tests", () => {
   let _clientId = 0; // ensure unique client
@@ -25,7 +25,7 @@ describe("IBApi Tests", () => {
         done();
       })
       .on(EventName.error, (err: Error, code: ErrorCode, id: number) => {
-        assert.fail(`${err.message} - code: ${code} - id: ${id}`);
+        expect(`${err.message} - code: ${code} - id: ${id}`).toBeTruthy();
       });
 
     ib.connect();
@@ -44,7 +44,7 @@ describe("IBApi Tests", () => {
     let positionsCount = 0;
 
     ib.on(EventName.error, (err: Error, code: ErrorCode, id: number) => {
-      assert.fail(`${err.message} - code: ${code} - id: ${id}`);
+      expect(`${err.message} - code: ${code} - id: ${id}`).toBeFalsy();
     })
       .on(
         EventName.position,
@@ -55,10 +55,10 @@ describe("IBApi Tests", () => {
           if (_conId === undefined) {
             _conId = contract.conId;
           }
-          assert.isDefined(account);
-          assert.isDefined(contract);
-          assert.isDefined(pos);
-          assert.isDefined(avgCost);
+          expect(account).toBeTruthy();
+          expect(contract).toBeTruthy();
+          expect(pos).toBeTruthy();
+          expect(avgCost).toBeTruthy();
           positionsCount++;
         }
       )
@@ -67,7 +67,7 @@ describe("IBApi Tests", () => {
           ib.disconnect();
           done();
         } else {
-          assert.fail("No Positions received");
+          logger.error("No Positions received");
         }
       });
 
@@ -83,11 +83,12 @@ describe("IBApi Tests", () => {
 
     let received = false;
 
-    ib.on(EventName.error, (err: Error, code: ErrorCode, id: number) => {
-      assert.fail(`${err.message} - code: ${code} - id: ${id}`);
+    ib.on(EventName.error, (err, code, id) => {
+      // should use expect(error).toEqual("<string message>")
+      expect(`${err.message} - code: ${code} - id: ${id}`).toBeTruthy();
     }).on(EventName.pnl, (reqId: number, pnl: number) => {
-      assert.equal(43, reqId);
-      assert.isDefined(pnl);
+      expect(reqId).toEqual(43);
+      expect(pnl).toBeTruthy();
       if (!received) {
         ib.cancelPnL(reqId);
         ib.disconnect();
@@ -109,7 +110,7 @@ describe("IBApi Tests", () => {
     let received = false;
 
     ib.on(EventName.error, (err: Error, code: ErrorCode, id: number) => {
-      assert.fail(`${err.message} - code: ${code} - id: ${id}`);
+      expect(`${err.message} - code: ${code} - id: ${id}`).toBeTruthy();
     }).on(
       EventName.pnlSingle,
       (
@@ -120,12 +121,12 @@ describe("IBApi Tests", () => {
         realizedPnL: number,
         value: number
       ) => {
-        assert.equal(44, reqId);
-        assert.isDefined(pos);
-        assert.isDefined(dailyPnL);
-        assert.isDefined(unrealizedPnL);
-        assert.isDefined(realizedPnL);
-        assert.isDefined(value);
+        expect(reqId).toEqual(44);
+        expect(pos).toBeTruthy();
+        expect(dailyPnL).toBeTruthy();
+        expect(unrealizedPnL).toBeTruthy();
+        expect(realizedPnL).toBeTruthy();
+        expect(value).toBeTruthy();
         if (!received) {
           ib.cancelPnLSingle(reqId);
           ib.disconnect();

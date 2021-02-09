@@ -12,12 +12,14 @@
   ],
   "scripts": {
     "lint": "eslint . --ext .ts",
-    "test": "mocha -r ts-node/register src/**/*.spec.ts",
-    "build": "rimraf dist && tsc -p .",
-    "prepublishOnly": "npm run build",
-    "release": "npm run lint && npm test && npm run doc && npm run build",
+    "test": "jest --maxWorkers=8 --reporters=default --useStderr --detectOpenHandles",
+    "clean": "rm -rf dist",
+    "build": "yarn clean && yarn tsc",
+    "prepublishOnly": "yarn build",
+    "release": "yarn lint && yarn test && yarn doc && yarn build",
     "doc": "typedoc src --stripInternal",
-    "doc:dev": "typedoc src --out ./doc-dev"
+    "doc:dev": "typedoc src --out ./doc-dev",
+    "tsc": "./node_modules/.bin/tsc"
   },
   "engines": {
     "node": ">=4.2.0"
@@ -65,27 +67,27 @@
   },
   "homepage": "https://github.com/stoqey/ib",
   "devDependencies": {
-    "@types/chai": "^4.2.11",
+    "@types/jest": "^26.0.20",
     "@types/lodash": "^4.14.150",
-    "@types/mocha": "^7.0.2",
     "@types/node": "^10.0.3",
     "@types/source-map-support": "^0.4.0",
-    "chai": "^4.2.0",
-    "mocha": "^7.1.1",
-    "rimraf": "^2.7.1",
     "ts-node": "^8.4.1",
-    "typedoc": "^0.19.2",
-    "typescript": "^3.2.4"
-  },
-  "peerDependencies": {
-    "typescript": ">=2.0"
+    "typedoc": "^0.19.2"
   },
   "dependencies": {
     "@typescript-eslint/eslint-plugin": "^4.10.0",
     "@typescript-eslint/parser": "^4.10.0",
+    "ajv": "^7.0.4",
     "command-buffer": "^0.1.0",
     "dotenv": "^8.2.0",
     "eslint": "^7.16.0",
-    "function-rate-limit": "^1.1.0"
+    "eslint-plugin-jest": "^24.1.3",
+    "function-rate-limit": "^1.1.0",
+    "jest": "^26.6.3",
+    "jest-environment-node": "^26.6.2",
+    "jest-junit": "^12.0.0",
+    "ts-jest": "^26.5.0",
+    "ts-lint": "^4.5.1",
+    "typescript": "^4.1.3"
   }
 }

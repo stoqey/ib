@@ -2257,7 +2257,7 @@ export class Decoder {
   /**
    * Decode a COMPLETED_ORDER message from data queue and a emit completedOrder event.
    */
-  private decodeMsg_COMPLETED_ORDERS_END(): void {
+  private decodeMsg_COMPLETED_ORDER(): void {
     const contract: Contract = {};
     const order: Order = {};
     const orderState: OrderState = {};
@@ -2739,6 +2739,9 @@ export class Decoder {
     order.faMethod = this.readStr();
     order.faPercentage = this.readStr();
     order.faProfile = this.readStr();
+    if (this.serverVersion >= MIN_SERVER_VER.MODELS_SUPPORT) {
+      order.modelCode = this.readStr();
+    }
     order.goodTillDate = this.readStr();
     order.rule80A = this.readStr();
     order.percentOffset = this.readDouble() || Number.MAX_VALUE;
