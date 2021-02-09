@@ -503,7 +503,7 @@ export class Decoder {
    * Decode a ORDER_STATUS message from data queue and emit an orderStatus event.
    */
   private decodeMsg_ORDER_STATUS(): void {
-    const version = this.readInt();
+    const version = this.serverVersion >= MIN_SERVER_VER.MARKET_CAP_PRICE ? Number.MAX_VALUE : this.readInt();
     const id = this.readInt();
     const status = this.readStr();
     const filled = this.readInt();
