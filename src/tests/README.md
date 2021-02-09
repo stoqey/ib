@@ -2,7 +2,7 @@
 
 We use jest and ts-jest for testing. `jest.config.js` contains the jest configuration for running the tests. The default test environment is node.
 
-```yarn run test```
+```yarn test```
 
 There are unit tests and integration tests.
 
