@@ -17,12 +17,29 @@ describe("IBApi Tests", () => {
       port: TEST_SERVER_POST,
     });
 
+    let openOrderReceived = false;
+    let orderStatusReceived = false;
+
     ib.on(EventName.openOrder, (orderId: number, contract: Contract, order: Order, orderState: OrderState) => {
 
       // todo add proper verification code here
       expect(contract.symbol === "GOOGL").toBeTruthy();
 
-      ib.disconnect();
+      openOrderReceived = true;
+      if (openOrderReceived && orderStatusReceived) {
+        // done
+        ib.disconnect();
+      }
+    })
+    .on(EventName.orderStatus, (orderId: number, apiClientId: number, apiOrderId: number,  whyHeld: string, mktCapPrice: number) => {
+
+      // todo add proper verification code here
+
+      orderStatusReceived = true;
+      if (openOrderReceived && orderStatusReceived) {
+        // done
+        ib.disconnect();
+      }
     })
     .on(EventName.connected, () => {
       ib.reqAllOpenOrders();
