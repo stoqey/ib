@@ -16,15 +16,15 @@
     "esModuleInterop": true,
     "noImplicitAny": false, // TODO enabled this as soon as ported  all code is ported to TS
     "types": [
-      "mocha",
       "node",
+      "jest"
     ],
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true  /* Disallow inconsistently-cased references to the same file. */
     // "isolatedModules": true,
   },
   "include": [
-    "src/**/*",
+    ".src/",
     "types.d.ts",
   ],
   "exclude": [
