@@ -21,12 +21,12 @@ describe("IBApi Tests", () => {
     ib.on(EventName.connected, () => {
       ib.disconnect();
     })
-      .on(EventName.disconnected, () => {
-        done();
-      })
-      .on(EventName.error, (err: Error, code: ErrorCode, id: number) => {
-        expect(`${err.message} - code: ${code} - id: ${id}`).toBeTruthy();
-      });
+    .on(EventName.disconnected, () => {
+      done();
+    })
+    .on(EventName.error, (err: Error, code: ErrorCode, id: number) => {
+      expect(`${err.message} - code: ${code} - id: ${id}`).toBeTruthy();
+    });
 
     ib.connect();
   });
