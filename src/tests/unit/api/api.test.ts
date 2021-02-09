@@ -2,10 +2,11 @@
  * This file implement test code for the public API interfaces.
  */
 import { IBApi, EventName, Contract, ErrorCode } from "../../..";
+import configuration from "../../../configuration/configuration";
 import logger from "../../../utils/logger";
 
-const TEST_SERVER_HOST = "localhost";
-const TEST_SERVER_POST = 7497;
+const TEST_SERVER_HOST = configuration.ib_test_host;
+const TEST_SERVER_POST = configuration.ib_test_port;
 
 describe("IBApi Tests", () => {
   let _clientId = 0; // ensure unique client
