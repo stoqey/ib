@@ -15,8 +15,8 @@
     "test": "jest --maxWorkers=8 --reporters=default --useStderr --detectOpenHandles",
     "clean": "rm -rf dist",
     "build": "yarn clean && yarn tsc",
-    "prepublishOnly": "npm run build",
-    "release": "npm run lint && npm test && npm run doc && npm run build",
+    "prepublishOnly": "yarn build",
+    "release": "yarn lint && yarn test && yarn doc && yarn build",
     "doc": "typedoc src --stripInternal",
     "doc:dev": "typedoc src --out ./doc-dev",
     "tsc": "./node_modules/.bin/tsc"
