@@ -61,6 +61,9 @@ class IBApiNextSubscription<T> {
     }
     this.observers++;
     return new Observable<T>((subscriber) => {
+      if (this.cache !== undefined) {
+        subscriber.next(this.cache);
+      }
       const sub$ = this.subject.subscribe((v) => subscriber.next(v));
       return (): void => {
         sub$.unsubscribe();
