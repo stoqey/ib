@@ -3,7 +3,7 @@
     "allowJs": true,
     "esModuleInterop": true,
     "lib": ["es2017", "esnext", "dom", "es7"],
-	"declaration": true,
+    "declaration": true,
     "module": "commonjs",
     "moduleResolution": "node",
     "outDir": "./dist",
