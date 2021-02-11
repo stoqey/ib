@@ -47,5 +47,5 @@ class IBApiNextDemo {
 // lets give debugger some time to attach before running the code
 const timeout = setTimeout(() => {
   clearTimeout(timeout);
-  new IBApiNextDemo({ port: 7497 }).start(); // we never stop
+  new IBApiNextDemo().start(); // we never stop
 }, 1000);
