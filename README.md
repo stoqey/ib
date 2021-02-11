@@ -18,6 +18,10 @@ The module makes a socket connection to TWS (or IB Gateway) using the [net](http
 
     $ npm install @stoqey/ib
 
+  or
+
+    $ yarn add @stoqey/ib
+
 ## API Documenation
 
 <b>[See API documentation here.](https://stoqey.github.io/ib-doc/)</b>

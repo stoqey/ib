@@ -7,10 +7,10 @@ import {
   MIN_SERVER_VER_SUPPORTED,
 } from "../api/api";
 import { Controller } from "./controller";
-import { Config } from "../config";
 import { OUT_MSG_ID } from "./encoder";
 import { TextDecoder, TextEncoder } from "util";
 import { ErrorCode } from "../api/errorCode";
+import configuration from "../common/configuration";
 
 /**
  * @hidden
@@ -38,7 +38,8 @@ export class Socket {
     private controller: Controller,
     private options: IBApiCreationOptions = {}
   ) {
-    this.options.clientId = this.options.clientId ?? Config.DEFAULT_CLIENT_ID;
+    this.options.clientId =
+      this.options.clientId ?? configuration.default_client_id;
     this.options.host = this.options.host;
     this.options.port = this.options.port;
   }
@@ -108,8 +109,8 @@ export class Socket {
     this.client = net
       .connect(
         {
-          host: this.options.host ?? Config.DEFAULT_HOST,
-          port: this.options.port ?? Config.DEFAULT_PORT,
+          host: this.options.host ?? configuration.ib_host,
+          port: this.options.port ?? configuration.ib_port,
         },
         () => this.onConnect()
       )
@@ -327,7 +328,7 @@ export class Socket {
   private onConnect(): void {
     // send client version (unless Version > 100)
     if (!this.useV100Plus) {
-      this.send([Config.CLIENT_VERSION]);
+      this.send([configuration.client_version]);
       this.send([this.options.clientId]);
     } else {
       // Switch to GW API (Version 100+ requires length prefix)

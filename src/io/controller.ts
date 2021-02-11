@@ -4,8 +4,8 @@ import { Socket } from "./socket";
 import { Decoder, DecoderCallbacks } from "./decoder";
 import { Encoder, EncoderCallbacks } from "./encoder";
 import { EventName, IBApi, IBApiCreationOptions } from "../api/api";
-import { Config } from "../config";
 import { ErrorCode } from "../api/errorCode";
+import configuration from "../common/configuration";
 
 /**
  * @internal
@@ -140,7 +140,7 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
    * Can contain nested arrays.
    */
   sendMsg(...tokens: unknown[]): void {
-    rateLimit(Config.MAX_REQ_PER_SECOND, 1000, () => {
+    rateLimit(configuration.max_req_per_second, 1000, () => {
       this.socket.send(tokens);
     })();
   }

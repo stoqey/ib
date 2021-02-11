@@ -3,10 +3,10 @@
 	"tasks": [
 		{
 			"type": "npm",
-			"script": "build",
+			"script": "debug",
 			"problemMatcher": [],
-			"label": "build",
-			"detail": "library code build",
+			"label": "debug",
+			"detail": "run dev app on ts-node-dev for debugging",
 			"group": {
 				"kind": "build",
 				"isDefault": true

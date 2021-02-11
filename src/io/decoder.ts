@@ -339,7 +339,7 @@ export class Decoder {
   /**
    * Read a string token from queue.
    */
-  private readStr(): string {
+  readStr(): string {
     if (this.dataQueue.length === 0) {
       throw new UnderrunError();
     }
@@ -353,7 +353,7 @@ export class Decoder {
   /**
    * Read a token from queue and return it as boolean value.
    */
-  private readBool(): boolean {
+  readBool(): boolean {
     return !!parseInt(this.readStr(), 10);
   }
 
@@ -362,7 +362,7 @@ export class Decoder {
    *
    * Returns 0 if the token is empty.
    */
-  private readDouble(): number {
+  readDouble(): number {
     const token = this.readStr();
     if (token === null || token === "") {
       return 0;
@@ -375,7 +375,7 @@ export class Decoder {
    *
    * Returns Number.MAX_VALUE if the token is empty.
    */
-  private readDoubleMax(): number {
+  readDoubleMax(): number {
     const token = this.readStr();
     if (token === null || token === "") {
       return Number.MAX_VALUE;
@@ -388,7 +388,7 @@ export class Decoder {
    *
    * Returns 0 if the token is empty.
    */
-  private readInt(): number {
+  readInt(): number {
     const token = this.readStr();
     if (token === null || token === "") {
       return 0;
@@ -401,7 +401,7 @@ export class Decoder {
    *
    * Returns Number.MAX_VALUE if the token is empty.
    */
-  private readIntMax(): number {
+  readIntMax(): number {
     const token = this.readStr();
     if (token === null || token === "") {
       return Number.MAX_VALUE;
@@ -503,7 +503,7 @@ export class Decoder {
    * Decode a ORDER_STATUS message from data queue and emit an orderStatus event.
    */
   private decodeMsg_ORDER_STATUS(): void {
-    const version = this.readInt();
+    const version = this.serverVersion >= MIN_SERVER_VER.MARKET_CAP_PRICE ? Number.MAX_VALUE : this.readInt();
     const id = this.readInt();
     const status = this.readStr();
     const filled = this.readInt();
@@ -580,141 +580,87 @@ export class Decoder {
    * Decode a OPEN_ORDER message from data queue and emit a openOrder event.
    */
   private decodeMsg_OPEN_ORDER(): void {
-    const version = this.readInt();
-    const orderId = this.readInt();
-    const contract: Contract = this.decodeContract(version);
-    const order = this.decodeOrder(version);
-    order.orderId = orderId;
 
-    if (version >= 14) {
-      contract.comboLegsDescription = this.readStr();
-    }
+    // read version
+    const version = this.serverVersion < MIN_SERVER_VER.ORDER_CONTAINER ? this.readInt() : this.serverVersion;
 
-    if (version >= 29) {
-      const comboLegsCount = this.readInt();
-      if (comboLegsCount > 0) {
-        contract.comboLegs = [];
-        for (let i = 0; i < comboLegsCount; ++i) {
-          contract.comboLegs.push(this.decodeComboLeg());
-        }
-      }
-      const orderComboLegsCount = this.readInt();
-      if (orderComboLegsCount > 0) {
-        order.orderComboLegs = [];
-        for (let i = 0; i < orderComboLegsCount; ++i) {
-          order.orderComboLegs.push({
-            price: this.readDouble() || Number.MAX_VALUE,
-          });
-        }
-      }
-    }
-
-    if (version >= 26) {
-      const smartComboRoutingParamsCount = this.readInt();
-      if (smartComboRoutingParamsCount > 0) {
-        order.smartComboRoutingParams = [];
-        for (let i = 0; i < smartComboRoutingParamsCount; ++i) {
-          order.smartComboRoutingParams.push({
-            tag: this.readStr(),
-            value: this.readStr(),
-          });
-        }
-      }
-    }
-
-    if (version >= 20) {
-      order.scaleInitLevelSize = this.readInt() || Number.MAX_VALUE;
-      order.scaleSubsLevelSize = this.readInt() || Number.MAX_VALUE;
-    } else {
-      this.readInt(); // notSuppScaleNumComponents
-      order.scaleInitLevelSize = this.readInt() || Number.MAX_VALUE;
-    }
-
-    order.scalePriceIncrement = this.readDouble() || Number.MAX_VALUE;
-
-    if (
-      version >= 28 &&
-      order.scalePriceIncrement > 0.0 &&
-      order.scalePriceIncrement !== Number.MAX_VALUE
-    ) {
-      order.scalePriceAdjustValue = this.readDouble() || Number.MAX_VALUE;
-      order.scalePriceAdjustInterval = this.readInt() || Number.MAX_VALUE;
-      order.scaleProfitOffset = this.readDouble() || Number.MAX_VALUE;
-      order.scaleAutoReset = this.readBool();
-      order.scaleInitPosition = this.readInt() || Number.MAX_VALUE;
-      order.scaleInitFillQty = this.readInt() || Number.MAX_VALUE;
-      order.scaleRandomPercent = this.readBool();
-    }
-
-    if (version >= 24) {
-      order.hedgeType = this.readStr();
-      if (order.hedgeType?.length) {
-        order.hedgeParam = this.readStr();
-      }
-    }
-
-    if (version >= 25) {
-      order.optOutSmartRouting = this.readBool();
-    }
-
-    order.clearingAccount = this.readStr();
-    order.clearingIntent = this.readStr();
-
-    if (version >= 22) {
-      order.notHeld = this.readBool();
-    }
-
-    if (version >= 20) {
-      if (this.readBool()) {
-        contract.deltaNeutralContract = {
-          conId: this.readInt(),
-          delta: this.readDouble(),
-          price: this.readDouble(),
-        };
-      }
-    }
-    if (version >= 21) {
-      order.algoStrategy = this.readStr();
-      if (order?.algoStrategy.length) {
-        const algoParamsCount = this.readInt();
-        if (algoParamsCount > 0) {
-          order.algoParams = [];
-          for (let i = 0; i < algoParamsCount; ++i) {
-            order.algoParams.push({
-              tag: this.readStr(),
-              value: this.readStr(),
-            });
-          }
-        }
-      }
-    }
-
-    if (version >= 33) {
-      order.solicited = this.readBool();
-    }
-
-    order.whatIf = this.readBool();
-
+    const contract: Contract = {};
+    const order: Order = {};
     const orderState: OrderState = {};
+    const orderDecoder = new OrderDecoder(this, contract, order, orderState, version, this.serverVersion);
 
-    if (this.serverVersion >= MIN_SERVER_VER.WHAT_IF_EXT_FIELDS) {
-      orderState.initMarginBefore = this.readStr();
-      orderState.maintMarginBefore = this.readStr();
-      orderState.equityWithLoanBefore = this.readStr();
-      orderState.initMarginChange = this.readStr();
-      orderState.maintMarginChange = this.readStr();
-      orderState.equityWithLoanChange = this.readStr();
-    }
+    // read order id
+    orderDecoder.readOrderId();
 
-    orderState.initMarginAfter = this.readStr();
-    orderState.maintMarginAfter = this.readStr();
-    orderState.equityWithLoanAfter = this.readStr();
-    orderState.commission = this.readDouble() || Number.MAX_VALUE;
-    orderState.minCommission = this.readDouble() || Number.MAX_VALUE;
-    orderState.maxCommission = this.readDouble() || Number.MAX_VALUE;
-    orderState.minCommission = this.readDouble() || Number.MAX_VALUE;
-    orderState.commissionCurrency = this.readStr();
-    orderState.warningText = this.readStr();
+    // read contract fields
+    orderDecoder.readContractFields();
+
+
+    // read order fields
+    orderDecoder.readAction();
+    orderDecoder.readTotalQuantity();
+    orderDecoder.readOrderType();
+    orderDecoder.readLmtPrice();
+    orderDecoder.readAuxPrice();
+    orderDecoder.readTIF();
+    orderDecoder.readOcaGroup();
+    orderDecoder.readAccount();
+    orderDecoder.readOpenClose();
+    orderDecoder.readOrigin();
+    orderDecoder.readOrderRef();
+    orderDecoder.readClientId();
+    orderDecoder.readPermId();
+    orderDecoder.readOutsideRth();
+    orderDecoder.readHidden();
+    orderDecoder.readDiscretionaryAmount();
+    orderDecoder.readGoodAfterTime();
+    orderDecoder.skipSharesAllocation();
+    orderDecoder.readFAParams();
+    orderDecoder.readModelCode();
+    orderDecoder.readGoodTillDate();
+    orderDecoder.readRule80A();
+    orderDecoder.readPercentOffset();
+    orderDecoder.readSettlingFirm();
+    orderDecoder.readShortSaleParams();
+    orderDecoder.readAuctionStrategy();
+    orderDecoder.readBoxOrderParams();
+    orderDecoder.readPegToStkOrVolOrderParams();
+    orderDecoder.readDisplaySize();
+    orderDecoder.readOldStyleOutsideRth();
+    orderDecoder.readBlockOrder();
+    orderDecoder.readSweepToFill();
+    orderDecoder.readAllOrNone();
+    orderDecoder.readMinQty();
+    orderDecoder.readOcaType();
+    orderDecoder.readETradeOnly();
+    orderDecoder.readFirmQuoteOnly();
+    orderDecoder.readNbboPriceCap();
+    orderDecoder.readParentId();
+    orderDecoder.readTriggerMethod();
+    orderDecoder.readVolOrderParams(true);
+    orderDecoder.readTrailParams();
+    orderDecoder.readBasisPoints();
+    orderDecoder.readComboLegs();
+    orderDecoder.readSmartComboRoutingParams();
+    orderDecoder.readScaleOrderParams();
+    orderDecoder.readHedgeParams();
+    orderDecoder.readOptOutSmartRouting();
+    orderDecoder.readClearingParams();
+    orderDecoder.readNotHeld();
+    orderDecoder.readDeltaNeutral();
+    orderDecoder.readAlgoParams();
+    orderDecoder.readSolicited();
+    orderDecoder.readWhatIfInfoAndCommission();
+    orderDecoder.readVolRandomizeFlags();
+    orderDecoder.readPegToBenchParams();
+    orderDecoder.readConditions();
+    orderDecoder.readAdjustedOrderParams();
+    orderDecoder.readSoftDollarTier();
+    orderDecoder.readCashQty();
+    orderDecoder.readDontUseAutoPriceForHedge();
+    orderDecoder.readIsOmsContainer();
+    orderDecoder.readDiscretionaryUpToLimitPrice();
+    orderDecoder.readUsePriceMgmtAlgo();
 
     this.emit(EventName.openOrder, order.orderId, contract, order, orderState);
   }
@@ -2257,7 +2203,7 @@ export class Decoder {
   /**
    * Decode a COMPLETED_ORDER message from data queue and a emit completedOrder event.
    */
-  private decodeMsg_COMPLETED_ORDERS_END(): void {
+  private decodeMsg_COMPLETED_ORDER(): void {
     const contract: Contract = {};
     const order: Order = {};
     const orderState: OrderState = {};
@@ -2739,6 +2685,9 @@ export class Decoder {
     order.faMethod = this.readStr();
     order.faPercentage = this.readStr();
     order.faProfile = this.readStr();
+    if (this.serverVersion >= MIN_SERVER_VER.MODELS_SUPPORT) {
+      order.modelCode = this.readStr();
+    }
     order.goodTillDate = this.readStr();
     order.rule80A = this.readStr();
     order.percentOffset = this.readDouble() || Number.MAX_VALUE;
@@ -2844,3 +2793,781 @@ export class Decoder {
     }
   }
 }
+
+
+/**
+ * @internal
+ *
+ * This class implements the Order-decoder, similar to IB's EOrderDecoder on
+ * https://github.com/stoqey/ib/blob/master/ref/client/EOrderDecoder.java
+ */
+
+class OrderDecoder {
+
+  constructor(
+    private decoder: Decoder,
+    private contract: Contract,
+    private order: Order,
+    private orderState: OrderState,
+    private version: number,
+    private serverVersion: number) {}
+
+  readOrderId(): void {
+    this.order.orderId = this.decoder.readInt();
+  }
+
+  readContractFields(): void {
+    if (this.version >= 17) {
+      this.contract.conId = this.decoder.readInt();
+    }
+    this.contract.symbol = this.decoder.readStr();
+    this.contract.secType = this.decoder.readStr() as SecType;
+    this.contract.lastTradeDateOrContractMonth = this.decoder.readStr();
+    this.contract.strike = this.decoder.readDouble();
+    this.contract.right = this.decoder.readStr() as OptionType;
+    if (this.version >= 32) {
+      this.contract.multiplier = +this.decoder.readStr();
+    }
+    this.contract.exchange = this.decoder.readStr();
+    this.contract.currency = this.decoder.readStr();
+    if (this.version >= 2 ) {
+      this.contract.localSymbol = this.decoder.readStr();
+    }
+    if (this.version >= 32) {
+      this.contract.tradingClass = this.decoder.readStr();
+    }
+  }
+
+  readAction(): void {
+    this.order.action = this.decoder.readStr() as OrderAction;
+  }
+
+  readTotalQuantity(): void  {
+    if (this.serverVersion >= MIN_SERVER_VER.FRACTIONAL_POSITIONS) {
+      this.order.totalQuantity = this.decoder.readDouble();
+    } else {
+      this.order.totalQuantity = this.decoder.readInt();
+    }
+  }
+
+  readOrderType(): void  {
+    this.order.orderType = this.decoder.readStr() as OrderType;
+  }
+
+  readLmtPrice(): void {
+    if (this.version < 29) {
+      this.order.lmtPrice = this.decoder.readDouble();
+    }
+    else {
+      this.order.lmtPrice = this.decoder.readDoubleMax();
+    }
+  }
+
+  readAuxPrice(): void {
+    if (this.version < 30) {
+      this.order.auxPrice = this.decoder.readDouble();
+    }
+    else {
+      this.order.auxPrice = this.decoder.readDoubleMax();
+    }
+  }
+
+  readTIF(): void {
+    this.order.tif = this.decoder.readStr();
+  }
+
+  readOcaGroup(): void {
+    this.order.ocaGroup = this.decoder.readStr();
+  }
+
+  readAccount(): void {
+    this.order.account = this.decoder.readStr();
+  }
+
+  readOpenClose(): void {
+    this.order.openClose = this.decoder.readStr();
+  }
+
+  readOrigin(): void {
+    this.order.origin = this.decoder.readInt();
+  }
+
+  readOrderRef(): void {
+    this.order.orderRef = this.decoder.readStr();
+  }
+
+  readClientId(): void {
+    if (this.version >= 3) {
+      this.order.clientId = this.decoder.readInt();
+    }
+  }
+
+  readPermId(): void {
+    if (this.version >= 4 ) {
+      this.order.permId = this.decoder.readInt();
+    }
+  }
+
+  readOutsideRth(): void {
+    if (this.version >= 4 ) {
+        if (this.version < 18) {
+          // will never happen
+          /* order.m_ignoreRth = */ this.decoder.readBool();
+        }
+        else {
+          this.order.outsideRth = this.decoder.readBool();
+        }
+    }
+  }
+
+  readHidden(): void {
+    if (this.version >= 4 ) {
+      this.order.hidden = this.decoder.readInt() == 1;
+    }
+  }
+
+  readDiscretionaryAmount(): void {
+    if (this.version >= 4 ) {
+      this.order.discretionaryAmt = this.decoder.readDouble();
+    }
+  }
+
+  readGoodAfterTime(): void {
+    if (this.version >= 5 ) {
+      this.order.goodAfterTime = this.decoder.readStr();
+    }
+  }
+
+  skipSharesAllocation(): void {
+    if (this.version >= 6 ) {
+        // skip deprecated sharesAllocation field
+        this.decoder.readStr();
+    }
+  }
+
+  readFAParams(): void {
+    if (this.version >= 7 ) {
+      this.order.faGroup = this.decoder.readStr();
+      this.order.faMethod = this.decoder.readStr();
+      this.order.faPercentage = this.decoder.readStr();
+      this.order.faProfile = this.decoder.readStr();
+    }
+  }
+
+  readModelCode(): void {
+    if (this.version >= MIN_SERVER_VER.MODELS_SUPPORT) {
+      this.order.modelCode = this.decoder.readStr();
+    }
+  }
+
+  readGoodTillDate(): void {
+    if (this.version >= 8 ) {
+      this.order.goodTillDate = this.decoder.readStr();
+    }
+  }
+
+  readRule80A(): void {
+    if (this.version >= 9) {
+      this.order.rule80A = this.decoder.readStr();
+    }
+  }
+
+  readPercentOffset() {
+    if (this.version >= 9) {
+      this.order.percentOffset = this.decoder.readDoubleMax();
+    }
+  }
+
+  readSettlingFirm(): void {
+    if (this.version >= 9) {
+      this.order.settlingFirm = this.decoder.readStr();
+    }
+  }
+
+  readShortSaleParams(): void {
+    if (this.version >= 9) {
+      this.order.shortSaleSlot = this.decoder.readInt();
+      this.order.designatedLocation = this.decoder.readStr();
+      if(this.version == 51) {
+        this.decoder.readInt(); // exemptCode
+      } else if(this.version >= 23) {
+        this.order.exemptCode = this.decoder.readInt();
+      }
+    }
+  }
+
+  readAuctionStrategy(): void {
+    if (this.version >= 9) {
+      this.order.auctionStrategy = this.decoder.readInt();
+    }
+  }
+
+  readBoxOrderParams(): void {
+    if(this.version >= 9) {
+      this.order.startingPrice = this.decoder.readDoubleMax();
+      this.order.stockRefPrice = this.decoder.readDoubleMax();
+      this.order.delta = this.decoder.readDoubleMax();
+    }
+  }
+
+  readPegToStkOrVolOrderParams(): void {
+    if (this.version >= 9) {
+      this.order.stockRangeLower = this.decoder.readDoubleMax();
+      this.order.stockRangeUpper = this.decoder.readDoubleMax();
+    }
+  }
+
+  readDisplaySize(): void {
+    if (this.version >= 9) {
+      this.order.displaySize = this.decoder.readInt();
+    }
+  }
+
+  readOldStyleOutsideRth(): void {
+    if (this.version >= 9) {
+        if (this.version < 18) {
+          // will never happen
+          /* order.m_rthOnly = */ this.decoder.readBool();
+        }
+    }
+  }
+
+  readBlockOrder(): void {
+    if (this.version >= 9) {
+      this.order.blockOrder = this.decoder.readBool();
+    }
+  }
+
+  readSweepToFill(): void {
+    if (this.version >= 9) {
+      this.order.sweepToFill = this.decoder.readBool();
+    }
+  }
+
+  readAllOrNone(): void {
+      if (this.version >= 9) {
+      this.order.allOrNone = this.decoder.readBool();
+    }
+  }
+
+  readMinQty(): void {
+    if (this.version >= 9) {
+      this.order.minQty = this.decoder.readIntMax();
+    }
+  }
+
+  readOcaType(): void {
+    if (this.version >= 9) {
+      this.order.ocaType = this.decoder.readInt();
+    }
+  }
+
+  readETradeOnly(): void {
+    if (this.version >= 9) {
+      this.order.eTradeOnly = this.decoder.readBool();
+    }
+  }
+
+  readFirmQuoteOnly(): void {
+    if (this.version >= 9) {
+      this.order.firmQuoteOnly = this.decoder.readBool();
+    }
+  }
+
+  readNbboPriceCap(): void {
+    if (this.version >= 9) {
+      this.order.nbboPriceCap = this.decoder.readDoubleMax();
+    }
+  }
+
+  readParentId(): void {
+    if (this.version >= 10) {
+      this.order.parentId = this.decoder.readInt();
+    }
+  }
+
+  readTriggerMethod(): void {
+    if (this.version >= 10) {
+      this.order.triggerMethod = this.decoder.readInt();
+    }
+  }
+
+  readVolOrderParams(readOpenOrderAttribs: boolean): void {
+    if (this.version >= 11) {
+      this.order.volatility = this.decoder.readDoubleMax();
+      this.order.volatilityType = this.decoder.readInt();
+      if (this.version == 11) {
+        const receivedInt = this.decoder.readInt();
+        this.order.deltaNeutralOrderType = (receivedInt == 0) ? "NONE" : "MKT";
+    } else {
+      this.order.deltaNeutralOrderType = this.decoder.readStr();
+      this.order.deltaNeutralAuxPrice = this.decoder.readDoubleMax();
+
+      if (this.version >= 27 && (this.order.deltaNeutralOrderType && this.order.deltaNeutralOrderType !== "")) {
+        this.order.deltaNeutralConId = this.decoder.readInt();
+        if (readOpenOrderAttribs) {
+          this.order.deltaNeutralSettlingFirm = this.decoder.readStr();
+          this.order.deltaNeutralClearingAccount = this.decoder.readStr();
+          this.order.deltaNeutralClearingIntent = this.decoder.readStr();
+        }
+      }
+
+      if (this.version >= 31 && (this.order.deltaNeutralOrderType && this.order.deltaNeutralOrderType !== "")) {
+          if (readOpenOrderAttribs) {
+            this.order.deltaNeutralOpenClose = this.decoder.readStr();
+          }
+          this.order.deltaNeutralShortSale = this.decoder.readBool();
+          this.order.deltaNeutralShortSaleSlot = this.decoder.readInt();
+          this.order.deltaNeutralDesignatedLocation = this.decoder.readStr();
+        }
+      }
+      this.order.continuousUpdate = this.decoder.readInt();
+      if (this.version == 26) {
+        this.order.stockRangeLower = this.decoder.readDouble();
+        this.order.stockRangeUpper = this.decoder.readDouble();
+      }
+      this.order.referencePriceType = this.decoder.readInt();
+    }
+  }
+
+  readTrailParams(): void {
+    if (this.version >= 13) {
+      this.order.trailStopPrice = this.decoder.readDoubleMax();
+    }
+
+    if (this.version >= 30) {
+      this.order.trailingPercent = this.decoder.readDoubleMax();
+    }
+  }
+
+  readBasisPoints(): void {
+    if (this.version >= 14) {
+      this.order.basisPoints = this.decoder.readDoubleMax();
+      this.order.basisPointsType = this.decoder.readIntMax();
+    }
+  }
+
+  readComboLegs(): void {
+    if (this.version >= 14) {
+      this.contract.comboLegsDescription = this.decoder.readStr();
+    }
+
+    if (this.version >= 29) {
+        const comboLegsCount = this.decoder.readInt();
+        if (comboLegsCount > 0) {
+          this.contract.comboLegs = [];
+          for (let i = 0; i < comboLegsCount; ++i) {
+            const conId = this.decoder.readInt();
+            const ratio = this.decoder.readInt();
+            const action = this.decoder.readStr();
+            const exchange = this.decoder.readStr();
+            const openClose = this.decoder.readInt();
+            const shortSaleSlot = this.decoder.readInt();
+            const designatedLocation = this.decoder.readStr();
+            const exemptCode = this.decoder.readInt();
+
+            this.contract.comboLegs.push({
+              conId,
+              ratio,
+              action,
+              exchange,
+              openClose,
+              shortSaleSlot,
+              designatedLocation,
+              exemptCode
+            });
+        }
+
+        const orderComboLegsCount = this.decoder.readInt();
+        if (orderComboLegsCount > 0) {
+            this.order.orderComboLegs = [];
+            for (let i = 0; i < orderComboLegsCount; ++i) {
+                const price = this.decoder.readDoubleMax();
+
+                this.order.orderComboLegs.push({
+                  price
+                });
+            }
+        }
+      }
+    }
+  }
+
+  readSmartComboRoutingParams(): void {
+    if (this.version >= 26) {
+        const smartComboRoutingParamsCount = this.decoder.readInt();
+        if (smartComboRoutingParamsCount > 0) {
+            this.order.smartComboRoutingParams = [];
+            for (let i = 0; i < smartComboRoutingParamsCount; ++i) {
+                const tag = this.decoder.readStr();
+                const value = this.decoder.readStr();
+                this.order.smartComboRoutingParams.push({
+                  tag,
+                  value
+                });
+            }
+        }
+    }
+  }
+
+  readScaleOrderParams(): void {
+    if (this.version >= 15) {
+        if (this.version >= 20) {
+          this.order.scaleInitLevelSize = this.decoder.readIntMax();
+          this.order.scaleSubsLevelSize = this.decoder.readIntMax();
+        }
+        else {
+          /* int notSuppScaleNumComponents = */ this.decoder.readIntMax();
+          this.order.scaleInitLevelSize = this.decoder.readIntMax();
+        }
+        this.order.scalePriceIncrement = this.decoder.readDoubleMax();
+    }
+
+    if (this.version >= 28 && this.order.scalePriceIncrement > 0.0 && this.order.scalePriceIncrement != Number.MAX_VALUE) {
+      this.order.scalePriceAdjustValue = this.decoder.readDoubleMax();
+      this.order.scalePriceAdjustInterval = this.decoder.readIntMax();
+      this.order.scaleProfitOffset = this.decoder.readDoubleMax();
+      this.order.scaleAutoReset = this.decoder.readBool();
+      this.order.scaleInitPosition = this.decoder.readIntMax();
+      this.order.scaleInitFillQty = this.decoder.readIntMax();
+      this.order.scaleRandomPercent = this.decoder.readBool();
+    }
+  }
+
+  readHedgeParams(): void {
+    if (this.version >= 24) {
+      this.order.hedgeType = this.decoder.readStr();
+      if (this.order.hedgeType && this.order.hedgeType !== "") {
+        this.order.hedgeParam = this.decoder.readStr();
+      }
+    }
+  }
+
+  readOptOutSmartRouting(): void {
+    if (this.version >= 25) {
+      this.order.optOutSmartRouting = this.decoder.readBool();
+    }
+  }
+
+  readClearingParams(): void {
+    if (this.version >= 19) {
+      this.order.clearingAccount = this.decoder.readStr();
+      this.order.clearingIntent = this.decoder.readStr();
+    }
+  }
+
+  readNotHeld(): void {
+    if (this.version >= 22) {
+      this.order.notHeld = this.decoder.readBool();
+    }
+  }
+
+  readDeltaNeutral(): void {
+    if (this.version >= 20) {
+      if (this.decoder.readBool()) {
+        const conId = this.decoder.readInt();
+        const delta = this.decoder.readDouble();
+        const price = this.decoder.readDouble();
+        this.contract.deltaNeutralContract = {
+          conId,
+          delta,
+          price
+        };
+      }
+    }
+  }
+
+  readAlgoParams(): void {
+    if (this.version >= 21) {
+      this.order.algoStrategy = this.decoder.readStr();
+      if (this.order.algoStrategy && this.order.algoStrategy !== "") {
+        const algoParamsCount = this.decoder.readInt();
+        if (algoParamsCount > 0) {
+          for (let i = 0; i < algoParamsCount; ++i) {
+            const tag = this.decoder.readStr();
+            const value = this.decoder.readStr();
+            this.order.algoParams.push({
+              tag,
+              value
+            });
+          }
+        }
+      }
+    }
+  }
+
+  readSolicited(): void {
+    if (this.version >= 33) {
+        this.order.solicited = this.decoder.readBool();
+    }
+  }
+
+  readWhatIfInfoAndCommission(): void {
+    if (this.version >= 16) {
+      this.order.whatIf = this.decoder.readBool();
+
+      this.readOrderStatus();
+
+      if (this.serverVersion >= MIN_SERVER_VER.WHAT_IF_EXT_FIELDS) {
+        this.orderState.initMarginBefore = this.decoder.readStr();
+        this.orderState.maintMarginBefore = this.decoder.readStr();
+        this.orderState.equityWithLoanBefore = this.decoder.readStr();
+        this.orderState.initMarginChange = this.decoder.readStr();
+        this.orderState.maintMarginChange = this.decoder.readStr();
+        this.orderState.equityWithLoanChange = this.decoder.readStr();
+      }
+
+      this.orderState.initMarginAfter = this.decoder.readStr();
+      this.orderState.maintMarginAfter = this.decoder.readStr();
+      this.orderState.equityWithLoanAfter = this.decoder.readStr();
+      this.orderState.commission = this.decoder.readDoubleMax();
+      this.orderState.minCommission = this.decoder.readDoubleMax();
+      this.orderState.maxCommission = this.decoder.readDoubleMax();
+      this.orderState.commissionCurrency = this.decoder.readStr();
+      this.orderState.warningText = this.decoder.readStr();
+    }
+  }
+
+  readOrderStatus(): void {
+    this.orderState.status = this.decoder.readStr();
+  }
+
+  readVolRandomizeFlags(): void {
+    if (this.version >= 34) {
+      this.order.randomizeSize = this.decoder.readBool();
+      this.order.randomizePrice = this.decoder.readBool();
+    }
+  }
+
+  readPegToBenchParams(): void {
+    if (this.serverVersion >= MIN_SERVER_VER.PEGGED_TO_BENCHMARK) {
+      if (this.order.orderType === OrderType.PEG_BENCH) {
+        this.order.referenceContractId = this.decoder.readInt();
+        this.order.isPeggedChangeAmountDecrease = this.decoder.readBool();
+        this.order.peggedChangeAmount = this.decoder.readDouble();
+        this.order.referenceChangeAmount = this.decoder.readDouble();
+        this.order.referenceExchangeId = this.decoder.readStr();
+      }
+    }
+  }
+
+  readConditions(): void {
+    if (this.serverVersion >= MIN_SERVER_VER.PEGGED_TO_BENCHMARK) {
+
+      const nConditions = this.decoder.readInt();
+      this.order.conditions = new Array(nConditions);
+
+      if (nConditions > 0) {
+        for (let i = 0; i < nConditions; i++) {
+          const orderConditionType = this.decoder.readInt();
+
+          // OrderCondition
+          const conjunctionConnection = this.decoder.readStr()?.toLocaleLowerCase();
+
+          switch (orderConditionType) {
+            case OrderConditionType.Execution: {
+              const secType = this.decoder.readStr() as SecType;
+              const exchange = this.decoder.readStr();
+              const symbol = this.decoder.readStr();
+
+              this.order.conditions[i] = new ExecutionCondition(
+                exchange,
+                secType,
+                symbol,
+                conjunctionConnection as ConjunctionConnection
+              );
+              break;
+            }
+
+            case OrderConditionType.Margin: {
+              // OperatorCondition
+              const isMore = this.decoder.readBool();
+              const value = this.decoder.readInt();
+
+              this.order.conditions[i] = new MarginCondition(
+                value,
+                isMore,
+                conjunctionConnection as ConjunctionConnection
+              );
+              break;
+            }
+
+            case OrderConditionType.PercentChange: {
+              // OperatorCondition
+              const isMore = this.decoder.readBool();
+              const value = this.decoder.readDouble();
+              // ContractCondition
+              const condId = this.decoder.readInt();
+              const exchange = this.decoder.readStr();
+
+              this.order.conditions[i] = new PercentChangeCondition(
+                value,
+                condId,
+                exchange,
+                isMore,
+                conjunctionConnection as ConjunctionConnection
+              );
+              break;
+            }
+
+            case OrderConditionType.Price: {
+              // OperatorCondition
+              const isMore = this.decoder.readBool();
+              const value = this.decoder.readDouble();
+              // ContractCondition
+              const condId = this.decoder.readInt();
+              const exchange = this.decoder.readStr();
+              // PriceCondition
+              const triggerMethod = this.decoder.readInt() as TriggerMethod;
+
+              this.order.conditions[i] = new PriceCondition(
+                value,
+                triggerMethod,
+                condId,
+                exchange,
+                isMore,
+                conjunctionConnection as ConjunctionConnection
+              );
+              break;
+            }
+
+            case OrderConditionType.Time: {
+              // OperatorCondition
+              const isMore = this.decoder.readBool();
+              const value = this.decoder.readStr();
+
+              this.order.conditions[i] = new TimeCondition(
+                value,
+                isMore,
+                conjunctionConnection as ConjunctionConnection
+              );
+              break;
+            }
+
+            case OrderConditionType.Volume: {
+              // OperatorCondition
+              const isMore = this.decoder.readBool();
+              const value = this.decoder.readInt();
+              // ContractCondition
+              const condId = this.decoder.readInt();
+              const exchange = this.decoder.readStr();
+
+              this.order.conditions[i] = new VolumeCondition(
+                value,
+                condId,
+                exchange,
+                isMore,
+                conjunctionConnection as ConjunctionConnection
+              );
+              break;
+            }
+          }
+
+          this.order.conditionsIgnoreRth = this.decoder.readBool();
+          this.order.conditionsCancelOrder = this.decoder.readBool();
+        }
+      }
+    }
+  }
+
+  readAdjustedOrderParams(): void{
+    if (this.serverVersion >= MIN_SERVER_VER.PEGGED_TO_BENCHMARK) {
+      this.order.adjustedOrderType = this.decoder.readStr();
+      this.order.triggerPrice = this.decoder.readDoubleMax();
+      this.readStopPriceAndLmtPriceOffset();
+      this.order.adjustedStopPrice = this.decoder.readDoubleMax();
+      this.order.adjustedStopLimitPrice = this.decoder.readDoubleMax();
+      this.order.adjustedTrailingAmount = this.decoder.readDoubleMax();
+      this.order.adjustableTrailingUnit = this.decoder.readInt();
+    }
+  }
+
+  readStopPriceAndLmtPriceOffset(): void {
+    this.order.trailStopPrice = this.decoder.readDoubleMax();
+    this.order.lmtPriceOffset = this.decoder.readDoubleMax();
+  }
+
+  readSoftDollarTier(): void {
+    if (this.serverVersion >= MIN_SERVER_VER.SOFT_DOLLAR_TIER) {
+      const name = this.decoder.readStr();
+      const value = this.decoder.readStr();
+      const displayName = this.decoder.readStr();
+      this.order.softDollarTier = {
+        name,
+        value,
+        displayName
+      };
+    }
+  }
+
+  readCashQty(): void {
+    if (this.serverVersion >= MIN_SERVER_VER.CASH_QTY) {
+      this.order.cashQty = this.decoder.readDoubleMax();
+    }
+  }
+
+  readDontUseAutoPriceForHedge(): void {
+    if (this.serverVersion >= MIN_SERVER_VER.AUTO_PRICE_FOR_HEDGE) {
+      this.order.dontUseAutoPriceForHedge = this.decoder.readBool();
+    }
+  }
+
+  readIsOmsContainer(): void {
+    if (this.serverVersion >= MIN_SERVER_VER.ORDER_CONTAINER) {
+      this.order.isOmsContainer = this.decoder.readBool();
+    }
+  }
+
+  readDiscretionaryUpToLimitPrice(): void {
+    if (this.serverVersion >= MIN_SERVER_VER.D_PEG_ORDERS) {
+      this.order.discretionaryUpToLimitPrice = this.decoder.readBool();
+    }
+  }
+
+  readAutoCancelDate(): void {
+    this.order.autoCancelDate = this.decoder.readStr();
+  }
+
+  readFilledQuantity(): void {
+    this.order.filledQuantity = this.decoder.readDoubleMax();
+  }
+
+  readRefFuturesConId(): void {
+    this.order.refFuturesConId = this.decoder.readInt();
+  }
+
+  readAutoCancelParent(): void {
+    this.order.autoCancelParent = this.decoder.readBool();
+  }
+
+  readShareholder(): void {
+    this.order.shareholder = this.decoder.readStr();
+  }
+
+  readImbalanceOnly(): void {
+    this.order.imbalanceOnly = this.decoder.readBool();
+  }
+
+  readRouteMarketableToBbo(): void {
+    this.order.routeMarketableToBbo = this.decoder.readBool();
+  }
+
+  readParentPermId(): void {
+    this.order.parentPermId = this.decoder.readInt();
+  }
+
+  readCompletedTime(): void {
+    this.orderState.completedTime = this.decoder.readStr();
+  }
+
+  readCompletedStatus(): void {
+    this.orderState.completedStatus = this.decoder.readStr();
+  }
+
+  readUsePriceMgmtAlgo(): void {
+    if (this.serverVersion >= MIN_SERVER_VER.PRICE_MGMT_ALGO) {
+      this.order.usePriceMgmtAlgo = this.decoder.readBool();
+    }
+  }
+}
+

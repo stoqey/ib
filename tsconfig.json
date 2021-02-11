@@ -1,33 +1,18 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "lib": [
-      "es2015",
-      "ES6"
-    ],
-    "strict": true,
-    "rootDir": "src",
-    "outDir": "dist",
+    "allowJs": true,
+    "esModuleInterop": true,
+    "lib": ["es2017", "esnext", "dom", "es7"],
     "module": "commonjs",
     "moduleResolution": "node",
-    "declaration": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "skipLibCheck": true,
     "sourceMap": true,
-    "inlineSources": true,
-    "esModuleInterop": true,
-    "noImplicitAny": false, // TODO enabled this as soon as ported  all code is ported to TS
-    "types": [
-      "mocha",
-      "node",
-    ],
-    "resolveJsonModule": true,
-    "forceConsistentCasingInFileNames": true  /* Disallow inconsistently-cased references to the same file. */
-    // "isolatedModules": true,
+    "resolveJsonModule": false,
+    "noImplicitAny": false, //TODO set to true once all data has types
+    "target": "es2017",
+    "typeRoots": ["node_modules/@types", "node_modules/types", "src/ts-types"]
   },
-  "include": [
-    "src/**/*",
-    "types.d.ts",
-  ],
-  "exclude": [
-    "src/**/*.spec.ts",
-  ]
+  "include": ["./src"]
 }
