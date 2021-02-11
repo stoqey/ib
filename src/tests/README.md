@@ -14,8 +14,6 @@ Always clean up the data you create for the test in the `AfterAll` or `AfterEach
 
 The `setup.ts` file is setup in the jest config under the key `setupFilesAfterEnv`. A number of things are done in the `setup.ts` file:
 
-* Axios is setup
-* Objection is configured with knex
 * `matchers.ts` is imported (any extensions to jest expect)
 
 
