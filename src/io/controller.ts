@@ -5,7 +5,7 @@ import { Decoder, DecoderCallbacks } from "./decoder";
 import { Encoder, EncoderCallbacks } from "./encoder";
 import { EventName, IBApi, IBApiCreationOptions } from "../api/api";
 import { ErrorCode } from "../api/errorCode";
-import configuration from "../configuration/configuration";
+import configuration from "../common/configuration";
 
 /**
  * @internal

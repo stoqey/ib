@@ -10,7 +10,7 @@ import { Controller } from "./controller";
 import { OUT_MSG_ID } from "./encoder";
 import { TextDecoder, TextEncoder } from "util";
 import { ErrorCode } from "../api/errorCode";
-import configuration from "../configuration/configuration";
+import configuration from "../common/configuration";
 
 /**
  * @hidden

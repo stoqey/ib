@@ -2,7 +2,8 @@
  * This file implement test code for the reqAllOpenOrders function and openOrder event.
  */
 import { IBApi, EventName, ErrorCode } from "../../..";
-import configuration from "../../../configuration/configuration";
+import configuration from "../../../common/configuration";
+import logger from "../../../utils/logger";
 
 const TEST_SERVER_HOST = configuration.ib_test_host;
 const TEST_SERVER_POST = configuration.ib_test_port;
@@ -10,6 +11,9 @@ const TEST_SERVER_POST = configuration.ib_test_port;
 describe("RequestAllOpenOrders", () => {
   jest.setTimeout(20000);
   it("Test reqAllOpenOrders", (done) => {
+    logger.info(
+      `Using host: ${TEST_SERVER_HOST} and port: ${TEST_SERVER_POST} for test `
+    );
     const ib = new IBApi({
       host: TEST_SERVER_HOST,
       port: TEST_SERVER_POST,
