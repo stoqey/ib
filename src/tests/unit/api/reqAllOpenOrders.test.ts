@@ -15,6 +15,7 @@ const TEST_SERVER_HOST = configuration.ib_test_host;
 const TEST_SERVER_POST = configuration.ib_test_port;
 
 describe("RequestAllOpenOrders", () => {
+  jest.setTimeout(20000);
   it("Test reqAllOpenOrders", (done) => {
     const ib = new IBApi({
       host: TEST_SERVER_HOST,
