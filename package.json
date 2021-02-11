@@ -19,7 +19,8 @@
     "release": "yarn lint && yarn test && yarn doc && yarn build",
     "doc": "typedoc src --stripInternal",
     "doc:dev": "typedoc src --out ./doc-dev",
-    "tsc": "./node_modules/.bin/tsc"
+    "tsc": "./node_modules/.bin/tsc",
+    "debug": "ts-node-dev --inspect=4321 --respawn src/dev/app.ts"
   },
   "engines": {
     "node": ">=4.2.0"
@@ -71,7 +72,7 @@
     "@types/lodash": "^4.14.150",
     "@types/node": "^10.0.3",
     "@types/source-map-support": "^0.4.0",
-    "ts-node": "^8.4.1",
+    "ts-node-dev": "^1.1.1",
     "typedoc": "^0.19.2"
   },
   "dependencies": {
