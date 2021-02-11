@@ -1,14 +1,7 @@
 /**
  * This file implement test code for the reqAllOpenOrders function and openOrder event.
  */
-import {
-  IBApi,
-  EventName,
-  Contract,
-  ErrorCode,
-  Order,
-  OrderState,
-} from "../../..";
+import { IBApi, EventName, ErrorCode } from "../../..";
 import configuration from "../../../configuration/configuration";
 
 const TEST_SERVER_HOST = configuration.ib_test_host;
