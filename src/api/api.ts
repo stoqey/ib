@@ -1,4 +1,4 @@
-import { EventEmitter } from "events";
+import { EventEmitter } from "eventemitter3";
 import { Controller } from "../io/controller";
 import { Contract, SecType } from "./contract/contract";
 import { Order } from "./order/order";
