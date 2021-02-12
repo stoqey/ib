@@ -40,7 +40,8 @@ class IBApiNextSubscription<T> {
     private api: IBApi,
     private requestFunction: () => void,
     private cancelFunction: () => void,
-    private eventHandler: (result: (v: T) => void) => void
+    private eventHandler: (result: (v: T) => void) => void,
+    private cleanupFunction: () => void
   ) {
     this.eventHandler((v) => this.next(v));
   }
@@ -68,8 +69,11 @@ class IBApiNextSubscription<T> {
       return (): void => {
         sub$.unsubscribe();
         this.observers--;
-        if (this.observers <= 0 && this.api.isConnected) {
-          this.cancelFunction();
+        if (this.observers <= 0) {
+          if (this.api.isConnected) {
+            this.cancelFunction();
+          }
+          this.cleanupFunction();
         }
       };
     });
@@ -234,7 +238,8 @@ export class IBApiNext extends IBApiAutoConnection {
             }
           }
         );
-      }
+      },
+      () => this._pnl.delete(key)
     );
 
     this._pnl.set(key, subscription);
@@ -286,7 +291,8 @@ export class IBApiNext extends IBApiAutoConnection {
             }
           }
         );
-      }
+      },
+      () => this._pnlSingle.delete(key)
     );
 
     this._pnlSingle.set(key, subscription);
@@ -383,7 +389,8 @@ export class IBApiNext extends IBApiAutoConnection {
           }
           syncedPositions = undefined;
         });
-      }
+      },
+      () => delete this._positions
     );
 
     // return observable
