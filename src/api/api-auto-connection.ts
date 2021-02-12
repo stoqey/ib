@@ -61,7 +61,12 @@ export class IBApiAutoConnection {
   private readonly ib: IBApi;
 
   /** The re-connection interval in ms, or undefined if automatic re-connection is disabled. */
-  private reconnectInterval?: number;
+  private _reconnectInterval?: number;
+
+  /** Get the re-connection interval in ms, or undefined if automatic re-connection is disabled. */
+  get reconnectInterval(): number | undefined {
+    return this._reconnectInterval;
+  }
 
   /** Timestamp of the last [[EventName.currentTime]] event. */
   private lastCurrentTimeTm?: number;
@@ -109,12 +114,8 @@ export class IBApiAutoConnection {
   connect(reconnectInterval?: number): void {
     if (this._connectionState.getValue() === ConnectionState.Disconnected) {
       this._connectionState.next(ConnectionState.Connecting);
-      this.reconnectInterval = reconnectInterval;
+      this._reconnectInterval = reconnectInterval;
       this.ib.connect();
-    } else {
-      console.warn(
-        "IBApiAutoConnection: connect() ignored - not in disconnected state."
-      );
     }
   }
 
@@ -125,19 +126,18 @@ export class IBApiAutoConnection {
    */
   disconnect(): void {
     if (this._connectionState.getValue() !== ConnectionState.Disconnected) {
-      delete this.reconnectInterval;
+      delete this._reconnectInterval;
       this.ib.disconnect();
-    } else {
-      console.warn(
-        "IBApiAutoConnection: disconnect() ignored - already in disconnected state."
-      );
     }
   }
 
   /**
-   * Requests TWS's current time.
+   * Get TWS's current time.
    */
-  reqCurrentTime(): Promise<number> {
+  getCurrentTime(): Promise<number> {
+    if (this.api.isConnected) {
+      this.api.reqCurrentTime();
+    }
     return this._currentTime.asObservable().toPromise();
   }
 
@@ -145,8 +145,6 @@ export class IBApiAutoConnection {
    * Called when [[EventName.connected]] event has been received.
    */
   private onConnected() {
-    console.debug("IBApiAutoConnection: onConnected");
-
     // verify state but and signal ConnectionState.Connected
 
     if (this._connectionState.getValue() !== ConnectionState.Connecting) {
@@ -165,15 +163,16 @@ export class IBApiAutoConnection {
     // run connection watchdog
 
     delete this.lastCurrentTimeTm;
-    let lastReqCurrentTimeTm = Date.now();
+    let lastReqCurrentTimeTm: number;
     this.ib.reqCurrentTime();
 
     this.connectionWatchdogTimeout = setInterval(() => {
       // check if we have received a timestamp since last run (+ some jitter)
       if (
-        this.lastCurrentTimeTm === undefined ||
-        lastReqCurrentTimeTm - this.lastCurrentTimeTm >
-          IBApiAutoConnection.CONNECTION_WATCHDOG_INTERVAL + 10
+        lastReqCurrentTimeTm != undefined &&
+        (this.lastCurrentTimeTm === undefined ||
+          lastReqCurrentTimeTm - this.lastCurrentTimeTm >
+            IBApiAutoConnection.CONNECTION_WATCHDOG_INTERVAL + 10)
       ) {
         // dead connection
         this.ib.disconnect();
@@ -191,9 +190,6 @@ export class IBApiAutoConnection {
    * or the connection-watchdog has detected a dead connection.
    */
   private onError(error: Error, code: ErrorCode, reqId: number) {
-    console.error(
-      `IBApiAutoConnection: onError(${error.message}, ${code}, ${reqId})`
-    );
     if (code === ErrorCode.CONNECT_FAIL) {
       this.onDisconnected();
     }
@@ -208,6 +204,10 @@ export class IBApiAutoConnection {
     console.debug("IBApiAutoConnection: onDisconnected");
 
     // verify state and signal update
+
+    if (this.ib.isConnected) {
+      this.ib.disconnect();
+    }
 
     if (this._connectionState.getValue() === ConnectionState.Disconnected) {
       return;
@@ -225,21 +225,16 @@ export class IBApiAutoConnection {
     // initiate reconnection
 
     if (
-      this.reconnectInterval !== undefined &&
+      this._reconnectInterval !== undefined &&
       this.reconnectionTimeout === undefined
     ) {
-      console.debug(
-        `IBApiAutoConnection: reconnecting in ${
-          this.reconnectInterval / 1000
-        }s...`
-      );
       this.reconnectionTimeout = setTimeout(() => {
         if (this.reconnectionTimeout !== undefined) {
           clearInterval(this.reconnectionTimeout);
           delete this.reconnectionTimeout;
         }
-        this.connect(this.reconnectInterval);
-      }, this.reconnectInterval);
+        this.connect(this._reconnectInterval);
+      }, this._reconnectInterval);
     }
   }
 

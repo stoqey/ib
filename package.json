@@ -20,7 +20,7 @@
     "doc": "typedoc --excludeInternal",
     "doc:dev": "typedoc --out ./doc-dev",
     "tsc": "./node_modules/.bin/tsc",
-    "debug": "ts-node-dev --inspect=4321 --respawn src/dev/app-next.ts"
+    "debug": "ts-node-dev --inspect=4321 --respawn src/demo/inventory-logger/index.ts"
   },
   "engines": {
     "node": ">=4.2.0"
