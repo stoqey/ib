@@ -1,7 +1,7 @@
 /**
  * Minimum required server version for supporting the given request.
  */
-enum MIN_SERVER_VER {
+export enum MIN_SERVER_VER {
   REAL_TIME_BARS = 34,
   SCALE_ORDERS = 35,
   SNAPSHOT_MKT_DATA = 35,

@@ -84,3 +84,5 @@ export interface Execution {
    */
   lastLiquidity?: Liquidities;
 }
+
+export default Execution;

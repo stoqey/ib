@@ -16,3 +16,5 @@ export class Combo implements Contract {
 
   public secType = SecType.BAG;
 }
+
+export default Combo;

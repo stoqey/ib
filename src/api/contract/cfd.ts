@@ -16,3 +16,5 @@ export class CFD implements Contract {
 
   public secType = SecType.STK;
 }
+
+export default CFD;

@@ -3,7 +3,7 @@ import SecType from "../enum/sec-type";
 /**
  * A container for storing Family Code information.
  */
-export default interface DepthMktDataDescription {
+export interface DepthMktDataDescription {
   /** The exchange code. */
   exchange?: string;
 
@@ -19,3 +19,5 @@ export default interface DepthMktDataDescription {
   /** TODO: document */
   aggGroup?: number;
 }
+
+export default DepthMktDataDescription;

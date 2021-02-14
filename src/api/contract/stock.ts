@@ -16,3 +16,5 @@ export class Stock implements Contract {
 
   public secType = SecType.STK;
 }
+
+export default Stock;

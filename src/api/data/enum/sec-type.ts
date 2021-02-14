@@ -1,7 +1,7 @@
 /**
  * Security types.
  */
-enum SecType {
+export enum SecType {
   /** Stock (or ETF) */
   STK = "STK",
 

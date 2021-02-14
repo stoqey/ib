@@ -9,7 +9,7 @@ import OrderCondition from "./order-condition";
  * Orders can be activated or canceled if a set of given conditions is met.
  * An ExecutionCondition is met whenever a trade occurs on a certain product at the given exchange.
  */
-export default class ExecutionCondition implements OrderCondition {
+export class ExecutionCondition implements OrderCondition {
   type = OrderConditionType.Execution;
 
   /**
@@ -27,3 +27,5 @@ export default class ExecutionCondition implements OrderCondition {
     public conjunctionConnection: ConjunctionConnection
   ) {}
 }
+
+export default ExecutionCondition;

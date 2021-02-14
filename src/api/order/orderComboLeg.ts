@@ -5,3 +5,5 @@ export interface OrderComboLeg {
   /**	The order's leg's price. */
   price: number;
 }
+
+export default OrderComboLeg;

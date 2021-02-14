@@ -1,7 +1,7 @@
 /**
  * Order action.
  */
-enum OrderAction {
+export enum OrderAction {
   BUY = "BUY",
   SELL = "SELL",
 }

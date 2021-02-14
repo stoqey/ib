@@ -10,3 +10,5 @@ export interface OperatorCondition extends OrderCondition {
   /** Value as string representation. */
   readonly strValue: string;
 }
+
+export default OperatorCondition;

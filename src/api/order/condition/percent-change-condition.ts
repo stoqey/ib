@@ -5,7 +5,7 @@ import ContractCondition from "./contract-condition";
 /**
  * Used with conditional orders to place or submit an order based on a percentage change of an instrument to the last close price.
  */
-export default class PercentChangeCondition implements ContractCondition {
+export class PercentChangeCondition implements ContractCondition {
   type = OrderConditionType.PercentChange;
 
   /**
@@ -28,3 +28,5 @@ export default class PercentChangeCondition implements ContractCondition {
     return "" + this.percent;
   }
 }
+
+export default PercentChangeCondition;

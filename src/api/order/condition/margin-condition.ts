@@ -5,7 +5,7 @@ import { OperatorCondition } from "./operator-condition";
 /**
  * TODO document
  */
-export default class MarginCondition implements OperatorCondition {
+export class MarginCondition implements OperatorCondition {
   type = OrderConditionType.Margin;
 
   /**
@@ -24,3 +24,5 @@ export default class MarginCondition implements OperatorCondition {
     return "" + this.percent;
   }
 }
+
+export default MarginCondition;

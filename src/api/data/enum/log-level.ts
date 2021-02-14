@@ -1,7 +1,7 @@
 /**
  * TWS / IB Gateway log levels.
  */
-enum LogLevel {
+export enum LogLevel {
   /** System log level. */
   SYSTEM = 1,
 

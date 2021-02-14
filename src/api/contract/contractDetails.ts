@@ -287,3 +287,5 @@ export interface ContractDetails {
    */
   notes?: string;
 }
+
+export default ContractDetails;

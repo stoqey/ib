@@ -730,3 +730,5 @@ export interface Order {
   /** TODO: document */
   usePriceMgmtAlgo?: boolean;
 }
+
+export default Order;

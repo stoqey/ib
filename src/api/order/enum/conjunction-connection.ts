@@ -5,3 +5,5 @@ export enum ConjunctionConnection {
   AND = "a",
   OR = "o",
 }
+
+export default ConjunctionConnection;

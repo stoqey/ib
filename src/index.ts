@@ -50,6 +50,23 @@ export { Index } from "./api/contract/ind";
 export { Option } from "./api/contract/option";
 export { Stock } from "./api/contract/stock";
 
+// export container types
+
+export { DepthMktDataDescription } from "./api/data/container/depth-mkt-data-description";
+export { FamilyCode } from "./api/data/container/family-code";
+export { NewsProvider } from "./api/data/container/news-provider";
+export { SoftDollarTier } from "./api/data/container/soft-dollar-tier";
+export { TagValue } from "./api/data/container/tag-value";
+
+// export enum types
+
+export { FADataType } from "./api/data/enum/fad-data-type";
+export { LogLevel } from "./api/data/enum/log-level";
+export { MIN_SERVER_VER } from "./api/data/enum/min-server-version";
+export { OptionExerciseAction } from "./api/data/enum/option-exercise-action";
+export { OptionType } from "./api/data/enum/option-type";
+export { SecType } from "./api/data/enum/sec-type";
+
 // export historic market-data types
 
 export { Bar } from "./api/historical/bar";
@@ -60,8 +77,29 @@ export { HistoricalTickLast } from "./api/historical/historicalTickLast";
 
 // export realtime market-data types
 
-export { TickType, TickByTickDataType } from "./api/market/tickType";
+export { TickType } from "./api/market/tickType";
+export { TickByTickDataType } from "./api/market/tickByTickDataType";
 export { ScannerSubscription } from "./api/market/scannerSubscription";
+
+// export order condition types
+
+export { ContractCondition } from "./api/order/condition/contract-condition";
+export { ExecutionCondition } from "./api/order/condition/execution-condition";
+export { MarginCondition } from "./api/order/condition/margin-condition";
+export { OperatorCondition } from "./api/order/condition/operator-condition";
+export { OrderCondition } from "./api/order/condition/order-condition";
+export { PercentChangeCondition } from "./api/order/condition/percent-change-condition";
+export { PriceCondition } from "./api/order/condition/price-condition";
+export { TimeCondition } from "./api/order/condition/time-condition";
+export { VolumeCondition } from "./api/order/condition/volume-condition";
+
+// export order enum types
+
+export { ConjunctionConnection } from "./api/order/enum/conjunction-connection";
+export { OrderAction } from "./api/order/enum/order-action";
+export { OrderConditionType } from "./api/order/enum/order-condition-type";
+export { OrderType } from "./api/order/enum/orderType";
+export { TriggerMethod } from "./api/order/enum/trigger-method";
 
 // export order types
 

@@ -1,7 +1,7 @@
 /**
  * A container for storing Soft Dollar Tier information.
  */
-export default interface SoftDollarTier {
+export interface SoftDollarTier {
   /** The name of the Soft Dollar Tier. */
   name?: string;
 
@@ -11,3 +11,5 @@ export default interface SoftDollarTier {
   /** The display name of the Soft Dollar Tier. */
   displayName: string;
 }
+
+export default SoftDollarTier;

@@ -1,7 +1,7 @@
 /**
  * Option types.
  */
-enum OptionType {
+export enum OptionType {
   /** Put option. */
   Put = "P",
 

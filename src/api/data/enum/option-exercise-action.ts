@@ -1,7 +1,7 @@
 /**
  * Option exercise actions.
  */
-enum OptionExerciseAction {
+export enum OptionExerciseAction {
   /** Exercise the option */
   EXERCISE = 1,
 

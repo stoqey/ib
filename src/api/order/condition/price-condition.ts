@@ -6,7 +6,7 @@ import ContractCondition from "./contract-condition";
 /**
  * Used with conditional orders to cancel or submit order based on price of an instrument.
  */
-export default class PriceCondition implements ContractCondition {
+export class PriceCondition implements ContractCondition {
   type = OrderConditionType.Price;
 
   /**
@@ -31,3 +31,5 @@ export default class PriceCondition implements ContractCondition {
     return "" + this.price;
   }
 }
+
+export default PriceCondition;

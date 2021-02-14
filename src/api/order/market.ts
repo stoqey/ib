@@ -19,3 +19,5 @@ export class MarketOrder {
 
   public orderType = OrderType.MKT;
 }
+
+export default MarketOrder;

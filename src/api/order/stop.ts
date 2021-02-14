@@ -20,3 +20,5 @@ export class StopOrder {
 
   public orderType = OrderType.STP;
 }
+
+export default StopOrder;

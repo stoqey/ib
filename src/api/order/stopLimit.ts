@@ -21,3 +21,5 @@ export class StopLimitOrder {
 
   public orderType = OrderType.STP_LMT;
 }
+
+export default StopLimitOrder;

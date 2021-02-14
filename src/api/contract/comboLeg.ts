@@ -43,3 +43,5 @@ export interface ComboLeg {
   /** TODO document */
   exemptCode?: number;
 }
+
+export default ComboLeg;

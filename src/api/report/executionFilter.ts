@@ -25,3 +25,5 @@ export interface ExecutionFilter {
   /** The Contract's side ("BUY" or "SELL") */
   side?: string;
 }
+
+export default ExecutionFilter;

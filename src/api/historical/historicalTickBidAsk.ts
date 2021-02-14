@@ -33,3 +33,5 @@ export interface HistoricalTickBidAsk {
   /** The ask size of the historical tick. */
   sizeAsk?: number;
 }
+
+export default HistoricalTickBidAsk;

@@ -5,7 +5,7 @@ import { OperatorCondition } from "./operator-condition";
 /**
  * TODO document
  */
-export default class TimeCondition implements OperatorCondition {
+export class TimeCondition implements OperatorCondition {
   type = OrderConditionType.Time;
 
   /**
@@ -24,3 +24,5 @@ export default class TimeCondition implements OperatorCondition {
     return this.time;
   }
 }
+
+export default TimeCondition;

@@ -14,3 +14,5 @@ export class LimitOrder {
 
   public orderType = OrderType.LMT;
 }
+
+export default LimitOrder;

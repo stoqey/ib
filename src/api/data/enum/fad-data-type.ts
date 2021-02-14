@@ -1,7 +1,7 @@
 /**
  * Financial Advisor's configuration data types.
  */
-enum FADataType {
+export enum FADataType {
   /** Offer traders a way to create a group of accounts and apply a single allocation method to all accounts in the group. */
   GROUPS = 1,
 

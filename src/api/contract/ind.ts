@@ -18,3 +18,5 @@ export class Index implements Contract {
 
   public secType = SecType.IND;
 }
+
+export default Index;

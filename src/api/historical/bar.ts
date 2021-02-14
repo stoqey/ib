@@ -30,3 +30,5 @@ export interface Bar {
   /** The number of trades during the bar's timespan (only available for TRADES). */
   count?: number;
 }
+
+export default Bar;

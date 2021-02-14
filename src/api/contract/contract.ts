@@ -81,3 +81,5 @@ export interface Contract {
    */
   deltaNeutralContract?: DeltaNeutralContract;
 }
+
+export default Contract;

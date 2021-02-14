@@ -7,7 +7,7 @@ import OptionExerciseAction from "../api/data/enum/option-exercise-action";
 import SecType from "../api/data/enum/sec-type";
 import { ErrorCode } from "../api/errorCode";
 import { ScannerSubscription } from "../api/market/scannerSubscription";
-import { TickByTickDataType } from "../api/market/tickType";
+import { TickByTickDataType } from "../api/market/tickByTickDataType";
 import ExecutionCondition from "../api/order/condition/execution-condition";
 import MarginCondition from "../api/order/condition/margin-condition";
 import PercentChangeCondition from "../api/order/condition/percent-change-condition";

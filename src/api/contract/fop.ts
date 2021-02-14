@@ -22,3 +22,5 @@ export class FOP implements Contract {
 
   public secType = SecType.FOP;
 }
+
+export default FOP;

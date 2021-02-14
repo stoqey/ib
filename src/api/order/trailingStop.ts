@@ -20,3 +20,5 @@ export class TrailingStopOrder {
 
   public orderType = OrderType.TRAIL;
 }
+
+export default TrailingStopOrder;

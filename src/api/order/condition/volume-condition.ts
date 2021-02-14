@@ -5,7 +5,7 @@ import ContractCondition from "./contract-condition";
 /**
  * Used with conditional orders to submit or cancel an order based on a specified volume change in a security.
  */
-export default class VolumeCondition implements ContractCondition {
+export class VolumeCondition implements ContractCondition {
   type = OrderConditionType.Volume;
 
   /**
@@ -29,3 +29,5 @@ export default class VolumeCondition implements ContractCondition {
     return "" + this.volume;
   }
 }
+
+export default VolumeCondition;

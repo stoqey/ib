@@ -10,3 +10,5 @@ export enum TriggerMethod {
   LastOfBidAsk = 7,
   MidPoint = 8,
 }
+
+export default TriggerMethod;

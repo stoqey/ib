@@ -9,3 +9,5 @@ export enum OrderConditionType {
   Volume = 6,
   PercentChange = 7,
 }
+
+export default OrderConditionType;

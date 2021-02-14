@@ -1,10 +1,12 @@
 /**
  * A container for storing Family Code information.
  */
-export default interface FamilyCode {
+export interface FamilyCode {
   /** The account ID. */
   accountID?: string;
 
   /** The family code. */
   familyCode?: string;
 }
+
+export default FamilyCode;

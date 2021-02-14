@@ -13,3 +13,5 @@ export interface HistoricalTick {
   /** The historical tick size. */
   size: number;
 }
+
+export default HistoricalTick;

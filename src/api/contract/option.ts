@@ -21,3 +21,5 @@ export class Option implements Contract {
   public secType = SecType.OPT;
   public multiplier = 100;
 }
+
+export default Option;

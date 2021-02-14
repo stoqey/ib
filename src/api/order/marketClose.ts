@@ -13,3 +13,5 @@ export class MarketCloseOrder {
 
   public orderType = OrderType.MOC;
 }
+
+export default MarketCloseOrder;

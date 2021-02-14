@@ -11,3 +11,5 @@ export interface ContractDescription {
   /** Array of derivative security types. */
   derivativeSecTypes?: SecType[];
 }
+
+export default ContractDescription;

@@ -18,3 +18,5 @@ export class Future implements Contract {
 
   public secType = SecType.FUT;
 }
+
+export default Future;
