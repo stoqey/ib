@@ -6,6 +6,7 @@ import { ContractDescription } from "./contract/contractDescription";
 import { ContractDetails } from "./contract/contractDetails";
 import { DeltaNeutralContract } from "./contract/deltaNeutralContract";
 import { LogLevel } from "./data/enum/log-level";
+import { OptionExerciseAction } from "./data/enum/option-exercise-action";
 import { ErrorCode } from "./errorCode";
 import { Bar } from "./historical/bar";
 import { HistogramEntry } from "./historical/histogramEntry";
