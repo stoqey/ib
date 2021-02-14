@@ -1,52 +1,23 @@
 import { EventEmitter } from "eventemitter3";
+
 import { Controller } from "../io/controller";
 import { Contract, SecType } from "./contract/contract";
-import { Order } from "./order/order";
-import { Bar } from "./historical/bar";
-import { CommissionReport } from "./report/commissionReport";
 import { ContractDescription } from "./contract/contractDescription";
+import { ContractDetails } from "./contract/contractDetails";
+import { DeltaNeutralContract } from "./contract/deltaNeutralContract";
+import { LogLevel } from "./data/enum/log-level";
+import { ErrorCode } from "./errorCode";
+import { Bar } from "./historical/bar";
 import { HistogramEntry } from "./historical/histogramEntry";
 import { HistoricalTick } from "./historical/historicalTick";
 import { HistoricalTickBidAsk } from "./historical/historicalTickBidAsk";
 import { HistoricalTickLast } from "./historical/historicalTickLast";
-import { DeltaNeutralContract } from "./contract/deltaNeutralContract";
-import { OrderState } from "./order/orderState";
-import { TickByTickDataType, TickType } from "./market/tickType";
-import { ContractDetails } from "./contract/contractDetails";
-import { ExecutionFilter } from "./report/executionFilter";
 import { ScannerSubscription } from "./market/scannerSubscription";
-import { ErrorCode } from "./errorCode";
-
-/**
- * TWS / IB Gateway log levels.
- */
-export enum LogLevel {
-  /** System log level. */
-  SYSTEM = 1,
-
-  /** Error log level. */
-  ERROR = 2,
-
-  /** Warning log level. */
-  WARN = 3,
-
-  /** Info log level. */
-  INFO = 4,
-
-  /** Detailed log level. */
-  DETAIL = 5,
-}
-
-/**
- * Option exercise actions.
- */
-export enum OptionExerciseAction {
-  /** Exercise the option */
-  EXERCISE = 1,
-
-  /** Let the option lapse. */
-  LAPSE = 2,
-}
+import { TickByTickDataType, TickType } from "./market/tickType";
+import { Order } from "./order/order";
+import { OrderState } from "./order/orderState";
+import { CommissionReport } from "./report/commissionReport";
+import { ExecutionFilter } from "./report/executionFilter";
 
 /**
  * Input arguments on the [[IBApi]] class constructor.
