@@ -1,5 +1,5 @@
-import { OptionType } from "../data/enum/option-type";
-import { SecType } from "../data/enum/sec-type";
+import OptionType from "../data/enum/option-type";
+import SecType from "../data/enum/sec-type";
 import { ComboLeg } from "./comboLeg";
 import { DeltaNeutralContract } from "./deltaNeutralContract";
 

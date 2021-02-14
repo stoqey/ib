@@ -1,40 +1,38 @@
-import { Contract, OptionType, SecType } from "../api/contract/contract";
+import { EventName } from "../api/api";
+import { ComboLeg } from "../api/contract/comboLeg";
+import { Contract } from "../api/contract/contract";
 import { ContractDescription } from "../api/contract/contractDescription";
+import { ContractDetails } from "../api/contract/contractDetails";
+import { DeltaNeutralContract } from "../api/contract/deltaNeutralContract";
+import DepthMktDataDescription from "../api/data/container/depth-mkt-data-description";
+import FamilyCode from "../api/data/container/family-code";
+import NewsProvider from "../api/data/container/news-provider";
+import SoftDollarTier from "../api/data/container/soft-dollar-tier";
+import TagValue from "../api/data/container/tag-value";
+import MIN_SERVER_VER from "../api/data/enum/min-server-version";
+import OptionType from "../api/data/enum/option-type";
+import SecType from "../api/data/enum/sec-type";
+import { ErrorCode } from "../api/errorCode";
+import { HistogramEntry } from "../api/historical/histogramEntry";
 import { HistoricalTick } from "../api/historical/historicalTick";
 import { HistoricalTickBidAsk } from "../api/historical/historicalTickBidAsk";
 import { HistoricalTickLast } from "../api/historical/historicalTickLast";
-import { CommissionReport } from "../api/report/commissionReport";
-import { Execution } from "../api/order/execution";
-import {
-  ExecutionCondition,
-  Order,
-  ConjunctionConnection,
-  OrderConditionType,
-  MarginCondition,
-  PercentChangeCondition,
-  TriggerMethod,
-  PriceCondition,
-  TimeCondition,
-  VolumeCondition,
-  OrderAction,
-} from "../api/order/order";
-import { HistogramEntry } from "../api/historical/histogramEntry";
-import { ComboLeg } from "../api/contract/comboLeg";
-import { ContractDetails } from "../api/contract/contractDetails";
-import { DeltaNeutralContract } from "../api/contract/deltaNeutralContract";
-import { OrderState } from "../api/order/orderState";
 import { TickType } from "../api/market/tickType";
-import {
-  EventName,
-  SoftDollarTier,
-  TagValue,
-  NewsProvider,
-  FamilyCode,
-  DepthMktDataDescription,
-  MIN_SERVER_VER,
-} from "../api/api";
-import { OrderType } from "../api/order/orderType";
-import { ErrorCode } from "../api/errorCode";
+import ExecutionCondition from "../api/order/condition/execution-condition";
+import MarginCondition from "../api/order/condition/margin-condition";
+import PercentChangeCondition from "../api/order/condition/percent-change-condition";
+import PriceCondition from "../api/order/condition/price-condition";
+import TimeCondition from "../api/order/condition/time-condition";
+import VolumeCondition from "../api/order/condition/volume-condition";
+import { ConjunctionConnection } from "../api/order/enum/conjunction-connection";
+import OrderAction from "../api/order/enum/order-action";
+import { OrderConditionType } from "../api/order/enum/order-condition-type";
+import { OrderType } from "../api/order/enum/orderType";
+import { TriggerMethod } from "../api/order/enum/trigger-method";
+import { Execution } from "../api/order/execution";
+import { Order } from "../api/order/order";
+import { OrderState } from "../api/order/orderState";
+import { CommissionReport } from "../api/report/commissionReport";
 
 /**
  * @internal
@@ -503,7 +501,10 @@ export class Decoder {
    * Decode a ORDER_STATUS message from data queue and emit an orderStatus event.
    */
   private decodeMsg_ORDER_STATUS(): void {
-    const version = this.serverVersion >= MIN_SERVER_VER.MARKET_CAP_PRICE ? Number.MAX_VALUE : this.readInt();
+    const version =
+      this.serverVersion >= MIN_SERVER_VER.MARKET_CAP_PRICE
+        ? Number.MAX_VALUE
+        : this.readInt();
     const id = this.readInt();
     const status = this.readStr();
     const filled = this.readInt();
@@ -580,21 +581,29 @@ export class Decoder {
    * Decode a OPEN_ORDER message from data queue and emit a openOrder event.
    */
   private decodeMsg_OPEN_ORDER(): void {
-
     // read version
-    const version = this.serverVersion < MIN_SERVER_VER.ORDER_CONTAINER ? this.readInt() : this.serverVersion;
+    const version =
+      this.serverVersion < MIN_SERVER_VER.ORDER_CONTAINER
+        ? this.readInt()
+        : this.serverVersion;
 
     const contract: Contract = {};
     const order: Order = {};
     const orderState: OrderState = {};
-    const orderDecoder = new OrderDecoder(this, contract, order, orderState, version, this.serverVersion);
+    const orderDecoder = new OrderDecoder(
+      this,
+      contract,
+      order,
+      orderState,
+      version,
+      this.serverVersion
+    );
 
     // read order id
     orderDecoder.readOrderId();
 
     // read contract fields
     orderDecoder.readContractFields();
-
 
     // read order fields
     orderDecoder.readAction();
@@ -2794,7 +2803,6 @@ export class Decoder {
   }
 }
 
-
 /**
  * @internal
  *
@@ -2803,14 +2811,14 @@ export class Decoder {
  */
 
 class OrderDecoder {
-
   constructor(
     private decoder: Decoder,
     private contract: Contract,
     private order: Order,
     private orderState: OrderState,
     private version: number,
-    private serverVersion: number) {}
+    private serverVersion: number
+  ) {}
 
   readOrderId(): void {
     this.order.orderId = this.decoder.readInt();
@@ -2830,7 +2838,7 @@ class OrderDecoder {
     }
     this.contract.exchange = this.decoder.readStr();
     this.contract.currency = this.decoder.readStr();
-    if (this.version >= 2 ) {
+    if (this.version >= 2) {
       this.contract.localSymbol = this.decoder.readStr();
     }
     if (this.version >= 32) {
@@ -2842,7 +2850,7 @@ class OrderDecoder {
     this.order.action = this.decoder.readStr() as OrderAction;
   }
 
-  readTotalQuantity(): void  {
+  readTotalQuantity(): void {
     if (this.serverVersion >= MIN_SERVER_VER.FRACTIONAL_POSITIONS) {
       this.order.totalQuantity = this.decoder.readDouble();
     } else {
@@ -2850,15 +2858,14 @@ class OrderDecoder {
     }
   }
 
-  readOrderType(): void  {
+  readOrderType(): void {
     this.order.orderType = this.decoder.readStr() as OrderType;
   }
 
   readLmtPrice(): void {
     if (this.version < 29) {
       this.order.lmtPrice = this.decoder.readDouble();
-    }
-    else {
+    } else {
       this.order.lmtPrice = this.decoder.readDoubleMax();
     }
   }
@@ -2866,8 +2873,7 @@ class OrderDecoder {
   readAuxPrice(): void {
     if (this.version < 30) {
       this.order.auxPrice = this.decoder.readDouble();
-    }
-    else {
+    } else {
       this.order.auxPrice = this.decoder.readDoubleMax();
     }
   }
@@ -2903,50 +2909,49 @@ class OrderDecoder {
   }
 
   readPermId(): void {
-    if (this.version >= 4 ) {
+    if (this.version >= 4) {
       this.order.permId = this.decoder.readInt();
     }
   }
 
   readOutsideRth(): void {
-    if (this.version >= 4 ) {
-        if (this.version < 18) {
-          // will never happen
-          /* order.m_ignoreRth = */ this.decoder.readBool();
-        }
-        else {
-          this.order.outsideRth = this.decoder.readBool();
-        }
+    if (this.version >= 4) {
+      if (this.version < 18) {
+        // will never happen
+        /* order.m_ignoreRth = */ this.decoder.readBool();
+      } else {
+        this.order.outsideRth = this.decoder.readBool();
+      }
     }
   }
 
   readHidden(): void {
-    if (this.version >= 4 ) {
+    if (this.version >= 4) {
       this.order.hidden = this.decoder.readInt() == 1;
     }
   }
 
   readDiscretionaryAmount(): void {
-    if (this.version >= 4 ) {
+    if (this.version >= 4) {
       this.order.discretionaryAmt = this.decoder.readDouble();
     }
   }
 
   readGoodAfterTime(): void {
-    if (this.version >= 5 ) {
+    if (this.version >= 5) {
       this.order.goodAfterTime = this.decoder.readStr();
     }
   }
 
   skipSharesAllocation(): void {
-    if (this.version >= 6 ) {
-        // skip deprecated sharesAllocation field
-        this.decoder.readStr();
+    if (this.version >= 6) {
+      // skip deprecated sharesAllocation field
+      this.decoder.readStr();
     }
   }
 
   readFAParams(): void {
-    if (this.version >= 7 ) {
+    if (this.version >= 7) {
       this.order.faGroup = this.decoder.readStr();
       this.order.faMethod = this.decoder.readStr();
       this.order.faPercentage = this.decoder.readStr();
@@ -2961,7 +2966,7 @@ class OrderDecoder {
   }
 
   readGoodTillDate(): void {
-    if (this.version >= 8 ) {
+    if (this.version >= 8) {
       this.order.goodTillDate = this.decoder.readStr();
     }
   }
@@ -2988,9 +2993,9 @@ class OrderDecoder {
     if (this.version >= 9) {
       this.order.shortSaleSlot = this.decoder.readInt();
       this.order.designatedLocation = this.decoder.readStr();
-      if(this.version == 51) {
+      if (this.version == 51) {
         this.decoder.readInt(); // exemptCode
-      } else if(this.version >= 23) {
+      } else if (this.version >= 23) {
         this.order.exemptCode = this.decoder.readInt();
       }
     }
@@ -3003,7 +3008,7 @@ class OrderDecoder {
   }
 
   readBoxOrderParams(): void {
-    if(this.version >= 9) {
+    if (this.version >= 9) {
       this.order.startingPrice = this.decoder.readDoubleMax();
       this.order.stockRefPrice = this.decoder.readDoubleMax();
       this.order.delta = this.decoder.readDoubleMax();
@@ -3025,10 +3030,10 @@ class OrderDecoder {
 
   readOldStyleOutsideRth(): void {
     if (this.version >= 9) {
-        if (this.version < 18) {
-          // will never happen
-          /* order.m_rthOnly = */ this.decoder.readBool();
-        }
+      if (this.version < 18) {
+        // will never happen
+        /* order.m_rthOnly = */ this.decoder.readBool();
+      }
     }
   }
 
@@ -3045,7 +3050,7 @@ class OrderDecoder {
   }
 
   readAllOrNone(): void {
-      if (this.version >= 9) {
+    if (this.version >= 9) {
       this.order.allOrNone = this.decoder.readBool();
     }
   }
@@ -3098,21 +3103,29 @@ class OrderDecoder {
       this.order.volatilityType = this.decoder.readInt();
       if (this.version == 11) {
         const receivedInt = this.decoder.readInt();
-        this.order.deltaNeutralOrderType = (receivedInt == 0) ? "NONE" : "MKT";
-    } else {
-      this.order.deltaNeutralOrderType = this.decoder.readStr();
-      this.order.deltaNeutralAuxPrice = this.decoder.readDoubleMax();
+        this.order.deltaNeutralOrderType = receivedInt == 0 ? "NONE" : "MKT";
+      } else {
+        this.order.deltaNeutralOrderType = this.decoder.readStr();
+        this.order.deltaNeutralAuxPrice = this.decoder.readDoubleMax();
 
-      if (this.version >= 27 && (this.order.deltaNeutralOrderType && this.order.deltaNeutralOrderType !== "")) {
-        this.order.deltaNeutralConId = this.decoder.readInt();
-        if (readOpenOrderAttribs) {
-          this.order.deltaNeutralSettlingFirm = this.decoder.readStr();
-          this.order.deltaNeutralClearingAccount = this.decoder.readStr();
-          this.order.deltaNeutralClearingIntent = this.decoder.readStr();
+        if (
+          this.version >= 27 &&
+          this.order.deltaNeutralOrderType &&
+          this.order.deltaNeutralOrderType !== ""
+        ) {
+          this.order.deltaNeutralConId = this.decoder.readInt();
+          if (readOpenOrderAttribs) {
+            this.order.deltaNeutralSettlingFirm = this.decoder.readStr();
+            this.order.deltaNeutralClearingAccount = this.decoder.readStr();
+            this.order.deltaNeutralClearingIntent = this.decoder.readStr();
+          }
         }
-      }
 
-      if (this.version >= 31 && (this.order.deltaNeutralOrderType && this.order.deltaNeutralOrderType !== "")) {
+        if (
+          this.version >= 31 &&
+          this.order.deltaNeutralOrderType &&
+          this.order.deltaNeutralOrderType !== ""
+        ) {
           if (readOpenOrderAttribs) {
             this.order.deltaNeutralOpenClose = this.decoder.readStr();
           }
@@ -3153,41 +3166,41 @@ class OrderDecoder {
     }
 
     if (this.version >= 29) {
-        const comboLegsCount = this.decoder.readInt();
-        if (comboLegsCount > 0) {
-          this.contract.comboLegs = [];
-          for (let i = 0; i < comboLegsCount; ++i) {
-            const conId = this.decoder.readInt();
-            const ratio = this.decoder.readInt();
-            const action = this.decoder.readStr();
-            const exchange = this.decoder.readStr();
-            const openClose = this.decoder.readInt();
-            const shortSaleSlot = this.decoder.readInt();
-            const designatedLocation = this.decoder.readStr();
-            const exemptCode = this.decoder.readInt();
+      const comboLegsCount = this.decoder.readInt();
+      if (comboLegsCount > 0) {
+        this.contract.comboLegs = [];
+        for (let i = 0; i < comboLegsCount; ++i) {
+          const conId = this.decoder.readInt();
+          const ratio = this.decoder.readInt();
+          const action = this.decoder.readStr();
+          const exchange = this.decoder.readStr();
+          const openClose = this.decoder.readInt();
+          const shortSaleSlot = this.decoder.readInt();
+          const designatedLocation = this.decoder.readStr();
+          const exemptCode = this.decoder.readInt();
 
-            this.contract.comboLegs.push({
-              conId,
-              ratio,
-              action,
-              exchange,
-              openClose,
-              shortSaleSlot,
-              designatedLocation,
-              exemptCode
-            });
+          this.contract.comboLegs.push({
+            conId,
+            ratio,
+            action,
+            exchange,
+            openClose,
+            shortSaleSlot,
+            designatedLocation,
+            exemptCode,
+          });
         }
 
         const orderComboLegsCount = this.decoder.readInt();
         if (orderComboLegsCount > 0) {
-            this.order.orderComboLegs = [];
-            for (let i = 0; i < orderComboLegsCount; ++i) {
-                const price = this.decoder.readDoubleMax();
+          this.order.orderComboLegs = [];
+          for (let i = 0; i < orderComboLegsCount; ++i) {
+            const price = this.decoder.readDoubleMax();
 
-                this.order.orderComboLegs.push({
-                  price
-                });
-            }
+            this.order.orderComboLegs.push({
+              price,
+            });
+          }
         }
       }
     }
@@ -3195,35 +3208,38 @@ class OrderDecoder {
 
   readSmartComboRoutingParams(): void {
     if (this.version >= 26) {
-        const smartComboRoutingParamsCount = this.decoder.readInt();
-        if (smartComboRoutingParamsCount > 0) {
-            this.order.smartComboRoutingParams = [];
-            for (let i = 0; i < smartComboRoutingParamsCount; ++i) {
-                const tag = this.decoder.readStr();
-                const value = this.decoder.readStr();
-                this.order.smartComboRoutingParams.push({
-                  tag,
-                  value
-                });
-            }
+      const smartComboRoutingParamsCount = this.decoder.readInt();
+      if (smartComboRoutingParamsCount > 0) {
+        this.order.smartComboRoutingParams = [];
+        for (let i = 0; i < smartComboRoutingParamsCount; ++i) {
+          const tag = this.decoder.readStr();
+          const value = this.decoder.readStr();
+          this.order.smartComboRoutingParams.push({
+            tag,
+            value,
+          });
         }
+      }
     }
   }
 
   readScaleOrderParams(): void {
     if (this.version >= 15) {
-        if (this.version >= 20) {
-          this.order.scaleInitLevelSize = this.decoder.readIntMax();
-          this.order.scaleSubsLevelSize = this.decoder.readIntMax();
-        }
-        else {
-          /* int notSuppScaleNumComponents = */ this.decoder.readIntMax();
-          this.order.scaleInitLevelSize = this.decoder.readIntMax();
-        }
-        this.order.scalePriceIncrement = this.decoder.readDoubleMax();
+      if (this.version >= 20) {
+        this.order.scaleInitLevelSize = this.decoder.readIntMax();
+        this.order.scaleSubsLevelSize = this.decoder.readIntMax();
+      } else {
+        /* int notSuppScaleNumComponents = */ this.decoder.readIntMax();
+        this.order.scaleInitLevelSize = this.decoder.readIntMax();
+      }
+      this.order.scalePriceIncrement = this.decoder.readDoubleMax();
     }
 
-    if (this.version >= 28 && this.order.scalePriceIncrement > 0.0 && this.order.scalePriceIncrement != Number.MAX_VALUE) {
+    if (
+      this.version >= 28 &&
+      this.order.scalePriceIncrement > 0.0 &&
+      this.order.scalePriceIncrement != Number.MAX_VALUE
+    ) {
       this.order.scalePriceAdjustValue = this.decoder.readDoubleMax();
       this.order.scalePriceAdjustInterval = this.decoder.readIntMax();
       this.order.scaleProfitOffset = this.decoder.readDoubleMax();
@@ -3271,7 +3287,7 @@ class OrderDecoder {
         this.contract.deltaNeutralContract = {
           conId,
           delta,
-          price
+          price,
         };
       }
     }
@@ -3288,7 +3304,7 @@ class OrderDecoder {
             const value = this.decoder.readStr();
             this.order.algoParams.push({
               tag,
-              value
+              value,
             });
           }
         }
@@ -3298,7 +3314,7 @@ class OrderDecoder {
 
   readSolicited(): void {
     if (this.version >= 33) {
-        this.order.solicited = this.decoder.readBool();
+      this.order.solicited = this.decoder.readBool();
     }
   }
 
@@ -3353,7 +3369,6 @@ class OrderDecoder {
 
   readConditions(): void {
     if (this.serverVersion >= MIN_SERVER_VER.PEGGED_TO_BENCHMARK) {
-
       const nConditions = this.decoder.readInt();
       this.order.conditions = new Array(nConditions);
 
@@ -3362,7 +3377,9 @@ class OrderDecoder {
           const orderConditionType = this.decoder.readInt();
 
           // OrderCondition
-          const conjunctionConnection = this.decoder.readStr()?.toLocaleLowerCase();
+          const conjunctionConnection = this.decoder
+            .readStr()
+            ?.toLocaleLowerCase();
 
           switch (orderConditionType) {
             case OrderConditionType.Execution: {
@@ -3470,7 +3487,7 @@ class OrderDecoder {
     }
   }
 
-  readAdjustedOrderParams(): void{
+  readAdjustedOrderParams(): void {
     if (this.serverVersion >= MIN_SERVER_VER.PEGGED_TO_BENCHMARK) {
       this.order.adjustedOrderType = this.decoder.readStr();
       this.order.triggerPrice = this.decoder.readDoubleMax();
@@ -3495,7 +3512,7 @@ class OrderDecoder {
       this.order.softDollarTier = {
         name,
         value,
-        displayName
+        displayName,
       };
     }
   }
@@ -3570,4 +3587,3 @@ class OrderDecoder {
     }
   }
 }
-

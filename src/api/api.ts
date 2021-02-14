@@ -5,14 +5,15 @@ import { Contract } from "./contract/contract";
 import { ContractDescription } from "./contract/contractDescription";
 import { ContractDetails } from "./contract/contractDetails";
 import { DeltaNeutralContract } from "./contract/deltaNeutralContract";
-import { DepthMktDataDescription } from "./data/container/depth-mkt-data-description";
-import { FamilyCode } from "./data/container/family-code";
-import { NewsProvider } from "./data/container/news-provider";
-import { SoftDollarTier } from "./data/container/soft-dollar-tier";
-import { FADataType } from "./data/enum/fad-data-type";
-import { LogLevel } from "./data/enum/log-level";
-import { MIN_SERVER_VER } from "./data/enum/min-server-version";
-import { OptionExerciseAction } from "./data/enum/option-exercise-action";
+import DepthMktDataDescription from "./data/container/depth-mkt-data-description";
+import FamilyCode from "./data/container/family-code";
+import NewsProvider from "./data/container/news-provider";
+import SoftDollarTier from "./data/container/soft-dollar-tier";
+import TagValue from "./data/container/tag-value";
+import FADataType from "./data/enum/fad-data-type";
+import LogLevel from "./data/enum/log-level";
+import MIN_SERVER_VER from "./data/enum/min-server-version";
+import OptionExerciseAction from "./data/enum/option-exercise-action";
 import { ErrorCode } from "./errorCode";
 import { Bar } from "./historical/bar";
 import { HistogramEntry } from "./historical/histogramEntry";
@@ -50,17 +51,6 @@ export interface IBApiCreationOptions {
    * Default is 0.
    */
   clientId?: number;
-}
-
-/**
- * Convenience interface to define tag-value pairs
- */
-export interface TagValue {
-  /** The tag name. */
-  tag: string;
-
-  /** The value. */
-  value: string;
 }
 
 /** Maximum supported version. */

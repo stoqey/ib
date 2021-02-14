@@ -1,5 +1,6 @@
-import { TagValue } from "../api";
-import { Contract, SecType } from "./contract";
+import TagValue from "../data/container/tag-value";
+import SecType from "../data/enum/sec-type";
+import { Contract } from "./contract";
 
 /**
  * Extended contract details.

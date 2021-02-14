@@ -1,7 +1,7 @@
 /**
  * A container for storing New Provider information.
  */
-export interface NewsProvider {
+export default interface NewsProvider {
   /** The News Provider code. */
   providerCode?: string;
 

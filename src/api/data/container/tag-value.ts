@@ -1,7 +1,7 @@
 /**
  * Convenience interface to define tag-value pairs
  */
-export interface TagValue {
+export default interface TagValue {
   /** The tag name. */
   tag: string;
 

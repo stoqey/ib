@@ -1,7 +1,7 @@
 /**
  * Security types.
  */
-export enum SecType {
+enum SecType {
   /** Stock (or ETF) */
   STK = "STK",
 
@@ -41,3 +41,5 @@ export enum SecType {
   /** Mutual fund. */
   FUND = "FUND",
 }
+
+export default SecType;

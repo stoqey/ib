@@ -1,7 +1,7 @@
 /**
  * TWS / IB Gateway log levels.
  */
-export enum LogLevel {
+enum LogLevel {
   /** System log level. */
   SYSTEM = 1,
 
@@ -17,3 +17,5 @@ export enum LogLevel {
   /** Detailed log level. */
   DETAIL = 5,
 }
+
+export default LogLevel;

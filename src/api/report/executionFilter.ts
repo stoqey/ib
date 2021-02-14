@@ -1,4 +1,4 @@
-import { SecType } from "../contract/contract";
+import SecType from "../data/enum/sec-type";
 
 /**
  * When requesting executions, a filter can be specified to receive only a subset of them .

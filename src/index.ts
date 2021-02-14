@@ -30,15 +30,7 @@ import { IBApi } from "./api/api";
 
 // export the IB Api class and function argument types
 
-export {
-  IBApi,
-  EventName,
-  LogLevel,
-  OptionExerciseAction,
-  FADataType,
-  SoftDollarTier,
-  MIN_SERVER_VER,
-} from "./api/api";
+export { IBApi, EventName } from "./api/api";
 
 export { ErrorCode } from "./api/errorCode";
 
@@ -47,7 +39,7 @@ export { ErrorCode } from "./api/errorCode";
 export { CFD } from "./api/contract/cfd";
 export { Combo } from "./api/contract/combo";
 export { ComboLeg } from "./api/contract/comboLeg";
-export { Contract, SecType, OptionType } from "./api/contract/contract";
+export { Contract } from "./api/contract/contract";
 export { ContractDescription } from "./api/contract/contractDescription";
 export { ContractDetails } from "./api/contract/contractDetails";
 export { DeltaNeutralContract } from "./api/contract/deltaNeutralContract";
@@ -76,13 +68,7 @@ export { ScannerSubscription } from "./api/market/scannerSubscription";
 export { Liquidities, Execution } from "./api/order/execution";
 export { LimitOrder } from "./api/order/limit";
 export { MarketCloseOrder } from "./api/order/marketClose";
-export {
-  OrderAction,
-  OrderConditionType,
-  ConjunctionConnection,
-  OrderCondition,
-  Order,
-} from "./api/order/order";
+export { Order } from "./api/order/order";
 export { OrderComboLeg } from "./api/order/orderComboLeg";
 export { OrderState } from "./api/order/orderState";
 export { StopOrder } from "./api/order/stop";

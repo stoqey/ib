@@ -1,10 +1,12 @@
 /**
  * Option types.
  */
-export enum OptionType {
+enum OptionType {
   /** Put option. */
   Put = "P",
 
   /** Call option. */
   Call = "C",
 }
+
+export default OptionType;

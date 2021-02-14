@@ -1,9 +1,9 @@
-import { SecType } from "../enum/sec-type";
+import SecType from "../enum/sec-type";
 
 /**
  * A container for storing Family Code information.
  */
-export interface DepthMktDataDescription {
+export default interface DepthMktDataDescription {
   /** The exchange code. */
   exchange?: string;
 

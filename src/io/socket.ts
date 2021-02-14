@@ -1,16 +1,14 @@
 import net from "net";
-import {
-  EventName,
-  IBApiCreationOptions,
-  MAX_SUPPORTED_SERVER_VERSION,
-  MIN_SERVER_VER,
-  MIN_SERVER_VER_SUPPORTED,
-} from "../api/api";
-import { Controller } from "./controller";
-import { OUT_MSG_ID } from "./encoder";
 import { TextDecoder, TextEncoder } from "util";
+
+import {
+    EventName, IBApiCreationOptions, MAX_SUPPORTED_SERVER_VERSION, MIN_SERVER_VER_SUPPORTED
+} from "../api/api";
+import MIN_SERVER_VER from "../api/data/enum/min-server-version";
 import { ErrorCode } from "../api/errorCode";
 import configuration from "../common/configuration";
+import { Controller } from "./controller";
+import { OUT_MSG_ID } from "./encoder";
 
 /**
  * @hidden

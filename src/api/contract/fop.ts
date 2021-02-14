@@ -1,4 +1,6 @@
-import { Contract, OptionType, SecType } from "./contract";
+import OptionType from "../data/enum/option-type";
+import SecType from "../data/enum/sec-type";
+import { Contract } from "./contract";
 
 /**
  * A Future Option Contract
