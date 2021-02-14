@@ -1,60 +1,7 @@
+import { OptionType } from "../data/enum/option-type";
+import { SecType } from "../data/enum/sec-type";
 import { ComboLeg } from "./comboLeg";
 import { DeltaNeutralContract } from "./deltaNeutralContract";
-
-/**
- * Security types.
- */
-export enum SecType {
-  /** Stock (or ETF) */
-  STK = "STK",
-
-  /* Option. */
-  OPT = "OPT",
-
-  /* Future */
-  FUT = "FUT",
-
-  /* Index. */
-  IND = "IND",
-
-  /** Futures option. */
-  FOP = "FOP",
-
-  /** Contract for Difference. */
-  CFD = "CFD",
-
-  /** Forex pair. */
-  CASH = "CASH",
-
-  /** Combo. */
-  BAG = "BAG",
-
-  /** Warrant. */
-  WAR = "WAR",
-
-  /** Bond. */
-  BOND = "BOND",
-
-  /** Commodity. */
-  CMDTY = "CMDTY",
-
-  /** News. */
-  NEWS = "NEWS",
-
-  /** Mutual fund. */
-  FUND = "FUND",
-}
-
-/**
- * Option types.
- */
-export enum OptionType {
-  /** Put option. */
-  Put = "P",
-
-  /** Call option. */
-  Call = "C",
-}
 
 /**
  * An instrument's definition.
