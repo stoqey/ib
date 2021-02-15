@@ -30,7 +30,7 @@ import { IBApi } from "./api/api";
 
 // export the IB Api class and function argument types
 
-export { IBApi, EventName } from "./api/api";
+export { IBApi, IBApiCreationOptions, EventName } from "./api/api";
 
 export { ErrorCode } from "./api/errorCode";
 
@@ -105,6 +105,7 @@ export { TriggerMethod } from "./api/order/enum/trigger-method";
 
 export { Liquidities, Execution } from "./api/order/execution";
 export { LimitOrder } from "./api/order/limit";
+export { MarketOrder } from "./api/order/market";
 export { MarketCloseOrder } from "./api/order/marketClose";
 export { Order } from "./api/order/order";
 export { OrderComboLeg } from "./api/order/orderComboLeg";
