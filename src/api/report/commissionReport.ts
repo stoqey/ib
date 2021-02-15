@@ -20,3 +20,5 @@ export interface CommissionReport {
   /** Date expressed in yyyymmdd format. */
   yieldRedemptionDate?: number;
 }
+
+export default CommissionReport;

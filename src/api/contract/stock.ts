@@ -1,4 +1,5 @@
-import { Contract, SecType } from "./contract";
+import SecType from "../data/enum/sec-type";
+import { Contract } from "./contract";
 
 /**
  * Stock contract.
@@ -15,3 +16,5 @@ export class Stock implements Contract {
 
   public secType = SecType.STK;
 }
+
+export default Stock;

@@ -1,4 +1,6 @@
-import { Contract, OptionType, SecType } from "./contract";
+import OptionType from "../data/enum/option-type";
+import SecType from "../data/enum/sec-type";
+import { Contract } from "./contract";
 
 /**
  * Option contact.
@@ -19,3 +21,5 @@ export class Option implements Contract {
   public secType = SecType.OPT;
   public multiplier = 100;
 }
+
+export default Option;

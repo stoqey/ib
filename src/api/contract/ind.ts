@@ -1,4 +1,5 @@
-import { Contract, SecType } from "./contract";
+import SecType from "../data/enum/sec-type";
+import { Contract } from "./contract";
 
 /**
  * Index contract.
@@ -17,3 +18,5 @@ export class Index implements Contract {
 
   public secType = SecType.IND;
 }
+
+export default Index;

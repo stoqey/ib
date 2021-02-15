@@ -1,5 +1,5 @@
-import { OrderAction } from "./order";
-import { OrderType } from "./orderType";
+import OrderAction from "./enum/order-action";
+import { OrderType } from "./enum/orderType";
 
 /**
  * Represents a trailing-stop order.
@@ -20,3 +20,5 @@ export class TrailingStopOrder {
 
   public orderType = OrderType.TRAIL;
 }
+
+export default TrailingStopOrder;

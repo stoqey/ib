@@ -1,52 +1,32 @@
 import { EventEmitter } from "eventemitter3";
+
 import { Controller } from "../io/controller";
-import { Contract, SecType } from "./contract/contract";
-import { Order } from "./order/order";
-import { Bar } from "./historical/bar";
-import { CommissionReport } from "./report/commissionReport";
+import { Contract } from "./contract/contract";
 import { ContractDescription } from "./contract/contractDescription";
+import { ContractDetails } from "./contract/contractDetails";
+import { DeltaNeutralContract } from "./contract/deltaNeutralContract";
+import DepthMktDataDescription from "./data/container/depth-mkt-data-description";
+import FamilyCode from "./data/container/family-code";
+import NewsProvider from "./data/container/news-provider";
+import SoftDollarTier from "./data/container/soft-dollar-tier";
+import TagValue from "./data/container/tag-value";
+import FADataType from "./data/enum/fad-data-type";
+import LogLevel from "./data/enum/log-level";
+import MIN_SERVER_VER from "./data/enum/min-server-version";
+import OptionExerciseAction from "./data/enum/option-exercise-action";
+import { ErrorCode } from "./errorCode";
+import { Bar } from "./historical/bar";
 import { HistogramEntry } from "./historical/histogramEntry";
 import { HistoricalTick } from "./historical/historicalTick";
 import { HistoricalTickBidAsk } from "./historical/historicalTickBidAsk";
 import { HistoricalTickLast } from "./historical/historicalTickLast";
-import { DeltaNeutralContract } from "./contract/deltaNeutralContract";
-import { OrderState } from "./order/orderState";
-import { TickByTickDataType, TickType } from "./market/tickType";
-import { ContractDetails } from "./contract/contractDetails";
-import { ExecutionFilter } from "./report/executionFilter";
 import { ScannerSubscription } from "./market/scannerSubscription";
-import { ErrorCode } from "./errorCode";
-
-/**
- * TWS / IB Gateway log levels.
- */
-export enum LogLevel {
-  /** System log level. */
-  SYSTEM = 1,
-
-  /** Error log level. */
-  ERROR = 2,
-
-  /** Warning log level. */
-  WARN = 3,
-
-  /** Info log level. */
-  INFO = 4,
-
-  /** Detailed log level. */
-  DETAIL = 5,
-}
-
-/**
- * Option exercise actions.
- */
-export enum OptionExerciseAction {
-  /** Exercise the option */
-  EXERCISE = 1,
-
-  /** Let the option lapse. */
-  LAPSE = 2,
-}
+import { TickType } from "./market/tickType";
+import { TickByTickDataType } from "./market/tickByTickDataType";
+import { Order } from "./order/order";
+import { OrderState } from "./order/orderState";
+import { CommissionReport } from "./report/commissionReport";
+import { ExecutionFilter } from "./report/executionFilter";
 
 /**
  * Input arguments on the [[IBApi]] class constructor.
@@ -72,187 +52,6 @@ export interface IBApiCreationOptions {
    * Default is 0.
    */
   clientId?: number;
-}
-
-/**
- * A container for storing Soft Dollar Tier information.
- */
-export interface SoftDollarTier {
-  /** The name of the Soft Dollar Tier. */
-  name?: string;
-
-  /**	The value of the Soft Dollar Tier. */
-  value?: string;
-
-  /** The display name of the Soft Dollar Tier. */
-  displayName: string;
-}
-
-/**
- * A container for storing Family Code information.
- */
-export interface DepthMktDataDescription {
-  /** The exchange code. */
-  exchange?: string;
-
-  /** The security type. */
-  secType?: SecType;
-
-  /** TODO: document */
-  listingExch?: string;
-
-  /** TODO: document */
-  serviceDataType?: string;
-
-  /** TODO: document */
-  aggGroup?: number;
-}
-
-/**
- * A container for storing Family Code information.
- */
-export interface FamilyCode {
-  /** The account ID. */
-  accountID?: string;
-
-  /** The family code. */
-  familyCode?: string;
-}
-
-/**
- * A container for storing New Provider information.
- */
-export interface NewsProvider {
-  /** The News Provider code. */
-  providerCode?: string;
-
-  /** The  News Provider name. */
-  providerName?: string;
-}
-
-/**
- * Convenience interface to define tag-value pairs
- */
-export interface TagValue {
-  /** The tag name. */
-  tag: string;
-
-  /** The value. */
-  value: string;
-}
-
-/**
- * Financial Advisor's configuration data types.
- */
-export enum FADataType {
-  /** Offer traders a way to create a group of accounts and apply a single allocation method to all accounts in the group. */
-  GROUPS = 1,
-
-  /** Let you allocate shares on an account-by-account basis using a predefined calculation value. */
-  PROFILES = 2,
-
-  /** Let you easily identify the accounts by meaningful names rather than account numbers. */
-  ALIASES = 3,
-}
-
-/**
- * Minimum required server version for supporting the given request.
- */
-export enum MIN_SERVER_VER {
-  REAL_TIME_BARS = 34,
-  SCALE_ORDERS = 35,
-  SNAPSHOT_MKT_DATA = 35,
-  SSHORT_COMBO_LEGS = 35,
-  WHAT_IF_ORDERS = 36,
-  CONTRACT_CONID = 37,
-  PTA_ORDERS = 39,
-  FUNDAMENTAL_DATA = 40,
-  DELTA_NEUTRAL = 40,
-  CONTRACT_DATA_CHAIN = 40,
-  SCALE_ORDERS2 = 40,
-  ALGO_ORDERS = 41,
-  EXECUTION_DATA_CHAIN = 42,
-  NOT_HELD = 44,
-  SEC_ID_TYPE = 45,
-  PLACE_ORDER_CONID = 46,
-  REQ_MKT_DATA_CONID = 47,
-  REQ_CALC_IMPLIED_VOLAT = 49,
-  CANCEL_CALC_IMPLIED_VOLAT = 50,
-  CANCEL_CALC_OPTION_PRICE = 50,
-  REQ_CALC_OPTION_PRICE = 50,
-  SSHORTX_OLD = 51,
-  SSHORTX = 52,
-  REQ_GLOBAL_CANCEL = 53,
-  HEDGE_ORDERS = 54,
-  REQ_MARKET_DATA_TYPE = 55,
-  OPT_OUT_SMART_ROUTING = 56,
-  SMART_COMBO_ROUTING_PARAMS = 57,
-  DELTA_NEUTRAL_CONID = 58,
-  SCALE_ORDERS3 = 60,
-  ORDER_COMBO_LEGS_PRICE = 61,
-  TRAILING_PERCENT = 62,
-  DELTA_NEUTRAL_OPEN_CLOSE = 66,
-  POSITIONS = 67,
-  ACCT_SUMMARY = 67,
-  TRADING_CLASS = 68,
-  SCALE_TABLE = 69,
-  LINKING = 70,
-  ALGO_ID = 71,
-  OPTIONAL_CAPABILITIES = 72,
-  ORDER_SOLICITED = 73,
-  LINKING_AUTH = 74,
-  PRIMARYEXCH = 75,
-  RANDOMIZE_SIZE_AND_PRICE = 76,
-  FRACTIONAL_POSITIONS = 101,
-  PEGGED_TO_BENCHMARK = 102,
-  MODELS_SUPPORT = 103,
-  SEC_DEF_OPT_PARAMS_REQ = 104,
-  EXT_OPERATOR = 105,
-  SOFT_DOLLAR_TIER = 106,
-  REQ_FAMILY_CODES = 107,
-  REQ_MATCHING_SYMBOLS = 108,
-  PAST_LIMIT = 109,
-  MD_SIZE_MULTIPLIER = 110,
-  CASH_QTY = 111,
-  REQ_MKT_DEPTH_EXCHANGES = 112,
-  TICK_NEWS = 113,
-  REQ_SMART_COMPONENTS = 114,
-  REQ_NEWS_PROVIDERS = 115,
-  REQ_NEWS_ARTICLE = 116,
-  REQ_HISTORICAL_NEWS = 117,
-  REQ_HEAD_TIMESTAMP = 118,
-  REQ_HISTOGRAM = 119,
-  SERVICE_DATA_TYPE = 120,
-  AGG_GROUP = 121,
-  UNDERLYING_INFO = 122,
-  CANCEL_HEADTIMESTAMP = 123,
-  SYNT_REALTIME_BARS = 124,
-  CFD_REROUTE = 125,
-  MARKET_RULES = 126,
-  PNL = 127,
-  NEWS_QUERY_ORIGINS = 128,
-  UNREALIZED_PNL = 129,
-  HISTORICAL_TICKS = 130,
-  MARKET_CAP_PRICE = 131,
-  PRE_OPEN_BID_ASK = 132,
-  REAL_EXPIRATION_DATE = 134,
-  REALIZED_PNL = 135,
-  LAST_LIQUIDITY = 136,
-  TICK_BY_TICK = 137,
-  DECISION_MAKER = 138,
-  MIFID_EXECUTION = 139,
-  TICK_BY_TICK_IGNORE_SIZE = 140,
-  AUTO_PRICE_FOR_HEDGE = 141,
-  WHAT_IF_EXT_FIELDS = 142,
-  SCANNER_GENERIC_OPTS = 143,
-  API_BIND_ORDER = 144,
-  ORDER_CONTAINER = 145,
-  SMART_DEPTH = 146,
-  REMOVE_NULL_ALL_CASTING = 147,
-  D_PEG_ORDERS = 148,
-  MKT_DEPTH_PRIM_EXCHANGE = 149,
-  REQ_COMPLETED_ORDERS = 150,
-  PRICE_MGMT_ALGO = 151,
 }
 
 /** Maximum supported version. */

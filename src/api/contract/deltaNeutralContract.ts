@@ -14,3 +14,5 @@ export interface DeltaNeutralContract {
   /** The price of the underlying. Used for Delta-Neutral Combo contracts. */
   price: number;
 }
+
+export default DeltaNeutralContract;

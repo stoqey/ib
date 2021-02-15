@@ -30,15 +30,7 @@ import { IBApi } from "./api/api";
 
 // export the IB Api class and function argument types
 
-export {
-  IBApi,
-  EventName,
-  LogLevel,
-  OptionExerciseAction,
-  FADataType,
-  SoftDollarTier,
-  MIN_SERVER_VER,
-} from "./api/api";
+export { IBApi, EventName } from "./api/api";
 
 export { ErrorCode } from "./api/errorCode";
 
@@ -47,7 +39,7 @@ export { ErrorCode } from "./api/errorCode";
 export { CFD } from "./api/contract/cfd";
 export { Combo } from "./api/contract/combo";
 export { ComboLeg } from "./api/contract/comboLeg";
-export { Contract, SecType, OptionType } from "./api/contract/contract";
+export { Contract } from "./api/contract/contract";
 export { ContractDescription } from "./api/contract/contractDescription";
 export { ContractDetails } from "./api/contract/contractDetails";
 export { DeltaNeutralContract } from "./api/contract/deltaNeutralContract";
@@ -57,6 +49,23 @@ export { Future } from "./api/contract/future";
 export { Index } from "./api/contract/ind";
 export { Option } from "./api/contract/option";
 export { Stock } from "./api/contract/stock";
+
+// export container types
+
+export { DepthMktDataDescription } from "./api/data/container/depth-mkt-data-description";
+export { FamilyCode } from "./api/data/container/family-code";
+export { NewsProvider } from "./api/data/container/news-provider";
+export { SoftDollarTier } from "./api/data/container/soft-dollar-tier";
+export { TagValue } from "./api/data/container/tag-value";
+
+// export enum types
+
+export { FADataType } from "./api/data/enum/fad-data-type";
+export { LogLevel } from "./api/data/enum/log-level";
+export { MIN_SERVER_VER } from "./api/data/enum/min-server-version";
+export { OptionExerciseAction } from "./api/data/enum/option-exercise-action";
+export { OptionType } from "./api/data/enum/option-type";
+export { SecType } from "./api/data/enum/sec-type";
 
 // export historic market-data types
 
@@ -68,21 +77,36 @@ export { HistoricalTickLast } from "./api/historical/historicalTickLast";
 
 // export realtime market-data types
 
-export { TickType, TickByTickDataType } from "./api/market/tickType";
+export { TickType } from "./api/market/tickType";
+export { TickByTickDataType } from "./api/market/tickByTickDataType";
 export { ScannerSubscription } from "./api/market/scannerSubscription";
+
+// export order condition types
+
+export { ContractCondition } from "./api/order/condition/contract-condition";
+export { ExecutionCondition } from "./api/order/condition/execution-condition";
+export { MarginCondition } from "./api/order/condition/margin-condition";
+export { OperatorCondition } from "./api/order/condition/operator-condition";
+export { OrderCondition } from "./api/order/condition/order-condition";
+export { PercentChangeCondition } from "./api/order/condition/percent-change-condition";
+export { PriceCondition } from "./api/order/condition/price-condition";
+export { TimeCondition } from "./api/order/condition/time-condition";
+export { VolumeCondition } from "./api/order/condition/volume-condition";
+
+// export order enum types
+
+export { ConjunctionConnection } from "./api/order/enum/conjunction-connection";
+export { OrderAction } from "./api/order/enum/order-action";
+export { OrderConditionType } from "./api/order/enum/order-condition-type";
+export { OrderType } from "./api/order/enum/orderType";
+export { TriggerMethod } from "./api/order/enum/trigger-method";
 
 // export order types
 
 export { Liquidities, Execution } from "./api/order/execution";
 export { LimitOrder } from "./api/order/limit";
 export { MarketCloseOrder } from "./api/order/marketClose";
-export {
-  OrderAction,
-  OrderConditionType,
-  ConjunctionConnection,
-  OrderCondition,
-  Order,
-} from "./api/order/order";
+export { Order } from "./api/order/order";
 export { OrderComboLeg } from "./api/order/orderComboLeg";
 export { OrderState } from "./api/order/orderState";
 export { StopOrder } from "./api/order/stop";

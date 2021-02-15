@@ -1,4 +1,5 @@
-import { Contract, SecType } from "./contract";
+import SecType from "../data/enum/sec-type";
+import { Contract } from "./contract";
 
 /**
  * A Future Option Contract
@@ -17,3 +18,5 @@ export class Future implements Contract {
 
   public secType = SecType.FUT;
 }
+
+export default Future;

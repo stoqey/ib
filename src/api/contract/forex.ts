@@ -1,4 +1,5 @@
-import { Contract, SecType } from "./contract";
+import SecType from "../data/enum/sec-type";
+import { Contract } from "./contract";
 
 /**
  * A Forex Contract.
@@ -44,3 +45,5 @@ export class Forex implements Contract {
   public exchange = "IDEALPRO";
   public secType = SecType.FOP;
 }
+
+export default Forex;

@@ -37,3 +37,5 @@ export interface HistoricalTickLast {
    */
   specialConditions?: string;
 }
+
+export default HistoricalTickLast;

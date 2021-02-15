@@ -8,3 +8,5 @@ export interface HistogramEntry {
   /** Trace size. */
   size?: number;
 }
+
+export default HistogramEntry;

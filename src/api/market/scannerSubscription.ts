@@ -71,3 +71,5 @@ export interface ScannerSubscription {
    */
   stockTypeFilter?: string;
 }
+
+export default ScannerSubscription;

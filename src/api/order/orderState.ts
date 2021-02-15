@@ -53,3 +53,5 @@ export interface OrderState {
   /** TODO document */
   completedStatus?: string;
 }
+
+export default OrderState;

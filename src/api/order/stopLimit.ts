@@ -1,5 +1,5 @@
-import { OrderAction } from "./order";
-import { OrderType } from "./orderType";
+import OrderAction from "./enum/order-action";
+import { OrderType } from "./enum/orderType";
 
 /**
  * Represents a stop-limit order.
@@ -21,3 +21,5 @@ export class StopLimitOrder {
 
   public orderType = OrderType.STP_LMT;
 }
+
+export default StopLimitOrder;

@@ -43,3 +43,5 @@ export enum OrderType {
   PEG_MKT_VOL = "PMV",
   PEG_SRF_VOL = "PSV",
 }
+
+export default OrderType;

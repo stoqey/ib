@@ -1,5 +1,5 @@
-import { OrderAction } from "./order";
-import { OrderType } from "./orderType";
+import OrderAction from "./enum/order-action";
+import { OrderType } from "./enum/orderType";
 
 /**
  * Represents a limit order.
@@ -13,3 +13,5 @@ export class MarketCloseOrder {
 
   public orderType = OrderType.MOC;
 }
+
+export default MarketCloseOrder;
