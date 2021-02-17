@@ -1,8 +1,10 @@
 import net from "net";
 import { TextDecoder, TextEncoder } from "util";
-
 import {
-    EventName, IBApiCreationOptions, MAX_SUPPORTED_SERVER_VERSION, MIN_SERVER_VER_SUPPORTED
+  EventName,
+  IBApiCreationOptions,
+  MAX_SUPPORTED_SERVER_VERSION,
+  MIN_SERVER_VER_SUPPORTED,
 } from "../api/api";
 import MIN_SERVER_VER from "../api/data/enum/min-server-version";
 import { ErrorCode } from "../api/errorCode";
@@ -15,6 +17,12 @@ import { OUT_MSG_ID } from "./encoder";
  * envelope encoding, applicable to useV100Plus mode only
  */
 const MIN_VERSION_V100 = 100;
+
+/**
+ * @hidden
+ * max message size, taken from Java client, applicable to useV100Plus mode only
+ */
+const MAX_V100_MESSAGE_LENGTH = 0xffffff;
 
 /** @hidden */
 const EOL = "\0";
@@ -66,6 +74,8 @@ export class Socket {
   /** `true` if V!00Pls protocol shall be used, `false` otherwise.  */
   private useV100Plus = true;
 
+  private _v100MessageBuffer: Buffer = Buffer.alloc(0);
+
   /** Returns `true` if connected to TWS/IB Gateway, `false` otherwise.  */
   get connected(): boolean {
     return this._connected;
@@ -101,6 +111,7 @@ export class Socket {
     this.dataFragment = "";
     this.neverReceived = true;
     this.waitingAsync = false;
+    this._v100MessageBuffer = Buffer.alloc(0);
 
     // create and connect TCP socket
 
@@ -187,18 +198,45 @@ export class Socket {
    */
   private onData(data: Buffer): void {
     if (this.useV100Plus) {
-      let ofs = 0;
-      let strData: string;
-
-      while (ofs < data.length) {
-        const msgSize = data.readInt32BE(ofs);
-        ofs += 4;
-        const utf8Data: number[] = new Array(msgSize);
-        for (let i = 0; i < msgSize; i++) {
-          utf8Data[i] = data.readUInt8(ofs++);
+      let dataToParse = data;
+      if (this._v100MessageBuffer.length > 0) {
+        dataToParse = Buffer.concat([this._v100MessageBuffer, data]);
+      }
+      if (dataToParse.length > MAX_V100_MESSAGE_LENGTH) {
+        // At this point we have buffered enough data that we have exceeded the max known message length,
+        // at which point this is likely an unrecoverable state and we should discard all prior data,
+        // and disconnect the socket
+        this._v100MessageBuffer = Buffer.alloc(0);
+        this.onError(
+          new Error(
+            `Message of size ${dataToParse.length} exceeded max message length ${MAX_V100_MESSAGE_LENGTH}`
+          )
+        );
+        this.disconnect();
+        return;
+      }
+      let messageBufferOffset = 0;
+      while (messageBufferOffset + 4 < dataToParse.length) {
+        let currentMessageOffset = messageBufferOffset;
+        const msgSize = dataToParse.readInt32BE(currentMessageOffset);
+        currentMessageOffset += 4;
+        if (currentMessageOffset + msgSize <= dataToParse.length) {
+          const utf8Data: number[] = new Array(msgSize);
+          for (let i = 0; i < msgSize; i++) {
+            utf8Data[i] = dataToParse.readUInt8(currentMessageOffset++);
+          }
+          this.onMessage(new TextDecoder().decode(new Uint8Array(utf8Data)));
+          messageBufferOffset = currentMessageOffset;
+        } else {
+          // We can't parse further, the message is incomplete
+          break;
         }
-        strData = new TextDecoder().decode(new Uint8Array(utf8Data));
-        this.onMessage(strData);
+      }
+      if (messageBufferOffset != dataToParse.length) {
+        // There is data left in the buffer, save it for the next data packet
+        this._v100MessageBuffer = dataToParse.slice(messageBufferOffset);
+      } else {
+        this._v100MessageBuffer = Buffer.alloc(0);
       }
     } else {
       this.onMessage(data.toString());
