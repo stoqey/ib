@@ -83,9 +83,9 @@ ib.reqPositions();
 This library was initialiity forked from a JScript project (https://github.com/pilwon/node-ib) and ported to Typescript.
 The API interfaces are still largly compatible with the old library, however there are ongoing efforts port this library to more modern Typescript-like codebase and interface design.
 
-Therefore there is defined deprication process:<br/>
+Therefore there is defined deprecation process:<br/>
 
-Public interfaces, that are planned to be remmoved, will be marked with a @deprecated. <br/>
+Public interfaces, that are planned to be removed, will be marked with a @deprecated. <br/>
 The @deprecated tag will contain a description or link on how migrate to new API (example: IBApiCreationOptions.clientId).<br/>
 VSCode will explicitly mark deprecated functions and attributes, so you cannot miss it.<br/>
 
