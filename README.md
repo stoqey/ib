@@ -78,7 +78,7 @@ ib.connect();
 ib.reqPositions();
 ```
 
-## Depreciation process
+## Deprecation process
 
 This library was initialiity forked from a JScript project (https://github.com/pilwon/node-ib) and ported to Typescript.
 The API interfaces are still largly compatible with the old library, however there are ongoing efforts port this library to more modern Typescript-like codebase and interface design.
