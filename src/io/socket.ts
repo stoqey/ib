@@ -74,6 +74,7 @@ export class Socket {
   /** `true` if V!00Pls protocol shall be used, `false` otherwise.  */
   private useV100Plus = true;
 
+  /** Accumulation buffer for fragmented V100 messages */
   private _v100MessageBuffer: Buffer = Buffer.alloc(0);
 
   /** Returns `true` if connected to TWS/IB Gateway, `false` otherwise.  */
