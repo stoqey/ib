@@ -44,8 +44,7 @@ export class Socket {
     private controller: Controller,
     private options: IBApiCreationOptions = {}
   ) {
-    this.options.clientId =
-      this.options.clientId ?? configuration.default_client_id;
+    this._clientId = this.options.clientId ?? configuration.default_client_id;
     this.options.host = this.options.host;
     this.options.port = this.options.port;
   }
@@ -77,6 +76,9 @@ export class Socket {
   /** Accumulation buffer for fragmented V100 messages */
   private _v100MessageBuffer: Buffer = Buffer.alloc(0);
 
+  /** The current client id. */
+  private _clientId = configuration.default_client_id;
+
   /** Returns `true` if connected to TWS/IB Gateway, `false` otherwise.  */
   get connected(): boolean {
     return this._connected;
@@ -92,6 +94,11 @@ export class Socket {
     return this._serverConnectionTime;
   }
 
+  /** Get the current client id. */
+  get clientId(): number {
+    return this._clientId;
+  }
+
   /**
    * Disable usage of V100Plus protocol.
    */
@@ -101,8 +108,18 @@ export class Socket {
 
   /**
    * Connect to the API server.
+   *
+   * @param clientId A unique client id (per TWS or IB Gateway instance).
+   * When not specified, the client from [[IBApiCreationOptions]] or the
+   * default client id (0) will used.
    */
-  connect(): void {
+  connect(clientId?: number): void {
+    // update client id
+
+    if (clientId !== undefined) {
+      this._clientId = clientId;
+    }
+
     // pause controller while API startup sequence
 
     this.controller.pause();
@@ -344,12 +361,12 @@ export class Socket {
     const VERSION = 2;
     if (this.serverVersion >= 3) {
       if (this.serverVersion < MIN_SERVER_VER.LINKING) {
-        this.send([this.options.clientId]);
+        this.send([this._clientId]);
       } else {
         if (this.serverVersion >= MIN_SERVER_VER.OPTIONAL_CAPABILITIES) {
-          this.send([OUT_MSG_ID.START_API, VERSION, this.options.clientId, ""]);
+          this.send([OUT_MSG_ID.START_API, VERSION, this._clientId, ""]);
         } else {
-          this.send([OUT_MSG_ID.START_API, VERSION, this.options.clientId]);
+          this.send([OUT_MSG_ID.START_API, VERSION, this._clientId]);
         }
       }
     }
@@ -366,7 +383,7 @@ export class Socket {
     // send client version (unless Version > 100)
     if (!this.useV100Plus) {
       this.send([configuration.client_version]);
-      this.send([this.options.clientId]);
+      this.send([this._clientId]);
     } else {
       // Switch to GW API (Version 100+ requires length prefix)
       const config = this.buildVersionString(

@@ -52,8 +52,8 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
   /**
    * Connect to the API server.
    */
-  connect(): void {
-    this.commands.schedule(() => this.executeConnect());
+  connect(clientId?: number): void {
+    this.commands.schedule(() => this.executeConnect(clientId));
   }
 
   /**
@@ -216,9 +216,9 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
    *
    * @see [[connect]]
    */
-  private executeConnect(): void {
+  private executeConnect(clientId?: number): void {
     if (!this.socket.connected) {
-      this.socket.connect();
+      this.socket.connect(clientId);
     } else {
       this.emitError(
         "Cannot connect if already connected.",
