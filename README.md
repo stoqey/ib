@@ -78,18 +78,20 @@ ib.connect();
 ib.reqPositions();
 ```
 
-## Roadmap and Depreciation process
+## and Depreciation process
 
 This library was initialiity forked from a JScript project (https://github.com/pilwon/node-ib) and ported to Typescript.
 The API interfaces are still largly compatible with the old library, however there are ongoing efforts port this library to more modern Typescript-like codebase and interface design.
 
 Therefore there is defined deprication process:<br/>
+
 Public interfaces, that are planned to be remmoved, will be marked with a @deprecated. <br/>
 The @deprecated tag will contain a description or link on how migrate to new API (example: IBApiCreationOptions.clientId).<br/>
 VSCode will explicitly mark deprecated functions and attributes, so you cannot miss it.<br/>
+
 If you write new code, don't use deprecated functions.<br/>
-If you use deprecated functions on existing code, migrate to new on your next code-clean up session. There is no need for immediate change, the deprecated function will continue to work
-for a least a hlaf more year, but at some point it will be removed.<br/>
+If you already use deprecated functions on existing code, migrate to new function on your next code-clean up session. There is no need for immediate change, the deprecated function will 
+continue to work for a least a half more year, but at some point it will be removed.<br/>
 
 
 ## How to contribute
