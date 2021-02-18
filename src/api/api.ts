@@ -50,6 +50,9 @@ export interface IBApiCreationOptions {
    * A unique client id (per TWS or IB Gateway instance).
    *
    * Default is 0.
+   *
+   * @deprecated The attributes should not be used anymore.
+   * Use clientId argument [[IBApi.connect]] instead.
    */
   clientId?: number;
 }
@@ -97,6 +100,9 @@ export class IBApi extends EventEmitter {
 
   /**
    * Allows to switch between different current (V100+) and previous connection mechanisms.
+   *
+   * @deprecated pre-V100 support will be removed. Please consider updating your
+   * TWS and/or IB Gateway version.
    */
   disableUseV100Plus(): void {
     return this.controller.disableUseV100Plus();
@@ -104,9 +110,12 @@ export class IBApi extends EventEmitter {
 
   /**
    * Connect to the TWS or IB Gateway.
+   *
+   * @param clientId A unique client id (per TWS or IB Gateway instance).
+   * When not specified, the client id from [[IBApiCreationOptions]] or the default client id (0) will used.
    */
-  connect(): IBApi {
-    this.controller.connect();
+  connect(clientId?: number): IBApi {
+    this.controller.connect(clientId);
     return this;
   }
 
