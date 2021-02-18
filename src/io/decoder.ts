@@ -1085,7 +1085,10 @@ export class Decoder {
       const close = this.readDouble();
       const volume = this.readInt();
       const WAP = this.readDouble();
-      const hasGaps = this.readBool();
+      let hasGaps: boolean | undefined = undefined;
+      if (this.serverVersion < MIN_SERVER_VER.SYNT_REALTIME_BARS) {
+        hasGaps = this.readBool();
+      }
 
       let barCount = -1;
       if (version >= 3) {
