@@ -3625,43 +3625,4 @@ export declare interface IBApi {
       origExchange: string
     ) => void
   ): this;
-
-  /**
-   * Receives the subscribed account's portfolio.
-   * This function will receive only the portfolio of the subscribed account.
-   *
-   * If the portfolios of all managed accounts are needed, refer to [[reqPosition]].
-   *
-   * After the initial callback to updatePortfolio, callbacks only occur for positions which have changed.
-   *
-   * @param listener
-   * contract:The [[Contract]] for which a position is held.
-   *
-   * position: The number of positions held.
-   *
-   * marketPrice: The instrument's unitary price.
-   *
-   * marketValue: The total market value of the instrument.
-   *
-   * averageCost: The average acquiring cost.
-   *
-   * unrealizedPNL: The unrealized PnL.
-   *
-   * realizedPNL: The realized PnL.
-   *
-   * accountName : The account name.
-   */
-  on(
-    event: EventName.updateNewsBulletin,
-    listener: (
-      contract: Contract,
-      position: number,
-      marketPrice: number,
-      marketValue: number,
-      averageCost: number,
-      unrealizedPNL: number,
-      realizedPNL: number,
-      accountName: number
-    ) => void
-  ): this;
 }
