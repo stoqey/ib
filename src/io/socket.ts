@@ -1,5 +1,5 @@
 import net from "net";
-import { TextDecoder, TextEncoder } from "util";
+import { TextEncoder } from "util";
 import {
   EventName,
   IBApiCreationOptions,
@@ -239,11 +239,12 @@ export class Socket {
         const msgSize = dataToParse.readInt32BE(currentMessageOffset);
         currentMessageOffset += 4;
         if (currentMessageOffset + msgSize <= dataToParse.length) {
-          const utf8Data: number[] = new Array(msgSize);
-          for (let i = 0; i < msgSize; i++) {
-            utf8Data[i] = dataToParse.readUInt8(currentMessageOffset++);
-          }
-          this.onMessage(new TextDecoder().decode(new Uint8Array(utf8Data)));
+          const segment = dataToParse.slice(
+            currentMessageOffset,
+            currentMessageOffset + msgSize
+          );
+          currentMessageOffset += msgSize;
+          this.onMessage(segment.toString("utf8"));
           messageBufferOffset = currentMessageOffset;
         } else {
           // We can't parse further, the message is incomplete
