@@ -1,5 +1,4 @@
 import { EventEmitter } from "eventemitter3";
-
 import { Controller } from "../io/controller";
 import { Contract } from "./contract/contract";
 import { ContractDescription } from "./contract/contractDescription";
@@ -15,14 +14,13 @@ import LogLevel from "./data/enum/log-level";
 import MIN_SERVER_VER from "./data/enum/min-server-version";
 import OptionExerciseAction from "./data/enum/option-exercise-action";
 import { ErrorCode } from "./errorCode";
-import { Bar } from "./historical/bar";
 import { HistogramEntry } from "./historical/histogramEntry";
 import { HistoricalTick } from "./historical/historicalTick";
 import { HistoricalTickBidAsk } from "./historical/historicalTickBidAsk";
 import { HistoricalTickLast } from "./historical/historicalTickLast";
 import { ScannerSubscription } from "./market/scannerSubscription";
-import { TickType } from "./market/tickType";
 import { TickByTickDataType } from "./market/tickByTickDataType";
+import { TickType } from "./market/tickType";
 import { Order } from "./order/order";
 import { OrderState } from "./order/orderState";
 import { CommissionReport } from "./report/commissionReport";
@@ -2332,13 +2330,35 @@ export declare interface IBApi {
    * @param listener
    * reqId:	the request's identifier
    *
-   * bar: the OHLC historical data [[Bar]].
+   * time: the time the bar represents
+   * open: price at open of time period
+   * high: high price during time period
+   * low: low price during time period
+   * close: price at close of time period
+   * volume: share volume during time period
+   * count: trade count during time period
+   * WAP: weighted average price
+   * hasGaps: identifies whether or not there are gaps in the data.
    * The time zone of the bar is the time zone chosen on the TWS login screen.
    * Smallest bar size is 1 second.
+   *
+   * @see https://interactivebrokers.github.io/tws-api/historical_bars.html#hd_what_to_show
+   * for additional context regarding meaning of price for different bar types
    */
   on(
     event: EventName.historicalData,
-    listener: (reqId: number, bar: Bar) => void
+    listener: (
+      reqId: number,
+      time: string,
+      open: number,
+      high: number,
+      low: number,
+      close: number,
+      volume: number,
+      count: number,
+      WAP: number,
+      hasGaps: boolean | undefined
+    ) => void
   ): this;
 
   /**
@@ -2351,7 +2371,14 @@ export declare interface IBApi {
    * @param listener
    * reqId: The request's identifier.
    *
-   * bar: The OHLC historical data Bar.
+   * time: the time the bar represents
+   * open: price at open of time period
+   * high: high price during time period
+   * low: low price during time period
+   * close: price at close of time period
+   * volume: share volume during time period
+   * count: trade count during time period
+   * WAP: weighted average price
    * The time zone of the bar is the time zone chosen on the TWS login screen.
    * Smallest bar size is 1 second.
    *
@@ -2361,7 +2388,14 @@ export declare interface IBApi {
     event: EventName.historicalDataUpdate,
     listener: (
       reqId: number,
-      bar: unknown /* TODO: replace with Bar type as soon as available. */
+      time: string,
+      open: number,
+      high: number,
+      low: number,
+      close: number,
+      volume: number,
+      count: number,
+      WAP: number
     ) => void
   ): this;
 
@@ -3587,45 +3621,6 @@ export declare interface IBApi {
       msgType: number,
       message: string,
       origExchange: string
-    ) => void
-  ): this;
-
-  /**
-   * Receives the subscribed account's portfolio.
-   * This function will receive only the portfolio of the subscribed account.
-   *
-   * If the portfolios of all managed accounts are needed, refer to [[reqPosition]].
-   *
-   * After the initial callback to updatePortfolio, callbacks only occur for positions which have changed.
-   *
-   * @param listener
-   * contract:The [[Contract]] for which a position is held.
-   *
-   * position: The number of positions held.
-   *
-   * marketPrice: The instrument's unitary price.
-   *
-   * marketValue: The total market value of the instrument.
-   *
-   * averageCost: The average acquiring cost.
-   *
-   * unrealizedPNL: The unrealized PnL.
-   *
-   * realizedPNL: The realized PnL.
-   *
-   * accountName : The account name.
-   */
-  on(
-    event: EventName.updateNewsBulletin,
-    listener: (
-      contract: Contract,
-      position: number,
-      marketPrice: number,
-      marketValue: number,
-      averageCost: number,
-      unrealizedPNL: number,
-      realizedPNL: number,
-      accountName: number
     ) => void
   ): this;
 }
