@@ -2381,8 +2381,6 @@ export declare interface IBApi {
    * WAP: weighted average price
    * The time zone of the bar is the time zone chosen on the TWS login screen.
    * Smallest bar size is 1 second.
-   * The time zone of the bar is the time zone chosen on the TWS login screen.
-   * Smallest bar size is 1 second.
    *
    * @see [[reqHistogramData]]
    */
