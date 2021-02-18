@@ -1952,11 +1952,13 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       }
     }
 
-    const tokens: unknown[] = [
-      OUT_MSG_ID.REQ_HISTORICAL_DATA,
-      version,
-      tickerId,
-    ];
+    const tokens: unknown[] = [OUT_MSG_ID.REQ_HISTORICAL_DATA];
+
+    if (this.serverVersion < MIN_SERVER_VER.SYNT_REALTIME_BARS) {
+      tokens.push(version);
+    }
+
+    tokens.push(tickerId);
 
     // send contract fields
     if (this.serverVersion >= MIN_SERVER_VER.TRADING_CLASS) {
