@@ -104,6 +104,7 @@ enum IN_MSG_ID {
   HISTORICAL_NEWS_END = 87,
   HEAD_TIMESTAMP = 88,
   HISTOGRAM_DATA = 89,
+  HISTORICAL_DATA_UPDATE = 90,
   PNL = 94,
   PNL_SINGLE = 95,
   HISTORICAL_TICKS = 96,
@@ -1123,6 +1124,33 @@ export class Decoder {
       -1,
       -1,
       false
+    );
+  }
+
+  /**
+   * Decode a HISTORICAL_DATA_UPDATE message from data queue and emit historicalDataUpdate events.
+   */
+  private decodeMsg_HISTORICAL_DATA_UPDATE(): void {
+    const reqId = this.readInt();
+    const barCount = this.readInt();
+    const date = this.readStr();
+    const open = this.readDouble();
+    const close = this.readDouble();
+    const high = this.readDouble();
+    const low = this.readDouble();
+    const WAP = this.readDouble();
+    const volume = this.readInt();
+    this.emit(
+      EventName.historicalDataUpdate,
+      reqId,
+      date,
+      open,
+      high,
+      low,
+      close,
+      volume,
+      barCount,
+      WAP
     );
   }
 
