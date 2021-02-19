@@ -21,6 +21,7 @@ import { HistoricalTickLast } from "./historical/historicalTickLast";
 import { ScannerSubscription } from "./market/scannerSubscription";
 import { TickByTickDataType } from "./market/tickByTickDataType";
 import { TickType } from "./market/tickType";
+import { Execution } from "./order/execution";
 import { Order } from "./order/order";
 import { OrderState } from "./order/orderState";
 import { CommissionReport } from "./report/commissionReport";
@@ -2233,11 +2234,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.execDetails,
-    listener: (
-      reqId: number,
-      contract: Contract,
-      execution: unknown /* TODO: replace with Execution type as soon as available. */
-    ) => void
+    listener: (reqId: number, contract: Contract, execution: Execution) => void
   ): this;
 
   /**
