@@ -2617,7 +2617,7 @@ export class Decoder {
   /**
    * Decode a COMPLETED_ORDER_END message from data queue and a emit completedOrdersEnd event.
    */
-  private decodeMsg_COMPLETED_ORDER_END(): void {
+  private decodeMsg_COMPLETED_ORDERS_END(): void {
     this.emit(EventName.completedOrdersEnd);
   }
 
