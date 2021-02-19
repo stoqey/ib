@@ -4,8 +4,8 @@ services:
     image: industrialninja/ibg_docker_tws
     env_file: .env
     ports:
-      - "4003:4003"
-      - "5901:5900"
+      - ${IB_API_PORT:-4001}:4003
+      - ${IBG_VNC_PORT:-5901}:5900
     volumes:
       - ./config/ib/IBController.ini:/root/IBController/IBController.ini
       - ./config/ib/jts.ini:/root/Jts/jts.ini

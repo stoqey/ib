@@ -4,10 +4,10 @@
   "default_config_test": "default",
   "local_config_test": "default",
   "environment_config_test": "default",
-  "ib_test_port": 4001,
+  "ib_test_port": 4003,
   "ib_test_host": "localhost",
-  "ib_host": "127.0.0.1",
-  "ib_port": 4001,
+  "ib_host": "localhost",
+  "ib_port": 4003,
   "default_client_id": 0,
   "client_version": 66,
   "max_req_per_second": 40
