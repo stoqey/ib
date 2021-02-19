@@ -1,4 +1,42 @@
 version: "3.1"
 services:
-  ibc:
-  build: ./docker
+  tws:
+    image: industrialninja/ibg_docker_tws
+    env_file: .env
+    ports:
+      - "4003:4003"
+      - "5901:5900"
+    volumes:
+      - ./config/ib/IBController.ini:/root/IBController/IBController.ini
+      - ./config/ib/jts.ini:/root/Jts/jts.ini
+
+    environment:
+      - TZ=America/NewYork
+      # Variables pulled from /IBController/IBControllerGatewayStart.sh
+      - TWS_MAJOR_VRSN=974
+      - IBC_INI=/root/IBController/IBController.ini
+      - IBC_PATH=/opt/IBController
+      - TWS_PATH=/root/Jts
+      - TWS_CONFIG_PATH=/root/Jts
+      - LOG_PATH=/opt/IBController/Logs
+      - JAVA_PATH=/opt/i4j_jres/1.8.0_152/bin # JRE is bundled starting with TWS 952
+      - APP=GATEWAY
+  ib-api:
+    container_name: ib-api
+    build:
+      context: .
+      dockerfile: ./api.Dockerfile
+    links:
+      - tws
+    volumes:
+      - .:/usr/src/app
+      # More info on the node_modules volume at:
+      # http://jdlm.info/articles/2016/03/06/lessons-building-node-app-docker.html
+      # under "The node_modules Volume Trick"
+      - /usr/src/app/node_modules
+      # Run nodemon with legacy watch
+      # https://github.com/remy/nodemon#application-isnt-restarting
+      # Ignore public/ because generating documentation programatically
+      # on startup was causing an infinite loop
+    depends_on:
+      - tws
