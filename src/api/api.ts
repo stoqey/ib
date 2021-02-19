@@ -2042,11 +2042,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.completedOrder,
-    listener: (
-      contract: Contract,
-      order: unknown /* TODO: replace with Order type as soon as available. */,
-      orderState: unknown /* TODO: replace with	OrderState type as soon as available. */
-    ) => void
+    listener: (contract: Contract, order: Order, orderState: OrderState) => void
   ): this;
 
   /**
