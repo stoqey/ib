@@ -40,7 +40,8 @@ The module makes a socket connection to TWS (or IB Gateway) using the [net](http
 API is returning `Number.MAX_SAFE_INTEGER` when there is no value from IB, commonly seen when there is no bid / offer or other missing market data.
 
 
-## Example
+## Examples
+
 
 ```js
 
@@ -76,6 +77,33 @@ ib.on(EventName.error, (err: Error, code: ErrorCode, reqId: number) => {
 
 ib.connect();
 ib.reqPositions();
+```
+
+### Sending first order
+
+```
+ib.once(EventName.nextValidId, (orderId: number) => {
+    const contract: Contract = {
+      symbol: "AMZN",
+      exchange: "SMART",
+      currency: "USD",
+      secType: SecType.STK,
+    };
+    
+    const order: Order = {
+      orderType: OrderType.LMT,
+      action: OrderAction.BUY,
+      lmtPrice: 1,
+      orderId,
+      totalQuantity: 1,
+      account: <your_account_id>
+    };
+
+    ib.placeOrder(orderId, contract, order);
+  });
+
+ib.connect();
+ib.reqIds();
 ```
 
 ## Deprecation process
