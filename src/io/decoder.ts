@@ -2596,6 +2596,10 @@ export class Decoder {
       order.cashQty = this.readDoubleMax();
     }
 
+    if (this.serverVersion >= MIN_SERVER_VER.AUTO_PRICE_FOR_HEDGE) {
+      order.dontUseAutoPriceForHedge = this.readBool();
+    }
+
     if (this.serverVersion >= MIN_SERVER_VER.ORDER_CONTAINER) {
       order.isOmsContainer = this.readBool();
     }
