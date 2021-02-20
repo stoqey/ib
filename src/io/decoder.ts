@@ -2627,6 +2627,10 @@ export class Decoder {
       order.cashQty = this.readDoubleMax();
     }
 
+    if (this.serverVersion >= MIN_SERVER_VER.AUTO_PRICE_FOR_HEDGE) {
+      order.dontUseAutoPriceForHedge = this.readBool();
+    }
+
     if (this.serverVersion >= MIN_SERVER_VER.ORDER_CONTAINER) {
       order.isOmsContainer = this.readBool();
     }
@@ -2648,7 +2652,7 @@ export class Decoder {
   /**
    * Decode a COMPLETED_ORDER_END message from data queue and a emit completedOrdersEnd event.
    */
-  private decodeMsg_COMPLETED_ORDER_END(): void {
+  private decodeMsg_COMPLETED_ORDERS_END(): void {
     this.emit(EventName.completedOrdersEnd);
   }
 
