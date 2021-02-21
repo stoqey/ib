@@ -46,6 +46,7 @@ class PrintMarketDataApp extends IBApiNextApp {
    * Start the the app.
    */
   start(): void {
+    this.connect(this.cmdLineArgs.watch ? 10000 : 0);
     this.api.setMarketDataType(MarketDataType.FROZEN);
     this.subscription$ = this.api
       .getMarketData(

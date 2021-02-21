@@ -42,7 +42,7 @@ class PrintPositionsApp extends IBApiNextApp {
     if (!this.cmdLineArgs.account) {
       this.error("-account argument missing.");
     }
-
+    this.connect(this.cmdLineArgs.watch ? 10000 : 0);
     this.subscription$ = this.api
       .getPnL(this.cmdLineArgs.account, this.cmdLineArgs.model)
       .subscribe(
