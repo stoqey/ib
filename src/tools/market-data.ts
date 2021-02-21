@@ -2,15 +2,13 @@
  * This App will print real time market data of a given contract id.
  */
 
-import {
-  IBApiError,
-  IBApiNextTickType,
-  IBApiTickType,
-  MarketDataType,
-} from "../api-next";
-import { IBApiNextApp } from "./common/ib-api-next-app";
+import path from "path";
 import { Subscription } from "rxjs";
-import { SecType } from "..";
+
+import { SecType } from "../";
+import { IBApiError, IBApiNextTickType, IBApiTickType, MarketDataType } from "../api-next";
+import logger from "../utils/logger";
+import { IBApiNextApp } from "./common/ib-api-next-app";
 
 /////////////////////////////////////////////////////////////////////////////////
 // The help text                                                               //
@@ -47,6 +45,8 @@ class PrintMarketDataApp extends IBApiNextApp {
    * Start the the app.
    */
   start(): void {
+    const scriptName = path.basename(__filename);
+    logger.debug(`Startin ${scriptName} script`);
     this.connect(this.cmdLineArgs.watch ? 10000 : 0);
     this.api.setMarketDataType(MarketDataType.FROZEN);
     this.subscription$ = this.api

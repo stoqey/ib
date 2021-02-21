@@ -1,10 +1,12 @@
 /**
  * This App will print real time updates for daily PnL of individual positions.
  */
+import path from "path";
+import { Subscription } from "rxjs";
 
 import { IBApiError } from "../api-next";
+import logger from "../utils/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
-import { Subscription } from "rxjs";
 
 /////////////////////////////////////////////////////////////////////////////////
 // The help text                                                               //
@@ -44,6 +46,8 @@ class PrintPositionsApp extends IBApiNextApp {
    * Start the the app.
    */
   start(): void {
+    const scriptName = path.basename(__filename);
+    logger.debug(`Startin ${scriptName} script`);
     if (!this.cmdLineArgs.account) {
       this.error("-account argument missing.");
     }
