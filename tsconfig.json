@@ -2,6 +2,7 @@
   "compilerOptions": {
     "allowJs": true,
     "esModuleInterop": true,
+    "declaration": true,
     "lib": ["es2017", "esnext", "dom", "es7"],
 	"declaration": true,
     "module": "commonjs",
