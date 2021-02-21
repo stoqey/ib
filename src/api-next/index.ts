@@ -28,4 +28,5 @@ export { PnLSingle } from "./account/pnl-single";
 
 export { Position } from "./account/position";
 
+export { MarketDataTick } from "./market/market-data-tick";
 export { MarketDataType } from "./market/market-data-type";

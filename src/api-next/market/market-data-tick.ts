@@ -1,8 +1,10 @@
 import { TickType } from "../..";
 
 /**
- * A market data tick.
+ * A market data tick on [[IBApiNext]].
  */
-export interface MarketDataTick {
-  values: Map<TickType, number>;
+export class MarketDataTick extends Map<TickType, number> {
+  constructor(init?: [TickType, number][]) {
+    super(init);
+  }
 }
