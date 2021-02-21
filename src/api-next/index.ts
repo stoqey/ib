@@ -3,7 +3,7 @@ export { IBApiNext } from "./api-next";
 export { IBApiError } from "./common/ib-api-error";
 
 export { ConnectionState } from "./connection/connection-state";
-export { IBApiAutoConnection } from "./connection/auto-connection";
+export { IBApiAutoConnection as IBApiAutoConnection } from "./internal/auto-connection";
 
 import { TickType as IBApiTickType } from "../api/market/tickType";
 

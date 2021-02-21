@@ -1,6 +1,7 @@
 import colors from "colors";
 import { IBApiNext } from "../../api-next";
 import { Subscription } from "rxjs";
+import LogLevel from "../../api/data/enum/log-level";
 
 /**
  * @internal
@@ -35,33 +36,12 @@ export class IBApiNextApp {
       [...this.COMMON_OPTION_ARGUMENTS, ...optionArgumentDescriptions],
       usageExample
     );
-
-    // create the IBApiNext object
-
-    this.api = new IBApiNext(0, {
-      host: this.cmdLineArgs.host,
-      port:
-        this.cmdLineArgs.port !== undefined
-          ? Number(this.cmdLineArgs.port)
-          : undefined,
-    });
-
-    // log generic errors (reqId = -1) and exit with failure code
-
-    this.error$ = this.api.errorSubject.subscribe((error) => {
-      if (error.reqId === -1) {
-        this.error(`ERROR: ${error.error.message}`);
-      }
-    });
-
-    // connect to TWS
-
-    this.api.connect();
   }
 
   /** Common command line options of all [[IBApiNext]] apps. */
   private readonly COMMON_OPTION_ARGUMENTS: [string, string][] = [
     ["h", "Print the help text."],
+    ["log=<log_level>", "Log level. Valid values: error, warn, info, debug."],
     [
       "host=<hostname>",
       "IP or hostname of the TWS or IB Gateway. Default is 127.0.0.1.",
@@ -78,6 +58,54 @@ export class IBApiNextApp {
   /** The command-line arguments. */
   protected cmdLineArgs: Record<string, string>;
 
+  /** Connect to TWS. */
+  connect(reconnectInterval: number): void {
+    // create the IBApiNext object
+
+    if (!this.api) {
+      this.api = new IBApiNext(reconnectInterval, {
+        host: this.cmdLineArgs.host,
+        port:
+          this.cmdLineArgs.port !== undefined
+            ? Number(this.cmdLineArgs.port)
+            : undefined,
+      });
+      if (this.cmdLineArgs.log) {
+        switch (this.cmdLineArgs.log) {
+          case "error":
+            this.api.logLevel = LogLevel.ERROR;
+            break;
+          case "warn":
+            this.api.logLevel = LogLevel.WARN;
+            break;
+          case "info":
+            this.api.logLevel = LogLevel.INFO;
+            break;
+          case "debug":
+            this.api.logLevel = LogLevel.DETAIL;
+            break;
+          default:
+            this.error(
+              `Unknown value '${this.cmdLineArgs.log}' on -log argument.`
+            );
+            break;
+        }
+      }
+    }
+
+    // log generic errors (reqId = -1) and exit with failure code
+
+    if (!this.error$) {
+      this.error$ = this.api.errorSubject.subscribe((error) => {
+        if (error.reqId === -1) {
+          this.error(`${error.error.message}`);
+        }
+      });
+    }
+
+    this.api.connect();
+  }
+
   /**
    * Print text to console.
    */
@@ -93,13 +121,15 @@ export class IBApiNextApp {
   }
 
   /**
-   * Print and error to console and exit the app with error code.
+   * Print and error to console and exit the app with error code, unless -watch argument is present.
    */
   error(text: string): void {
     console.error(
       colors.bold.red(`[${new Date().toLocaleTimeString()}] ERROR: ${text}`)
     );
-    this.exit(1);
+    if (!this.cmdLineArgs.watch) {
+      this.exit(1);
+    }
   }
 
   /**

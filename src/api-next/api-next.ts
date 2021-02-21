@@ -18,16 +18,19 @@ import {
   Contract,
   ContractDetails,
 } from "..";
-import { IBApiNextSubscription } from "./internal/api-next-subject";
+import { IBApiNextSubscription } from "./internal/subscription";
 import { Observable, Subject } from "rxjs";
 import { take } from "rxjs/operators";
 import { PnLSingle } from "./account/pnl-single";
 import { undefineMax } from "../common/helper";
-import EventEmitter from "eventemitter3";
-import { type } from "os";
+import { IBApiNextLogger } from "./internal/logger";
+import LogLevel from "../api/data/enum/log-level";
 
 /** An invalid request id. */
 const INVALID_REQ_ID = -1;
+
+/** The log tag. */
+const LOG_TAG = "IBApiNext";
 
 /**
  * Next-gen Typescript implementation of the Interactive Brokers TWS (or IB Gateway) API.
@@ -50,7 +53,7 @@ export class IBApiNext {
   constructor(reconnectInterval: number, options?: IBApiCreationOptions) {
     // create IBApiAutoConnection object
 
-    this.api = new IBApiAutoConnection(reconnectInterval, options);
+    this.api = new IBApiAutoConnection(reconnectInterval, options, this.logger);
 
     // setup error event handler
 
@@ -66,7 +69,25 @@ export class IBApiNext {
         this.errorSubject.next(apiError);
       }
     );
+
+    // setup TWS server version event handler
+
+    this.api.on(EventName.server, (version, connectionTime) => {
+      this.logger.logInfo(
+        "TWS",
+        `Server Version: ${version}. Connection time ${connectionTime}`
+      );
+    });
+
+    // setup TWS info message event handler
+
+    this.api.on(EventName.info, (message: string) => {
+      this.logger.logInfo("TWS", message);
+    });
   }
+
+  /** The [[IBApiNextLogger]] instance. */
+  private readonly logger = new IBApiNextLogger();
 
   /** The [[IBApi]] with auto-reconnect. */
   private readonly api: IBApiAutoConnection;
@@ -108,6 +129,17 @@ export class IBApiNext {
   /** The last used request id. */
   private static lastUsedRedId = 0;
 
+  /** Get the current log level. */
+  get logLevel(): LogLevel {
+    return this.logger.logLevel;
+  }
+
+  /** Set the current log level. */
+  set logLevel(level: LogLevel) {
+    this.logger.logLevel = level;
+    this.api.setServerLogLevel(level);
+  }
+
   /**
    * Get an [[Observable]] to receive errors on IB API.
    *
@@ -123,6 +155,11 @@ export class IBApiNext {
    */
   get connectionState(): Observable<ConnectionState> {
     return this.api.connectionState;
+  }
+
+  /** Returns true if currently connected, false otherwise. */
+  get isConnected(): boolean {
+    return this.api.isConnected;
   }
 
   /**
@@ -143,6 +180,7 @@ export class IBApiNext {
    * @sse [[connectionState]] for observing the connection state.
    */
   connect(clientId?: number): IBApiNext {
+    this.logger.logDebug(LOG_TAG, `connect(${clientId})`);
     this.api.connect(clientId);
     return this;
   }
@@ -153,6 +191,7 @@ export class IBApiNext {
    * Use [[connectionState]] for observing the connection state.
    */
   disconnect(): IBApiNext {
+    this.logger.logDebug(LOG_TAG, "disconnect()");
     this.api.disconnect();
     return this;
   }
