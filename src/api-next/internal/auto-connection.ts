@@ -1,9 +1,16 @@
 import { EventName } from "../..";
 import { BehaviorSubject, Observable } from "rxjs";
 import { IBApi, IBApiCreationOptions } from "../../api/api";
-import { ConnectionState } from "./connection-state";
+import { ConnectionState } from "../connection/connection-state";
+import { IBApiNextLogger } from "./logger";
+import { ErrorCode } from "../../api/errorCode";
+
+/** The log tag. */
+const LOG_TAG = "IBApiAutoConnection";
 
 /**
+ * @internal
+ *
  * This class implements auto re-connection for the [[IBApi]].
  *
  * It will monitor the connection state and poll the TWS / IB Gateway at
@@ -20,11 +27,21 @@ export class IBApiAutoConnection extends IBApi {
    */
   constructor(
     public readonly reconnectInterval: number,
-    public readonly options?: IBApiCreationOptions
+    public readonly options?: IBApiCreationOptions,
+    private readonly logger?: IBApiNextLogger
   ) {
     super(options);
     this.on(EventName.connected, () => this.onConnected());
     this.on(EventName.disconnected, () => this.onDisconnected());
+    this.on(EventName.error, (error, code, reqId) => {
+      this.logger?.logError(
+        "TWS",
+        `${error.message} - Code: ${code} - ReqId: ${reqId}`
+      );
+      if (code === ErrorCode.CONNECT_FAIL) {
+        this.onDisconnected();
+      }
+    });
     this.on(
       EventName.currentTime,
       () => (this.lastCurrentTimeIngress = Date.now())
@@ -69,9 +86,14 @@ export class IBApiAutoConnection extends IBApi {
     ConnectionState.Disconnected
   );
 
-  /** Get the connection-state as an [[Observable]] . */
+  /** Get the connection-state as an [[Observable]]. */
   get connectionState(): Observable<ConnectionState> {
     return this._connectionState;
+  }
+
+  /** Returns true if currently connected, false otherwise. */
+  get isConnected(): boolean {
+    return this._connectionState.value === ConnectionState.Connected;
   }
 
   /**
@@ -91,6 +113,10 @@ export class IBApiAutoConnection extends IBApi {
       (clientId === undefined ? this.options?.clientId : clientId) ?? 0;
     if (this._connectionState.getValue() === ConnectionState.Disconnected) {
       this._connectionState.next(ConnectionState.Connecting);
+      this.logger?.logInfo(
+        LOG_TAG,
+        `Connecting to TWS with client id ${this.currentClientId}`
+      );
       super.connect(this.currentClientId);
     }
     return this;
@@ -104,7 +130,14 @@ export class IBApiAutoConnection extends IBApi {
   disconnect(): IBApi {
     this.autoReconnectEnabled = false;
     if (this._connectionState.getValue() !== ConnectionState.Disconnected) {
-      super.disconnect();
+      this.logger?.logInfo(
+        LOG_TAG,
+        `Disconnecting client id ${this.currentClientId} from TWS.`
+      );
+      this._connectionState.next(ConnectionState.Disconnected);
+      if (this.isConnected) {
+        super.disconnect();
+      }
     }
     return this;
   }
@@ -113,16 +146,20 @@ export class IBApiAutoConnection extends IBApi {
    * Called when [[EventName.connected]] event has been received.
    */
   private onConnected(): void {
-    // signal ConnectionState.Connected
-
     if (this._connectionState.getValue() !== ConnectionState.Connected) {
+      // signal connect state
+
       this._connectionState.next(ConnectionState.Connected);
+      this.logger?.logInfo(
+        LOG_TAG,
+        `Successfully connected to TWS with client id ${this.currentClientId}.`
+      );
+
+      // cancel reconnect timer and run the connection watchdog
+
+      this.stopReConnectTimer();
+      this.runWatchdog();
     }
-
-    // cancel reconnect timer and run the connection watchdog
-
-    this.stopReConnectTimer();
-    this.runWatchdog();
   }
 
   /**
@@ -132,7 +169,7 @@ export class IBApiAutoConnection extends IBApi {
     // verify and update state
     if (
       this._connectionState.getValue() !== ConnectionState.Disconnected ||
-      this.autoReconnectEnabled
+      !this.autoReconnectEnabled
     ) {
       return;
     }
@@ -146,6 +183,10 @@ export class IBApiAutoConnection extends IBApi {
         ? this.fixedClientId
         : this.currentClientId + 1;
 
+    this.logger?.logInfo(
+      LOG_TAG,
+      `Re-Connecting to TWS with client id ${this.currentClientId}`
+    );
     super.connect(this.currentClientId);
   }
 
@@ -154,8 +195,17 @@ export class IBApiAutoConnection extends IBApi {
    */
   private runReConnectTimer(): void {
     // verify state
-    if (this.reconnectionTimeout === undefined || !this.reconnectInterval) {
+    if (!this.reconnectInterval || !this.autoReconnectEnabled) {
       return;
+    }
+
+    this.logger?.logInfo(
+      LOG_TAG,
+      `Re-Connecting to TWS in ${this.reconnectInterval / 1000}s...`
+    );
+
+    if (this.reconnectionTimeout) {
+      clearTimeout(this.reconnectionTimeout);
     }
 
     this.reconnectionTimeout = setTimeout(() => {
@@ -189,6 +239,11 @@ export class IBApiAutoConnection extends IBApi {
 
     // run watchdog
 
+    this.logger?.logDebug(
+      LOG_TAG,
+      `Starting connection watchdog with ${this.CONNECTION_WATCHDOG_INTERVAL}ms interval.`
+    );
+
     let lastReqCurrentTimeEgress = 0;
     this.connectionWatchdogTimeout = setInterval(() => {
       if (this.lastCurrentTimeIngress !== undefined) {
@@ -197,6 +252,10 @@ export class IBApiAutoConnection extends IBApi {
           lastReqCurrentTimeEgress &&
           elapsed > this.CONNECTION_WATCHDOG_INTERVAL * 2
         ) {
+          this.logger?.logDebug(
+            LOG_TAG,
+            "Connection watchdog timeout. Dropping connection."
+          );
           this.onDisconnected();
           return;
         }
@@ -226,8 +285,14 @@ export class IBApiAutoConnection extends IBApi {
    * or the connection-watchdog has detected a dead connection.
    */
   private onDisconnected(): void {
+    this.logger?.logDebug(LOG_TAG, "onDisconnected()");
+
     // verify state and update state
     if (this.isConnected) {
+      this.logger?.logDebug(
+        LOG_TAG,
+        `Disconnecting client id ${this.currentClientId} from TWS (state-sync).`
+      );
       this.disconnect();
     }
 

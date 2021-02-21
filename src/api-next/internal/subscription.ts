@@ -1,41 +1,7 @@
-import { Observable, Subscriber } from "rxjs";
+import { Observable, Subscriber, Subscription } from "rxjs";
 import { IBApiNext } from "..";
 import { IBApiError } from "../common/ib-api-error";
 import { ConnectionState } from "../connection/connection-state";
-
-/**
- * @internal
- *
- * The subject interface of a [[IBApiNextSubscription]].
- */
-export interface IBApiNextSubject<T> {
-  /**
-   * Deliver next value to subject.
-   *
-   * @param v The next value.
-   * @param cache If set to true, the value will be cached so that
-   * new subscribers get it immediately upon subscription (setting cache
-   * to true converts the Subject into a ReplaySubject(1)).
-   */
-  next(v: T, cache?: boolean): void;
-
-  /**
-   * Write the given value to cache, but do not deliver it to the subject.
-   *
-   * This function an be used when changes shall be aggregated into the
-   * cache. In that case, do not cache on the [[next]] call, but implement
-   * your custom cache-update logic and use this function to update theß
-   * whole cache, while only emitting the diff to subject.
-   *
-   * @param v The value to cache.
-   */
-  cache(v: T): void;
-
-  /**
-   * Get the currently cached value.
-   */
-  value(): T | undefined;
-}
 
 /**
  * @internal
@@ -58,26 +24,13 @@ export class IBApiNextSubscription<T> {
    * @param cancelFunction A callback, invoked when the cancel request be send to TWS.
    */
   constructor(
-    api: IBApiNext,
+    private api: IBApiNext,
     private allSubscriptions: Map<number, IBApiNextSubscription<unknown>>,
     private requestFunction: (reqId: number) => void,
     private cancelFunction: (reqId: number) => void
   ) {
     this.reqId = api.nextReqId;
-    // subscribe on connection state
-    api.connectionState.subscribe((state) => {
-      if (state === ConnectionState.Connected) {
-        this.requestTwsSubscription();
-      } else if (state === ConnectionState.Disconnected) {
-        this.allSubscriptions.delete(this.reqId);
-      }
-    });
-    // subscribe on errors
-    api.errorSubject.subscribe((error) => {
-      if (error.reqId === this.reqId) {
-        this.error(error);
-      }
-    });
+    this.requestTwsSubscription();
   }
 
   /** The request id. */
@@ -88,6 +41,9 @@ export class IBApiNextSubscription<T> {
 
   /** Set of active subscribers. */
   private readonly subscribers = new Set<Subscriber<T>>();
+
+  /** The [[Subscription]] on the connection state. */
+  private connectionState$?: Subscription;
 
   /** true when the end-event on an enumeration request has been received, false otherwise. */
   public endEventReceived = false;
@@ -174,22 +130,30 @@ export class IBApiNextSubscription<T> {
   }
 
   /**
-   * Invoke TWS request function and update subscription state.
+   * Invoke TWS request function and setup connection state subscription
    */
   private requestTwsSubscription(): void {
     if (!this.allSubscriptions.has(this.reqId)) {
       this.allSubscriptions.set(this.reqId, this);
-      this.requestFunction(this.reqId);
+      // subscribe on connection state: send TWS request when 'connected' state is signaled
+      this.connectionState$ = this.api.connectionState.subscribe((state) => {
+        if (state === ConnectionState.Connected) {
+          this.requestFunction(this.reqId);
+        }
+      });
     }
   }
 
   /**
-   * Invoke TWS cancel function and update subscription state.
+   * Invoke TWS cancel function and cleanup  connection state subscription
    */
   private cancelTwsSubscription(): void {
     if (this.allSubscriptions.has(this.reqId)) {
       this.allSubscriptions.delete(this.reqId);
-      this.cancelFunction(this.reqId);
+      this.connectionState$?.unsubscribe();
+      if (this.api.isConnected) {
+        this.cancelFunction(this.reqId);
+      }
     }
   }
 }
