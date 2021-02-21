@@ -46,6 +46,7 @@ class PrintContractDetailsApp extends IBApiNextApp {
    * Start the the app.
    */
   start(): void {
+    this.connect(0);
     this.api
       .getContractDetails({
         symbol: this.cmdLineArgs.symbol,

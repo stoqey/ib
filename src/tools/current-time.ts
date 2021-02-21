@@ -27,6 +27,8 @@ class PrintCurrentTimeApp extends IBApiNextApp {
    * Start the the app.
    */
   start(): void {
+    this.connect(0);
+
     // print current time
 
     this.api

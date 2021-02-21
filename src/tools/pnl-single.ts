@@ -50,7 +50,7 @@ class PrintPositionsApp extends IBApiNextApp {
     if (!this.cmdLineArgs.conid) {
       this.error("-conid argument missing.");
     }
-
+    this.connect(this.cmdLineArgs.watch ? 10000 : 0);
     this.subscription$ = this.api
       .getPnLSingle(
         this.cmdLineArgs.account,
