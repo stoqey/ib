@@ -111,6 +111,8 @@ jobs:
           - LOG_PATH=/opt/IBController/Logs
           - JAVA_PATH=/opt/i4j_jres/1.8.0_152/bin # JRE is bundled starting with TWS 952
           - APP=GATEWAY
+        ports:
+          - 4003:4003
     working_directory: ~/repo
     steps:
       - restore_cache:
