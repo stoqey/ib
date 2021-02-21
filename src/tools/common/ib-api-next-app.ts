@@ -114,7 +114,7 @@ export class IBApiNextApp {
   }
 
   /**
-   * Print text to console.
+   * Print an object (JSON formatted) to console.
    */
   printObject(obj: unknown): void {
     console.log(`${JSON.stringify(obj, jsonReplacer, 2)}`);

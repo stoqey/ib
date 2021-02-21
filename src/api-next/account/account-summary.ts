@@ -37,7 +37,7 @@ export class AccountSummary {
    * @param account The account id.
    */
   constructor(
-    public account: string,
+    public readonly account: string,
     init?: [AccountSummaryTagName, AccountSummaryValue][]
   ) {
     this.values = new AccountSummaryValues(init);

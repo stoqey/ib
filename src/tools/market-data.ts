@@ -6,7 +6,12 @@ import path from "path";
 import { Subscription } from "rxjs";
 
 import { SecType } from "../";
-import { IBApiError, IBApiNextTickType, IBApiTickType, MarketDataType } from "../api-next";
+import {
+  IBApiError,
+  IBApiNextTickType,
+  IBApiTickType,
+  MarketDataType,
+} from "../api-next";
 import logger from "../utils/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
@@ -46,7 +51,7 @@ class PrintMarketDataApp extends IBApiNextApp {
    */
   start(): void {
     const scriptName = path.basename(__filename);
-    logger.debug(`Startin ${scriptName} script`);
+    logger.debug(`Starting ${scriptName} script`);
     this.connect(this.cmdLineArgs.watch ? 10000 : 0);
     this.api.setMarketDataType(MarketDataType.FROZEN);
     this.subscription$ = this.api

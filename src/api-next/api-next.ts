@@ -55,7 +55,7 @@ export class IBApiNext {
   constructor(reconnectInterval: number, options?: IBApiCreationOptions) {
     // create IBApiAutoConnection object
 
-    this.api = new IBApiAutoConnection(reconnectInterval, options, this.logger);
+    this.api = new IBApiAutoConnection(reconnectInterval, this.logger, options);
 
     // setup error event handler
 

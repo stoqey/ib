@@ -43,7 +43,7 @@ export class IBApiNextLogger {
     if (this._logLevel >= LogLevel.WARN) {
       console.log(
         colors.bold.yellow(
-          `[${new Date().toLocaleTimeString()}] [ERROR] [${tag}]: ${text}`
+          `[${new Date().toLocaleTimeString()}] [WARN] [${tag}]: ${text}`
         )
       );
     }

@@ -50,7 +50,7 @@ class PrintContractDetailsApp extends IBApiNextApp {
    */
   start(): void {
     const scriptName = path.basename(__filename);
-    logger.debug(`Startin ${scriptName} script`);
+    logger.debug(`Starting ${scriptName} script`);
     this.connect(0);
     this.api
       .getContractDetails({

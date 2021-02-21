@@ -1,5 +1,5 @@
 /**
- * This App will print IBKR account summaries console.
+ * This App will print IBKR account summaries to console.
  */
 
 import path from "path";
@@ -62,7 +62,7 @@ class PrintAccountSummaryApp extends IBApiNextApp {
    */
   start(): void {
     const scriptName = path.basename(__filename);
-    logger.debug(`Startin ${scriptName} script`);
+    logger.debug(`Starting ${scriptName} script`);
     this.connect(this.cmdLineArgs.watch ? 10000 : 0);
     this.subscription$ = this.api
       .getAccountSummary(
