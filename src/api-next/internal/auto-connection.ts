@@ -91,11 +91,6 @@ export class IBApiAutoConnection extends IBApi {
     return this._connectionState;
   }
 
-  /** Returns true if currently connected, false otherwise. */
-  get isConnected(): boolean {
-    return this._connectionState.value === ConnectionState.Connected;
-  }
-
   /**
    * Connect to the TWS or IB Gateway.
    *
