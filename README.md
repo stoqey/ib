@@ -106,6 +106,14 @@ ib.connect();
 ib.reqIds();
 ```
 
+## Roadmap / IBApiNext
+
+The  goal of IBApi is it to replicate the official TWS API as close as possible, however we are currently working on second API, that will exist in parallel to IBApi.<br>
+The goal of this second API (IBApiNext) is provide same functionality as IBApi, but add additional convenience, that makes developer-life easier.<br>
+If you want to learn more about it, see:<br>
+https://github.com/stoqey/ib/wiki/IBApi-next-generation-(IBApiNext)
+
+
 ## Deprecation process
 
 This library was initially forked from a JScript project (https://github.com/pilwon/node-ib) and ported to Typescript.
@@ -120,14 +128,6 @@ VSCode will explicitly mark deprecated functions and attributes, so you cannot m
 If you write new code, don't use deprecated functions.<br/>
 If you already use deprecated functions on existing code, migrate to new function on your next code-clean up session. There is no need for immediate change, the deprecated function will 
 continue to work for a least a half more year, but at some point it will be removed.<br/>
-
-## Roadmap / IBApiNext
-
-While the goal of IBApi is it to replace the official TWS API as close as possible, we are currently working on second API that will exist in parallel to IBApi.<br>
-The goal on the next-gen API (IBApiNext) is provide same functionality as IBApi, but add additional convenience, that makes developer-life easier.<br>
-If you want to learn more about it, see:<br>
-https://github.com/stoqey/ib/wiki/IBApi-next-generation-(IBApiNext)
-
 
 ## How to contribute
 
