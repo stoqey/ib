@@ -40,7 +40,8 @@ The module makes a socket connection to TWS (or IB Gateway) using the [net](http
 API is returning `Number.MAX_SAFE_INTEGER` when there is no value from IB, commonly seen when there is no bid / offer or other missing market data.
 
 
-## Example
+## Examples
+
 
 ```js
 
@@ -78,6 +79,41 @@ ib.connect();
 ib.reqPositions();
 ```
 
+### Sending first order
+
+```
+ib.once(EventName.nextValidId, (orderId: number) => {
+    const contract: Contract = {
+      symbol: "AMZN",
+      exchange: "SMART",
+      currency: "USD",
+      secType: SecType.STK,
+    };
+    
+    const order: Order = {
+      orderType: OrderType.LMT,
+      action: OrderAction.BUY,
+      lmtPrice: 1,
+      orderId,
+      totalQuantity: 1,
+      account: <your_account_id>
+    };
+
+    ib.placeOrder(orderId, contract, order);
+  });
+
+ib.connect();
+ib.reqIds();
+```
+
+## Roadmap / IBApiNext
+
+The  goal of IBApi is it to replicate the official TWS API as close as possible, however we are currently working on second API, that will exist in parallel to IBApi.<br>
+The goal of this second API (IBApiNext) is provide same functionality as IBApi, but add additional convenience, that makes developer-life easier.<br>
+If you want to learn more about it, see:<br>
+https://github.com/stoqey/ib/wiki/IBApi-next-generation-(IBApiNext)
+
+
 ## Deprecation process
 
 This library was initially forked from a JScript project (https://github.com/pilwon/node-ib) and ported to Typescript.
@@ -92,7 +128,6 @@ VSCode will explicitly mark deprecated functions and attributes, so you cannot m
 If you write new code, don't use deprecated functions.<br/>
 If you already use deprecated functions on existing code, migrate to new function on your next code-clean up session. There is no need for immediate change, the deprecated function will 
 continue to work for a least a half more year, but at some point it will be removed.<br/>
-
 
 ## How to contribute
 

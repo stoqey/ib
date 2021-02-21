@@ -104,6 +104,7 @@ enum IN_MSG_ID {
   HISTORICAL_NEWS_END = 87,
   HEAD_TIMESTAMP = 88,
   HISTOGRAM_DATA = 89,
+  HISTORICAL_DATA_UPDATE = 90,
   PNL = 94,
   PNL_SINGLE = 95,
   HISTORICAL_TICKS = 96,
@@ -1085,7 +1086,10 @@ export class Decoder {
       const close = this.readDouble();
       const volume = this.readInt();
       const WAP = this.readDouble();
-      const hasGaps = this.readBool();
+      let hasGaps: boolean | undefined = undefined;
+      if (this.serverVersion < MIN_SERVER_VER.SYNT_REALTIME_BARS) {
+        hasGaps = this.readBool();
+      }
 
       let barCount = -1;
       if (version >= 3) {
@@ -1120,6 +1124,33 @@ export class Decoder {
       -1,
       -1,
       false
+    );
+  }
+
+  /**
+   * Decode a HISTORICAL_DATA_UPDATE message from data queue and emit historicalDataUpdate events.
+   */
+  private decodeMsg_HISTORICAL_DATA_UPDATE(): void {
+    const reqId = this.readInt();
+    const barCount = this.readInt();
+    const date = this.readStr();
+    const open = this.readDouble();
+    const close = this.readDouble();
+    const high = this.readDouble();
+    const low = this.readDouble();
+    const WAP = this.readDouble();
+    const volume = this.readInt();
+    this.emit(
+      EventName.historicalDataUpdate,
+      reqId,
+      date,
+      open,
+      high,
+      low,
+      close,
+      volume,
+      barCount,
+      WAP
     );
   }
 
@@ -2596,6 +2627,10 @@ export class Decoder {
       order.cashQty = this.readDoubleMax();
     }
 
+    if (this.serverVersion >= MIN_SERVER_VER.AUTO_PRICE_FOR_HEDGE) {
+      order.dontUseAutoPriceForHedge = this.readBool();
+    }
+
     if (this.serverVersion >= MIN_SERVER_VER.ORDER_CONTAINER) {
       order.isOmsContainer = this.readBool();
     }
@@ -2617,7 +2652,7 @@ export class Decoder {
   /**
    * Decode a COMPLETED_ORDER_END message from data queue and a emit completedOrdersEnd event.
    */
-  private decodeMsg_COMPLETED_ORDER_END(): void {
+  private decodeMsg_COMPLETED_ORDERS_END(): void {
     this.emit(EventName.completedOrdersEnd);
   }
 
