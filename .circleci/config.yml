@@ -129,10 +129,6 @@ jobs:
           name: Wait for db
           command: dockerize -wait tcp://localhost:4003 -timeout 1m
       - run:
-          name: Starting server
-          command: yarn debug
-          background: true
-      - run:
           name: Run unit tests with JUnit as reporter
           # For more info on --maxWorkers=10 see https://github.com/facebook/jest/issues/1456
           command: |
