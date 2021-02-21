@@ -2,7 +2,6 @@ import {
   IBApiError,
   IBApiAutoConnection,
   AccountSummaries,
-  AccountSummaryValues,
   ConnectionState,
   MarketDataType,
   Position,
@@ -12,6 +11,8 @@ import {
   IBApiNextTickType,
   PositionsUpdate,
   MarketDataTick,
+  AccountSummariesUpdate,
+  AccountSummary,
 } from ".";
 import {
   IBApiCreationOptions,
@@ -42,7 +43,6 @@ const LOG_TAG = "IBApiNext";
  *
  * If you prefer to use an API that provides some more convenience functions, such as auto-reconnect
  * or rxjs Observables that stay functional during re-connect, use [[IBApiNext]].
- *
  */
 export class IBApiNext {
   /**
@@ -275,13 +275,11 @@ export class IBApiNext {
    * - $LEDGER — Single flag to relay all cash balance tags*, only in base currency.
    * - $LEDGER:CURRENCY — Single flag to relay all cash balance tags*, only in the specified currency.
    * - $LEDGER:ALL — Single flag to relay all cash balance tags* in all currencies.
-   * @param incrementalUpdates Set to true to enable incremental updates, or false to disable it.
    */
   getAccountSummary(
     group: string,
-    tags: string,
-    incrementalUpdates: boolean
-  ): Observable<AccountSummaries> {
+    tags: string
+  ): Observable<AccountSummariesUpdate> {
     // accountSummary event handler
 
     const onAccountSummary = (
@@ -295,16 +293,19 @@ export class IBApiNext {
 
       const subscription = this.subscriptions.get(
         reqId
-      ) as IBApiNextSubscription<AccountSummaries>;
+      ) as IBApiNextSubscription<AccountSummariesUpdate>;
       if (!subscription) {
         return;
       }
 
       // update cache
 
-      const allSummaries = subscription.value ?? new AccountSummaries();
-      allSummaries.getOrAdd(account).values.set(tag, { value, currency });
-      subscription.cache(allSummaries);
+      const cached = subscription.value ?? new AccountSummariesUpdate();
+      cached.all.getOrAdd(account).values.set(tag, { value, currency });
+      if (!subscription.endEventReceived) {
+        cached.changed.getOrAdd(account).values.set(tag, { value, currency });
+      }
+      subscription.cache(cached);
 
       // deliver to subject
 
@@ -312,22 +313,12 @@ export class IBApiNext {
         return;
       }
 
-      subscription.next(
-        false,
-        incrementalUpdates
-          ? new AccountSummaries([
-              [
-                account,
-                {
-                  account,
-                  values: new AccountSummaryValues([
-                    [tag, { value, currency }],
-                  ]),
-                },
-              ],
-            ])
-          : allSummaries
+      cached.changed.clear();
+      cached.changed.set(
+        account,
+        new AccountSummary(account, [[tag, { value, currency }]])
       );
+      subscription.next(false, cached);
     };
 
     // accountSummaryEnd event handler
@@ -355,7 +346,7 @@ export class IBApiNext {
 
     // create the subscription
 
-    return new IBApiNextSubscription<AccountSummaries>(
+    return new IBApiNextSubscription<AccountSummariesUpdate>(
       this,
       this.subscriptions,
       (reqId) => {
@@ -369,16 +360,8 @@ export class IBApiNext {
 
   /**
    * Create subscription to receive the positions on all accessible accounts.
-   *
-   * All positions are sent on the first event.
-   * Use incrementalUpdates argument to switch between incremental or full update mode.
-   * With incremental updates, only changed positions will be sent after the initial complete list.
-   * If a positions is closed, the positions size will be 0.
-   * Without incremental updates, the complete list of positions will be sent again if any of it has changed.
-   *
-   * @param incrementalUpdates Set to true to enable incremental updates, or false to disable it.
    */
-  getPositions(incrementalUpdates: boolean): Observable<PositionsUpdate> {
+  getPositions(): Observable<PositionsUpdate> {
     const requestIds = new Set<number>();
 
     // position event handler
@@ -402,28 +385,28 @@ export class IBApiNext {
 
         // update cache
 
-        const allPositions: PositionsUpdate = subscription.value ?? {
-          incrementalUpdate: false,
-          positions: [],
-        };
+        const positionsUpdate = subscription.value ?? new PositionsUpdate();
 
-        const changePositionIndex = allPositions.positions.findIndex(
+        const changePositionIndex = positionsUpdate.all.findIndex(
           (p) => p.account === account && p.contract.conId == contract.conId
         );
         if (changePositionIndex === -1) {
           // new position - add it
-          allPositions.positions.push(updatedPosition);
+          positionsUpdate.opened.push(updatedPosition);
+          positionsUpdate.all.push(updatedPosition);
         } else {
           if (!updatedPosition.pos) {
-            // remove zero size position
-            allPositions.positions.splice(changePositionIndex);
+            // zero size - remove it
+            positionsUpdate.closed.push(updatedPosition);
+            positionsUpdate.all.splice(changePositionIndex);
           } else {
-            // update position
-            allPositions.positions[changePositionIndex] = updatedPosition;
+            // update
+            positionsUpdate.changed.push(updatedPosition);
+            positionsUpdate.all[changePositionIndex] = updatedPosition;
           }
         }
 
-        subscription.cache(allPositions);
+        subscription.cache(positionsUpdate);
 
         // deliver to subject
 
@@ -431,12 +414,7 @@ export class IBApiNext {
           return;
         }
 
-        subscription.next(
-          false,
-          incrementalUpdates
-            ? { incrementalUpdate: true, positions: [updatedPosition] }
-            : { incrementalUpdate: false, positions: allPositions.positions }
-        );
+        subscription.next(false, positionsUpdate);
       });
     };
 
@@ -448,7 +426,7 @@ export class IBApiNext {
 
         const subscription = this.subscriptions.get(
           id
-        ) as IBApiNextSubscription<Position[]>;
+        ) as IBApiNextSubscription<PositionsUpdate>;
         if (!subscription) {
           return;
         }

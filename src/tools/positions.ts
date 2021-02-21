@@ -19,11 +19,6 @@ const OPTION_ARGUMENTS: [string, string][] = [
     "Watch for changes. If specified, the app will keep running and print positions updates to console as received from TWS." +
       "If not specified, the app will print a one-time snapshot and than exit.",
   ],
-  [
-    "inc",
-    "Print incremental updates only. When not specified and -watch is used, an update of a position value will print all positions again." +
-      "If the specified, only the changed position(s) will be printed",
-  ],
 ];
 const EXAMPLE_TEXT = "positions.js -watch";
 
@@ -44,19 +39,17 @@ class PrintPositionsApp extends IBApiNextApp {
    */
   start(): void {
     this.connect(this.cmdLineArgs.watch ? 10000 : 0);
-    this.subscription$ = this.api
-      .getPositions(this.cmdLineArgs.inc ? true : false)
-      .subscribe(
-        (positions) => {
-          this.printObject(positions);
-          if (!this.cmdLineArgs.watch) {
-            this.stop();
-          }
-        },
-        (err: IBApiError) => {
-          this.error(`getPositions failed with '${err.error.message}'`);
+    this.subscription$ = this.api.getPositions().subscribe(
+      (positions) => {
+        this.printObject(positions);
+        if (!this.cmdLineArgs.watch) {
+          this.stop();
         }
-      );
+      },
+      (err: IBApiError) => {
+        this.error(`getPositions failed with '${err.error.message}'`);
+      }
+    );
   }
 
   /**

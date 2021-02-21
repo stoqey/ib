@@ -3,17 +3,16 @@ import { Position } from "..";
 /**
  * An update on the positions.
  */
-export interface PositionsUpdate {
-  /**
-   * If true, [[positions]] contains updated positions only.
-   * If false, [[positions]] contains all positions.
-   */
-  incrementalUpdate: boolean;
+export class PositionsUpdate {
+  /** List of positions, that have been opened since last [[PositionsUpdate]]. */
+  opened: Position[] = [];
 
-  /**
-   * The list of all, or of the changes positions.
-   *
-   * @see [[incrementalUpdate]]
-   */
-  positions: Position[];
+  /** List of positions, that have been change since last [[PositionsUpdate]]. */
+  changed: Position[] = [];
+
+  /** List of positions, that have been closed since last [[PositionsUpdate]]. */
+  closed: Position[] = [];
+
+  /** List of all currently open positions. */
+  all: Position[] = [];
 }
