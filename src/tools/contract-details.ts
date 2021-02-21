@@ -2,8 +2,11 @@
  * This App will request contract details from TWS and print it to console.
  */
 
-import { OptionType, SecType } from "..";
+import path from "path";
+
+import { OptionType, SecType } from "../";
 import { IBApiError } from "../api-next";
+import logger from "../utils/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -46,6 +49,8 @@ class PrintContractDetailsApp extends IBApiNextApp {
    * Start the the app.
    */
   start(): void {
+    const scriptName = path.basename(__filename);
+    logger.debug(`Startin ${scriptName} script`);
     this.connect(0);
     this.api
       .getContractDetails({

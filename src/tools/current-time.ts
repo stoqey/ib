@@ -2,7 +2,10 @@
  * This App will print current TWS time to console.
  */
 
+import path from "path";
+
 import { IBApiError } from "../api-next";
+import logger from "../utils/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -27,6 +30,8 @@ class PrintCurrentTimeApp extends IBApiNextApp {
    * Start the the app.
    */
   start(): void {
+    const scriptName = path.basename(__filename);
+    logger.debug(`Startin ${scriptName} script`);
     this.connect(0);
 
     // print current time
