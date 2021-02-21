@@ -21,6 +21,7 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
    */
   constructor(private ib: IBApi, private options?: IBApiCreationOptions) {
     this.socket = new Socket(this, this.options);
+    this.commands.pause();
   }
 
   /** The API socket object. */
@@ -53,14 +54,14 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
    * Connect to the API server.
    */
   connect(clientId?: number): void {
-    this.commands.schedule(() => this.executeConnect(clientId));
+    this.executeConnect(clientId);
   }
 
   /**
    * Disconnect from the API server.
    */
   disconnect(): void {
-    this.commands.schedule(() => this.executeDisconnect());
+    this.executeDisconnect();
   }
 
   /**
