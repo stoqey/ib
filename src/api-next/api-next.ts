@@ -10,6 +10,8 @@ import {
   TickType,
   IBApiTickType,
   IBApiNextTickType,
+  PositionsUpdate,
+  MarketDataTick,
 } from ".";
 import {
   IBApiCreationOptions,
@@ -22,7 +24,7 @@ import { IBApiNextSubscription } from "./internal/subscription";
 import { Observable, Subject } from "rxjs";
 import { take } from "rxjs/operators";
 import { PnLSingle } from "./account/pnl-single";
-import { undefineMax } from "../common/helper";
+import { undefineMax } from "./internal/helper";
 import { IBApiNextLogger } from "./internal/logger";
 import LogLevel from "../api/data/enum/log-level";
 
@@ -376,7 +378,7 @@ export class IBApiNext {
    *
    * @param incrementalUpdates Set to true to enable incremental updates, or false to disable it.
    */
-  getPositions(incrementalUpdates: boolean): Observable<Position[]> {
+  getPositions(incrementalUpdates: boolean): Observable<PositionsUpdate> {
     const requestIds = new Set<number>();
 
     // position event handler
@@ -393,28 +395,31 @@ export class IBApiNext {
 
         const subscription = this.subscriptions.get(
           id
-        ) as IBApiNextSubscription<Position[]>;
+        ) as IBApiNextSubscription<PositionsUpdate>;
         if (!subscription) {
           return;
         }
 
         // update cache
 
-        const allPositions = subscription.value ?? [];
+        const allPositions: PositionsUpdate = subscription.value ?? {
+          incrementalUpdate: false,
+          positions: [],
+        };
 
-        const changePositionIndex = allPositions.findIndex(
+        const changePositionIndex = allPositions.positions.findIndex(
           (p) => p.account === account && p.contract.conId == contract.conId
         );
         if (changePositionIndex === -1) {
           // new position - add it
-          allPositions.push(updatedPosition);
+          allPositions.positions.push(updatedPosition);
         } else {
           if (!updatedPosition.pos) {
             // remove zero size position
-            allPositions.splice(changePositionIndex);
+            allPositions.positions.splice(changePositionIndex);
           } else {
             // update position
-            allPositions[changePositionIndex] = updatedPosition;
+            allPositions.positions[changePositionIndex] = updatedPosition;
           }
         }
 
@@ -428,7 +433,9 @@ export class IBApiNext {
 
         subscription.next(
           false,
-          incrementalUpdates ? [updatedPosition] : allPositions
+          incrementalUpdates
+            ? { incrementalUpdate: true, positions: [updatedPosition] }
+            : { incrementalUpdate: false, positions: allPositions.positions }
         );
       });
     };
@@ -460,7 +467,7 @@ export class IBApiNext {
 
     // create the subscription
 
-    return new IBApiNextSubscription<Position[]>(
+    return new IBApiNextSubscription<PositionsUpdate>(
       this,
       this.subscriptions,
       (reqId) => {
@@ -706,7 +713,7 @@ export class IBApiNext {
     genericTickList: string,
     snapshot: boolean,
     regulatorySnapshot: boolean
-  ): Observable<MarketData> {
+  ): Observable<MarketDataTick> {
     // tickPrice, tickSize and tickGeneric event handler
 
     const onTickHandler = (
@@ -733,20 +740,20 @@ export class IBApiNext {
 
       const subscription = this.subscriptions.get(
         id
-      ) as IBApiNextSubscription<MarketData>;
+      ) as IBApiNextSubscription<MarketDataTick>;
       if (!subscription) {
         return;
       }
 
       // update cache
 
-      const allMarketData = subscription.value ?? new MarketData();
+      const allMarketData = subscription.value ?? new MarketDataTick();
       allMarketData.set(tickType, value);
       subscription.cache(allMarketData);
 
       // deliver to subject
 
-      subscription.next(false, new MarketData([[tickType, value]]));
+      subscription.next(false, new MarketDataTick([[tickType, value]]));
     };
 
     // tickOptionComputationHandler event handler
@@ -767,7 +774,7 @@ export class IBApiNext {
 
       const subscription = this.subscriptions.get(
         id
-      ) as IBApiNextSubscription<MarketData>;
+      ) as IBApiNextSubscription<MarketDataTick>;
       if (!subscription) {
         return;
       }
@@ -863,7 +870,7 @@ export class IBApiNext {
 
       // update cache
 
-      const allMarketData = subscription.value ?? new MarketData();
+      const allMarketData = subscription.value ?? new MarketDataTick();
 
       const filteredTicks = new Map<TickType, number>();
       ticks.forEach((tick) => {
@@ -893,7 +900,7 @@ export class IBApiNext {
 
     // create the subscription
 
-    return new IBApiNextSubscription<MarketData>(
+    return new IBApiNextSubscription<MarketDataTick>(
       this,
       this.subscriptions,
       (tickerId) => {
@@ -912,12 +919,5 @@ export class IBApiNext {
         }
       }
     ).createObservable();
-  }
-}
-
-/** A market data tick on [[IBApiNext]]. */
-export class MarketData extends Map<TickType, number> {
-  constructor(init?: [TickType, number][]) {
-    super(init);
   }
 }

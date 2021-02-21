@@ -1,5 +1,5 @@
 import colors from "colors";
-import { LogLevel } from "../..";
+import { LogLevel } from "..";
 
 /**
  * @internal

@@ -1,9 +1,12 @@
-import { EventName } from "../..";
+import {
+  IBApi,
+  IBApiCreationOptions,
+  EventName,
+  ErrorCode,
+  ConnectionState,
+} from "..";
 import { BehaviorSubject, Observable } from "rxjs";
-import { IBApi, IBApiCreationOptions } from "../../api/api";
-import { ConnectionState } from "../connection/connection-state";
 import { IBApiNextLogger } from "./logger";
-import { ErrorCode } from "../../api/errorCode";
 
 /** The log tag. */
 const LOG_TAG = "IBApiAutoConnection";

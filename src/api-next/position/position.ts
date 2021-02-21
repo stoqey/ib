@@ -1,4 +1,4 @@
-import { Contract } from "../..";
+import { Contract } from "..";
 
 /**
  * A position on an IBKR account.

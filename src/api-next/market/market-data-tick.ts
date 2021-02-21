@@ -1,4 +1,4 @@
-import { TickType } from "../..";
+import { TickType } from "..";
 
 /**
  * A market data tick on [[IBApiNext]].
