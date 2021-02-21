@@ -66,7 +66,6 @@ jobs:
       - APP=GATEWAY
     docker:
       - image: circleci/node:12.18.4
-      - image: industrialninja/ibg_docker_tws:latest
     working_directory: ~/repo
     steps:
       - restore_cache:
@@ -101,7 +100,17 @@ jobs:
     docker:
       - image: circleci/node:12.18.4
       - image: industrialninja/ibg_docker_tws:latest
-
+        environment:
+          - TZ=America/NewYork
+          # Variables pulled from /IBController/IBControllerGatewayStart.sh
+          - TWS_MAJOR_VRSN=974
+          - IBC_INI=/root/IBController/IBController.ini
+          - IBC_PATH=/opt/IBController
+          - TWS_PATH=/root/Jts
+          - TWS_CONFIG_PATH=/root/Jts
+          - LOG_PATH=/opt/IBController/Logs
+          - JAVA_PATH=/opt/i4j_jres/1.8.0_152/bin # JRE is bundled starting with TWS 952
+          - APP=GATEWAY
     working_directory: ~/repo
     steps:
       - restore_cache:
