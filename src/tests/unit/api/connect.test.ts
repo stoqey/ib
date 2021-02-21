@@ -22,7 +22,7 @@ describe("IBApi Tests", () => {
     }
   });
 
-  it("Test connect / disconnect", (done) => {
+  it("Test connect / disconnect", () => {
     ib.on(EventName.connected, () => {
       logger.info("successful Login");
     }).on(EventName.error, (err, code, id) => {
@@ -33,7 +33,7 @@ describe("IBApi Tests", () => {
     ib.connect();
   });
 
-  test("Disconnect", (done) => {
+  test("Disconnect", () => {
     ib.on(EventName.disconnected, () => {
       expect(ib).toBeFalsy();
     });
