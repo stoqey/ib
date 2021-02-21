@@ -1,3 +1,12 @@
+export {
+  IBApi,
+  IBApiCreationOptions,
+  EventName,
+  ErrorCode,
+  LogLevel,
+  Contract,
+} from "..";
+
 export { IBApiNext } from "./api-next";
 
 export { IBApiError } from "./common/ib-api-error";
@@ -26,7 +35,8 @@ export {
 export { PnL } from "./account/pnl";
 export { PnLSingle } from "./account/pnl-single";
 
-export { Position } from "./account/position";
+export { Position } from "./position/position";
+export { PositionsUpdate } from "./position/positions-update";
 
 export { MarketDataTick } from "./market/market-data-tick";
 export { MarketDataType } from "./market/market-data-type";

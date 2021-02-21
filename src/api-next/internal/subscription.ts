@@ -1,6 +1,5 @@
+import { IBApiNext, IBApiError } from "..";
 import { Observable, Subscriber, Subscription } from "rxjs";
-import { IBApiNext } from "..";
-import { IBApiError } from "../common/ib-api-error";
 import { ConnectionState } from "../connection/connection-state";
 
 /**
@@ -18,8 +17,8 @@ export class IBApiNextSubscription<T> {
   /**
    * Create a [[IBApiNextSubscription]] object.
    *
-   * @param api: The [[IBApiNext]] instance.
-   * @param allSubscriptions: List of all active subscriptions.
+   * @param api The [[IBApiNext]] instance.
+   * @param allSubscriptions List of all active subscriptions.
    * @param requestFunction A callback, invoked when the start request be send to TWS.
    * @param cancelFunction A callback, invoked when the cancel request be send to TWS.
    */
@@ -138,6 +137,7 @@ export class IBApiNextSubscription<T> {
       // subscribe on connection state: send TWS request when 'connected' state is signaled
       this.connectionState$ = this.api.connectionState.subscribe((state) => {
         if (state === ConnectionState.Connected) {
+          this.endEventReceived = false;
           this.requestFunction(this.reqId);
         }
       });

@@ -64,6 +64,7 @@ class PrintContractDetailsApp extends IBApiNextApp {
       })
       .then((details) => {
         this.printObject(details);
+        this.stop();
       })
       .catch((err: IBApiError) => {
         this.error(`getContractDetails failed with '${err.error.message}'`);

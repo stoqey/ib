@@ -1,4 +1,4 @@
-import { ErrorCode } from "../../api/errorCode";
+import { ErrorCode } from "..";
 
 /**
  * An error on the TWS / IB Gateway API.

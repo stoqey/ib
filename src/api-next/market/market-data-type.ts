@@ -1,5 +1,5 @@
 /**
- *
+ * TWS market data types.
  */
 export enum MarketDataType {
   /* Disables frozen, delayed and delayed-frozen market data. */

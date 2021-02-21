@@ -28,7 +28,8 @@ const OPTION_ARGUMENTS: [string, string][] = [
   ["exchange=<name>", "The destination exchange name."],
   ["currency=<currency>", "The contract currency."],
 ];
-const EXAMPLE_TEXT = "market-data.js -symbol=AMZ -sectype=STK -exchange=NASDAQ";
+const EXAMPLE_TEXT =
+  "market-data.js -symbol=AMZ -sectype=STK -exchange=SMART -conid=3691937";
 
 //////////////////////////////////////////////////////////////////////////////
 // The App code                                                             //
