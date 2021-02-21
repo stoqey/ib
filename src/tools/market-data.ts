@@ -28,7 +28,7 @@ const OPTION_ARGUMENTS: [string, string][] = [
   ["exchange=<name>", "The destination exchange name."],
   ["currency=<currency>", "The contract currency."],
 ];
-const EXAMPLE_TEXT = "pnl-single.js -account=DU1234567 -watch";
+const EXAMPLE_TEXT = "market-data.js -symbol=AMZ -sectype=STK -exchange=NASDAQ";
 
 //////////////////////////////////////////////////////////////////////////////
 // The App code                                                             //
