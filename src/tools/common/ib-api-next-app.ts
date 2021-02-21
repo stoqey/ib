@@ -40,7 +40,7 @@ export class IBApiNextApp {
 
   /** Common command line options of all [[IBApiNext]] apps. */
   private readonly COMMON_OPTION_ARGUMENTS: [string, string][] = [
-    ["h", "Print the help text."],
+    ["h", "(or -help) Print the help text."],
     ["log=<log_level>", "Log level. Valid values: error, warn, info, debug."],
     [
       "host=<hostname>",
@@ -159,7 +159,7 @@ export class IBApiNextApp {
       this.cmdLineArgs[name] = pair.length > 1 ? pair[1] ?? "1" : "1";
     });
 
-    if (this.cmdLineArgs.h) {
+    if (this.cmdLineArgs.h || this.cmdLineArgs.help) {
       console.info(
         this.formatHelpText(description, usage, optionArguments, example)
       );

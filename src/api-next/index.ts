@@ -26,11 +26,14 @@ export type TickType = IBApiTickType | IBApiNextTickType;
 
 export {
   AccountId,
+  AccountSummary,
   AccountSummaryTagName,
   AccountSummaryValue,
-  AccountSummaryValues,
-  AccountSummaries,
+  AccountSummaryValues
 } from "./account/account-summary";
+
+export { AccountSummaries } from "./account/account-summaries";
+export { AccountSummariesUpdate } from "./account/account-summaries-update";
 
 export { PnL } from "./account/pnl";
 export { PnLSingle } from "./account/pnl-single";

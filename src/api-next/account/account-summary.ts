@@ -30,27 +30,19 @@ export class AccountSummaryValues extends Map<
 /**
  * An account summary on [[IBApiNext]].
  */
-export interface AccountSummary {
-  /** The account id. */
-  account: string;
+export class AccountSummary {
+  /**
+   * Create an [[AccountSummary]] object.
+   *
+   * @param account The account id.
+   */
+  constructor(
+    public account: string,
+    init?: [AccountSummaryTagName, AccountSummaryValue][]
+  ) {
+    this.values = new AccountSummaryValues(init);
+  }
 
   /** The account summary values. */
-  values: AccountSummaryValues;
-}
-
-/**
- * Map wit the summaries of all linked IB accounts, with account id as key.
- */
-export class AccountSummaries extends Map<AccountId, AccountSummary> {
-  constructor(init?: [AccountId, AccountSummary][]) {
-    super(init);
-  }
-  getOrAdd(id: AccountId): AccountSummary {
-    let result = this.get(id);
-    if (result === undefined) {
-      result = { account: id, values: new AccountSummaryValues() };
-      this.set(id, result);
-    }
-    return result;
-  }
+  readonly values: AccountSummaryValues;
 }

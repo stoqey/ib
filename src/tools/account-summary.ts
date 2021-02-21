@@ -62,8 +62,7 @@ class PrintAccountSummaryApp extends IBApiNextApp {
     this.subscription$ = this.api
       .getAccountSummary(
         this.cmdLineArgs.group ?? DEFAULT_GROUP,
-        this.cmdLineArgs.tags ?? DEFAULT_TAGS,
-        this.cmdLineArgs.inc ? true : false
+        this.cmdLineArgs.tags ?? DEFAULT_TAGS
       )
       .subscribe(
         (summaries) => {
