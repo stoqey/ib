@@ -5,8 +5,8 @@ import { AccountSummaries } from "..";
  */
 export class AccountSummariesUpdate {
   /** Map of changed account summary values since last [[AccountSummariesUpdate]] */
-  readonly changed = new AccountSummaries();
+  changed = new AccountSummaries();
 
   /** Map of all account summary values. */
-  readonly all = new AccountSummaries();
+  all = new AccountSummaries();
 }
