@@ -89,7 +89,7 @@ ib.once(EventName.nextValidId, (orderId: number) => {
       currency: "USD",
       secType: SecType.STK,
     };
-    
+
     const order: Order = {
       orderType: OrderType.LMT,
       action: OrderAction.BUY,
@@ -105,6 +105,19 @@ ib.once(EventName.nextValidId, (orderId: number) => {
 ib.connect();
 ib.reqIds();
 ```
+
+## Testing
+
+### Locally
+
+Easiest way to start test and playing around with the code is to run included IB Gateway docker container. To set it up use following steps.
+
+Copy `sample.env` to file `.env`
+1. `cp sample.env .env`
+2. fill in the account info
+3. run command `docker-compose up` (use flag `-d` to run de-attached mode in background) - Now the docker instance of IB Gateway should be running
+4. to take the container down just run `docker-compose down`
+5.
 
 ## Roadmap / IBApiNext
 
@@ -126,7 +139,7 @@ The @deprecated tag will contain a description or link on how migrate to new API
 VSCode will explicitly mark deprecated functions and attributes, so you cannot miss it.<br/>
 
 If you write new code, don't use deprecated functions.<br/>
-If you already use deprecated functions on existing code, migrate to new function on your next code-clean up session. There is no need for immediate change, the deprecated function will 
+If you already use deprecated functions on existing code, migrate to new function on your next code-clean up session. There is no need for immediate change, the deprecated function will
 continue to work for a least a half more year, but at some point it will be removed.<br/>
 
 ## How to contribute
