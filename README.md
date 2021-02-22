@@ -110,14 +110,36 @@ ib.reqIds();
 
 ### Locally
 
+! WARNING ! - Make sure to test on papertrading account as tests could contain actions that result in selling and buying financial instruments.
+
 Easiest way to start test and playing around with the code is to run included IB Gateway docker container. To set it up use following steps.
 
 Copy `sample.env` to file `.env`
-1. `cp sample.env .env`
-2. fill in the account info
-3. run command `docker-compose up` (use flag `-d` to run de-attached mode in background) - Now the docker instance of IB Gateway should be running
-4. to take the container down just run `docker-compose down`
-5.
+1. run `yarn` to install dependencies
+2. `cp sample.env .env`
+3. fill in the account info
+4. run command `docker-compose up` (use flag `-d` to run de-attached mode in background). Now the docker instance of IB Gateway should be running.
+5. to take the container down just run `docker-compose down`
+
+Once docker is up and running with correct credentials it should be ready to accept connections.
+
+### Running jest test
+
+Test's can be ran from CLI with `jest` tool. Either singular or multible tests at once.
+
+Running single/multible tests
+
+`jest src/test/unit/api/api.test.ts`
+
+to run multible, just use path instead of specific file.
+
+To run all test srun following command.
+
+`yarn test`
+
+### CI
+
+Will be added later once it's stable
 
 ## Roadmap / IBApiNext
 
