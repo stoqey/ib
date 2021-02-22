@@ -291,7 +291,9 @@ export class Decoder {
         if (verifyMessageBoundary) {
           if (this.dataQueue[0] !== undefined) {
             this.callback.emitError(
-              `Decoding error on ${decoderFunction}: unprocessed data left on queue. Please report to https://github.com/stoqey/ib`,
+              `Decoding error on ${decoderFunction}: unprocessed data left on queue (${JSON.stringify(
+                this.dataQueue
+              )}). Please report to https://github.com/stoqey/ib`,
               ErrorCode.UNKNOWN_ID,
               -1
             );
@@ -2395,32 +2397,41 @@ export class Decoder {
 
     if (this.serverVersion >= 29) {
       const comboLegsCount = this.readInt();
-      contract.comboLegs = new Array(comboLegsCount);
-      contract.comboLegs.forEach((leg) => {
-        leg.conId = this.readInt();
-        leg.ratio = this.readInt();
-        leg.action = this.readStr();
-        leg.exchange = this.readStr();
-        leg.openClose = this.readInt();
-        leg.shortSaleSlot = this.readInt();
-        leg.designatedLocation = this.readStr();
-        leg.exemptCode = this.readInt();
-      });
+
+      const comboLegs = new Array(comboLegsCount);
+      for (let i = 0; i < comboLegsCount; i++) {
+        comboLegs[i] = {
+          conId: this.readInt(),
+          ratio: this.readInt(),
+          action: this.readStr(),
+          exchange: this.readStr(),
+          openClose: this.readInt(),
+          shortSaleSlot: this.readInt(),
+          designatedLocation: this.readStr(),
+          exemptCode: this.readInt(),
+        };
+      }
+      contract.comboLegs = comboLegs;
 
       const orderComboLegsCount = this.readInt();
-      order.orderComboLegs = new Array(orderComboLegsCount);
-      order.orderComboLegs.forEach((leg) => {
-        leg.price = this.readDoubleMax();
-      });
+      const orderComboLegs = new Array(orderComboLegsCount);
+      for (let i = 0; i < orderComboLegsCount; i++) {
+        orderComboLegs[i] = { price: this.readDoubleMax() };
+      }
+      order.orderComboLegs = orderComboLegs;
     }
 
     if (this.serverVersion >= 26) {
       const smartComboRoutingParamsCount = this.readInt();
-      order.smartComboRoutingParams = new Array(smartComboRoutingParamsCount);
-      order.smartComboRoutingParams.forEach((param) => {
-        param.tag = this.readStr();
-        param.value = this.readStr();
-      });
+
+      const smartComboRoutingParams = new Array(smartComboRoutingParamsCount);
+      for (let i = 0; i < smartComboRoutingParamsCount; i++) {
+        smartComboRoutingParams[i] = {
+          tag: this.readStr(),
+          value: this.readStr(),
+        };
+      }
+      order.smartComboRoutingParams = smartComboRoutingParams;
     }
 
     if (this.serverVersion >= 15) {
@@ -2478,11 +2489,11 @@ export class Decoder {
       order.algoStrategy = this.readStr();
       if (order.algoStrategy !== "") {
         const algoParamsCount = this.readInt();
-        order.algoParams = new Array(algoParamsCount);
-        order.algoParams.forEach((param) => {
-          param.tag = this.readStr();
-          param.value = this.readStr();
-        });
+        const allParams = new Array(algoParamsCount);
+        for (let i = 0; i < algoParamsCount; i++) {
+          allParams[i] = { tag: this.readStr(), value: this.readStr() };
+        }
+        order.algoParams = allParams;
       }
     }
 
