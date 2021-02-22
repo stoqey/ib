@@ -1,12 +1,29 @@
 import { Observable, Subject } from "rxjs";
 import { take } from "rxjs/operators";
 
-import { Contract, ContractDetails, ErrorCode, EventName, IBApiCreationOptions } from "../";
+import {
+  Contract,
+  ContractDetails,
+  ErrorCode,
+  EventName,
+  IBApiCreationOptions,
+} from "../";
 import LogLevel from "../api/data/enum/log-level";
 import {
-    AccountSummaries, AccountSummariesUpdate, AccountSummary, ConnectionState, IBApiAutoConnection,
-    IBApiError, IBApiNextTickType, IBApiTickType, MarketDataTick, MarketDataType, PnL, Position,
-    PositionsUpdate, TickType
+  AccountSummaries,
+  AccountSummariesUpdate,
+  AccountSummary,
+  ConnectionState,
+  IBApiAutoConnection,
+  IBApiError,
+  IBApiNextTickType,
+  IBApiTickType,
+  MarketDataTick,
+  MarketDataType,
+  PnL,
+  Position,
+  PositionsUpdate,
+  TickType,
 } from "./";
 import { PnLSingle } from "./account/pnl-single";
 import { ConsoleLogger } from "./internal/console-logger";
@@ -376,12 +393,12 @@ export class IBApiNext {
         );
         if (changePositionIndex === -1) {
           // new position - add it
-          positionsUpdate.opened.push(updatedPosition);
+          positionsUpdate.added.push(updatedPosition);
           positionsUpdate.all.push(updatedPosition);
         } else {
           if (!updatedPosition.pos) {
             // zero size - remove it
-            positionsUpdate.closed.push(updatedPosition);
+            positionsUpdate.removed.push(updatedPosition);
             positionsUpdate.all.splice(changePositionIndex);
           } else {
             // update
