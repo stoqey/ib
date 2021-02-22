@@ -1,0 +1,198 @@
+# Javascript Node CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-javascript/ for more details
+#
+version: 2
+jobs:
+  build-dependencies:
+    environment:
+      NODE_ENV: development
+    docker:
+      - image: circleci/node:12.18.4
+    working_directory: ~/repo
+    steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+            - source-v1-{{ .Branch }}-
+            - source-v1-
+      - checkout
+      - attach_workspace:
+          at: ~/repo
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v2-dependencies-{{ checksum "package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - v2-dependencies-
+
+      - run: yarn
+
+      - run:
+          name: Build dist
+          command: yarn build
+
+      - run:
+          name: Setup Code Climate test reporter
+          command: |
+            # download test reporter as a static binary
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            chmod +x ./cc-test-reporter
+            ./cc-test-reporter before-build
+          when: always
+
+      - save_cache:
+          paths:
+            - node_modules
+            - dist
+          key: v2-dependencies-{{ checksum "package.json" }}
+      - save_cache:
+          key: source-v1-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - ./
+
+  test_eslint:
+    environment:
+      - NODE_ENV: development
+      - TZ=America/NewYork
+      # Variables pulled from /IBController/IBControllerGatewayStart.sh
+      - TWS_MAJOR_VRSN=974
+      - IBC_INI=/root/IBController/IBController.ini
+      - IBC_PATH=/opt/IBController
+      - TWS_PATH=/root/Jts
+      - TWS_CONFIG_PATH=/root/Jts
+      - LOG_PATH=/opt/IBController/Logs
+      - JAVA_PATH=/opt/i4j_jres/1.8.0_152/bin # JRE is bundled starting with TWS 952
+      - APP=GATEWAY
+    docker:
+      - image: circleci/node:12.18.4
+    working_directory: ~/repo
+    steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+            - source-v1-{{ .Branch }}-
+            - source-v1-
+      - restore_cache:
+          keys:
+            - v2-dependencies-{{ checksum "package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - v2-dependencies-
+
+      - run:
+          name: Run eslint
+          command: |
+            ./node_modules/.bin/eslint "src/**/*.ts" --format junit -o reports/junit/eslint-results.xml
+          when: always
+
+      - store_test_results:
+          path: reports/junit
+
+      - store_artifacts:
+          path: reports
+
+  test_unit_parallel:
+    # we'll increase the value when we'll vahe more tests
+    parallelism: 1
+    environment:
+      # CC_TEST_REPORTER_ID: <inser id>
+      NODE_ENV: development
+    docker:
+      - image: circleci/node:12.18.4
+      - image: industrialninja/ibg_docker_tws:latest
+        environment:
+          - TZ=America/NewYork
+          # Variables pulled from /IBController/IBControllerGatewayStart.sh
+          - TWS_MAJOR_VRSN=974
+          - IBC_INI=/root/IBController/IBController.ini
+          - IBC_PATH=/opt/IBController
+          - TWS_PATH=/root/Jts
+          - TWS_CONFIG_PATH=/root/Jts
+          - LOG_PATH=/opt/IBController/Logs
+          - JAVA_PATH=/opt/i4j_jres/1.8.0_152/bin # JRE is bundled starting with TWS 952
+          - APP=GATEWAY
+          - TRADING_MODE=paper
+        ports:
+          - 4003:4003
+    working_directory: ~/repo
+    steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+            - source-v1-{{ .Branch }}-
+            - source-v1-
+      - run:
+          name: install dockerize
+          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+          environment:
+            DOCKERIZE_VERSION: v0.3.0
+      - run:
+          name: Wait for IBG
+          command: dockerize -wait tcp://localhost:4003 -timeout 1m
+      - run:
+          name: Run unit tests with JUnit as reporter
+          # For more info on --maxWorkers=10 see https://github.com/facebook/jest/issues/1456
+          command: |
+            TESTFILES=$(circleci tests glob "src/tests/unit/**/*.test.ts" | circleci tests split --split-by=name)
+            ./node_modules/.bin/jest $TESTFILES --maxWorkers=4 --coverage --ci --forceExit --detectOpenHandles
+          environment:
+            JEST_JUNIT_OUTPUT: "reports/junit/js-unit-$CIRCLE_NODE_INDEX-test-results.xml"
+          when: always
+
+      - run:
+          name: Code Climate Test Coverage
+          command: |
+            ./cc-test-reporter format-coverage -t lcov -o "coverage/codeclimate.$CIRCLE_NODE_INDEX.json"
+
+      - persist_to_workspace:
+          root: coverage
+          paths:
+            - codeclimate.*.json
+
+      #- run:
+      #    name: Send coverage report to Code Climate
+      #    command: |
+      #      ./cc-test-reporter after-build -t lcov
+      #    when: on_success
+
+      - store_test_results:
+          path: reports
+      - store_artifacts:
+          path: reports
+      - store_artifacts:
+          path: coverage/lcov.info
+
+  upload-coverage:
+    environment:
+      CC_TEST_REPORTER_ID: <insert id>
+    docker:
+      - image: circleci/node:12.18.4
+    working_directory: ~/repo
+    steps:
+      - attach_workspace:
+          at: ~/repo
+
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+            - source-v1-{{ .Branch }}-
+            - source-v1-
+      - run:
+          name: Send coverage report to Code Climate
+          command: |
+            ./cc-test-reporter sum-coverage --output - codeclimate.*.json | ./cc-test-reporter upload-coverage --debug --input -
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build-dependencies
+      - test_eslint:
+          requires:
+            - build-dependencies
+      #- test_unit_parallel:
+      #    requires:
+      #      - build-dependencies
+      #- upload-coverage:
+      #    requires:
+      #      - test_unit_parallel

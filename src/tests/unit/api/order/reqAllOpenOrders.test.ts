@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * This file implement test code for the reqAllOpenOrders function and openOrder event.
  */

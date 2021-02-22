@@ -8,3 +8,7 @@ yarn-error.log*
 dist/
 doc-dev/
 junit.xml
+
+docker/ibc/config.ini
+
+docker/ibc/jts.ini
