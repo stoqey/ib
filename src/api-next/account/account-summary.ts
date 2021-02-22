@@ -4,15 +4,23 @@ export type AccountId = string;
 /** An account summary value tag name. */
 export type AccountSummaryTagName = string;
 
+/** The currency of a value on the account summary. */
+export type AccountSummaryValueCurrency = string;
+
 /**
  * A value on an account summary.
+ *
+ * Note same value on account summary can exists in different
+ * currencies (therefore this is a Map, with currency code
+ * as key).
  */
-export interface AccountSummaryValue {
-  /** The actual value. */
-  value: string;
-
-  /* The currency of the value. */
-  currency: string;
+export class AccountSummaryValue extends Map<
+  AccountSummaryValueCurrency,
+  string
+> {
+  constructor(init?: [AccountSummaryValueCurrency, string][]) {
+    super(init);
+  }
 }
 
 /**
@@ -24,6 +32,14 @@ export class AccountSummaryValues extends Map<
 > {
   constructor(init?: [AccountSummaryTagName, AccountSummaryValue][]) {
     super(init);
+  }
+  getOrAdd(tag: AccountSummaryTagName): AccountSummaryValue {
+    let result = this.get(tag);
+    if (result === undefined) {
+      result = new AccountSummaryValue();
+      this.set(tag, result);
+    }
+    return result;
   }
 }
 
@@ -43,6 +59,6 @@ export class AccountSummary {
     this.values = new AccountSummaryValues(init);
   }
 
-  /** The account summary values. */
+  /** Map of of account summary values, with tag name as key. */
   readonly values: AccountSummaryValues;
 }
