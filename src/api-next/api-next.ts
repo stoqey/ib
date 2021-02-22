@@ -12,7 +12,6 @@ import {
   PositionsUpdate,
   MarketDataTick,
   AccountSummariesUpdate,
-  AccountSummary,
 } from ".";
 import {
   IBApiCreationOptions,
@@ -159,13 +158,15 @@ export class IBApiNext {
     return this.api.connectionState;
   }
 
-  /** Returns true if currently connected, false otherwise. */
+  /**
+   * Returns true if currently connected, false otherwise.
+   */
   get isConnected(): boolean {
     return this.api.isConnected;
   }
 
   /**
-   * Get the next unused request id.
+   * Get the next unused request/ticker id.
    */
   get nextReqId(): number {
     return ++IBApiNext.lastUsedRedId;
@@ -176,13 +177,13 @@ export class IBApiNext {
    *
    * @param clientId A fixed client id to be used on all connection
    * attempts. If not specified, the first connection will use the
-   * default client id (0) and increment it with each re-connection
+   * default client id (0) and it will increment it with each re-connection
    * attempt.
    *
    * @sse [[connectionState]] for observing the connection state.
    */
   connect(clientId?: number): IBApiNext {
-    this.logger.logDebug(LOG_TAG, `connect(${clientId})`);
+    this.logger.logDebug(LOG_TAG, `connect(${clientId ?? ""})`);
     this.api.connect(clientId);
     return this;
   }
@@ -300,11 +301,13 @@ export class IBApiNext {
 
       // update cache
 
+      const update = new AccountSummariesUpdate();
+      update.changed.getOrAdd(account).values.set(tag, { value, currency });
+
       const cached = subscription.value ?? new AccountSummariesUpdate();
       cached.all.getOrAdd(account).values.set(tag, { value, currency });
-      if (!subscription.endEventReceived) {
-        cached.changed.getOrAdd(account).values.set(tag, { value, currency });
-      }
+
+      cached.changed = cached.all; // init event must signal all values as changed
       subscription.cache(cached);
 
       // deliver to subject
@@ -313,12 +316,7 @@ export class IBApiNext {
         return;
       }
 
-      cached.changed.clear();
-      cached.changed.set(
-        account,
-        new AccountSummary(account, [[tag, { value, currency }]])
-      );
-      subscription.next(false, cached);
+      subscription.next(false, update);
     };
 
     // accountSummaryEnd event handler
@@ -359,7 +357,7 @@ export class IBApiNext {
   }
 
   /**
-   * Create subscription to receive the positions on all accessible accounts.
+   * Create a subscription to receive updates on positions of all accessible accounts.
    */
   getPositions(): Observable<PositionsUpdate> {
     const requestIds = new Set<number>();
@@ -385,28 +383,30 @@ export class IBApiNext {
 
         // update cache
 
-        const positionsUpdate = subscription.value ?? new PositionsUpdate();
+        const updated = new PositionsUpdate();
+        const cached = subscription.value ?? new PositionsUpdate();
 
-        const changePositionIndex = positionsUpdate.all.findIndex(
+        const changePositionIndex = cached.all.findIndex(
           (p) => p.account === account && p.contract.conId == contract.conId
         );
         if (changePositionIndex === -1) {
           // new position - add it
-          positionsUpdate.opened.push(updatedPosition);
-          positionsUpdate.all.push(updatedPosition);
+          updated.added.push(updatedPosition);
+          cached.all.push(updatedPosition);
         } else {
           if (!updatedPosition.pos) {
             // zero size - remove it
-            positionsUpdate.closed.push(updatedPosition);
-            positionsUpdate.all.splice(changePositionIndex);
+            updated.removed.push(updatedPosition);
+            cached.all.splice(changePositionIndex);
           } else {
             // update
-            positionsUpdate.changed.push(updatedPosition);
-            positionsUpdate.all[changePositionIndex] = updatedPosition;
+            updated.changed.push(updatedPosition);
+            cached.all[changePositionIndex] = updatedPosition;
           }
         }
 
-        subscription.cache(positionsUpdate);
+        cached.added = cached.all; // init event must signal all positions as added
+        subscription.cache(cached);
 
         // deliver to subject
 
@@ -414,7 +414,8 @@ export class IBApiNext {
           return;
         }
 
-        subscription.next(false, positionsUpdate);
+        updated.all = cached.all;
+        subscription.next(false, updated);
       });
     };
 
