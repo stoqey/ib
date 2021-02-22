@@ -13,6 +13,7 @@ import {
   AccountSummaries,
   AccountSummariesUpdate,
   AccountSummary,
+  AccountSummaryValue,
   ConnectionState,
   IBApiAutoConnection,
   IBApiError,
@@ -302,9 +303,13 @@ export class IBApiNext {
       // update cache
 
       const cached = subscription.value ?? new AccountSummariesUpdate();
-      cached.all.getOrAdd(account).values.set(tag, { value, currency });
+
+      cached.all.getOrAdd(account).values.getOrAdd(tag).set(currency, value);
       if (!subscription.endEventReceived) {
-        cached.changed.getOrAdd(account).values.set(tag, { value, currency });
+        cached.changed
+          .getOrAdd(account)
+          .values.getOrAdd(tag)
+          .set(currency, value);
       }
       subscription.cache(cached);
 
@@ -317,7 +322,9 @@ export class IBApiNext {
       cached.changed.clear();
       cached.changed.set(
         account,
-        new AccountSummary(account, [[tag, { value, currency }]])
+        new AccountSummary(account, [
+          [tag, new AccountSummaryValue([[value, currency]])],
+        ])
       );
       subscription.next(false, cached);
     };
