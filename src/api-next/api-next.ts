@@ -1,13 +1,6 @@
 import { Observable, Subject } from "rxjs";
 import { take } from "rxjs/operators";
-
-import {
-  Contract,
-  ContractDetails,
-  ErrorCode,
-  EventName,
-  IBApiCreationOptions,
-} from "../";
+import { Contract, ContractDetails, ErrorCode, EventName } from "../";
 import LogLevel from "../api/data/enum/log-level";
 import {
   AccountSummaries,
@@ -29,13 +22,64 @@ import {
 import { PnLSingle } from "./account/pnl-single";
 import { ConsoleLogger } from "./internal/console-logger";
 import { undefineMax } from "./internal/helper";
+import { IBApiNextLogger } from "./common/logger";
 import { IBApiNextSubscription } from "./internal/subscription";
+import { IBApiNextSubscriptionRegistry } from "./internal/subscription-registry";
 
-/** An invalid request id. */
+/**
+ * @internal
+ *
+ * An invalid request id.
+ */
 const INVALID_REQ_ID = -1;
 
-/** The log tag. */
+/**
+ * @internal
+ *
+ * Log tag used on messages created by IBApiNext.
+ */
 const LOG_TAG = "IBApiNext";
+
+/**
+ * @internal
+ *
+ * Log tag used on messages that have been received from TWS / IB Gateway.
+ */
+const TWS_LOG_TAG = "TWS";
+
+/**
+ * Input arguments on the [[IBApiNext]] class constructor.
+ */
+export interface IBApiNextCreationOptions {
+  /**
+   * Hostname of the TWS (or IB Gateway).
+   *
+   * Default is 'localhost'.
+   */
+  host?: string;
+
+  /**
+   * Hostname of the TWS (or IB Gateway).
+   *
+   * Default is 7496, which is the default setting on TWS for live-accounts.
+   */
+  port?: number;
+
+  /**
+   * The auto-reconnect interval in milliseconds.
+   * If 0 or undefined, auto-reconnect will be disabled.
+   */
+  reconnectInterval?: number;
+
+  /**
+   * Custom logger implementation.
+   *
+   * By default [[IBApiNext]] does log to console.
+   * If you want to log to a different target (i.e. a file or pipe),
+   * set this attribute to your custom [[IBApiNextLogger]] implementation.
+   */
+  logger?: IBApiNextLogger;
+}
 
 /**
  * Next-gen Typescript implementation of the Interactive Brokers TWS (or IB Gateway) API.
@@ -44,22 +88,40 @@ const LOG_TAG = "IBApiNext";
  * use [[IBApi]].
  *
  * If you prefer to use an API that provides some more convenience functions, such as auto-reconnect
- * or rxjs Observables that stay functional during re-connect, use [[IBApiNext]].
+ * or RxJS Observables that stay functional during re-connect, use [[IBApiNext]].
+ *
+ * [[IBApiNext]] does return RxJS Observables on most of the functions.
+ * The first subscriber will send the request to TWS, while the last un-subscriber will cancel it.
+ * Any subscriber in between will get a replay of the latest received value(s).
+ * This is also the case if you call same function with same arguments multiple times ([[IBApiNext]]
+ * will make sure that a similar subscription is not requested multiple times from TWS, but it will
+ * become a new observers to the existing subscription).
+ * In case of an error, a re-subscribe will send the TWS request again (it is fully compatible to RxJS
+ * operators, e.g. retry or retryWhen).
+ *
+ * Note that connection errors are not reported to the returned Observables as returned by get-functions,
+ * but they will simply stop emitting values until TWS connection is re-established.
+ * Use [[IBApiNext.connectState]] for observing the connection state.
  */
 export class IBApiNext {
   /**
    * Create an [[IBApiNext]] object.
    *
-   * @param reconnectInterval The auto-reconnect interval in milliseconds.
-   * If set to 0, auto-reconnect is disabled.
    * @param options Creation options.
    */
-  constructor(reconnectInterval: number, options?: IBApiCreationOptions) {
-    // create IBApiAutoConnection object
+  constructor(options?: IBApiNextCreationOptions) {
+    this.logger = options.logger ?? new ConsoleLogger();
 
-    this.api = new IBApiAutoConnection(reconnectInterval, this.logger, options);
+    // create the IBApiAutoConnection and subscription registry
 
-    // setup error event handler
+    this.api = new IBApiAutoConnection(
+      options.reconnectInterval ?? 0,
+      this.logger,
+      options
+    );
+    this.subscriptions = new IBApiNextSubscriptionRegistry(this.api, this);
+
+    // setup error event handler (bound to lifetime of IBApiAutoConnection so we never unregister)
 
     this.api.on(
       EventName.error,
@@ -67,61 +129,37 @@ export class IBApiNext {
         const apiError: IBApiError = { error, code, reqId };
         // emit to the subscription subject
         if (reqId !== INVALID_REQ_ID) {
-          this.subscriptions.get(reqId).error(apiError);
+          this.subscriptions.dispatchError(reqId, apiError);
         }
         // emit to global error subject
         this.errorSubject.next(apiError);
       }
     );
 
-    // setup TWS server version event handler
+    // setup TWS server version event handler  (bound to lifetime of IBApiAutoConnection so we never unregister)
 
     this.api.on(EventName.server, (version, connectionTime) => {
       this.logger.info(
-        "TWS",
+        TWS_LOG_TAG,
         `Server Version: ${version}. Connection time ${connectionTime}`
       );
     });
 
-    // setup TWS info message event handler
+    // setup TWS info message event handler  (bound to lifetime of IBApiAutoConnection so we never unregister)
 
     this.api.on(EventName.info, (message: string) => {
-      this.logger.info("TWS", message);
+      this.logger.info(TWS_LOG_TAG, message);
     });
   }
 
   /** The [[IBApiNextLogger]] instance. */
-  private readonly logger = new ConsoleLogger();
+  public readonly logger: IBApiNextLogger;
 
   /** The [[IBApi]] with auto-reconnect. */
   private readonly api: IBApiAutoConnection;
 
-  /** List of all active subscriptions, with request id as key. */
-  private readonly subscriptions = new Map<
-    number,
-    IBApiNextSubscription<unknown>
-  >();
-
-  /** A list of registered event handlers (to avoid that same handler is registered multiple times). */
-  private readonly eventHandlers = new Set<EventName>();
-
-  /**
-   * Register an event handler.
-   *
-   * @param registrationCallback Callback that is invoked to execute the
-   * event handler registration code. It will not be called if an event handler for
-   * the given event name already exists.
-   */
-  private registerEventHandler(
-    eventName: EventName,
-    listener: (...args: unknown[]) => void
-  ): void {
-    if (this.eventHandlers.has(eventName)) {
-      return;
-    }
-    this.api.addListener(eventName, listener);
-    this.eventHandlers.add(eventName);
-  }
+  /** The subscription registry. */
+  private readonly subscriptions: IBApiNextSubscriptionRegistry;
 
   /**
    * The IBApi error [[Subject]].
@@ -129,9 +167,6 @@ export class IBApiNext {
    * All errors from [[IBApi]] error events will be sent to this subject.
    */
   public readonly errorSubject = new Subject<IBApiError>();
-
-  /** The last used request id. */
-  private static lastUsedRedId = 0;
 
   /** Get the current log level. */
   get logLevel(): LogLevel {
@@ -167,13 +202,6 @@ export class IBApiNext {
   }
 
   /**
-   * Get the next unused request id.
-   */
-  get nextReqId(): number {
-    return ++IBApiNext.lastUsedRedId;
-  }
-
-  /**
    * Connect to the TWS or IB Gateway.
    *
    * @param clientId A fixed client id to be used on all connection
@@ -200,37 +228,96 @@ export class IBApiNext {
     return this;
   }
 
+  /** currentTime event handler.  */
+  private onCurrentTime = (
+    subscriptions: Map<number, IBApiNextSubscription<number>>,
+    time: number
+  ): void => {
+    subscriptions.forEach((sub) => sub.next(true, time));
+  };
+
   /**
    * Get TWS's current time.
    */
   getCurrentTime(): Promise<number> {
-    const requestIds = new Set<number>();
-
-    // register event handlers
-
-    const onCurrentTime = (time: number): void => {
-      requestIds.forEach((id) => this.subscriptions.get(id).next(true, time));
-    };
-
-    this.registerEventHandler(EventName.currentTime, onCurrentTime);
-
-    // create the subscription
-
-    return new IBApiNextSubscription<number>(
-      this,
-      this.subscriptions,
-      (reqId) => {
-        requestIds.add(reqId);
-        this.api.reqCurrentTime();
-      },
-      (reqId) => {
-        requestIds.delete(reqId);
-      }
-    )
-      .createObservable()
+    return this.subscriptions
+      .register<number>(
+        () => {
+          this.api.reqCurrentTime();
+        },
+        undefined,
+        [[EventName.currentTime, this.onCurrentTime]]
+      )
       .pipe(take(1))
       .toPromise();
   }
+
+  /** accountSummary event handler */
+  private readonly onAccountSummary = (
+    subscriptions: Map<number, IBApiNextSubscription<AccountSummariesUpdate>>,
+    reqId: number,
+    account: string,
+    tag: string,
+    value: string,
+    currency: string
+  ): void => {
+    // get the subscription
+
+    const subscription = subscriptions.get(
+      reqId
+    ) as IBApiNextSubscription<AccountSummariesUpdate>;
+    if (!subscription) {
+      return;
+    }
+
+    // update cache
+
+    const cached = subscription.value ?? new AccountSummariesUpdate();
+
+    cached.all.getOrAdd(account).values.getOrAdd(tag).set(currency, value);
+    if (!subscription.endEventReceived) {
+      cached.changed
+        .getOrAdd(account)
+        .values.getOrAdd(tag)
+        .set(currency, value);
+    }
+    subscription.cache(cached);
+
+    // deliver to subject
+
+    if (!subscription.endEventReceived) {
+      return;
+    }
+
+    cached.changed.clear();
+    cached.changed.set(
+      account,
+      new AccountSummary(account, [
+        [tag, new AccountSummaryValue([[value, currency]])],
+      ])
+    );
+    subscription.next(false, cached);
+  };
+
+  /* accountSummaryEnd event handler */
+  private readonly onAccountSummaryEnd = (
+    subscriptions: Map<number, IBApiNextSubscription<AccountSummariesUpdate>>,
+    reqId: number
+  ): void => {
+    // get the subscription
+
+    const subscription = subscriptions.get(
+      reqId
+    ) as IBApiNextSubscription<AccountSummariesUpdate>;
+    if (!subscription) {
+      return;
+    }
+
+    // signal end event and deliver cache to subject
+
+    subscription.endEventReceived = true;
+    subscription.next(false, subscription.value);
+  };
 
   /**
    * Create subscription to receive the account summaries of all linked accounts as presented in the TWS' Account Summary tab.
@@ -282,36 +369,55 @@ export class IBApiNext {
     group: string,
     tags: string
   ): Observable<AccountSummariesUpdate> {
-    // accountSummary event handler
+    return this.subscriptions.register<AccountSummariesUpdate>(
+      (reqId) => {
+        this.api.reqAccountSummary(reqId, group, tags);
+      },
+      (reqId) => {
+        this.api.cancelAccountSummary(reqId);
+      },
+      [
+        [EventName.accountSummary, this.onAccountSummary],
+        [EventName.accountSummaryEnd, this.onAccountSummaryEnd],
+      ],
+      `${group}:${tags}`
+    );
+  }
 
-    const onAccountSummary = (
-      reqId: number,
-      account: string,
-      tag: string,
-      value: string,
-      currency: string
-    ): void => {
-      // get the subscription
-
-      const subscription = this.subscriptions.get(
-        reqId
-      ) as IBApiNextSubscription<AccountSummariesUpdate>;
-      if (!subscription) {
-        return;
-      }
-
+  /** position event handler */
+  private readonly onPosition = (
+    subscriptions: Map<number, IBApiNextSubscription<PositionsUpdate>>,
+    account: string,
+    contract: Contract,
+    pos: number,
+    avgCost: number
+  ): void => {
+    const updatedPosition: Position = { account, contract, pos, avgCost };
+    subscriptions.forEach((subscription) => {
       // update cache
 
-      const cached = subscription.value ?? new AccountSummariesUpdate();
+      const positionsUpdate = subscription.value ?? new PositionsUpdate();
 
-      cached.all.getOrAdd(account).values.getOrAdd(tag).set(currency, value);
-      if (!subscription.endEventReceived) {
-        cached.changed
-          .getOrAdd(account)
-          .values.getOrAdd(tag)
-          .set(currency, value);
+      const changePositionIndex = positionsUpdate.all.findIndex(
+        (p) => p.account === account && p.contract.conId == contract.conId
+      );
+      if (changePositionIndex === -1) {
+        // new position - add it
+        positionsUpdate.added.push(updatedPosition);
+        positionsUpdate.all.push(updatedPosition);
+      } else {
+        if (!updatedPosition.pos) {
+          // zero size - remove it
+          positionsUpdate.removed.push(updatedPosition);
+          positionsUpdate.all.splice(changePositionIndex);
+        } else {
+          // update
+          positionsUpdate.changed.push(updatedPosition);
+          positionsUpdate.all[changePositionIndex] = updatedPosition;
+        }
       }
-      subscription.cache(cached);
+
+      subscription.cache(positionsUpdate);
 
       // deliver to subject
 
@@ -319,153 +425,82 @@ export class IBApiNext {
         return;
       }
 
-      cached.changed.clear();
-      cached.changed.set(
-        account,
-        new AccountSummary(account, [
-          [tag, new AccountSummaryValue([[value, currency]])],
-        ])
-      );
-      subscription.next(false, cached);
-    };
+      subscription.next(false, positionsUpdate);
+    });
+  };
 
-    // accountSummaryEnd event handler
-
-    const onAccountSummaryEnd = (reqId: number): void => {
-      // get the subscription
-
-      const subscription = this.subscriptions.get(
-        reqId
-      ) as IBApiNextSubscription<AccountSummaries>;
-      if (!subscription) {
-        return;
-      }
-
+  /** positionEnd event handler */
+  private readonly onPositionEnd = (
+    subscriptions: Map<number, IBApiNextSubscription<PositionsUpdate>>
+  ): void => {
+    subscriptions.forEach((subscription) => {
       // signal end event and deliver cache to subject
 
       subscription.endEventReceived = true;
       subscription.next(false, subscription.value);
-    };
-
-    // register event handlers
-
-    this.registerEventHandler(EventName.accountSummary, onAccountSummary);
-    this.registerEventHandler(EventName.accountSummaryEnd, onAccountSummaryEnd);
-
-    // create the subscription
-
-    return new IBApiNextSubscription<AccountSummariesUpdate>(
-      this,
-      this.subscriptions,
-      (reqId) => {
-        this.api.reqAccountSummary(reqId, group, tags);
-      },
-      (reqId) => {
-        this.api.cancelAccountSummary(reqId);
-      }
-    ).createObservable();
-  }
+    });
+  };
 
   /**
    * Create subscription to receive the positions on all accessible accounts.
    */
   getPositions(): Observable<PositionsUpdate> {
-    const requestIds = new Set<number>();
-
-    // position event handler
-
-    const onPosition = (
-      account: string,
-      contract: Contract,
-      pos: number,
-      avgCost: number
-    ): void => {
-      const updatedPosition: Position = { account, contract, pos, avgCost };
-      requestIds.forEach((id) => {
-        // get subscription
-
-        const subscription = this.subscriptions.get(
-          id
-        ) as IBApiNextSubscription<PositionsUpdate>;
-        if (!subscription) {
-          return;
-        }
-
-        // update cache
-
-        const positionsUpdate = subscription.value ?? new PositionsUpdate();
-
-        const changePositionIndex = positionsUpdate.all.findIndex(
-          (p) => p.account === account && p.contract.conId == contract.conId
-        );
-        if (changePositionIndex === -1) {
-          // new position - add it
-          positionsUpdate.added.push(updatedPosition);
-          positionsUpdate.all.push(updatedPosition);
-        } else {
-          if (!updatedPosition.pos) {
-            // zero size - remove it
-            positionsUpdate.removed.push(updatedPosition);
-            positionsUpdate.all.splice(changePositionIndex);
-          } else {
-            // update
-            positionsUpdate.changed.push(updatedPosition);
-            positionsUpdate.all[changePositionIndex] = updatedPosition;
-          }
-        }
-
-        subscription.cache(positionsUpdate);
-
-        // deliver to subject
-
-        if (!subscription.endEventReceived) {
-          return;
-        }
-
-        subscription.next(false, positionsUpdate);
-      });
-    };
-
-    // positionEnd event handler
-
-    const onPositionEnd = (): void => {
-      requestIds.forEach((id) => {
-        // get the subscription
-
-        const subscription = this.subscriptions.get(
-          id
-        ) as IBApiNextSubscription<PositionsUpdate>;
-        if (!subscription) {
-          return;
-        }
-
-        // signal end event and deliver cache to subject
-
-        subscription.endEventReceived = true;
-        subscription.next(false, subscription.value);
-      });
-    };
-
-    // register event handlers
-
-    this.registerEventHandler(EventName.position, onPosition);
-    this.registerEventHandler(EventName.positionEnd, onPositionEnd);
-
-    // create the subscription
-
-    return new IBApiNextSubscription<PositionsUpdate>(
-      this,
-      this.subscriptions,
-      (reqId) => {
-        requestIds.add(reqId);
+    return this.subscriptions.register(
+      () => {
         this.api.reqPositions();
       },
-      (reqId) => {
+      () => {
         this.api.cancelPositions();
-        requestIds.delete(reqId);
-      }
-    ).createObservable();
+      },
+      [
+        [EventName.position, this.onPosition],
+        [EventName.positionEnd, this.onPositionEnd],
+      ],
+      "getPositions"
+    );
   }
+
+  /** contractDetails event handler */
+  private readonly onContractDetails = (
+    subscriptions: Map<number, IBApiNextSubscription<ContractDetails[]>>,
+    id: number,
+    details: ContractDetails
+  ) => {
+    // get subscription
+
+    const subscription = subscriptions.get(id) as IBApiNextSubscription<
+      ContractDetails[]
+    >;
+    if (!subscription) {
+      return;
+    }
+
+    // update cache
+
+    const allContractDetails = subscription.value ?? [];
+    allContractDetails.push(details);
+    subscription.cache(allContractDetails);
+  };
+
+  /** contractDetailsEnd event handler */
+  private readonly onContractDetailsEnd = (
+    subscriptions: Map<number, IBApiNextSubscription<ContractDetails[]>>,
+    id: number
+  ) => {
+    // get subscription
+
+    const subscription = subscriptions.get(id) as IBApiNextSubscription<
+      ContractDetails[]
+    >;
+    if (!subscription) {
+      return;
+    }
+
+    // deliver cache to subject and clear it
+
+    subscription.next(false, subscription.value);
+    subscription.cache([]);
+  };
 
   /**
    * Request contract information form TWS.
@@ -479,67 +514,44 @@ export class IBApiNext {
    * @param contract The contract used as sample to query the available contracts.
    */
   getContractDetails(contract: Contract): Promise<ContractDetails[]> {
-    // contractDetails event handler
-
-    const onContractDetails = (id: number, details: ContractDetails) => {
-      // get subscription
-
-      const subscription = this.subscriptions.get(id) as IBApiNextSubscription<
-        ContractDetails[]
-      >;
-      if (!subscription) {
-        return;
-      }
-
-      // update cache
-
-      const allContractDetails = subscription.value ?? [];
-      allContractDetails.push(details);
-      subscription.cache(allContractDetails);
-    };
-
-    // contractDetailsEnd event handler
-
-    const onContractDetailsEnd = (id: number) => {
-      // get subscription
-
-      const subscription = this.subscriptions.get(id) as IBApiNextSubscription<
-        ContractDetails[]
-      >;
-      if (!subscription) {
-        return;
-      }
-
-      // deliver cache to subject and clear it
-
-      subscription.next(false, subscription.value);
-      subscription.cache([]);
-    };
-
-    // register event handler
-
-    this.registerEventHandler(EventName.contractDetails, onContractDetails);
-    this.registerEventHandler(
-      EventName.contractDetailsEnd,
-      onContractDetailsEnd
-    );
-
-    // create the subscription
-
-    return new IBApiNextSubscription<ContractDetails[]>(
-      this,
-      this.subscriptions,
-      (reqId) => {
-        this.api.reqContractDetails(reqId, contract);
-      },
-      () => {
-        return;
-      }
-    )
-      .createObservable()
+    return this.subscriptions
+      .register<ContractDetails[]>(
+        (reqId) => {
+          this.api.reqContractDetails(reqId, contract);
+        },
+        undefined,
+        [
+          [EventName.contractDetails, this.onContractDetails],
+          [EventName.contractDetailsEnd, this.onContractDetailsEnd],
+        ]
+      )
       .pipe(take(1))
       .toPromise();
   }
+
+  /** pnl event handler. */
+  private onPnL = (
+    subscriptions: Map<number, IBApiNextSubscription<PnL>>,
+    reqId: number,
+    dailyPnL: number,
+    unrealizedPnL: number,
+    realizedPnL: number
+  ): void => {
+    // get subscription
+
+    const subscription = subscriptions.get(reqId);
+    if (!subscription) {
+      return;
+    }
+
+    // deliver value to subject
+
+    subscription.next(true, {
+      dailyPnL: undefineMax(dailyPnL),
+      unrealizedPnL: undefineMax(unrealizedPnL),
+      realizedPnL: undefineMax(realizedPnL),
+    });
+  };
 
   /**
    * Create a subscription to receive real time daily PnL and unrealized PnL updates.
@@ -548,47 +560,47 @@ export class IBApiNext {
    * @param modelCode Specify to request PnL updates for a specific model.
    */
   getPnL(account: string, model?: string): Observable<PnL> {
-    // register event handler
-
-    const onPnL = (
-      reqId: number,
-      dailyPnL: number,
-      unrealizedPnL: number,
-      realizedPnL: number
-    ) => {
-      // get subscription
-
-      const subscription = this.subscriptions.get(
-        reqId
-      ) as IBApiNextSubscription<PnL>;
-      if (!subscription) {
-        return;
-      }
-
-      // deliver value to subject
-
-      subscription.next(true, {
-        dailyPnL: undefineMax(dailyPnL),
-        unrealizedPnL: undefineMax(unrealizedPnL),
-        realizedPnL: undefineMax(realizedPnL),
-      });
-    };
-
-    this.registerEventHandler(EventName.pnl, onPnL);
-
-    // create the subscription
-
-    return new IBApiNextSubscription<PnL>(
-      this,
-      this.subscriptions,
+    return this.subscriptions.register(
       (reqId) => {
         this.api.reqPnL(reqId, account, model);
       },
-      () => {
-        return;
-      }
-    ).createObservable();
+      (reqId) => {
+        this.api.cancelPnL(reqId);
+      },
+      [[EventName.pnl, this.onPnL]],
+      `${account}:${model}`
+    );
   }
+
+  /** pnlSingle event handler. */
+  private readonly onPnLSingle = (
+    subscriptions: Map<number, IBApiNextSubscription<PnLSingle>>,
+    reqId: number,
+    pos: number,
+    dailyPnL: number,
+    unrealizedPnL: number,
+    realizedPnL: number,
+    value: number
+  ) => {
+    // get subscription
+
+    const subscription = subscriptions.get(
+      reqId
+    ) as IBApiNextSubscription<PnLSingle>;
+    if (!subscription) {
+      return;
+    }
+
+    // deliver value to subject
+
+    subscription.next(true, {
+      position: pos,
+      dailyPnL: undefineMax(dailyPnL),
+      unrealizedPnL: undefineMax(unrealizedPnL),
+      realizedPnL: undefineMax(realizedPnL),
+      marketValue: undefineMax(value),
+    });
+  };
 
   /**
    * Create a subscription to receive real time updates for daily PnL of individual positions.
@@ -602,50 +614,16 @@ export class IBApiNext {
     modelCode: string,
     conId: number
   ): Observable<PnLSingle> {
-    // register event handler
-
-    const pnlSingleHandler = (
-      reqId: number,
-      pos: number,
-      dailyPnL: number,
-      unrealizedPnL: number,
-      realizedPnL: number,
-      value: number
-    ) => {
-      // get subscription
-
-      const subscription = this.subscriptions.get(
-        reqId
-      ) as IBApiNextSubscription<PnLSingle>;
-      if (!subscription) {
-        return;
-      }
-
-      // deliver value to subject
-
-      subscription.next(true, {
-        position: pos,
-        dailyPnL: undefineMax(dailyPnL),
-        unrealizedPnL: undefineMax(unrealizedPnL),
-        realizedPnL: undefineMax(realizedPnL),
-        marketValue: undefineMax(value),
-      });
-    };
-
-    this.registerEventHandler(EventName.pnlSingle, pnlSingleHandler);
-
-    // create the subscription
-
-    return new IBApiNextSubscription<PnL>(
-      this,
-      this.subscriptions,
+    return this.subscriptions.register<PnLSingle>(
       (reqId) => {
         this.api.reqPnLSingle(reqId, account, modelCode, conId);
       },
       (reqId) => {
         this.api.cancelPnLSingle(reqId);
-      }
-    ).createObservable();
+      },
+      [[EventName.pnlSingle, this.onPnLSingle]],
+      `${account}:${modelCode}:${conId}`
+    );
   }
 
   /**
@@ -665,6 +643,180 @@ export class IBApiNext {
   setMarketDataType(type: MarketDataType): void {
     this.api.reqMarketDataType(type);
   }
+
+  /** tickPrice, tickSize and tickGeneric event handler */
+  private readonly onTick = (
+    subscriptions: Map<number, IBApiNextSubscription<MarketDataTick>>,
+    id: number,
+    tickType: IBApiTickType,
+    value: number
+  ): void => {
+    // filter -1 on Bid/Ask and Number.MAX_VALUE on all.
+
+    if (
+      value === -1 &&
+      (tickType === IBApiTickType.BID ||
+        tickType === IBApiTickType.DELAYED_BID ||
+        tickType === IBApiTickType.ASK ||
+        tickType === IBApiTickType.DELAYED_ASK)
+    ) {
+      value = Number.MAX_VALUE;
+    }
+    if (value === Number.MAX_VALUE) {
+      return;
+    }
+
+    // get subscription
+
+    const subscription = subscriptions.get(
+      id
+    ) as IBApiNextSubscription<MarketDataTick>;
+    if (!subscription) {
+      return;
+    }
+
+    // update cache
+
+    const allMarketData = subscription.value ?? new MarketDataTick();
+    allMarketData.set(tickType, value);
+    subscription.cache(allMarketData);
+
+    // deliver to subject
+
+    subscription.next(false, new MarketDataTick([[tickType, value]]));
+  };
+
+  /** tickOptionComputationHandler event handler */
+  private readonly onTickOptionComputation = (
+    subscriptions: Map<number, IBApiNextSubscription<MarketDataTick>>,
+    id: number,
+    field: number,
+    impliedVolatility: number,
+    delta: number,
+    optPrice: number,
+    pvDividend: number,
+    gamma: number,
+    vega: number,
+    theta: number,
+    undPrice: number
+  ): void => {
+    // get subscription
+
+    const subscription = subscriptions.get(
+      id
+    ) as IBApiNextSubscription<MarketDataTick>;
+    if (!subscription) {
+      return;
+    }
+
+    // generate [[IBApiNext]] market data ticks
+
+    const ticks: [TickType, number | undefined][] = [
+      [IBApiNextTickType.OPTION_UNDERLYING, undPrice],
+      [IBApiNextTickType.OPTION_PV_DIVIDEND, pvDividend],
+    ];
+    switch (field) {
+      case IBApiTickType.BID_OPTION:
+        ticks.push(
+          [IBApiNextTickType.BID_OPTION_IV, impliedVolatility],
+          [IBApiNextTickType.BID_OPTION_DELTA, delta],
+          [IBApiNextTickType.BID_OPTION_PRICE, optPrice],
+          [IBApiNextTickType.BID_OPTION_GAMMA, gamma],
+          [IBApiNextTickType.BID_OPTION_VEGA, vega],
+          [IBApiNextTickType.BID_OPTION_THETA, theta]
+        );
+        break;
+      case IBApiTickType.DELAYED_BID_OPTION:
+        ticks.push(
+          [IBApiNextTickType.DELAYED_BID_OPTION_IV, impliedVolatility],
+          [IBApiNextTickType.DELAYED_BID_OPTION_DELTA, delta],
+          [IBApiNextTickType.DELAYED_BID_OPTION_PRICE, optPrice],
+          [IBApiNextTickType.DELAYED_BID_OPTION_GAMMA, gamma],
+          [IBApiNextTickType.DELAYED_BID_OPTION_VEGA, vega],
+          [IBApiNextTickType.DELAYED_BID_OPTION_THETA, theta]
+        );
+        break;
+      case IBApiTickType.ASK_OPTION:
+        ticks.push(
+          [IBApiNextTickType.ASK_OPTION_IV, impliedVolatility],
+          [IBApiNextTickType.ASK_OPTION_DELTA, delta],
+          [IBApiNextTickType.ASK_OPTION_PRICE, optPrice],
+          [IBApiNextTickType.ASK_OPTION_GAMMA, gamma],
+          [IBApiNextTickType.ASK_OPTION_VEGA, vega],
+          [IBApiNextTickType.ASK_OPTION_THETA, theta]
+        );
+        break;
+      case IBApiTickType.DELAYED_ASK_OPTION:
+        ticks.push(
+          [IBApiNextTickType.DELAYED_ASK_OPTION_IV, impliedVolatility],
+          [IBApiNextTickType.DELAYED_ASK_OPTION_DELTA, delta],
+          [IBApiNextTickType.DELAYED_ASK_OPTION_PRICE, optPrice],
+          [IBApiNextTickType.DELAYED_ASK_OPTION_GAMMA, gamma],
+          [IBApiNextTickType.DELAYED_ASK_OPTION_VEGA, vega],
+          [IBApiNextTickType.DELAYED_ASK_OPTION_THETA, theta]
+        );
+        break;
+      case IBApiTickType.LAST_OPTION:
+        ticks.push(
+          [IBApiNextTickType.LAST_OPTION_IV, impliedVolatility],
+          [IBApiNextTickType.LAST_OPTION_DELTA, delta],
+          [IBApiNextTickType.LAST_OPTION_PRICE, optPrice],
+          [IBApiNextTickType.LAST_OPTION_GAMMA, gamma],
+          [IBApiNextTickType.LAST_OPTION_VEGA, vega],
+          [IBApiNextTickType.LAST_OPTION_THETA, theta]
+        );
+        break;
+      case IBApiTickType.DELAYED_LAST_OPTION:
+        ticks.push(
+          [IBApiNextTickType.DELAYED_LAST_OPTION_IV, impliedVolatility],
+          [IBApiNextTickType.DELAYED_LAST_OPTION_DELTA, delta],
+          [IBApiNextTickType.DELAYED_LAST_OPTION_PRICE, optPrice],
+          [IBApiNextTickType.DELAYED_LAST_OPTION_GAMMA, gamma],
+          [IBApiNextTickType.DELAYED_LAST_OPTION_VEGA, vega],
+          [IBApiNextTickType.DELAYED_LAST_OPTION_THETA, theta]
+        );
+        break;
+      case IBApiTickType.MODEL_OPTION:
+        ticks.push(
+          [IBApiNextTickType.MODEL_OPTION_IV, impliedVolatility],
+          [IBApiNextTickType.MODEL_OPTION_DELTA, delta],
+          [IBApiNextTickType.MODEL_OPTION_PRICE, optPrice],
+          [IBApiNextTickType.MODEL_OPTION_GAMMA, gamma],
+          [IBApiNextTickType.MODEL_OPTION_VEGA, vega],
+          [IBApiNextTickType.MODEL_OPTION_THETA, theta]
+        );
+        break;
+      case IBApiTickType.DELAYED_MODEL_OPTION:
+        ticks.push(
+          [IBApiNextTickType.DELAYED_MODEL_OPTION_IV, impliedVolatility],
+          [IBApiNextTickType.DELAYED_MODEL_OPTION_DELTA, delta],
+          [IBApiNextTickType.DELAYED_MODEL_OPTION_PRICE, optPrice],
+          [IBApiNextTickType.DELAYED_MODEL_OPTION_GAMMA, gamma],
+          [IBApiNextTickType.DELAYED_MODEL_OPTION_VEGA, vega],
+          [IBApiNextTickType.DELAYED_MODEL_OPTION_THETA, theta]
+        );
+        break;
+    }
+
+    // update cache
+
+    const allMarketData = subscription.value ?? new MarketDataTick();
+
+    const filteredTicks = new MarketDataTick();
+    ticks.forEach((tick) => {
+      const value = undefineMax(tick[1]);
+      if (value !== undefined) {
+        allMarketData.set(tick[0], value);
+        filteredTicks.set(tick[0], value);
+      }
+    });
+
+    subscription.cache(allMarketData);
+
+    // deliver to subject
+
+    subscription.next(false, filteredTicks);
+  };
 
   /**
    * Create a subscription to receive real time market data.
@@ -700,210 +852,31 @@ export class IBApiNext {
     snapshot: boolean,
     regulatorySnapshot: boolean
   ): Observable<MarketDataTick> {
-    // tickPrice, tickSize and tickGeneric event handler
-
-    const onTickHandler = (
-      id: number,
-      tickType: IBApiTickType,
-      value: number
-    ): void => {
-      // filter -1 on Bid/Ask and Number.MAX_VALUE.
-
-      if (
-        value === -1 &&
-        (tickType === IBApiTickType.BID ||
-          tickType === IBApiTickType.DELAYED_BID ||
-          tickType === IBApiTickType.ASK ||
-          tickType === IBApiTickType.DELAYED_ASK)
-      ) {
-        value = Number.MAX_VALUE;
-      }
-      if (value === Number.MAX_VALUE) {
-        return;
-      }
-
-      // get subscription
-
-      const subscription = this.subscriptions.get(
-        id
-      ) as IBApiNextSubscription<MarketDataTick>;
-      if (!subscription) {
-        return;
-      }
-
-      // update cache
-
-      const allMarketData = subscription.value ?? new MarketDataTick();
-      allMarketData.set(tickType, value);
-      subscription.cache(allMarketData);
-
-      // deliver to subject
-
-      subscription.next(false, new MarketDataTick([[tickType, value]]));
-    };
-
-    // tickOptionComputationHandler event handler
-
-    const onTickOptionComputationHandler = (
-      id: number,
-      field: number,
-      impliedVolatility: number,
-      delta: number,
-      optPrice: number,
-      pvDividend: number,
-      gamma: number,
-      vega: number,
-      theta: number,
-      undPrice: number
-    ): void => {
-      // get subscription
-
-      const subscription = this.subscriptions.get(
-        id
-      ) as IBApiNextSubscription<MarketDataTick>;
-      if (!subscription) {
-        return;
-      }
-
-      // generate [[IBApiNext]] market data ticks
-
-      const ticks: [TickType, number | undefined][] = [
-        [IBApiNextTickType.OPTION_UNDERLYING, undPrice],
-        [IBApiNextTickType.OPTION_PV_DIVIDEND, pvDividend],
-      ];
-      switch (field) {
-        case IBApiTickType.BID_OPTION:
-          ticks.push(
-            [IBApiNextTickType.BID_OPTION_IV, impliedVolatility],
-            [IBApiNextTickType.BID_OPTION_DELTA, delta],
-            [IBApiNextTickType.BID_OPTION_PRICE, optPrice],
-            [IBApiNextTickType.BID_OPTION_GAMMA, gamma],
-            [IBApiNextTickType.BID_OPTION_VEGA, vega],
-            [IBApiNextTickType.BID_OPTION_THETA, theta]
-          );
-          break;
-        case IBApiTickType.DELAYED_BID_OPTION:
-          ticks.push(
-            [IBApiNextTickType.DELAYED_BID_OPTION_IV, impliedVolatility],
-            [IBApiNextTickType.DELAYED_BID_OPTION_DELTA, delta],
-            [IBApiNextTickType.DELAYED_BID_OPTION_PRICE, optPrice],
-            [IBApiNextTickType.DELAYED_BID_OPTION_GAMMA, gamma],
-            [IBApiNextTickType.DELAYED_BID_OPTION_VEGA, vega],
-            [IBApiNextTickType.DELAYED_BID_OPTION_THETA, theta]
-          );
-          break;
-        case IBApiTickType.ASK_OPTION:
-          ticks.push(
-            [IBApiNextTickType.ASK_OPTION_IV, impliedVolatility],
-            [IBApiNextTickType.ASK_OPTION_DELTA, delta],
-            [IBApiNextTickType.ASK_OPTION_PRICE, optPrice],
-            [IBApiNextTickType.ASK_OPTION_GAMMA, gamma],
-            [IBApiNextTickType.ASK_OPTION_VEGA, vega],
-            [IBApiNextTickType.ASK_OPTION_THETA, theta]
-          );
-          break;
-        case IBApiTickType.DELAYED_ASK_OPTION:
-          ticks.push(
-            [IBApiNextTickType.DELAYED_ASK_OPTION_IV, impliedVolatility],
-            [IBApiNextTickType.DELAYED_ASK_OPTION_DELTA, delta],
-            [IBApiNextTickType.DELAYED_ASK_OPTION_PRICE, optPrice],
-            [IBApiNextTickType.DELAYED_ASK_OPTION_GAMMA, gamma],
-            [IBApiNextTickType.DELAYED_ASK_OPTION_VEGA, vega],
-            [IBApiNextTickType.DELAYED_ASK_OPTION_THETA, theta]
-          );
-          break;
-        case IBApiTickType.LAST_OPTION:
-          ticks.push(
-            [IBApiNextTickType.LAST_OPTION_IV, impliedVolatility],
-            [IBApiNextTickType.LAST_OPTION_DELTA, delta],
-            [IBApiNextTickType.LAST_OPTION_PRICE, optPrice],
-            [IBApiNextTickType.LAST_OPTION_GAMMA, gamma],
-            [IBApiNextTickType.LAST_OPTION_VEGA, vega],
-            [IBApiNextTickType.LAST_OPTION_THETA, theta]
-          );
-          break;
-        case IBApiTickType.DELAYED_LAST_OPTION:
-          ticks.push(
-            [IBApiNextTickType.DELAYED_LAST_OPTION_IV, impliedVolatility],
-            [IBApiNextTickType.DELAYED_LAST_OPTION_DELTA, delta],
-            [IBApiNextTickType.DELAYED_LAST_OPTION_PRICE, optPrice],
-            [IBApiNextTickType.DELAYED_LAST_OPTION_GAMMA, gamma],
-            [IBApiNextTickType.DELAYED_LAST_OPTION_VEGA, vega],
-            [IBApiNextTickType.DELAYED_LAST_OPTION_THETA, theta]
-          );
-          break;
-        case IBApiTickType.MODEL_OPTION:
-          ticks.push(
-            [IBApiNextTickType.MODEL_OPTION_IV, impliedVolatility],
-            [IBApiNextTickType.MODEL_OPTION_DELTA, delta],
-            [IBApiNextTickType.MODEL_OPTION_PRICE, optPrice],
-            [IBApiNextTickType.MODEL_OPTION_GAMMA, gamma],
-            [IBApiNextTickType.MODEL_OPTION_VEGA, vega],
-            [IBApiNextTickType.MODEL_OPTION_THETA, theta]
-          );
-          break;
-        case IBApiTickType.DELAYED_MODEL_OPTION:
-          ticks.push(
-            [IBApiNextTickType.DELAYED_MODEL_OPTION_IV, impliedVolatility],
-            [IBApiNextTickType.DELAYED_MODEL_OPTION_DELTA, delta],
-            [IBApiNextTickType.DELAYED_MODEL_OPTION_PRICE, optPrice],
-            [IBApiNextTickType.DELAYED_MODEL_OPTION_GAMMA, gamma],
-            [IBApiNextTickType.DELAYED_MODEL_OPTION_VEGA, vega],
-            [IBApiNextTickType.DELAYED_MODEL_OPTION_THETA, theta]
-          );
-          break;
-      }
-
-      // update cache
-
-      const allMarketData = subscription.value ?? new MarketDataTick();
-
-      const filteredTicks = new Map<TickType, number>();
-      ticks.forEach((tick) => {
-        const value = undefineMax(tick[1]);
-        if (value !== undefined) {
-          allMarketData.set(tick[0], value);
-          filteredTicks.set(tick[0], value);
-        }
-      });
-
-      subscription.cache(allMarketData);
-
-      // deliver to subject
-
-      subscription.next(false, filteredTicks);
-    };
-
-    // register event handler
-
-    this.registerEventHandler(EventName.tickPrice, onTickHandler);
-    this.registerEventHandler(EventName.tickSize, onTickHandler);
-    this.registerEventHandler(EventName.tickGeneric, onTickHandler);
-    this.registerEventHandler(
-      EventName.tickOptionComputation,
-      onTickOptionComputationHandler
-    );
-
-    // create the subscription
-
-    return new IBApiNextSubscription<MarketDataTick>(
-      this,
-      this.subscriptions,
-      (tickerId) => {
+    return this.subscriptions.register<MarketDataTick>(
+      (reqId) => {
         this.api.reqMktData(
-          tickerId,
+          reqId,
           contract,
           genericTickList,
           snapshot,
           regulatorySnapshot
         );
       },
-      (tickerId) => {
+      (reqId) => {
         // when using snapshot, cancel will cause a "Can't find EId with tickerId" error.
-        if (!snapshot) {
-          this.api.cancelMktData(tickerId);
+        if (!snapshot && !regulatorySnapshot) {
+          this.api.cancelMktData(reqId);
         }
-      }
-    ).createObservable();
+      },
+      [
+        [EventName.tickPrice, this.onTick],
+        [EventName.tickSize, this.onTick],
+        [EventName.tickGeneric, this.onTick],
+        [EventName.tickOptionComputation, this.onTickOptionComputation],
+      ],
+      snapshot || regulatorySnapshot
+        ? undefined
+        : `${JSON.stringify(contract)}:${genericTickList}`
+    );
   }
 }

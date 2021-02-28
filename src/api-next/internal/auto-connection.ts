@@ -1,6 +1,7 @@
 import { BehaviorSubject, Observable } from "rxjs";
 
 import { ConnectionState, ErrorCode, EventName, IBApi, IBApiCreationOptions } from "../";
+import { IBApiNextLogger } from "../common/logger";
 import { ConsoleLogger } from "./console-logger";
 
 /** The log tag. */
@@ -27,7 +28,7 @@ export class IBApiAutoConnection extends IBApi {
    */
   constructor(
     public readonly reconnectInterval: number,
-    private readonly logger: ConsoleLogger,
+    private readonly logger: IBApiNextLogger,
     public readonly options?: IBApiCreationOptions
   ) {
     super(options);

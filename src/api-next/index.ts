@@ -7,9 +7,10 @@ export {
   Contract,
 } from "..";
 
-export { IBApiNext } from "./api-next";
+export { IBApiNext, IBApiNextCreationOptions } from "./api-next";
 
-export { IBApiError } from "./common/ib-api-error";
+export { IBApiError } from "./common/error";
+export { IBApiNextLogger } from "./common/logger";
 
 export { ConnectionState } from "./connection/connection-state";
 export { IBApiAutoConnection as IBApiAutoConnection } from "./internal/auto-connection";
@@ -29,7 +30,7 @@ export {
   AccountSummary,
   AccountSummaryTagName,
   AccountSummaryValue,
-  AccountSummaryValues
+  AccountSummaryValues,
 } from "./account/account-summary";
 
 export { AccountSummaries } from "./account/account-summaries";
