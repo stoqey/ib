@@ -63,7 +63,8 @@ export class IBApiNextApp {
     // create the IBApiNext object
 
     if (!this.api) {
-      this.api = new IBApiNext(reconnectInterval, {
+      this.api = new IBApiNext({
+        reconnectInterval,
         host: this.cmdLineArgs.host,
         port:
           this.cmdLineArgs.port !== undefined

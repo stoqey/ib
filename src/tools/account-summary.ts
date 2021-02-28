@@ -26,7 +26,10 @@ const DEFAULT_TAGS = "NetLiquidation,TotalCashValue,GrossPositionValue";
 const DESCRIPTION_TEXT = "Prints the account summaries.";
 const USAGE_TEXT = "Usage: account-summary.js <options>";
 const OPTION_ARGUMENTS: [string, string][] = [
-  ["group=<name>", `Advisor Account Group name. Default is '${DEFAULT_TAGS}'.`],
+  [
+    "group=<name>",
+    `Advisor Account Group name. Default is '${DEFAULT_GROUP}'.`,
+  ],
   [
     "tags=<tag list>",
     `A comma separated list with the desired tags. Default is '${DEFAULT_TAGS}'`,
@@ -64,6 +67,23 @@ class PrintAccountSummaryApp extends IBApiNextApp {
     const scriptName = path.basename(__filename);
     logger.debug(`Starting ${scriptName} script`);
     this.connect(this.cmdLineArgs.watch ? 10000 : 0);
+    this.subscription$ = this.api
+      .getAccountSummary(
+        this.cmdLineArgs.group ?? DEFAULT_GROUP,
+        this.cmdLineArgs.tags ?? DEFAULT_TAGS
+      )
+      .subscribe(
+        (summaries) => {
+          this.printObject(summaries);
+          if (!this.cmdLineArgs.watch) {
+            this.stop();
+          }
+        },
+        (err: IBApiError) => {
+          this.error(`getAccountSummary failed with '${err.error.message}'`);
+        }
+      );
+
     this.subscription$ = this.api
       .getAccountSummary(
         this.cmdLineArgs.group ?? DEFAULT_GROUP,

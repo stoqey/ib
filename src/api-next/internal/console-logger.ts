@@ -1,15 +1,14 @@
 import colors from "colors";
 import * as util from "util";
 
-import { LogLevel } from "../";
-import { Logger } from "./logger";
+import { LogLevel, IBApiNextLogger } from "../";
 
 /**
  * @internal
  *
  * The logger implementation of [[IBApiNext]].
  */
-export class ConsoleLogger implements Logger {
+export class ConsoleLogger implements IBApiNextLogger {
   /** The current log level */
   private _logLevel = LogLevel.SYSTEM;
 
@@ -22,12 +21,13 @@ export class ConsoleLogger implements Logger {
   set logLevel(level: LogLevel) {
     this._logLevel = level;
   }
+
   /** Log a debug information. */
   debug(tag: string, args: unknown[] | string): void {
     if (this._logLevel >= LogLevel.DETAIL) {
       console.debug(
         `[${new Date().toLocaleTimeString()}] [DEBUG] [${tag}]: `,
-        ...args
+        args
       );
     }
   }
@@ -37,7 +37,7 @@ export class ConsoleLogger implements Logger {
     if (this._logLevel >= LogLevel.INFO) {
       console.log(
         `[${new Date().toLocaleTimeString()}] [INFO] [${tag}]: `,
-        ...args
+        args
       );
     }
   }
@@ -51,7 +51,7 @@ export class ConsoleLogger implements Logger {
         colors.bold.yellow(
           `[${new Date().toLocaleTimeString()}] [WARN] [${tag}]: `
         ),
-        ...newArgs
+        newArgs
       );
     }
   }
@@ -69,7 +69,7 @@ export class ConsoleLogger implements Logger {
         colors.bold.red(
           `[${new Date().toLocaleTimeString()}] [ERROR] [${tag}]:`
         ),
-        ...newArgs
+        newArgs
       );
     }
   }
