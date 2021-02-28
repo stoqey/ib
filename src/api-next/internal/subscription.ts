@@ -29,7 +29,6 @@ export class IBApiNextSubscription<T> {
     public readonly instanceId?: string
   ) {
     this.reqId = IBApiNextSubscription.nextReqId++;
-    this.requestTwsSubscription();
   }
 
   /** The next unused request id. */
@@ -149,14 +148,16 @@ export class IBApiNextSubscription<T> {
    */
   private requestTwsSubscription(): void {
     // subscribe on connection state: send TWS request when 'connected' state is signaled
-    this.connectionState$ = this.api.connectionState.subscribe((state) => {
-      if (state === ConnectionState.Connected) {
-        delete this.cache;
-        delete this._error;
-        this.endEventReceived = false;
-        this.requestFunction();
-      }
-    });
+    if (!this.connectionState$) {
+      this.connectionState$ = this.api.connectionState.subscribe((state) => {
+        if (state === ConnectionState.Connected) {
+          delete this.cache;
+          delete this._error;
+          this.endEventReceived = false;
+          this.requestFunction();
+        }
+      });
+    }
   }
 
   /**
@@ -164,6 +165,7 @@ export class IBApiNextSubscription<T> {
    */
   private cancelTwsSubscription(): void {
     this.connectionState$?.unsubscribe();
+    delete this.connectionState$;
     if (this.api.isConnected) {
       this.cancelFunction();
     }
