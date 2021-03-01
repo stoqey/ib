@@ -74,12 +74,12 @@ export class IBApiNextSubscriptionRegistry {
   /**
    * Register a subscription.
    *
-   * @param requestFunction A callback, invoked when the start request be send to TWS.
-   * @param cancelFunction A callback, invoked when the cancel request be send to TWS.
+   * @param requestFunction A callback, invoked when the start request shall be send to TWS.
+   * @param cancelFunction A callback, invoked when the cancel request shall be send to TWS.
    * @param instanceId When not undefined, this an id that uniquely identifies
    * the subscription instance. This can be used to avoid creation of multiple subscriptions,
-   * that will end up on same TWS request (i.e. request same market data multiple times), but a
-   * existing subscription instance will be re-used.
+   * that will end up on same TWS request (i.e. request same market data multiple times), but an
+   * existing subscription instance will be re-used if same instanceId does already exist.
    * As a general rule: don't use instanceId when there is no reqId or when you want to return
    * a Promise (single emitted value). Use it everywhere else.
    */
