@@ -12,7 +12,9 @@
 import IBApi, { ErrorCode, EventName } from "..";
 
 function run() {
-  const ib = new IBApi();
+  const ib = new IBApi({
+    port: 4002,
+  });
 
   ib.on(EventName.error, (err: Error, code: ErrorCode, id: number) => {
     console.error(`${err.message} - code: ${code} - id: ${id}`);
@@ -20,6 +22,7 @@ function run() {
 
   ib.on(EventName.connected, () => {
     // add your test code here
+    ib.reqPnL(1, "All", undefined);
   });
 
   ib.connect();

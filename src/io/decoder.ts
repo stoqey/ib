@@ -105,6 +105,9 @@ enum IN_MSG_ID {
   HEAD_TIMESTAMP = 88,
   HISTOGRAM_DATA = 89,
   HISTORICAL_DATA_UPDATE = 90,
+  REROUTE_MKT_DATA = 91,
+  REROUTE_MKT_DEPTH = 92,
+  MARKET_RULE = 93,
   PNL = 94,
   PNL_SINGLE = 95,
   HISTORICAL_TICKS = 96,
@@ -256,6 +259,9 @@ export class Decoder {
           ErrorCode.UNKNOWN_ID,
           -1
         );
+        if (verifyMessageBoundary) {
+          this.drainQueue();
+        }
         continue;
       }
 
@@ -268,7 +274,10 @@ export class Decoder {
           ErrorCode.UNKNOWN_ID,
           -1
         );
-        return;
+        if (verifyMessageBoundary) {
+          this.drainQueue();
+        }
+        continue;
       }
 
       const decoderFunction = "decodeMsg_" + constKey;
@@ -284,6 +293,10 @@ export class Decoder {
             ErrorCode.UNKNOWN_ID,
             -1
           );
+          if (verifyMessageBoundary) {
+            this.drainQueue();
+          }
+          continue;
         }
 
         // check if all of the message data was processed and drain any remaining tokens
@@ -1154,6 +1167,44 @@ export class Decoder {
       barCount,
       WAP
     );
+  }
+
+   /**
+     * Decode a REROUTE_MKT_DATA message from data queue and emit a rerouteMktDataReq event.
+     */
+    private decodeMsg_REROUTE_MKT_DATA(): void {
+      const reqId    = this.readInt();
+      const conId    = this.readInt();
+      const exchange = this.readStr();
+      this.emit(EventName.rerouteMktDataReq, reqId, conId, exchange);
+  }
+
+  /**
+   * Decode a REROUTE_MKT_DEPTH message from data queue and emit a rerouteMktDepthReq event.
+   */
+  private decodeMsg_REROUTE_MKT_DEPTH(): void {
+      const reqId    = this.readInt();
+      const conId    = this.readInt();
+      const exchange = this.readStr();
+      this.emit(EventName.rerouteMktDepthReq, reqId, conId, exchange);
+  }
+
+  /**
+   * Decode a MARKET_RULE message from data queue and emit a marketRule event.
+   */
+  private decodeMsg_MARKET_RULE(): void {
+      const marketRuleId     = this.readInt();
+      const nPriceIncrements = this.readInt();
+      const priceIncrements  = new Array(nPriceIncrements);
+
+      for (let i = 0; i < nPriceIncrements; i++) {
+          priceIncrements[i] = {
+              lowEdge   : this.readDouble(),
+              increment : this.readDouble()
+          };
+      }
+
+      this.emit(EventName.marketRule, marketRuleId, priceIncrements);
   }
 
   /**
