@@ -1,4 +1,5 @@
-import { EventName, IBApi } from "../../../api/api";
+import { IBApi } from "../../../api/api";
+import { EventName } from "../../../api/data/enum/event-name";
 import configuration from "../../../common/configuration";
 import logger from "../../../utils/logger";
 
