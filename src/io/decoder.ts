@@ -1169,42 +1169,42 @@ export class Decoder {
     );
   }
 
-   /**
-     * Decode a REROUTE_MKT_DATA message from data queue and emit a rerouteMktDataReq event.
-     */
-    private decodeMsg_REROUTE_MKT_DATA(): void {
-      const reqId    = this.readInt();
-      const conId    = this.readInt();
-      const exchange = this.readStr();
-      this.emit(EventName.rerouteMktDataReq, reqId, conId, exchange);
+  /**
+   * Decode a REROUTE_MKT_DATA message from data queue and emit a rerouteMktDataReq event.
+   */
+  private decodeMsg_REROUTE_MKT_DATA(): void {
+    const reqId = this.readInt();
+    const conId = this.readInt();
+    const exchange = this.readStr();
+    this.emit(EventName.rerouteMktDataReq, reqId, conId, exchange);
   }
 
   /**
    * Decode a REROUTE_MKT_DEPTH message from data queue and emit a rerouteMktDepthReq event.
    */
   private decodeMsg_REROUTE_MKT_DEPTH(): void {
-      const reqId    = this.readInt();
-      const conId    = this.readInt();
-      const exchange = this.readStr();
-      this.emit(EventName.rerouteMktDepthReq, reqId, conId, exchange);
+    const reqId = this.readInt();
+    const conId = this.readInt();
+    const exchange = this.readStr();
+    this.emit(EventName.rerouteMktDepthReq, reqId, conId, exchange);
   }
 
   /**
    * Decode a MARKET_RULE message from data queue and emit a marketRule event.
    */
   private decodeMsg_MARKET_RULE(): void {
-      const marketRuleId     = this.readInt();
-      const nPriceIncrements = this.readInt();
-      const priceIncrements  = new Array(nPriceIncrements);
+    const marketRuleId = this.readInt();
+    const nPriceIncrements = this.readInt();
+    const priceIncrements = new Array(nPriceIncrements);
 
-      for (let i = 0; i < nPriceIncrements; i++) {
-          priceIncrements[i] = {
-              lowEdge   : this.readDouble(),
-              increment : this.readDouble()
-          };
-      }
+    for (let i = 0; i < nPriceIncrements; i++) {
+      priceIncrements[i] = {
+        lowEdge: this.readDouble(),
+        increment: this.readDouble(),
+      };
+    }
 
-      this.emit(EventName.marketRule, marketRuleId, priceIncrements);
+    this.emit(EventName.marketRule, marketRuleId, priceIncrements);
   }
 
   /**
