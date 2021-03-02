@@ -66,7 +66,6 @@ export class IBApiNextSubscription<T> {
       this.addSubscriber(subscriber);
       return (): void => {
         this.removeSubscriber(subscriber);
-        this.cleanupFunction();
       };
     });
   }
@@ -140,6 +139,7 @@ export class IBApiNextSubscription<T> {
     this.subscribers.delete(subscriber);
     if (!this.subscribers.size) {
       this.cancelTwsSubscription();
+      this.cleanupFunction();
     }
   }
 
