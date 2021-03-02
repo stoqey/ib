@@ -30,7 +30,7 @@ import { IBApi } from "./api/api";
 
 // export the IB Api class and function argument types
 
-export { IBApi, IBApiCreationOptions, EventName } from "./api/api";
+export { IBApi, IBApiCreationOptions } from "./api/api";
 
 export { ErrorCode } from "./api/errorCode";
 
@@ -66,6 +66,7 @@ export { MIN_SERVER_VER } from "./api/data/enum/min-server-version";
 export { OptionExerciseAction } from "./api/data/enum/option-exercise-action";
 export { OptionType } from "./api/data/enum/option-type";
 export { SecType } from "./api/data/enum/sec-type";
+export { EventName } from "./api/data/enum/event-name";
 
 // export historic market-data types
 
