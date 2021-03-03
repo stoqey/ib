@@ -1,4 +1,3 @@
-import { EventName } from "../api/api";
 import { ComboLeg } from "../api/contract/comboLeg";
 import { Contract } from "../api/contract/contract";
 import { ContractDescription } from "../api/contract/contractDescription";
@@ -9,6 +8,7 @@ import FamilyCode from "../api/data/container/family-code";
 import NewsProvider from "../api/data/container/news-provider";
 import SoftDollarTier from "../api/data/container/soft-dollar-tier";
 import TagValue from "../api/data/container/tag-value";
+import { EventName } from "../api/data/enum/event-name";
 import MIN_SERVER_VER from "../api/data/enum/min-server-version";
 import OptionType from "../api/data/enum/option-type";
 import SecType from "../api/data/enum/sec-type";

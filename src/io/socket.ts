@@ -1,11 +1,10 @@
 import net from "net";
 import { TextEncoder } from "util";
+
 import {
-  EventName,
-  IBApiCreationOptions,
-  MAX_SUPPORTED_SERVER_VERSION,
-  MIN_SERVER_VER_SUPPORTED,
+    IBApiCreationOptions, MAX_SUPPORTED_SERVER_VERSION, MIN_SERVER_VER_SUPPORTED
 } from "../api/api";
+import { EventName } from "../api/data/enum/event-name";
 import MIN_SERVER_VER from "../api/data/enum/min-server-version";
 import { ErrorCode } from "../api/errorCode";
 import configuration from "../common/configuration";

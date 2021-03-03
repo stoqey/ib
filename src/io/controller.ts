@@ -1,11 +1,13 @@
 import CommandBuffer from "command-buffer";
 import rateLimit from "function-rate-limit";
-import { Socket } from "./socket";
-import { Decoder, DecoderCallbacks } from "./decoder";
-import { Encoder, EncoderCallbacks } from "./encoder";
-import { EventName, IBApi, IBApiCreationOptions } from "../api/api";
+
+import { IBApi, IBApiCreationOptions } from "../api/api";
+import { EventName } from "../api/data/enum/event-name";
 import { ErrorCode } from "../api/errorCode";
 import configuration from "../common/configuration";
+import { Decoder, DecoderCallbacks } from "./decoder";
+import { Encoder, EncoderCallbacks } from "./encoder";
+import { Socket } from "./socket";
 
 /**
  * @internal
