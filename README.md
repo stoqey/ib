@@ -5,8 +5,13 @@
   </p>
   <div style="display: flex;justify-content:center;">
     <img alt="NPM" src="https://img.shields.io/npm/dt/@stoqey/ib.svg"></img>
+    <img alt="NPM" src="https://circleci.com/gh/stoqey/ib.svg?style=svg"></img>
   </div>
+
 </div>
+
+
+
 
 `@stoqey/ib` is an <ins>unofficial</ins> [Interactive Brokers](http://interactivebrokers.com/) TWS (or IB Gateway) Typescript API client library for [Node.js](http://nodejs.org/). It is a direct port of Interactive Brokers' Java Client Version 9.76 from May 08 2019.
 
