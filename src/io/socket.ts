@@ -2,7 +2,9 @@ import net from "net";
 import { TextEncoder } from "util";
 
 import {
-    IBApiCreationOptions, MAX_SUPPORTED_SERVER_VERSION, MIN_SERVER_VER_SUPPORTED
+  IBApiCreationOptions,
+  MAX_SUPPORTED_SERVER_VERSION,
+  MIN_SERVER_VER_SUPPORTED,
 } from "../api/api";
 import { EventName } from "../api/data/enum/event-name";
 import MIN_SERVER_VER from "../api/data/enum/min-server-version";
@@ -202,7 +204,7 @@ export class Socket {
         ];
       }
 
-      this.client?.write(new Uint8Array(utf8Data));
+      this.client?.write(Buffer.from(new Uint8Array(utf8Data)));
     } else {
       this.client?.write(stringData + EOL);
     }
