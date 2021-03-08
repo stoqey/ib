@@ -225,16 +225,16 @@ export class Decoder {
       case IN_MSG_ID.ACCOUNT_SUMMARY_END:
         return this.decodeMsg_ACCOUNT_SUMMARY_END();
       /* For IB's internal purpose - not implement:
-      case MessageDecoderType.VERIFY_MESSAGE_API:
-      case MessageDecoderType.VERIFY_COMPLETED:
+      case IN_MSG_ID.VERIFY_MESSAGE_API:
+      case IN_MSG_ID.VERIFY_COMPLETED:
       */
       case IN_MSG_ID.DISPLAY_GROUP_LIST:
         return this.decodeMsg_DISPLAY_GROUP_LIST();
       case IN_MSG_ID.DISPLAY_GROUP_UPDATED:
         return this.decodeMsg_DISPLAY_GROUP_UPDATED();
       /* For IB's internal purpose - not implement:
-      case MessageDecoderType.VERIFY_AND_AUTH_MESSAGE_API:
-      case MessageDecoderType.VERIFY_AND_AUTH_COMPLETED
+      case IN_MSG_ID.VERIFY_AND_AUTH_MESSAGE_API:
+      case IN_MSG_ID.VERIFY_AND_AUTH_COMPLETED
       */
       case IN_MSG_ID.POSITION_MULTI:
         return this.decodeMsg_POSITION_MULTI();
