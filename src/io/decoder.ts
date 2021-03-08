@@ -34,6 +34,7 @@ import { Order } from "../api/order/order";
 import { OrderState } from "../api/order/orderState";
 import { CommissionReport } from "../api/report/commissionReport";
 import { IN_MSG_ID } from "./enum/in-msg-id";
+import { MessageDecoderType } from "./enum/message-decoder-type";
 
 /**
  * @internal
@@ -181,6 +182,174 @@ export class Decoder {
         continue;
       }
 
+      const decodeMessage = (messageCode: MessageDecoderType) => {
+        switch (messageCode) {
+          case MessageDecoderType.TICK_PRICE:
+            return this.decodeMsg_TICK_PRICE();
+          case MessageDecoderType.TICK_SIZE:
+            return this.decodeMsg_TICK_SIZE();
+          case MessageDecoderType.ORDER_STATUS:
+            return this.decodeMsg_ORDER_STATUS();
+          case MessageDecoderType.ERR_MSG:
+            return this.decodeMsg_ERR_MSG();
+          case MessageDecoderType.OPEN_ORDER:
+            return this.decodeMsg_OPEN_ORDER();
+          case MessageDecoderType.ACCT_VALUE:
+            return this.decodeMsg_ACCT_VALUE();
+          case MessageDecoderType.PORTFOLIO_VALUE:
+            return this.decodeMsg_PORTFOLIO_VALUE();
+          case MessageDecoderType.ACCT_UPDATE_TIME:
+            return this.decodeMsg_ACCT_UPDATE_TIME();
+          case MessageDecoderType.NEXT_VALID_ID:
+            return this.decodeMsg_NEXT_VALID_ID();
+          case MessageDecoderType.CONTRACT_DATA:
+            return this.decodeMsg_CONTRACT_DATA();
+          case MessageDecoderType.EXECUTION_DATA:
+            return this.decodeMsg_EXECUTION_DATA();
+          case MessageDecoderType.MARKET_DEPTH:
+            return this.decodeMsg_MARKET_DEPTH();
+          case MessageDecoderType.MARKET_DEPTH_L2:
+            return this.decodeMsg_MARKET_DEPTH_L2();
+          case MessageDecoderType.NEWS_BULLETINS:
+            return this.decodeMsg_NEWS_BULLETINS();
+          case MessageDecoderType.MANAGED_ACCTS:
+            return this.decodeMsg_MANAGED_ACCTS();
+          case MessageDecoderType.RECEIVE_FA:
+            return this.decodeMsg_RECEIVE_FA();
+          case MessageDecoderType.HISTORICAL_DATA:
+            return this.decodeMsg_HISTORICAL_DATA();
+          case MessageDecoderType.BOND_CONTRACT_DATA:
+            return this.decodeMsg_BOND_CONTRACT_DATA();
+          case MessageDecoderType.SCANNER_PARAMETERS:
+            return this.decodeMsg_SCANNER_PARAMETERS();
+          case MessageDecoderType.SCANNER_DATA:
+            return this.decodeMsg_SCANNER_DATA();
+          case MessageDecoderType.TICK_OPTION_COMPUTATION:
+            return this.decodeMsg_TICK_OPTION_COMPUTATION();
+          case MessageDecoderType.TICK_GENERIC:
+            return this.decodeMsg_TICK_GENERIC();
+          case MessageDecoderType.TICK_STRING:
+            return this.decodeMsg_TICK_STRING();
+          case MessageDecoderType.TICK_EFP:
+            return this.decodeMsg_TICK_EFP();
+          case MessageDecoderType.CURRENT_TIME:
+            return this.decodeMsg_CURRENT_TIME();
+          case MessageDecoderType.REAL_TIME_BARS:
+            return this.decodeMsg_REAL_TIME_BARS();
+          case MessageDecoderType.FUNDAMENTAL_DATA:
+            return this.decodeMsg_FUNDAMENTAL_DATA();
+          case MessageDecoderType.CONTRACT_DATA_END:
+            return this.decodeMsg_CONTRACT_DATA_END();
+          case MessageDecoderType.OPEN_ORDER_END:
+            return this.decodeMsg_OPEN_ORDER_END();
+          case MessageDecoderType.ACCT_DOWNLOAD_END:
+            return this.decodeMsg_ACCT_DOWNLOAD_END();
+          case MessageDecoderType.EXECUTION_DATA_END:
+            return this.decodeMsg_EXECUTION_DATA_END();
+          case MessageDecoderType.DELTA_NEUTRAL_VALIDATION:
+            return this.decodeMsg_DELTA_NEUTRAL_VALIDATION();
+          case MessageDecoderType.TICK_SNAPSHOT_END:
+            return this.decodeMsg_TICK_SNAPSHOT_END();
+          case MessageDecoderType.MARKET_DATA_TYPE:
+            return this.decodeMsg_MARKET_DATA_TYPE();
+          case MessageDecoderType.COMMISSION_REPORT:
+            return this.decodeMsg_COMMISSION_REPORT();
+          case MessageDecoderType.POSITION:
+            return this.decodeMsg_POSITION();
+          case MessageDecoderType.POSITION_END:
+            return this.decodeMsg_POSITION_END();
+          case MessageDecoderType.ACCOUNT_SUMMARY:
+            return this.decodeMsg_ACCOUNT_SUMMARY();
+          case MessageDecoderType.ACCOUNT_SUMMARY_END:
+            return this.decodeMsg_ACCOUNT_SUMMARY_END();
+          /* missing decoders
+          case MessageDecoderType.VERIFY_MESSAGE_API:
+          case MessageDecoderType.VERIFY_COMPLETED:
+          */
+          case MessageDecoderType.DISPLAY_GROUP_LIST:
+            return this.decodeMsg_DISPLAY_GROUP_LIST();
+          case MessageDecoderType.DISPLAY_GROUP_UPDATED:
+            return this.decodeMsg_DISPLAY_GROUP_UPDATED();
+          /* missing decoders
+          case MessageDecoderType.VERIFY_AND_AUTH_MESSAGE_API:
+          case MessageDecoderType.VERIFY_AND_AUTH_COMPLETED
+          */
+          case MessageDecoderType.POSITION_MULTI:
+            return this.decodeMsg_POSITION_MULTI();
+          case MessageDecoderType.POSITION_MULTI_END:
+            return this.decodeMsg_POSITION_MULTI_END();
+          case MessageDecoderType.ACCOUNT_UPDATE_MULTI:
+            return this.decodeMsg_ACCOUNT_UPDATE_MULTI();
+          case MessageDecoderType.ACCOUNT_UPDATE_MULTI_END:
+            return this.decodeMsg_ACCOUNT_UPDATE_MULTI_END();
+          case MessageDecoderType.SECURITY_DEFINITION_OPTION_PARAMETER:
+            return this.decodeMsg_SECURITY_DEFINITION_OPTION_PARAMETER();
+          case MessageDecoderType.SECURITY_DEFINITION_OPTION_PARAMETER_END:
+            return this.decodeMsg_SECURITY_DEFINITION_OPTION_PARAMETER_END();
+          case MessageDecoderType.SOFT_DOLLAR_TIERS:
+            return this.decodeMsg_SOFT_DOLLAR_TIERS();
+          case MessageDecoderType.FAMILY_CODES:
+            return this.decodeMsg_FAMILY_CODES();
+          case MessageDecoderType.SYMBOL_SAMPLES:
+            return this.decodeMsg_SYMBOL_SAMPLES();
+          case MessageDecoderType.MKT_DEPTH_EXCHANGES:
+            return this.decodeMsg_MKT_DEPTH_EXCHANGES();
+          case MessageDecoderType.TICK_REQ_PARAMS:
+            return this.decodeMsg_TICK_REQ_PARAMS();
+          case MessageDecoderType.SMART_COMPONENTS:
+            return this.decodeMsg_SMART_COMPONENTS();
+          case MessageDecoderType.NEWS_ARTICLE:
+            return this.decodeMsg_NEWS_ARTICLE();
+          case MessageDecoderType.TICK_NEWS:
+            return this.decodeMsg_TICK_NEWS();
+          case MessageDecoderType.NEWS_PROVIDERS:
+            return this.decodeMsg_NEWS_PROVIDERS();
+          case MessageDecoderType.HISTORICAL_NEWS:
+            return this.decodeMsg_HISTORICAL_NEWS();
+          case MessageDecoderType.HISTORICAL_NEWS_END:
+            return this.decodeMsg_HISTORICAL_NEWS_END();
+          case MessageDecoderType.HEAD_TIMESTAMP:
+            return this.decodeMsg_HEAD_TIMESTAMP();
+          case MessageDecoderType.HISTOGRAM_DATA:
+            return this.decodeMsg_HISTOGRAM_DATA();
+          case MessageDecoderType.HISTORICAL_DATA_UPDATE:
+            return this.decodeMsg_HISTORICAL_DATA_UPDATE();
+          case MessageDecoderType.REROUTE_MKT_DATA:
+            return this.decodeMsg_REROUTE_MKT_DATA();
+          case MessageDecoderType.REROUTE_MKT_DEPTH:
+            return this.decodeMsg_REROUTE_MKT_DEPTH();
+          case MessageDecoderType.MARKET_RULE:
+            return this.decodeMsg_MARKET_RULE();
+          case MessageDecoderType.PNL:
+            return this.decodeMsg_PNL();
+          case MessageDecoderType.PNL_SINGLE:
+            return this.decodeMsg_PNL_SINGLE();
+          case MessageDecoderType.HISTORICAL_TICKS:
+            return this.decodeMsg_HISTORICAL_TICKS();
+          case MessageDecoderType.HISTORICAL_TICKS_BID_ASK:
+            return this.decodeMsg_HISTORICAL_TICKS_BID_ASK();
+          case MessageDecoderType.HISTORICAL_TICKS_LAST:
+            return this.decodeMsg_HISTORICAL_TICKS_LAST();
+          case MessageDecoderType.TICK_BY_TICK:
+            return this.decodeMsg_TICK_BY_TICK();
+          case MessageDecoderType.ORDER_BOUND:
+            return this.decodeMsg_ORDER_BOUND();
+          case MessageDecoderType.COMPLETED_ORDER:
+            return this.decodeMsg_COMPLETED_ORDER();
+          case MessageDecoderType.COMPLETED_ORDERS_END:
+            return this.decodeMsg_COMPLETED_ORDERS_END();
+          default:
+            this.callback.emitError(
+              `No parser implementation found for token: ${messageCode} (${commandCode}).`,
+              ErrorCode.UNKNOWN_ID,
+              -1
+            );
+            if (verifyMessageBoundary) {
+              this.drainQueue();
+            }
+        }
+      };
+
       // lookup decoder function
 
       const constKey = IN_MSG_ID[commandCode];
@@ -202,7 +371,7 @@ export class Decoder {
         // invoke decoder function
 
         if (constKey && this[decoderFunction] !== undefined) {
-          this[decoderFunction]();
+          decodeMessage(constKey as MessageDecoderType);
         } else {
           this.callback.emitError(
             `No parser implementation found for token: ${constKey} (${commandCode}).`,
