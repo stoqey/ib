@@ -369,20 +369,7 @@ export class Decoder {
 
       try {
         // invoke decoder function
-
-        if (constKey && this[decoderFunction] !== undefined) {
-          decodeMessage(constKey as MessageDecoderType);
-        } else {
-          this.callback.emitError(
-            `No parser implementation found for token: ${constKey} (${commandCode}).`,
-            ErrorCode.UNKNOWN_ID,
-            -1
-          );
-          if (verifyMessageBoundary) {
-            this.drainQueue();
-          }
-          continue;
-        }
+        decodeMessage(constKey as MessageDecoderType);
 
         // check if all of the message data was processed and drain any remaining tokens
 
