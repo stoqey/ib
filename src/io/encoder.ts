@@ -2360,6 +2360,11 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     tokens.push(contract.exchange);
+
+    if (this.serverVersion >= MIN_SERVER_VER.MKT_DEPTH_PRIM_EXCHANGE) {
+      tokens.push(contract.primaryExch);
+    }
+
     tokens.push(contract.currency);
     tokens.push(contract.localSymbol);
 
