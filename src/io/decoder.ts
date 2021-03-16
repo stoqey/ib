@@ -1049,6 +1049,7 @@ export class Decoder {
     this.readInt(); // version
     const id = this.readInt();
     const position = this.readInt();
+    const marketMaker = this.readStr();
     const operation = this.readInt();
     const side = this.readInt();
     const price = this.readDouble();
@@ -1063,6 +1064,7 @@ export class Decoder {
       EventName.updateMktDepthL2,
       id,
       position,
+      marketMaker,
       operation,
       side,
       price,
