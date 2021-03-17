@@ -7,7 +7,7 @@ import { Subscription } from "rxjs";
 
 import { SecType } from "../";
 import {
-  IBApiError,
+  IBApiNextError,
   IBApiNextTickType,
   IBApiTickType,
   MarketDataType,
@@ -69,22 +69,42 @@ class PrintMarketDataApp extends IBApiNextApp {
         false,
         false
       )
-      .subscribe(
-        (marketData) => {
-          const marketDataWithTickNames = new Map<string, number>();
-          marketData.forEach((value, type) => {
+      .subscribe({
+        next: (marketData) => {
+          const changedOrAddedDataWithTickNames = new Map<string, number>();
+          marketData.added?.forEach((tick, type) => {
             if (type > IBApiNextTickType.API_NEXT_FIRST_TICK_ID) {
-              marketDataWithTickNames.set(IBApiNextTickType[type], value);
+              changedOrAddedDataWithTickNames.set(
+                IBApiNextTickType[type],
+                tick.value
+              );
             } else {
-              marketDataWithTickNames.set(IBApiTickType[type], value);
+              changedOrAddedDataWithTickNames.set(
+                IBApiTickType[type],
+                tick.value
+              );
             }
           });
-          this.printObject(marketDataWithTickNames);
+          marketData.changed?.forEach((tick, type) => {
+            if (type > IBApiNextTickType.API_NEXT_FIRST_TICK_ID) {
+              changedOrAddedDataWithTickNames.set(
+                IBApiNextTickType[type],
+                tick.value
+              );
+            } else {
+              changedOrAddedDataWithTickNames.set(
+                IBApiTickType[type],
+                tick.value
+              );
+            }
+          });
+          this.printObject(changedOrAddedDataWithTickNames);
         },
-        (err: IBApiError) => {
-          this.error(`getMarketData failed with '${err.error.message}'`);
-        }
-      );
+        error: (err: IBApiNextError) => {
+          this.subscription$?.unsubscribe();
+          this.error(`getCurrentTime failed with '${err.error.message}'`);
+        },
+      });
   }
 
   /**

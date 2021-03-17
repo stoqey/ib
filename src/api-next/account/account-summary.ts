@@ -1,64 +1,42 @@
-/** An account id. */
-export type AccountId = string;
+import { AccountId, CurrencyCode } from "..";
+import { ItemListUpdate } from "../common/item-list-update";
 
 /** An account summary value tag name. */
 export type AccountSummaryTagName = string;
 
-/** The currency of a value on the account summary. */
-export type AccountSummaryValueCurrency = string;
+/** A value on the account summary. */
+export interface AccountSummaryValue {
+  /** The value. */
+  readonly value: string;
+
+  /**
+   * The ingress timestamp (UNIX) of the value.
+   *
+   * This is the time when [IBApi] has been received the value from TWS
+   * (not the timestamp of the actual tick on exchange ticker).
+   */
+  readonly ingressTm: number;
+}
 
 /**
  * A value on an account summary.
  *
  * Note same value on account summary can exists in different
- * currencies (therefore this is a Map, with currency code
- * as key).
+ * currencies (therefore this is an Map, with currency code as key).
  */
-export class AccountSummaryValue extends Map<
-  AccountSummaryValueCurrency,
-  string
-> {
-  constructor(init?: [AccountSummaryValueCurrency, string][]) {
-    super(init);
-  }
-}
-
-/**
- * Map of values on an account summary, wit tag name as key.
- */
-export class AccountSummaryValues extends Map<
-  AccountSummaryTagName,
+export type AccountSummaryValues = ReadonlyMap<
+  CurrencyCode,
   AccountSummaryValue
-> {
-  constructor(init?: [AccountSummaryTagName, AccountSummaryValue][]) {
-    super(init);
-  }
-  getOrAdd(tag: AccountSummaryTagName): AccountSummaryValue {
-    let result = this.get(tag);
-    if (result === undefined) {
-      result = new AccountSummaryValue();
-      this.set(tag, result);
-    }
-    return result;
-  }
-}
+>;
 
-/**
- * An account summary on [[IBApiNext]].
- */
-export class AccountSummary {
-  /**
-   * Create an [[AccountSummary]] object.
-   *
-   * @param account The account id.
-   */
-  constructor(
-    public readonly account: string,
-    init?: [AccountSummaryTagName, AccountSummaryValue][]
-  ) {
-    this.values = new AccountSummaryValues(init);
-  }
+/** Map of tag values on the account summary, with tag name as key. */
+export type AccountSummaryTagValues = ReadonlyMap<
+  AccountSummaryTagName,
+  AccountSummaryValues
+>;
 
-  /** Map of of account summary values, with tag name as key. */
-  readonly values: AccountSummaryValues;
-}
+/** Summary of all linked accounts, with account id as key. */
+export type AccountSummaries = ReadonlyMap<AccountId, AccountSummaryTagValues>;
+
+/** An update on the account the summaries. */
+export type AccountSummariesUpdate = ItemListUpdate<AccountSummaries>;

@@ -1,6 +1,9 @@
-import { IBApiError, IBApiNext } from "..";
-import { Observable, Subscriber, Subscription } from "rxjs";
+import { IBApiNextError, IBApiNext } from "../";
+import { Observable, ReplaySubject, Subscription } from "rxjs";
 import { ConnectionState } from "../connection/connection-state";
+import { IBApiNextDataUpdate } from "./data-update";
+import { DataUpdate } from "..";
+import { map } from "rxjs/operators";
 
 /**
  * @internal
@@ -28,23 +31,20 @@ export class IBApiNextSubscription<T> {
     private cleanupFunction: () => void,
     public readonly instanceId?: string
   ) {
-    this.reqId = IBApiNextSubscription.nextReqId++;
+    this.reqId = api.nextReqId;
   }
 
-  /** The next unused request id. */
-  private static nextReqId = 1;
-
   /** The request id of this subscription. */
-  public readonly reqId: number;
+  public reqId: number;
 
-  /** The cached data. */
-  private _cache?: T;
+  /** Number of active observers. */
+  private observersCount = 0;
 
-  /** The error object. */
-  private _error?: IBApiError;
+  /** The replay subject, holding the latest emitted values. */
+  private subject = new ReplaySubject<IBApiNextDataUpdate<T>>(1);
 
-  /** Set of active subscribers. */
-  private readonly subscribers = new Set<Subscriber<T>>();
+  /** The last 'all' value as send to subscribers. */
+  private _lastAllValue?: T;
 
   /** The [[Subscription]] on the connection state. */
   private connectionState$?: Subscription;
@@ -52,95 +52,84 @@ export class IBApiNextSubscription<T> {
   /** true when the end-event on an enumeration request has been received, false otherwise. */
   public endEventReceived = false;
 
-  /** Get latest cached value. */
-  get value(): T | undefined {
-    return this._cache;
+  /** Get the last 'all' value as send to subscribers. */
+  get lastAllValue(): T | undefined {
+    return this._lastAllValue;
+  }
+
+  /**
+   * Send the next value to subscribers.
+   *
+   * @param value: The next value.
+   */
+  next(value: IBApiNextDataUpdate<T>): void {
+    this._lastAllValue = value.all;
+    this.subject.next(value);
+  }
+
+  /** Signal to subscribed that the options is complete. */
+  complete() {
+    this.subject.complete();
+  }
+
+  /**
+   * Send an error to subscribers, reset latest value to
+   * undefined and cancel TWS subscription.
+   *
+   * @param error: The [[IBApiError]] object.
+   */
+  error(error: IBApiNextError): void {
+    delete this._lastAllValue;
+    this.subject.error(error);
+    this.cancelTwsSubscription();
   }
 
   /**
    * Create an Observable to start/stop the subscription on
    * TWS, receive update and error events.
    */
-  createObservable(): Observable<T> {
-    return new Observable<T>((subscriber) => {
-      this.addSubscriber(subscriber);
+  createObservable(): Observable<DataUpdate<T>> {
+    return new Observable<DataUpdate<T>>((subscriber) => {
+      // create new subject and reqId if there is an has error
+
+      if (this.subject.hasError) {
+        this.subject = new ReplaySubject(1);
+        this.reqId = this.api.nextReqId;
+      }
+
+      // subscribe on subject
+
+      const subscription$ = this.subject
+        .pipe(
+          map((val, index) => {
+            return index === 0
+              ? ({
+                  all: val.all,
+                  added: val.all,
+                } as DataUpdate<T>)
+              : val;
+          })
+        )
+        .subscribe(subscriber);
+
+      // request from TWS if first subscriber
+
+      if (this.observersCount === 0) {
+        this.requestTwsSubscription();
+      }
+      this.observersCount++;
+
+      // handle unsubscribe
+
       return (): void => {
-        this.removeSubscriber(subscriber);
+        subscription$.unsubscribe();
+        this.observersCount--;
+        if (this.observersCount <= 0) {
+          this.cancelTwsSubscription();
+          this.cleanupFunction();
+        }
       };
     });
-  }
-
-  /**
-   * Deliver the next value to the subject.
-   *
-   * @param value: Next value.
-   * @param cache: If set to false, the value will not be cached.
-   * Use this when you only want to post an update, but cache a full set of values
-   * (example: market data).
-   */
-  next(cache: boolean, value: T): void {
-    if (cache) {
-      this._cache = value;
-    }
-    this.subscribers.forEach((s) => s.next(value));
-  }
-
-  /**
-   * Write the given value to cache, but do not deliver it to the subject.
-   *
-   * This function can be used when changes shall be aggregated into the
-   * cache. In that case, do not cache on the [[next]] call, but implement
-   * your custom cache-update logic and use this function to update the
-   * whole cache, while only emitting the diff to subject.
-   *
-   * @param v The value to cache.
-   */
-  cache(v: T): void {
-    this._cache = v;
-  }
-
-  /**
-   * Deliver an error to the subject.
-   *
-   * @param error: The [[IBApiError]] object.
-   */
-  error(error: IBApiError): void {
-    delete this._cache;
-    this._error = error;
-    this.subscribers.forEach((s) => s.error(error));
-    this.cancelTwsSubscription();
-  }
-
-  /**
-   * Add a subscriber to subscribers list and start TWS subscription if need.
-   */
-  private addSubscriber(subscriber: Subscriber<T>): void {
-    // replay cached value
-    if (this._cache !== undefined) {
-      subscriber.next(this._cache);
-    }
-
-    // add to subscriber list
-
-    this.subscribers.add(subscriber);
-
-    // request from TWS if it is the first subscriber or if there was an error
-
-    this.subscribers.add(subscriber);
-    if (this.subscribers.size === 1 || this._error) {
-      this.requestTwsSubscription();
-    }
-  }
-
-  /**
-   * Remove a subscriber from subscribers list and cancel TWS subscription if need.
-   */
-  private removeSubscriber(subscriber: Subscriber<T>) {
-    this.subscribers.delete(subscriber);
-    if (!this.subscribers.size) {
-      this.cancelTwsSubscription();
-      this.cleanupFunction();
-    }
   }
 
   /**
@@ -151,8 +140,7 @@ export class IBApiNextSubscription<T> {
     if (!this.connectionState$) {
       this.connectionState$ = this.api.connectionState.subscribe((state) => {
         if (state === ConnectionState.Connected) {
-          delete this.cache;
-          delete this._error;
+          delete this._lastAllValue;
           this.endEventReceived = false;
           this.requestFunction();
         }

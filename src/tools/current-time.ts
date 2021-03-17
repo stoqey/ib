@@ -4,7 +4,7 @@
 
 import path from "path";
 
-import { IBApiError } from "../api-next";
+import { IBApiNextError } from "../api-next";
 import logger from "../utils/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
@@ -43,7 +43,7 @@ class PrintCurrentTimeApp extends IBApiNextApp {
         this.printText(`${dateTime.toLocaleTimeString()}`);
         this.exit();
       })
-      .catch((err: IBApiError) => {
+      .catch((err: IBApiNextError) => {
         this.error(`getCurrentTime failed with '${err.error.message}'`);
       });
   }

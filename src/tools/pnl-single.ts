@@ -4,7 +4,7 @@
 import path from "path";
 import { Subscription } from "rxjs";
 
-import { IBApiError } from "../api-next";
+import { IBApiNextError } from "../api-next";
 import logger from "../utils/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
@@ -47,7 +47,7 @@ class PrintPositionsApp extends IBApiNextApp {
    */
   start(): void {
     const scriptName = path.basename(__filename);
-    logger.debug(`Startin ${scriptName} script`);
+    logger.debug(`Starting ${scriptName} script`);
     if (!this.cmdLineArgs.account) {
       this.error("-account argument missing.");
     }
@@ -68,7 +68,7 @@ class PrintPositionsApp extends IBApiNextApp {
             this.stop();
           }
         },
-        (err: IBApiError) => {
+        (err: IBApiNextError) => {
           this.error(`getPnLSingle failed with '${err.error.message}'`);
         }
       );

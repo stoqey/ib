@@ -5,7 +5,7 @@
 import path from "path";
 import { Subscription } from "rxjs";
 
-import { IBApiError } from "../api-next";
+import { IBApiNextError } from "../api-next";
 import logger from "../utils/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
@@ -20,7 +20,7 @@ const DEFAULT_GROUP = "All";
 const DEFAULT_TAGS = "NetLiquidation,TotalCashValue,GrossPositionValue";
 
 /////////////////////////////////////////////////////////////////////////////////
-// The help text.                                                               //
+// The help text.                                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
 const DESCRIPTION_TEXT = "Prints the account summaries.";
@@ -72,34 +72,17 @@ class PrintAccountSummaryApp extends IBApiNextApp {
         this.cmdLineArgs.group ?? DEFAULT_GROUP,
         this.cmdLineArgs.tags ?? DEFAULT_TAGS
       )
-      .subscribe(
-        (summaries) => {
+      .subscribe({
+        next: (summaries) => {
           this.printObject(summaries);
           if (!this.cmdLineArgs.watch) {
             this.stop();
           }
         },
-        (err: IBApiError) => {
+        error: (err: IBApiNextError) => {
           this.error(`getAccountSummary failed with '${err.error.message}'`);
-        }
-      );
-
-    this.subscription$ = this.api
-      .getAccountSummary(
-        this.cmdLineArgs.group ?? DEFAULT_GROUP,
-        this.cmdLineArgs.tags ?? DEFAULT_TAGS
-      )
-      .subscribe(
-        (summaries) => {
-          this.printObject(summaries);
-          if (!this.cmdLineArgs.watch) {
-            this.stop();
-          }
         },
-        (err: IBApiError) => {
-          this.error(`getAccountSummary failed with '${err.error.message}'`);
-        }
-      );
+      });
   }
 
   /**

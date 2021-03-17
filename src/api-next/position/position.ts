@@ -1,18 +1,24 @@
-import { Contract } from "..";
+import { Contract, AccountId, ItemListUpdate } from "..";
 
 /**
  * A position on an IBKR account.
  */
 export interface Position {
-  /** The account holding the position. */
-  account: string;
+  /** The IBKR account Id. */
+  readonly account: AccountId;
 
   /** The position's [[Contract]] */
-  contract: Contract;
+  readonly contract: Contract;
 
   /** The number of positions held. */
-  pos: number;
+  readonly pos: number;
 
   /** The average cost of the position. */
-  avgCost: number;
+  readonly avgCost: number;
 }
+
+/** Summary of all linked accounts, with account id as key. */
+export type AccountPositions = ReadonlyMap<AccountId, Position[]>;
+
+/** An update on the account the summaries. */
+export type AccountPositionsUpdate = ItemListUpdate<AccountPositions>;

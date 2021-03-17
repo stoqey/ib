@@ -1,5 +1,5 @@
 import { Observable } from "rxjs";
-import { EventName, IBApiAutoConnection, IBApiError, IBApiNext } from "..";
+import { EventName, IBApiAutoConnection, IBApiNextError, IBApiNext, DataUpdate } from "..";
 import { IBApiNextMap } from "./map";
 import { IBApiNextSubscription } from "./subscription";
 
@@ -89,12 +89,12 @@ export class IBApiNextSubscriptionRegistry {
     eventHandler: [
       EventName,
       (
-        subscriptions: Map<number, IBApiNextSubscription<unknown>>,
+        subscriptions: Map<number, IBApiNextSubscription<T>>,
         ...eventArgs: unknown[]
       ) => void
     ][],
     instanceId?: string
-  ): Observable<T> {
+  ): Observable<DataUpdate<T>> {
     // get the existing registry entries, or add if not existing yet
 
     const entires: RegistryEntry[] = [];
@@ -184,7 +184,7 @@ export class IBApiNextSubscriptionRegistry {
   /**
    * Dispatch an error into the subscription that owns the given request id.
    */
-  dispatchError(reqId: number, error: IBApiError): void {
+  dispatchError(reqId: number, error: IBApiNextError): void {
     this.entires.forEach((entry) => {
       entry.subscriptions.get(reqId)?.error(error);
     });

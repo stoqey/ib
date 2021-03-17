@@ -3,7 +3,7 @@ import { LogLevel } from "..";
 /**
  * [[IBApiNext]] logger interface.
  */
-export interface IBApiNextLogger {
+export interface Logger {
   /** Get or set the log level. */
   logLevel: LogLevel;
 

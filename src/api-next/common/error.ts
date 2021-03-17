@@ -3,7 +3,7 @@ import { ErrorCode } from "..";
 /**
  * An error on the TWS / IB Gateway API.
  */
-export interface IBApiError {
+export interface IBApiNextError {
   /** The [[Error]] object. */
   error: Error;
 
