@@ -121,3 +121,7 @@ export { CommissionReport } from "./api/report/commissionReport";
 export { ExecutionFilter } from "./api/report/executionFilter";
 
 export default IBApi;
+
+// IBApiNext
+
+export { IBApiNext, IBApiNextError, IBApiAutoConnection } from "./api-next";

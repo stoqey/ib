@@ -5,7 +5,7 @@
 import path from "path";
 
 import { OptionType, SecType } from "../";
-import { IBApiError } from "../api-next";
+import { IBApiNextError } from "../api-next";
 import logger from "../utils/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
@@ -49,6 +49,7 @@ class PrintContractDetailsApp extends IBApiNextApp {
    * Start the the app.
    */
   start(): void {
+    /*
     const scriptName = path.basename(__filename);
     logger.debug(`Starting ${scriptName} script`);
     this.connect(0);
@@ -73,7 +74,7 @@ class PrintContractDetailsApp extends IBApiNextApp {
       })
       .catch((err: IBApiError) => {
         this.error(`getContractDetails failed with '${err.error.message}'`);
-      });
+      });*/
   }
 
   /**

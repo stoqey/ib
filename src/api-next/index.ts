@@ -9,8 +9,10 @@ export {
 
 export { IBApiNext, IBApiNextCreationOptions } from "./api-next";
 
-export { IBApiError } from "./common/error";
-export { IBApiNextLogger } from "./common/logger";
+export { IBApiNextError } from "./common/error";
+export { Logger as IBApiNextLogger } from "./common/logger";
+export { ItemListUpdate as DataUpdate } from "./common/item-list-update";
+export { CurrencyCode } from "./common/currency-code";
 
 export { ConnectionState } from "./connection/connection-state";
 export { IBApiAutoConnection as IBApiAutoConnection } from "./internal/auto-connection";
@@ -26,21 +28,26 @@ export { IBApiNextTickType };
 export type TickType = IBApiTickType | IBApiNextTickType;
 
 export {
-  AccountId,
-  AccountSummary,
+  AccountSummaries,
   AccountSummaryTagName,
+  AccountSummaryTagValues,
   AccountSummaryValue,
   AccountSummaryValues,
+  AccountSummariesUpdate,
 } from "./account/account-summary";
 
-export { AccountSummaries } from "./account/account-summaries";
-export { AccountSummariesUpdate } from "./account/account-summaries-update";
+export { ItemListUpdate } from "./common/item-list-update";
+
+export { AccountId, ConId } from "./common/common-types";
 
 export { PnL } from "./account/pnl";
 export { PnLSingle } from "./account/pnl-single";
 
-export { Position } from "./position/position";
-export { PositionsUpdate } from "./position/positions-update";
+export {
+  Position,
+  AccountPositions,
+  AccountPositionsUpdate,
+} from "./position/position";
 
 export { MarketDataTick } from "./market/market-data-tick";
 export { MarketDataType } from "./market/market-data-type";

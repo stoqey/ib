@@ -7,7 +7,7 @@ import { Subscription } from "rxjs";
 
 import { SecType } from "../";
 import {
-  IBApiError,
+  IBApiNextError,
   IBApiNextTickType,
   IBApiTickType,
   MarketDataType,
@@ -50,6 +50,7 @@ class PrintMarketDataApp extends IBApiNextApp {
    * Start the the app.
    */
   start(): void {
+    /*
     const scriptName = path.basename(__filename);
     logger.debug(`Starting ${scriptName} script`);
     this.connect(this.cmdLineArgs.watch ? 10000 : 0);
@@ -85,6 +86,7 @@ class PrintMarketDataApp extends IBApiNextApp {
           this.error(`getMarketData failed with '${err.error.message}'`);
         }
       );
+      */
   }
 
   /**
