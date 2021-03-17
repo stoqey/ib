@@ -1,5 +1,4 @@
 import { BehaviorSubject, Observable } from "rxjs";
-
 import {
   ConnectionState,
   ErrorCode,
@@ -8,7 +7,6 @@ import {
   IBApiCreationOptions,
 } from "../";
 import { Logger } from "../common/logger";
-import { ConsoleLogger } from "./console-logger";
 
 /** The log tag. */
 const LOG_TAG = "IBApiAutoConnection";
@@ -80,10 +78,10 @@ export class IBApiAutoConnection extends IBApi {
   private autoReconnectEnabled = true;
 
   /** The auto re-connect timeout. */
-  private reconnectionTimeout?: NodeJS.Timeout;
+  private reconnectionTimeout?: ReturnType<typeof setTimeout>;
 
   /** The connection-watchdog timeout. */
-  private connectionWatchdogTimeout?: NodeJS.Timeout;
+  private connectionWatchdogTimeout?: ReturnType<typeof setTimeout>;
 
   /** Ingress timestamp of last received [[EventName.currentTime]] event. */
   private lastCurrentTimeIngress?: number;

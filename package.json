@@ -13,6 +13,7 @@
   "scripts": {
     "lint": "eslint . --ext .ts",
     "test": "jest --maxWorkers=8 --reporters=default --useStderr --detectOpenHandles",
+    "test-next": "jest ./src/tests/unit/api-next/ --maxWorkers=8 --reporters=default --useStderr --detectOpenHandles",
     "clean": "rm -rf dist",
     "build": "yarn clean && yarn tsc",
     "prepublishOnly": "yarn build",

@@ -75,4 +75,5 @@
       "volatilities",
       "yyyymmss"
     ],
+    "god.tsconfig": "./tsconfig.json",
 }
