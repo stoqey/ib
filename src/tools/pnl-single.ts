@@ -46,9 +46,8 @@ class PrintPositionsApp extends IBApiNextApp {
    * Start the the app.
    */
   start(): void {
-    /*
     const scriptName = path.basename(__filename);
-    logger.debug(`Startin ${scriptName} script`);
+    logger.debug(`Starting ${scriptName} script`);
     if (!this.cmdLineArgs.account) {
       this.error("-account argument missing.");
     }
@@ -72,7 +71,7 @@ class PrintPositionsApp extends IBApiNextApp {
         (err: IBApiNextError) => {
           this.error(`getPnLSingle failed with '${err.error.message}'`);
         }
-      );*/
+      );
   }
 
   /**

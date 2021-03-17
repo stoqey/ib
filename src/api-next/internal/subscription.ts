@@ -67,6 +67,11 @@ export class IBApiNextSubscription<T> {
     this.subject.next(value);
   }
 
+  /** Signal to subscribed that the options is complete. */
+  complete() {
+    this.subject.complete();
+  }
+
   /**
    * Send an error to subscribers, reset latest value to
    * undefined and cancel TWS subscription.

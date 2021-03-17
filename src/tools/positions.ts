@@ -41,9 +41,8 @@ class PrintPositionsApp extends IBApiNextApp {
    * Start the the app.
    */
   start(): void {
-    /*
     const scriptName = path.basename(__filename);
-    logger.debug(`Startin ${scriptName} script`);
+    logger.debug(`Starting ${scriptName} script`);
     this.connect(this.cmdLineArgs.watch ? 10000 : 0);
     this.subscription$ = this.api.getPositions().subscribe(
       (positions) => {
@@ -52,10 +51,10 @@ class PrintPositionsApp extends IBApiNextApp {
           this.stop();
         }
       },
-      (err: IBApiError) => {
+      (err: IBApiNextError) => {
         this.error(`getPositions failed with '${err.error.message}'`);
       }
-    );*/
+    );
   }
 
   /**

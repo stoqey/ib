@@ -1,5 +1,5 @@
 /**
- * This file implement test code for the [[IBApiNextMap]] function.
+ * This file implements tests for the [[IBApiNextMap]] functions.
  */
 
 import { IBApiNextMap } from "../../../api-next/internal/map";

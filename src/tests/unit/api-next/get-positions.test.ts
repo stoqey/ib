@@ -1,5 +1,5 @@
 /**
- * This file implement test code for the [[IBApiNext.getPositions]] function.
+ * This file implements tests for the [[IBApiNext.getPositions]] function.
  */
 
 import {
@@ -10,7 +10,7 @@ import {
   Contract,
 } from "../../..";
 
-describe("RxJS Wrapper: getAccountSummary()", () => {
+describe("RxJS Wrapper: getPositions()", () => {
   test("Update multicast", (done) => {
     const apiNext = new IBApiNext();
     const api = ((apiNext as unknown) as Record<string, unknown>)

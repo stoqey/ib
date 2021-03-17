@@ -3,6 +3,7 @@
  */
 
 import path from "path";
+import { Subscription } from "rxjs";
 
 import { OptionType, SecType } from "../";
 import { IBApiNextError } from "../api-next";
@@ -45,15 +46,17 @@ class PrintContractDetailsApp extends IBApiNextApp {
     super(DESCRIPTION_TEXT, USAGE_TEXT, OPTION_ARGUMENTS, EXAMPLE_TEXT);
   }
 
+  /** The [[Subscription]] on contract details list (list will grow incrementally). */
+  private subscription$: Subscription;
+
   /**
    * Start the the app.
    */
   start(): void {
-    /*
     const scriptName = path.basename(__filename);
     logger.debug(`Starting ${scriptName} script`);
     this.connect(0);
-    this.api
+    this.subscription$ = this.api
       .getContractDetails({
         symbol: this.cmdLineArgs.symbol,
         conId: this.cmdLineArgs.conid
@@ -68,19 +71,24 @@ class PrintContractDetailsApp extends IBApiNextApp {
           : undefined,
         right: this.cmdLineArgs.right as OptionType,
       })
-      .then((details) => {
-        this.printObject(details);
-        this.stop();
-      })
-      .catch((err: IBApiError) => {
-        this.error(`getContractDetails failed with '${err.error.message}'`);
-      });*/
+      .subscribe({
+        next: (contractDetailsUpdate) => {
+          this.printObject(contractDetailsUpdate);
+        },
+        complete: () => {
+          this.stop();
+        },
+        error: (err: IBApiNextError) => {
+          this.error(`getContractDetails failed with '${err.error.message}'`);
+        },
+      });
   }
 
   /**
    * Stop the the app with success code.
    */
   stop() {
+    this.subscription$?.unsubscribe();
     this.exit();
   }
 }

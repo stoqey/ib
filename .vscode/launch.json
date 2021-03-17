@@ -7,8 +7,8 @@
       "name": "Jest Tests",
       "program": "./node_modules/jest/bin/jest.js",
       "args": [
-        "./src/tests/unit/api-next/get-positions.test.ts",
-        "--verbose=true",
+        "${fileBasename}",
+        "--verbose",
         "-i",
       ],
       "envFile": "${workspaceRoot}/.env"

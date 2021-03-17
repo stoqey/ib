@@ -1,5 +1,5 @@
 /**
- * This file implement test code for the [[IBApiNext.getAccountSummary]] function.
+ * This file implements tests for the [[IBApiNext.getAccountSummary]] function.
  */
 
 import { take } from "rxjs/operators";
@@ -53,6 +53,7 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
     // reqId 1 (All / NetLiquidation):
 
     let receivedNetLiquidation = 0;
+    let receivedTotalCashValue = 0;
 
     apiNext
       .getAccountSummary("All", "NetLiquidation")
@@ -64,7 +65,7 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
               ?.value
           ).toEqual(testValueReqId1);
           receivedNetLiquidation++;
-          if (receivedNetLiquidation === 2) {
+          if (receivedNetLiquidation == 2 && receivedTotalCashValue == 2) {
             done();
           }
         },
@@ -83,7 +84,7 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
               ?.value
           ).toEqual(testValueReqId1);
           receivedNetLiquidation++;
-          if (receivedNetLiquidation === 2) {
+          if (receivedNetLiquidation == 2 && receivedTotalCashValue == 2) {
             done();
           }
         },
@@ -94,8 +95,6 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
 
     // reqId 2 (used on All / TotalCashValue):
 
-    let receivedTotalCashValue = 0;
-
     apiNext
       .getAccountSummary("All", "TotalCashValue")
       // eslint-disable-next-line rxjs/no-ignored-subscription
@@ -106,7 +105,7 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
               ?.value
           ).toEqual(testValueReqId1);
           receivedTotalCashValue++;
-          if (receivedTotalCashValue === 2) {
+          if (receivedNetLiquidation == 2 && receivedTotalCashValue == 2) {
             done();
           }
         },
@@ -125,7 +124,7 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
               ?.value
           ).toEqual(testValueReqId1);
           receivedTotalCashValue++;
-          if (receivedTotalCashValue === 2) {
+          if (receivedNetLiquidation == 2 && receivedTotalCashValue == 2) {
             done();
           }
         },
@@ -145,7 +144,7 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
 
     api.emit(
       EventName.accountSummary,
-      1,
+      2,
       accountId2,
       "TotalCashValue",
       testValueReqId1,

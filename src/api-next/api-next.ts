@@ -15,22 +15,22 @@ import {
   AccountSummariesUpdate,
   AccountPositionsUpdate,
   Position,
+  ContractDetailsUpdate,
+  MarketDataUpdate,
+  IBApiNextTickType,
 } from "./";
 import { ConsoleLogger } from "./internal/console-logger";
 import { undefineMax } from "./internal/helper";
 import { Logger } from "./common/logger";
 import { IBApiNextSubscription } from "./internal/subscription";
 import { IBApiNextSubscriptionRegistry } from "./internal/subscription-registry";
-
 import {
   MutableAccountSummaryTagValues,
   MutableAccountSummaryValues,
   MutableAccountSummaries,
 } from "./internal/api/account/mutable-account-summary";
-import {
-  MutableAccountPositions,
-  MutableAccountPositionsUpdate,
-} from "./internal/api/position/mutable-account-positions-update";
+import { MutableAccountPositions } from "./internal/api/position/mutable-account-positions-update";
+import { MutableMarketData } from "./internal/api/market/mutable-market-data";
 
 /**
  * @internal
@@ -326,12 +326,6 @@ export class IBApiNext {
         added: accountSummaryUpdate,
       });
     }
-
-    subscription.next({
-      all: cached,
-      added: hasChanged ? undefined : accountSummaryUpdate,
-      changed: hasChanged ? accountSummaryUpdate : undefined,
-    });
   };
 
   /**
@@ -458,7 +452,7 @@ export class IBApiNext {
    * Create subscription to receive the positions on all accessible accounts.
    */
   getPositions(): Observable<AccountPositionsUpdate> {
-    return this.subscriptions.register(
+    return this.subscriptions.register<MutableAccountPositions>(
       () => {
         this.api.reqPositions();
       },
@@ -473,47 +467,44 @@ export class IBApiNext {
   /** contractDetails event handler */
   private readonly onContractDetails = (
     subscriptions: Map<number, IBApiNextSubscription<ContractDetails[]>>,
-    id: number,
+    reqId: number,
     details: ContractDetails
   ) => {
-    /*
-    // get subscription
+    // get the subscription
 
-    const subscription = subscriptions.get(id) as IBApiNextSubscription<
-      ContractDetails[]
-    >;
+    const subscription = subscriptions.get(reqId);
     if (!subscription) {
       return;
     }
 
-    // update cache
+    // update latest value on cache
 
-    const allContractDetails = subscription.fristEventValue ?? [];
-    allContractDetails.push(details);
-    subscription.setInitValue(allContractDetails);
-    */
+    const cached = subscription.lastAllValue ?? [];
+    cached.push(details);
+
+    // sent change to subscribers
+
+    subscription.next({
+      all: cached,
+      added: [details],
+    });
   };
 
   /** contractDetailsEnd event handler */
   private readonly onContractDetailsEnd = (
     subscriptions: Map<number, IBApiNextSubscription<ContractDetails[]>>,
-    id: number
+    reqId: number
   ) => {
-    /*
-    // get subscription
+    // get the subscription
 
-    const subscription = subscriptions.get(id) as IBApiNextSubscription<
-      ContractDetails[]
-    >;
+    const subscription = subscriptions.get(reqId);
     if (!subscription) {
       return;
     }
 
-    // deliver cache to subject and clear it
+    // signal completion
 
-    subscription.next(false, subscription.fristEventValue);
-    subscription.setInitValue([]);
-    */
+    subscription.complete();
   };
 
   /**
@@ -527,22 +518,18 @@ export class IBApiNext {
    *
    * @param contract The contract used as sample to query the available contracts.
    */
-  /*
-  getContractDetails(contract: Contract): Promise<ContractDetails[]> {
-    return this.subscriptions
-      .register<ContractDetails[]>(
-        (reqId) => {
-          this.api.reqContractDetails(reqId, contract);
-        },
-        undefined,
-        [
-          [EventName.contractDetails, this.onContractDetails],
-          [EventName.contractDetailsEnd, this.onContractDetailsEnd],
-        ]
-      )
-      .pipe(take(1))
-      .toPromise();
-  }*/
+  getContractDetails(contract: Contract): Observable<ContractDetailsUpdate> {
+    return this.subscriptions.register<ContractDetails[]>(
+      (reqId) => {
+        this.api.reqContractDetails(reqId, contract);
+      },
+      undefined,
+      [
+        [EventName.contractDetails, this.onContractDetails],
+        [EventName.contractDetailsEnd, this.onContractDetailsEnd],
+      ]
+    );
+  }
 
   /** pnl event handler. */
   private onPnL = (
@@ -552,7 +539,6 @@ export class IBApiNext {
     unrealizedPnL: number,
     realizedPnL: number
   ): void => {
-    /*
     // get subscription
 
     const subscription = subscriptions.get(reqId);
@@ -560,14 +546,11 @@ export class IBApiNext {
       return;
     }
 
-    // deliver value to subject
+    // sent change to subscribers
 
-    subscription.next(true, {
-      dailyPnL: undefineMax(dailyPnL),
-      unrealizedPnL: undefineMax(unrealizedPnL),
-      realizedPnL: undefineMax(realizedPnL),
+    subscription.next({
+      all: { dailyPnL, unrealizedPnL, realizedPnL },
     });
-    */
   };
 
   /**
@@ -576,19 +559,20 @@ export class IBApiNext {
    * @param account Account for which to receive PnL updates.
    * @param modelCode Specify to request PnL updates for a specific model.
    */
-  /*
   getPnL(account: string, model?: string): Observable<PnL> {
-    return this.subscriptions.register(
-      (reqId) => {
-        this.api.reqPnL(reqId, account, model);
-      },
-      (reqId) => {
-        this.api.cancelPnL(reqId);
-      },
-      [[EventName.pnl, this.onPnL]],
-      `${account}:${model}`
-    );
-  }*/
+    return this.subscriptions
+      .register(
+        (reqId) => {
+          this.api.reqPnL(reqId, account, model);
+        },
+        (reqId) => {
+          this.api.cancelPnL(reqId);
+        },
+        [[EventName.pnl, this.onPnL]],
+        `${account}:${model}`
+      )
+      .pipe(map((v) => v.all));
+  }
 
   /** pnlSingle event handler. */
   private readonly onPnLSingle = (
@@ -600,25 +584,24 @@ export class IBApiNext {
     realizedPnL: number,
     value: number
   ) => {
-    /*
     // get subscription
 
-    const subscription = subscriptions.get(
-      reqId
-    ) as IBApiNextSubscription<PnLSingle>;
+    const subscription = subscriptions.get(reqId);
     if (!subscription) {
       return;
     }
 
-    // deliver value to subject
+    // sent change to subscribers
 
-    subscription.next(true, {
-      position: pos,
-      dailyPnL: undefineMax(dailyPnL),
-      unrealizedPnL: undefineMax(unrealizedPnL),
-      realizedPnL: undefineMax(realizedPnL),
-      marketValue: undefineMax(value),
-    });*/
+    subscription.next({
+      all: {
+        position: pos,
+        dailyPnL: undefineMax(dailyPnL),
+        unrealizedPnL: undefineMax(unrealizedPnL),
+        realizedPnL: undefineMax(realizedPnL),
+        marketValue: undefineMax(value),
+      },
+    });
   };
 
   /**
@@ -628,23 +611,24 @@ export class IBApiNext {
    * @param modelCode Model in which position exists.
    * @param conId Contract ID (conId) of contract to receive daily PnL updates for.
    */
-  /*
   getPnLSingle(
     account: string,
     modelCode: string,
     conId: number
   ): Observable<PnLSingle> {
-    return this.subscriptions.register<PnLSingle>(
-      (reqId) => {
-        this.api.reqPnLSingle(reqId, account, modelCode, conId);
-      },
-      (reqId) => {
-        this.api.cancelPnLSingle(reqId);
-      },
-      [[EventName.pnlSingle, this.onPnLSingle]],
-      `${account}:${modelCode}:${conId}`
-    );
-  }*/
+    return this.subscriptions
+      .register<PnLSingle>(
+        (reqId) => {
+          this.api.reqPnLSingle(reqId, account, modelCode, conId);
+        },
+        (reqId) => {
+          this.api.cancelPnLSingle(reqId);
+        },
+        [[EventName.pnlSingle, this.onPnLSingle]],
+        `${account}:${modelCode}:${conId}`
+      )
+      .pipe(map((v) => v.all));
+  }
 
   /**
    * Switches data type returned from reqMktData request to "frozen", "delayed" or "delayed-frozen" market data.
@@ -666,12 +650,11 @@ export class IBApiNext {
 
   /** tickPrice, tickSize and tickGeneric event handler */
   private readonly onTick = (
-    subscriptions: Map<number, IBApiNextSubscription<MarketDataTick>>,
-    id: number,
+    subscriptions: Map<number, IBApiNextSubscription<MutableMarketData>>,
+    reqId: number,
     tickType: IBApiTickType,
     value: number
   ): void => {
-    /*
     // filter -1 on Bid/Ask and Number.MAX_VALUE on all.
 
     if (
@@ -689,29 +672,42 @@ export class IBApiNext {
 
     // get subscription
 
-    const subscription = subscriptions.get(
-      id
-    ) as IBApiNextSubscription<MarketDataTick>;
+    const subscription = subscriptions.get(reqId);
     if (!subscription) {
       return;
     }
 
-    // update cache
+    // update latest value on cache
 
-    const allMarketData = subscription.fristEventValue ?? new MarketDataTick();
-    allMarketData.set(tickType, value);
-    subscription.setInitValue(allMarketData);
+    const cached = subscription.lastAllValue ?? new MutableMarketData();
+    const hasChanged = cached.has(tickType);
+
+    const updatedValue: MarketDataTick = {
+      value,
+      ingressTm: Date.now(),
+    };
+
+    cached.set(tickType, updatedValue);
 
     // deliver to subject
 
-    subscription.next(false, new MarketDataTick([[tickType, value]]));
-    */
+    if (hasChanged) {
+      subscription.next({
+        all: cached,
+        changed: new MutableMarketData([[tickType, updatedValue]]),
+      });
+    } else {
+      subscription.next({
+        all: cached,
+        added: new MutableMarketData([[tickType, updatedValue]]),
+      });
+    }
   };
 
   /** tickOptionComputationHandler event handler */
   private readonly onTickOptionComputation = (
-    subscriptions: Map<number, IBApiNextSubscription<MarketDataTick>>,
-    id: number,
+    subscriptions: Map<number, IBApiNextSubscription<MutableMarketData>>,
+    reqId: number,
     field: number,
     impliedVolatility: number,
     delta: number,
@@ -722,124 +718,266 @@ export class IBApiNext {
     theta: number,
     undPrice: number
   ): void => {
-    /*
     // get subscription
 
-    const subscription = subscriptions.get(
-      id
-    ) as IBApiNextSubscription<MarketDataTick>;
+    const subscription = subscriptions.get(reqId);
     if (!subscription) {
       return;
     }
 
     // generate [[IBApiNext]] market data ticks
 
-    const ticks: [TickType, number | undefined][] = [
-      [IBApiNextTickType.OPTION_UNDERLYING, undPrice],
-      [IBApiNextTickType.OPTION_PV_DIVIDEND, pvDividend],
+    const now = Date.now();
+
+    const ticks: [IBApiNextTickType, MarketDataTick][] = [
+      [
+        IBApiNextTickType.OPTION_UNDERLYING,
+        { value: undPrice, ingressTm: now },
+      ],
+      [
+        IBApiNextTickType.OPTION_PV_DIVIDEND,
+        { value: pvDividend, ingressTm: now },
+      ],
     ];
+
     switch (field) {
       case IBApiTickType.BID_OPTION:
         ticks.push(
-          [IBApiNextTickType.BID_OPTION_IV, impliedVolatility],
-          [IBApiNextTickType.BID_OPTION_DELTA, delta],
-          [IBApiNextTickType.BID_OPTION_PRICE, optPrice],
-          [IBApiNextTickType.BID_OPTION_GAMMA, gamma],
-          [IBApiNextTickType.BID_OPTION_VEGA, vega],
-          [IBApiNextTickType.BID_OPTION_THETA, theta]
+          [
+            IBApiNextTickType.BID_OPTION_IV,
+            { value: impliedVolatility, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.BID_OPTION_DELTA,
+            { value: delta, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.BID_OPTION_PRICE,
+            { value: optPrice, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.BID_OPTION_GAMMA,
+            { value: gamma, ingressTm: now },
+          ],
+          [IBApiNextTickType.BID_OPTION_VEGA, { value: vega, ingressTm: now }],
+          [IBApiNextTickType.BID_OPTION_THETA, { value: theta, ingressTm: now }]
         );
         break;
       case IBApiTickType.DELAYED_BID_OPTION:
         ticks.push(
-          [IBApiNextTickType.DELAYED_BID_OPTION_IV, impliedVolatility],
-          [IBApiNextTickType.DELAYED_BID_OPTION_DELTA, delta],
-          [IBApiNextTickType.DELAYED_BID_OPTION_PRICE, optPrice],
-          [IBApiNextTickType.DELAYED_BID_OPTION_GAMMA, gamma],
-          [IBApiNextTickType.DELAYED_BID_OPTION_VEGA, vega],
-          [IBApiNextTickType.DELAYED_BID_OPTION_THETA, theta]
+          [
+            IBApiNextTickType.DELAYED_BID_OPTION_IV,
+            { value: impliedVolatility, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.DELAYED_BID_OPTION_DELTA,
+            { value: delta, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.DELAYED_BID_OPTION_PRICE,
+            { value: optPrice, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.DELAYED_BID_OPTION_GAMMA,
+            { value: gamma, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.DELAYED_BID_OPTION_VEGA,
+            { value: vega, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.DELAYED_BID_OPTION_THETA,
+            { value: theta, ingressTm: now },
+          ]
         );
         break;
       case IBApiTickType.ASK_OPTION:
         ticks.push(
-          [IBApiNextTickType.ASK_OPTION_IV, impliedVolatility],
-          [IBApiNextTickType.ASK_OPTION_DELTA, delta],
-          [IBApiNextTickType.ASK_OPTION_PRICE, optPrice],
-          [IBApiNextTickType.ASK_OPTION_GAMMA, gamma],
-          [IBApiNextTickType.ASK_OPTION_VEGA, vega],
-          [IBApiNextTickType.ASK_OPTION_THETA, theta]
+          [
+            IBApiNextTickType.ASK_OPTION_IV,
+            { value: impliedVolatility, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.ASK_OPTION_DELTA,
+            { value: delta, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.ASK_OPTION_PRICE,
+            { value: optPrice, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.ASK_OPTION_GAMMA,
+            { value: gamma, ingressTm: now },
+          ],
+          [IBApiNextTickType.ASK_OPTION_VEGA, { value: vega, ingressTm: now }],
+          [IBApiNextTickType.ASK_OPTION_THETA, { value: theta, ingressTm: now }]
         );
         break;
       case IBApiTickType.DELAYED_ASK_OPTION:
         ticks.push(
-          [IBApiNextTickType.DELAYED_ASK_OPTION_IV, impliedVolatility],
-          [IBApiNextTickType.DELAYED_ASK_OPTION_DELTA, delta],
-          [IBApiNextTickType.DELAYED_ASK_OPTION_PRICE, optPrice],
-          [IBApiNextTickType.DELAYED_ASK_OPTION_GAMMA, gamma],
-          [IBApiNextTickType.DELAYED_ASK_OPTION_VEGA, vega],
-          [IBApiNextTickType.DELAYED_ASK_OPTION_THETA, theta]
+          [
+            IBApiNextTickType.DELAYED_ASK_OPTION_IV,
+            { value: impliedVolatility, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.DELAYED_ASK_OPTION_DELTA,
+            { value: delta, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.DELAYED_ASK_OPTION_PRICE,
+            { value: optPrice, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.DELAYED_ASK_OPTION_GAMMA,
+            { value: gamma, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.DELAYED_ASK_OPTION_VEGA,
+            { value: vega, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.DELAYED_ASK_OPTION_THETA,
+            { value: theta, ingressTm: now },
+          ]
         );
         break;
       case IBApiTickType.LAST_OPTION:
         ticks.push(
-          [IBApiNextTickType.LAST_OPTION_IV, impliedVolatility],
-          [IBApiNextTickType.LAST_OPTION_DELTA, delta],
-          [IBApiNextTickType.LAST_OPTION_PRICE, optPrice],
-          [IBApiNextTickType.LAST_OPTION_GAMMA, gamma],
-          [IBApiNextTickType.LAST_OPTION_VEGA, vega],
-          [IBApiNextTickType.LAST_OPTION_THETA, theta]
+          [
+            IBApiNextTickType.LAST_OPTION_IV,
+            { value: impliedVolatility, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.LAST_OPTION_DELTA,
+            { value: delta, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.LAST_OPTION_PRICE,
+            { value: optPrice, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.LAST_OPTION_GAMMA,
+            { value: gamma, ingressTm: now },
+          ],
+          [IBApiNextTickType.LAST_OPTION_VEGA, { value: vega, ingressTm: now }],
+          [
+            IBApiNextTickType.LAST_OPTION_THETA,
+            { value: theta, ingressTm: now },
+          ]
         );
         break;
       case IBApiTickType.DELAYED_LAST_OPTION:
         ticks.push(
-          [IBApiNextTickType.DELAYED_LAST_OPTION_IV, impliedVolatility],
-          [IBApiNextTickType.DELAYED_LAST_OPTION_DELTA, delta],
-          [IBApiNextTickType.DELAYED_LAST_OPTION_PRICE, optPrice],
-          [IBApiNextTickType.DELAYED_LAST_OPTION_GAMMA, gamma],
-          [IBApiNextTickType.DELAYED_LAST_OPTION_VEGA, vega],
-          [IBApiNextTickType.DELAYED_LAST_OPTION_THETA, theta]
+          [
+            IBApiNextTickType.DELAYED_LAST_OPTION_IV,
+            { value: impliedVolatility, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.DELAYED_LAST_OPTION_DELTA,
+            { value: delta, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.DELAYED_LAST_OPTION_PRICE,
+            { value: optPrice, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.DELAYED_LAST_OPTION_GAMMA,
+            { value: gamma, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.DELAYED_LAST_OPTION_VEGA,
+            { value: vega, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.DELAYED_LAST_OPTION_THETA,
+            { value: theta, ingressTm: now },
+          ]
         );
         break;
       case IBApiTickType.MODEL_OPTION:
         ticks.push(
-          [IBApiNextTickType.MODEL_OPTION_IV, impliedVolatility],
-          [IBApiNextTickType.MODEL_OPTION_DELTA, delta],
-          [IBApiNextTickType.MODEL_OPTION_PRICE, optPrice],
-          [IBApiNextTickType.MODEL_OPTION_GAMMA, gamma],
-          [IBApiNextTickType.MODEL_OPTION_VEGA, vega],
-          [IBApiNextTickType.MODEL_OPTION_THETA, theta]
+          [
+            IBApiNextTickType.MODEL_OPTION_IV,
+            { value: impliedVolatility, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.MODEL_OPTION_DELTA,
+            { value: delta, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.MODEL_OPTION_PRICE,
+            { value: optPrice, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.MODEL_OPTION_GAMMA,
+            { value: gamma, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.MODEL_OPTION_VEGA,
+            { value: vega, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.MODEL_OPTION_THETA,
+            { value: theta, ingressTm: now },
+          ]
         );
         break;
       case IBApiTickType.DELAYED_MODEL_OPTION:
         ticks.push(
-          [IBApiNextTickType.DELAYED_MODEL_OPTION_IV, impliedVolatility],
-          [IBApiNextTickType.DELAYED_MODEL_OPTION_DELTA, delta],
-          [IBApiNextTickType.DELAYED_MODEL_OPTION_PRICE, optPrice],
-          [IBApiNextTickType.DELAYED_MODEL_OPTION_GAMMA, gamma],
-          [IBApiNextTickType.DELAYED_MODEL_OPTION_VEGA, vega],
-          [IBApiNextTickType.DELAYED_MODEL_OPTION_THETA, theta]
+          [
+            IBApiNextTickType.DELAYED_MODEL_OPTION_IV,
+            { value: impliedVolatility, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.DELAYED_MODEL_OPTION_DELTA,
+            { value: delta, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.DELAYED_MODEL_OPTION_PRICE,
+            { value: optPrice, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.DELAYED_MODEL_OPTION_GAMMA,
+            { value: gamma, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.DELAYED_MODEL_OPTION_VEGA,
+            { value: vega, ingressTm: now },
+          ],
+          [
+            IBApiNextTickType.DELAYED_MODEL_OPTION_THETA,
+            { value: theta, ingressTm: now },
+          ]
         );
         break;
     }
 
-    // update cache
+    // update latest value on cache
 
-    const allMarketData = subscription.fristEventValue ?? new MarketDataTick();
+    const cached = subscription.lastAllValue ?? new MutableMarketData();
+    const added = new MutableMarketData();
+    const changed = new MutableMarketData();
 
-    const filteredTicks = new MarketDataTick();
     ticks.forEach((tick) => {
-      const value = undefineMax(tick[1]);
-      if (value !== undefined) {
-        allMarketData.set(tick[0], value);
-        filteredTicks.set(tick[0], value);
+      if (tick[1].value !== Number.MAX_VALUE && tick[1].value !== undefined) {
+        if (cached.has(tick[0])) {
+          changed.set(tick[0], tick[1]);
+        } else {
+          added.set(tick[0], tick[1]);
+        }
+        cached.set(tick[0], tick[1]);
       }
     });
 
-    subscription.setInitValue(allMarketData);
-
     // deliver to subject
 
-    subscription.next(false, filteredTicks);
-    */
+    if (cached.size) {
+      subscription.next({
+        all: cached,
+        added: added.size ? added : undefined,
+        changed: changed.size ? changed : undefined,
+      });
+    }
   };
 
   /**
@@ -870,14 +1008,13 @@ export class IBApiNext {
    * but not corresponding Network A, B, or C subscription necessary for streaming * market data.
    * One-time snapshot of current market price that will incur a fee of 1 cent to the account per snapshot.
    */
-  /*
   getMarketData(
     contract: Contract,
     genericTickList: string,
     snapshot: boolean,
     regulatorySnapshot: boolean
-  ): Observable<MarketDataTick> {
-    return this.subscriptions.register<MarketDataTick>(
+  ): Observable<MarketDataUpdate> {
+    return this.subscriptions.register<MutableMarketData>(
       (reqId) => {
         this.api.reqMktData(
           reqId,
@@ -903,5 +1040,5 @@ export class IBApiNext {
         ? undefined
         : `${JSON.stringify(contract)}:${genericTickList}`
     );
-  }*/
+  }
 }

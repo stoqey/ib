@@ -1,5 +1,5 @@
 /**
- * This file implement test code for the [[IBApiNext.getCurrentTime]] function.
+ * This file implements tests for the [[IBApiNext.getCurrentTime]] function.
  */
 
 import {
@@ -9,8 +9,8 @@ import {
   EventName,
 } from "../../..";
 
-describe("IBApiNext.getCurrentTime Tests", () => {
-  test("getCurrentTime() RxJS wrapper", (done) => {
+describe("RxJS Wrapper: getCurrentTime()", () => {
+  test("Promise result", (done) => {
     // create IBApiNext
 
     const apiNext = new IBApiNext();

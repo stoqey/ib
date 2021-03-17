@@ -36,6 +36,8 @@ export {
   AccountSummariesUpdate,
 } from "./account/account-summary";
 
+export { ContractDetailsUpdate } from "./contract/contract-details-update";
+
 export { ItemListUpdate } from "./common/item-list-update";
 
 export { AccountId, ConId } from "./common/common-types";
@@ -49,5 +51,9 @@ export {
   AccountPositionsUpdate,
 } from "./position/position";
 
-export { MarketDataTick } from "./market/market-data-tick";
+export {
+  MarketDataTick,
+  MarketDataTicks,
+  MarketDataUpdate,
+} from "./market/market-data";
 export { MarketDataType } from "./market/market-data-type";
