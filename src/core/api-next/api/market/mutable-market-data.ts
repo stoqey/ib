@@ -4,7 +4,7 @@ import {
   MarketDataTicks,
   MarketDataUpdate,
 } from "../../../../api-next";
-import { IBApiNextDataUpdate } from "../../data-update";
+import { IBApiNextItemListUpdate } from "../../item-list-update";
 import { IBApiNextMap } from "../../map";
 
 /** Mutable version of [[AccountSummary]] */
@@ -14,5 +14,5 @@ export class MutableMarketData
 
 /** Mutable version of [[AccountSummariesUpdate]] */
 export class MutableMarketDataUpdate
-  extends IBApiNextDataUpdate<MutableMarketData>
+  extends IBApiNextItemListUpdate<MutableMarketData>
   implements MarketDataUpdate {}

@@ -9,7 +9,7 @@ import {
   AccountSummariesUpdate,
 } from "../../../../api-next";
 import { IBApiNextMap } from "../../map";
-import { IBApiNextDataUpdate } from "../../data-update";
+import { IBApiNextItemListUpdate } from "../../item-list-update";
 
 /** Mutable version of [[AccountSummaryValues]] */
 export class MutableAccountSummaryValues
@@ -28,5 +28,5 @@ export class MutableAccountSummaries
 
 /** Mutable version of [[AccountSummariesUpdate]] */
 export class MutableAccountSummariesUpdate
-  extends IBApiNextDataUpdate<MutableAccountSummaries>
+  extends IBApiNextItemListUpdate<MutableAccountSummaries>
   implements AccountSummariesUpdate {}

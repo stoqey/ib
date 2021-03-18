@@ -1,7 +1,7 @@
 import { IBApiNextError, IBApiNext } from "../../api-next";
 import { Observable, ReplaySubject, Subscription } from "rxjs";
 import { ConnectionState } from "../../api-next/common/connection-state";
-import { IBApiNextDataUpdate } from "./data-update";
+import { IBApiNextItemListUpdate } from "./item-list-update";
 import { DataUpdate } from "../../api-next";
 import { map } from "rxjs/operators";
 
@@ -41,7 +41,7 @@ export class IBApiNextSubscription<T> {
   private observersCount = 0;
 
   /** The replay subject, holding the latest emitted values. */
-  private subject = new ReplaySubject<IBApiNextDataUpdate<T>>(1);
+  private subject = new ReplaySubject<IBApiNextItemListUpdate<T>>(1);
 
   /** The last 'all' value as send to subscribers. */
   private _lastAllValue?: T;
@@ -62,7 +62,7 @@ export class IBApiNextSubscription<T> {
    *
    * @param value: The next value.
    */
-  next(value: IBApiNextDataUpdate<T>): void {
+  next(value: IBApiNextItemListUpdate<T>): void {
     this._lastAllValue = value.all;
     this.subject.next(value);
   }

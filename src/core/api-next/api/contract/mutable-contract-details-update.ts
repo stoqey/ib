@@ -1,8 +1,8 @@
 import { ContractDetailsUpdate } from "../../../../api-next";
 import { ContractDetails } from "../../../..";
-import { IBApiNextDataUpdate } from "../../data-update";
+import { IBApiNextItemListUpdate } from "../../item-list-update";
 
 /** Mutable version of [[ContractDetailsUpdate]] */
 export class MutableContractDetailsUpdate
-  extends IBApiNextDataUpdate<ContractDetails[]>
+  extends IBApiNextItemListUpdate<ContractDetails[]>
   implements ContractDetailsUpdate {}

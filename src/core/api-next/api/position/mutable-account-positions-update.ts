@@ -5,7 +5,7 @@ import {
   AccountPositionsUpdate,
 } from "../../../../api-next";
 import { IBApiNextMap } from "../../map";
-import { IBApiNextDataUpdate } from "../../data-update";
+import { IBApiNextItemListUpdate } from "../../item-list-update";
 
 /** Mutable version of [[AccountPositions]] */
 export class MutableAccountPositions
@@ -14,5 +14,5 @@ export class MutableAccountPositions
 
 /** Mutable version of [[AccountPositionsUpdate]] */
 export class MutableAccountPositionsUpdate
-  extends IBApiNextDataUpdate<MutableAccountPositions>
+  extends IBApiNextItemListUpdate<MutableAccountPositions>
   implements AccountPositionsUpdate {}
