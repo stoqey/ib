@@ -2,6 +2,7 @@
  * This file implements tests for the [[IBApiNext.getMarketData]] function.
  */
 
+import { take } from "rxjs/operators";
 import {
   IBApiNext,
   IBApiAutoConnection,
@@ -231,5 +232,58 @@ describe("RxJS Wrapper: getPnL()", () => {
       theta,
       undPrice
     );
+  });
+
+  test("Initial value replay to late observers", (done) => {
+    // create IBApiNext and reqId counter
+
+    const apiNext = new IBApiNext();
+    const api = ((apiNext as unknown) as Record<string, unknown>)
+      .api as IBApiAutoConnection;
+
+    // emit a tickPrice events and verify RxJS result
+
+    let testValue = 1;
+
+    apiNext
+      .getMarketData({ conId: 12345 }, null, false, false)
+      .pipe(take(1))
+      // eslint-disable-next-line rxjs/no-ignored-subscription
+      .subscribe({
+        next: () => {
+          apiNext
+            .getMarketData({ conId: 12345 }, null, false, false)
+            // eslint-disable-next-line rxjs/no-ignored-subscription
+            .subscribe({
+              next: (data) => {
+                expect(data.all.get(TickType.BID).value).toEqual(testValue);
+                if (testValue == 1) {
+                  expect(data.added.get(TickType.BID).value).toEqual(testValue);
+                  expect(data.changed).toBeUndefined();
+                } else if (testValue == 2) {
+                  expect(data.added).toBeUndefined();
+                  expect(data.changed.get(TickType.BID).value).toEqual(
+                    testValue
+                  );
+                  done();
+                  return;
+                } else {
+                  fail();
+                }
+
+                testValue = 2;
+                api.emit(EventName.tickPrice, 1, TickType.BID, testValue);
+              },
+              error: (error: IBApiNextError) => {
+                fail(error.error.message);
+              },
+            });
+        },
+        error: (error: IBApiNextError) => {
+          fail(error.error.message);
+        },
+      });
+
+    api.emit(EventName.tickPrice, 1, TickType.BID, testValue);
   });
 });
