@@ -1,5 +1,5 @@
 /**
- * Base-interface to sent updates on item lists to subscribers.
+ * Base-interface for updates on item lists.
  */
 export interface ItemListUpdate<T> {
   /** All latest data items as received by TWS. */

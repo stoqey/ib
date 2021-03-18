@@ -2,7 +2,7 @@
  * This file implements tests for the [[IBApiNextMap]] functions.
  */
 
-import { IBApiNextMap } from "../../../api-next/internal/map";
+import { IBApiNextMap } from "../../../core/api-next/map";
 
 describe("IBApiNextMap Tests", () => {
   test("getOrAdd", () => {

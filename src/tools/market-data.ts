@@ -12,7 +12,7 @@ import {
   IBApiTickType,
   MarketDataType,
 } from "../api-next";
-import logger from "../utils/logger";
+import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
 /////////////////////////////////////////////////////////////////////////////////

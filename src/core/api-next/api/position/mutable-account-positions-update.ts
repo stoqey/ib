@@ -3,8 +3,8 @@ import {
   Position,
   AccountPositions,
   AccountPositionsUpdate,
-} from "../../../";
-import { IBApiNextMap } from "../../../internal/map";
+} from "../../../../api-next";
+import { IBApiNextMap } from "../../map";
 import { IBApiNextDataUpdate } from "../../data-update";
 
 /** Mutable version of [[AccountPositions]] */

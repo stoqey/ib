@@ -1,8 +1,8 @@
-import { IBApiNextError, IBApiNext } from "../";
+import { IBApiNextError, IBApiNext } from "../../api-next";
 import { Observable, ReplaySubject, Subscription } from "rxjs";
-import { ConnectionState } from "../connection/connection-state";
+import { ConnectionState } from "../../api-next/common/connection-state";
 import { IBApiNextDataUpdate } from "./data-update";
-import { DataUpdate } from "..";
+import { DataUpdate } from "../../api-next";
 import { map } from "rxjs/operators";
 
 /**

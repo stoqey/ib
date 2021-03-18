@@ -1,4 +1,4 @@
-import { ContractDetailsUpdate } from "../../..";
+import { ContractDetailsUpdate } from "../../../../api-next";
 import { ContractDetails } from "../../../..";
 import { IBApiNextDataUpdate } from "../../data-update";
 

@@ -19,18 +19,18 @@ import {
   MarketDataUpdate,
   IBApiNextTickType,
 } from "./";
-import { ConsoleLogger } from "./internal/console-logger";
-import { undefineMax } from "./internal/helper";
+import { ConsoleLogger } from "../core/api-next/console-logger";
 import { Logger } from "./common/logger";
-import { IBApiNextSubscription } from "./internal/subscription";
-import { IBApiNextSubscriptionRegistry } from "./internal/subscription-registry";
+import { IBApiNextSubscription } from "../core/api-next/subscription";
+import { IBApiNextSubscriptionRegistry } from "../core/api-next/subscription-registry";
 import {
   MutableAccountSummaryTagValues,
   MutableAccountSummaryValues,
   MutableAccountSummaries,
-} from "./internal/api/account/mutable-account-summary";
-import { MutableAccountPositions } from "./internal/api/position/mutable-account-positions-update";
-import { MutableMarketData } from "./internal/api/market/mutable-market-data";
+} from "../core/api-next/api/account/mutable-account-summary";
+import { MutableAccountPositions } from "../core/api-next/api/position/mutable-account-positions-update";
+import { MutableMarketData } from "../core/api-next/api/market/mutable-market-data";
+import { IBApiNextLogger } from "../core/api-next/logger";
 
 /**
  * @internal
@@ -52,6 +52,15 @@ const LOG_TAG = "IBApiNext";
  * Log tag used on messages that have been received from TWS / IB Gateway.
  */
 const TWS_LOG_TAG = "TWS";
+
+/**
+ * @internal
+ *
+ * Returns undefined is the value is Number.MAX_VALUE, or the value otherwise.
+ */
+function undefineMax(v: number | undefined): number | undefined {
+  return v === undefined || v === Number.MAX_VALUE ? undefined : v;
+}
 
 /**
  * Input arguments on the [[IBApiNext]] class constructor.
@@ -116,7 +125,8 @@ export class IBApiNext {
    * @param options Creation options.
    */
   constructor(options?: IBApiNextCreationOptions) {
-    this.logger = options?.logger ?? new ConsoleLogger();
+    this.logger = new IBApiNextLogger(
+      options?.logger ?? new ConsoleLogger());
 
     // create the IBApiAutoConnection and subscription registry
 
@@ -159,7 +169,7 @@ export class IBApiNext {
   }
 
   /** The [[IBApiNextLogger]] instance. */
-  public readonly logger: Logger;
+  public readonly logger: IBApiNextLogger;
 
   /** The [[IBApi]] with auto-reconnect. */
   private readonly api: IBApiAutoConnection;

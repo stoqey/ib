@@ -1,14 +1,14 @@
 import colors from "colors";
 import * as util from "util";
+import { Logger, LogLevel } from "../../api-next";
 
-import { LogLevel, IBApiNextLogger } from "../";
 
 /**
  * @internal
  *
  * The logger implementation of [[IBApiNext]].
  */
-export class ConsoleLogger implements IBApiNextLogger {
+export class ConsoleLogger implements Logger {
   /** The current log level */
   private _logLevel = LogLevel.SYSTEM;
 

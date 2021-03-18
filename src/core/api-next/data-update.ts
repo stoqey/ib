@@ -1,4 +1,4 @@
-import { ItemListUpdate } from "../common/item-list-update";
+import { ItemListUpdate } from "../../api-next/common/item-list-update";
 
 /**
  * @internal

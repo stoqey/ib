@@ -1,21 +1,16 @@
-import { LogLevel } from "..";
-
 /**
- * [[IBApiNext]] logger interface.
+ * IBApiNext logger interface.
  */
 export interface Logger {
-  /** Get or set the log level. */
-  logLevel: LogLevel;
-
-  /** Log a debug information. */
+  /** Log an info message. */
   info(tag: string, ...args: unknown[]): void;
 
-  /** Log a generic information. */
+  /** Log a warning message. */
   warn(tag: string, ...args: unknown[]): void;
 
-  /** Log a warning. */
+  /** Log an error message. */
   error(tag: string, ...args: unknown[]): void;
 
-  /** Log an error. */
+  /** Log a debug message. */
   debug(tag: string, ...args: unknown[]): void;
 }

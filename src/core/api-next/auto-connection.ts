@@ -5,8 +5,8 @@ import {
   EventName,
   IBApi,
   IBApiCreationOptions,
-} from "../";
-import { Logger } from "../common/logger";
+} from "../../api-next";
+import { Logger } from "../../api-next/common/logger";
 
 /** The log tag. */
 const LOG_TAG = "IBApiAutoConnection";

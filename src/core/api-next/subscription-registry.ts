@@ -1,5 +1,5 @@
 import { Observable } from "rxjs";
-import { EventName, IBApiAutoConnection, IBApiNextError, IBApiNext, DataUpdate } from "..";
+import { EventName, IBApiAutoConnection, IBApiNextError, IBApiNext, DataUpdate } from "../../api-next";
 import { IBApiNextMap } from "./map";
 import { IBApiNextSubscription } from "./subscription";
 

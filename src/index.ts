@@ -32,7 +32,7 @@ import { IBApi } from "./api/api";
 
 export { IBApi, IBApiCreationOptions } from "./api/api";
 
-export { ErrorCode } from "./api/errorCode";
+export { ErrorCode } from "./common/errorCode";
 
 // export contract types
 
@@ -78,7 +78,7 @@ export { HistoricalTickLast } from "./api/historical/historicalTickLast";
 
 // export realtime market-data types
 
-export { TickType } from "./api/market/tickType";
+import { TickType as IBApiTickType } from "./api/market/tickType";
 export { TickByTickDataType } from "./api/market/tickByTickDataType";
 export { ScannerSubscription } from "./api/market/scannerSubscription";
 
@@ -122,6 +122,35 @@ export { ExecutionFilter } from "./api/report/executionFilter";
 
 export default IBApi;
 
-// IBApiNext
+// export IBApiNext types
 
-export { IBApiNext, IBApiNextError, IBApiAutoConnection } from "./api-next";
+export {
+  IBApiNext,
+  IBApiNextError,
+  IBApiAutoConnection,
+  AccountId,
+  ConId,
+  CurrencyCode,
+  ItemListUpdate,
+  AccountSummaries,
+  AccountSummaryTagName,
+  AccountSummaryTagValues,
+  AccountSummaryValue,
+  AccountSummaryValues,
+  AccountSummariesUpdate,
+  ContractDetailsUpdate,
+  PnL,
+  PnLSingle,
+  Position,
+  AccountPositions,
+  AccountPositionsUpdate,
+  MarketDataTick,
+  MarketDataTicks,
+  MarketDataUpdate,
+  MarketDataType,
+} from "./api-next";
+
+import { TickType as IBApiNextTickType } from "./api-next/market/tick-type";
+
+/** Combination of IBApi and IBApiNext market data tick types. */
+export type TickType = IBApiTickType | IBApiNextTickType;

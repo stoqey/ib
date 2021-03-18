@@ -3,7 +3,7 @@ import {
   MarketDataTick,
   MarketDataTicks,
   MarketDataUpdate,
-} from "../../..";
+} from "../../../../api-next";
 import { IBApiNextDataUpdate } from "../../data-update";
 import { IBApiNextMap } from "../../map";
 

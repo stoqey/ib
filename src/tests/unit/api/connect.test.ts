@@ -1,7 +1,7 @@
 import { IBApi } from "../../../api/api";
 import { EventName } from "../../../api/data/enum/event-name";
-import configuration from "../../../common/configuration";
-import logger from "../../../utils/logger";
+import configuration from "../../../core/utils/configuration";
+import logger from "../../../common/logger";
 
 describe("IBApi Tests", () => {
   jest.setTimeout(30000);
