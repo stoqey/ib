@@ -128,7 +128,7 @@ Have look on it if you search for IBApiNext sample code.
 
 Example:
 ```
-node .\dist\tools\account-summary.js -group=All -tags="NetLiquidation,MaintMarginReq" -watch -inc -port=4002
+node ./dist/tools/account-summary.js -group=All -tags="NetLiquidation,MaintMarginReq" -watch -inc -port=4002
 {
   "all": [
     [
