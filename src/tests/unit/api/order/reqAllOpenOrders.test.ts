@@ -3,8 +3,8 @@
  * This file implement test code for the reqAllOpenOrders function and openOrder event.
  */
 import { ErrorCode, EventName, IBApi } from "../../../..";
-import configuration from "../../../../common/configuration";
-import logger from "../../../../utils/logger";
+import configuration from "../../../../core/utils/configuration";
+import logger from "../../../../common/logger";
 
 const TEST_SERVER_HOST = configuration.ib_test_host;
 const TEST_SERVER_POST = configuration.ib_test_port;

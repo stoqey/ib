@@ -31,6 +31,18 @@ The module makes a socket connection to TWS (or IB Gateway) using the [net](http
 
 <b>[See API documentation here.](https://stoqey.github.io/ib-doc/)</b>
 
+## IBApi vs IBApiNext
+
+There are two APIs on this package, IBApi and IBApiNext.
+
+IBApi replicates the official TWS API as close as possible, making it easy to migrate or port existing code.
+It implements all functions and provies same event callbacks as the official TWS API does.
+
+IBApiNext is a **preview** of a new API that is currently in development.
+The goal of IBApiNext is it, to provide same functionality as IBApi, but focus on usuability rather than replicating the official interface.
+It is not based on a request/event design anymore, but it does use RxJS instead.
+IBApiNext still is in preview stage. Not all functions are available yet and we cannot guarantee stable interfaces (although are we confident that public signatures of already existing functions won't change anymore).
+
 ## IB socket ports
 
 | Platform  |  Port |
@@ -42,11 +54,9 @@ The module makes a socket connection to TWS (or IB Gateway) using the [net](http
 
 ## Important
 
-API is returning `Number.MAX_SAFE_INTEGER` when there is no value from IB, commonly seen when there is no bid / offer or other missing market data.
+IBApi is returning `Number.MAX_SAFE_INTEGER` when there is no value from IB, commonly seen when there is no bid / offer or other missing market data.
 
-
-## Examples
-
+## IBApi Examples
 
 ```js
 
@@ -111,6 +121,39 @@ ib.connect();
 ib.reqIds();
 ```
 
+## IB-Shell / IBApiNext Examples
+
+The src/tools folder contains a collection of command line tools to run IBApiNext from command line.
+Have look on it if you search for IBApiNext sample code.
+
+Example:
+```
+node .\dist\tools\account-summary.js -group=All -tags="NetLiquidation,MaintMarginReq" -watch -inc -port=4002
+{
+  "all": [
+    [
+      "DU******",
+      [
+        [
+          "MaintMarginReq",
+          [
+            [
+              "EUR",
+              {
+                "value": "37688.07",
+                "ingressTm": 1616849611611
+              }
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "added": [
+    [
+...
+```
+
 ## Testing
 
 ### Locally
@@ -145,14 +188,6 @@ To run all test srun following command.
 ### CI
 
 Will be added later once it's stable
-
-## Roadmap / IBApiNext
-
-The  goal of IBApi is it to replicate the official TWS API as close as possible, however we are currently working on second API, that will exist in parallel to IBApi.<br>
-The goal of this second API (IBApiNext) is provide same functionality as IBApi, but add additional convenience, that makes developer-life easier.<br>
-If you want to learn more about it, see:<br>
-https://github.com/stoqey/ib/wiki/IBApi-next-generation-(IBApiNext)
-
 
 ## Deprecation process
 

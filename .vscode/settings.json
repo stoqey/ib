@@ -6,7 +6,9 @@
         "**/.hg": true,
         "**/CVS": true,
         "**/.DS_Store": true,
-        "node_modules": true
+        "node_modules": true,
+        "dist/**": true,
+        "pages/**": true
     },
     "cSpell.words": [
       "ALGO",
@@ -30,6 +32,7 @@
       "HEADTIMESTAMP",
       "IB's",
       "IBDARK",
+      "IBKR",
       "IDEALPRO",
       "ISIN",
       "LIFFE",
@@ -65,10 +68,12 @@
       "mifid",
       "ourside",
       "putable",
+      "sectype",
       "stoqey",
       "timespan",
       "typedoc",
       "volatilities",
       "yyyymmss"
     ],
+    "god.tsconfig": "./tsconfig.json",
 }

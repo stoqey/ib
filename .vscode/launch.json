@@ -3,12 +3,15 @@
   "configurations": [
     {
       "type": "node",
-      "request": "attach",
-      "name": "Attach to debug",
-      "protocol": "inspector",
-      "port": 4321,
-      "restart": true,
-      "cwd": "${workspaceRoot}"
+      "request": "launch",
+      "name": "Jest Tests",
+      "program": "./node_modules/jest/bin/jest.js",
+      "args": [
+        "${fileBasename}",
+        "--verbose",
+        "-i",
+      ],
+      "envFile": "${workspaceRoot}/.env"
     },
   ]
 }

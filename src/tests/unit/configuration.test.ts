@@ -2,7 +2,7 @@
  * @jest-environment ./src/tests/nodb-test-environment
  */
 
-import configuration from "../../common/configuration";
+import configuration from "../../core/utils/configuration";
 
 describe("configuration", () => {
   test("ENV vars take priority", async () => {
