@@ -194,6 +194,6 @@ workflows:
       - test_unit_parallel:
           requires:
             - build-dependencies
-      - upload-coverage:
-          requires:
-            - test_unit_parallel
+      #- upload-coverage:
+      #    requires:
+      #      - test_unit_parallel
