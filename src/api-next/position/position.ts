@@ -20,5 +20,5 @@ export interface Position {
 /** Summary of all linked accounts, with account id as key. */
 export type AccountPositions = ReadonlyMap<AccountId, Position[]>;
 
-/** An update on the account the summaries. */
+/** An update on the account summaries. */
 export type AccountPositionsUpdate = ItemListUpdate<AccountPositions>;

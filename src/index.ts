@@ -120,6 +120,8 @@ export { TrailingStopOrder } from "./api/order/trailingStop";
 export { CommissionReport } from "./api/report/commissionReport";
 export { ExecutionFilter } from "./api/report/executionFilter";
 
+// export IBApi as default
+
 export default IBApi;
 
 // export IBApiNext types

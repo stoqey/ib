@@ -16,13 +16,11 @@ export { ConnectionState } from "./common/connection-state";
 export { IBApiAutoConnection as IBApiAutoConnection } from "../core/api-next/auto-connection";
 
 import { TickType as IBApiTickType } from "../api/market/tickType";
-
 export { IBApiTickType };
+
 import { TickType as IBApiNextTickType } from "./market/tick-type";
 export { IBApiNextTickType };
-/**
- * All market data tick types as supported by [[IBApi]] and [[IBApiNext]].
- */
+
 export type TickType = IBApiTickType | IBApiNextTickType;
 
 export {

@@ -14,8 +14,8 @@ export interface MarketDataTick {
   readonly ingressTm: number;
 }
 
-/** A a set of market data ticks. */
+/** ReadonlyMap of all market data ticks, with [[TickType]] as key. */
 export type MarketDataTicks = ReadonlyMap<TickType, MarketDataTick>;
 
-/** A market data update. */
+/** An update on market data. */
 export type MarketDataUpdate = ItemListUpdate<MarketDataTicks>;

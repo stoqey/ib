@@ -63,7 +63,7 @@ function undefineMax(v: number | undefined): number | undefined {
 }
 
 /**
- * Input arguments on the [[IBApiNext]] class constructor.
+ * Input arguments on the [[IBApiNext]] constructor.
  */
 export interface IBApiNextCreationOptions {
   /**
@@ -125,8 +125,7 @@ export class IBApiNext {
    * @param options Creation options.
    */
   constructor(options?: IBApiNextCreationOptions) {
-    this.logger = new IBApiNextLogger(
-      options?.logger ?? new ConsoleLogger());
+    this.logger = new IBApiNextLogger(options?.logger ?? new ConsoleLogger());
 
     // create the IBApiAutoConnection and subscription registry
 
@@ -185,6 +184,7 @@ export class IBApiNext {
   get nextReqId(): number {
     return this._nextReqId++;
   }
+
   private _nextReqId = 1;
 
   /**

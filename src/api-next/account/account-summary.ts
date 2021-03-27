@@ -6,7 +6,7 @@ export type AccountSummaryTagName = string;
 
 /** A value on the account summary. */
 export interface AccountSummaryValue {
-  /** The value. */
+  /** The value as string. */
   readonly value: string;
 
   /**
@@ -21,15 +21,15 @@ export interface AccountSummaryValue {
 /**
  * A value on an account summary.
  *
- * Note same value on account summary can exists in different
- * currencies (therefore this is an Map, with currency code as key).
+ * Note same value on account summary can exist in different
+ * currencies (therefore this is a ReadonlyMap, with currency code as key).
  */
 export type AccountSummaryValues = ReadonlyMap<
   CurrencyCode,
   AccountSummaryValue
 >;
 
-/** Map of tag values on the account summary, with tag name as key. */
+/** ReadonlyMap of tag values on the account summary, with tag name as key. */
 export type AccountSummaryTagValues = ReadonlyMap<
   AccountSummaryTagName,
   AccountSummaryValues

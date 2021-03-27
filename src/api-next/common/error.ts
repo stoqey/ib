@@ -1,7 +1,7 @@
 import { ErrorCode } from "..";
 
 /**
- * An error on the TWS / IB Gateway API.
+ * An error on the TWS / IB Gateway API or IBApiNext.
  */
 export interface IBApiNextError {
   /** The [[Error]] object. */
