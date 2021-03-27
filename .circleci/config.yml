@@ -92,10 +92,10 @@ jobs:
           path: reports
 
   test_unit_parallel:
-    # we'll increase the value when we'll vahe more tests
+    # we'll increase the value when we'll have more tests
     parallelism: 1
     environment:
-      # CC_TEST_REPORTER_ID: <inser id>
+      # CC_TEST_REPORTER_ID: <insert id>
       NODE_ENV: development
     docker:
       - image: circleci/node:12.18.4
@@ -132,8 +132,9 @@ jobs:
       - run:
           name: Run unit tests with JUnit as reporter
           # For more info on --maxWorkers=10 see https://github.com/facebook/jest/issues/1456
+          # Only IBApi-Next tests are enabled for now:
           command: |
-            TESTFILES=$(circleci tests glob "src/tests/unit/**/*.test.ts" | circleci tests split --split-by=name)
+            TESTFILES=$(circleci tests glob "src/tests/unit/api-next/*.test.ts" | circleci tests split --split-by=name)
             ./node_modules/.bin/jest $TESTFILES --maxWorkers=4 --coverage --ci --forceExit --detectOpenHandles
           environment:
             JEST_JUNIT_OUTPUT: "reports/junit/js-unit-$CIRCLE_NODE_INDEX-test-results.xml"
@@ -190,9 +191,9 @@ workflows:
       - test_eslint:
           requires:
             - build-dependencies
-      #- test_unit_parallel:
-      #    requires:
-      #      - build-dependencies
-      #- upload-coverage:
-      #    requires:
-      #      - test_unit_parallel
+      - test_unit_parallel:
+          requires:
+            - build-dependencies
+      - upload-coverage:
+          requires:
+            - test_unit_parallel
