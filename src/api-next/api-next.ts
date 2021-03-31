@@ -281,6 +281,34 @@ export class IBApiNext {
       .toPromise();
   }
 
+  /** managedAccounts event handler.  */
+  private onManagedAccts = (
+    subscriptions: Map<number, IBApiNextSubscription<string[]>>,
+    accountsList: string
+  ): void => {
+    const accounts = accountsList.split(",");
+    subscriptions.forEach((sub) => sub.next({ all: accounts }));
+  };
+
+  /**
+   * Get the accounts to which the logged user has access to.
+   */
+  getManagedAccounts(): Promise<string[]> {
+    return this.subscriptions
+      .register<string[]>(
+        () => {
+          this.api.reqManagedAccts();
+        },
+        undefined,
+        [[EventName.managedAccounts, this.onManagedAccts]]
+      )
+      .pipe(
+        take(1),
+        map((v) => v.all)
+      )
+      .toPromise();
+  }
+
   /** accountSummary event handler */
   private readonly onAccountSummary = (
     subscriptions: Map<number, IBApiNextSubscription<MutableAccountSummaries>>,
