@@ -1,5 +1,5 @@
 /**
- * This file implements tests for the [[IBApiNext.getCurrentTime]] function.
+ * This file implements tests for the [[IBApiNext.getManagedAccounts]] function.
  */
 
 import {

@@ -33,7 +33,7 @@ class PrintManagedAcctsApp extends IBApiNextApp {
   start(): void {
     const scriptName = path.basename(__filename);
     logger.debug(`Starting ${scriptName} script`);
-    this.connect(this.cmdLineArgs.watch ? 10000 : 0);
+    this.connect(0);
     this.api
       .getManagedAccounts()
       .then((accounts) => {
