@@ -1397,6 +1397,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       tokens.push(nConditions);
       if (nConditions > 0) {
         order.conditions?.forEach((cond) => {
+          tokens.push(cond.type);
           tokens.push(cond.conjunctionConnection);
 
           switch (cond.type) {
