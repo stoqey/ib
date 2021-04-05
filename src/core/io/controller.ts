@@ -143,7 +143,7 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
    * Can contain nested arrays.
    */
   sendMsg(...tokens: unknown[]): void {
-    rateLimit(configuration.max_req_per_second, 1000, () => {
+    rateLimit(configuration.max_req_per_second ?? 40, 1000, () => {
       this.socket.send(tokens);
     })();
   }
