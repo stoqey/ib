@@ -261,6 +261,8 @@ export class IBApiAutoConnection extends IBApi {
         );
         this.onDisconnected();
       }
+      // trigger at least some message if connection is idle
+      this.reqCurrentTime();
     }, this.CONNECTION_WATCHDOG_INTERVAL);
   }
 
