@@ -2,20 +2,14 @@
  * This file implements tests for the [[IBApiNext.getManagedAccounts]] function.
  */
 
-import {
-  IBApiNext,
-  IBApiAutoConnection,
-  IBApiNextError,
-  EventName,
-} from "../../..";
+import { IBApi, IBApiNext, IBApiNextError, EventName } from "../../..";
 
 describe("RxJS Wrapper: getManagedAccounts()", () => {
   test("Promise result", (done) => {
     // create IBApiNext
 
     const apiNext = new IBApiNext();
-    const api = ((apiNext as unknown) as Record<string, unknown>)
-      .api as IBApiAutoConnection;
+    const api = ((apiNext as unknown) as Record<string, unknown>).api as IBApi;
 
     // emit a EventName.managedAccounts and verify RxJS result
 

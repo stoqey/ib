@@ -3,20 +3,14 @@
  */
 
 import { take } from "rxjs/operators";
-import {
-  IBApiNext,
-  IBApiAutoConnection,
-  IBApiNextError,
-  EventName,
-} from "../../..";
+import { IBApi, IBApiNext, IBApiNextError, EventName } from "../../..";
 import { IBApiNextTickType, IBApiTickType } from "../../../api-next";
 import TickType from "../../../api/market/tickType";
 
 describe("RxJS Wrapper: getPnL()", () => {
   test("Error Event", (done) => {
     const apiNext = new IBApiNext();
-    const api = ((apiNext as unknown) as Record<string, unknown>)
-      .api as IBApiAutoConnection;
+    const api = ((apiNext as unknown) as Record<string, unknown>).api as IBApi;
 
     // emit a error event and verify RxJS result
 
@@ -40,8 +34,7 @@ describe("RxJS Wrapper: getPnL()", () => {
 
   test("tickPrice events", (done) => {
     const apiNext = new IBApiNext();
-    const api = ((apiNext as unknown) as Record<string, unknown>)
-      .api as IBApiAutoConnection;
+    const api = ((apiNext as unknown) as Record<string, unknown>).api as IBApi;
 
     // emit a tickPrice events and verify RxJS result
 
@@ -76,8 +69,7 @@ describe("RxJS Wrapper: getPnL()", () => {
 
   test("tickSize events", (done) => {
     const apiNext = new IBApiNext();
-    const api = ((apiNext as unknown) as Record<string, unknown>)
-      .api as IBApiAutoConnection;
+    const api = ((apiNext as unknown) as Record<string, unknown>).api as IBApi;
 
     // emit a tickSize events and verify RxJS result
 
@@ -116,8 +108,7 @@ describe("RxJS Wrapper: getPnL()", () => {
 
   test("tickGeneric events", (done) => {
     const apiNext = new IBApiNext();
-    const api = ((apiNext as unknown) as Record<string, unknown>)
-      .api as IBApiAutoConnection;
+    const api = ((apiNext as unknown) as Record<string, unknown>).api as IBApi;
 
     // emit a tickGeneric events and verify RxJS result
 
@@ -157,8 +148,7 @@ describe("RxJS Wrapper: getPnL()", () => {
 
   test("tickOptionComputationHandler events", (done) => {
     const apiNext = new IBApiNext();
-    const api = ((apiNext as unknown) as Record<string, unknown>)
-      .api as IBApiAutoConnection;
+    const api = ((apiNext as unknown) as Record<string, unknown>).api as IBApi;
 
     // emit a tickOptionComputationHandler events and verify RxJS result
 
@@ -238,8 +228,7 @@ describe("RxJS Wrapper: getPnL()", () => {
     // create IBApiNext and reqId counter
 
     const apiNext = new IBApiNext();
-    const api = ((apiNext as unknown) as Record<string, unknown>)
-      .api as IBApiAutoConnection;
+    const api = ((apiNext as unknown) as Record<string, unknown>).api as IBApi;
 
     // emit a tickPrice events and verify RxJS result
 

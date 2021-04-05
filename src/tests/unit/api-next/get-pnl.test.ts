@@ -2,18 +2,12 @@
  * This file implements tests for the [[IBApiNext.getPnL]] function.
  */
 
-import {
-  IBApiNext,
-  IBApiAutoConnection,
-  IBApiNextError,
-  EventName,
-} from "../../..";
+import { IBApi, IBApiNext, IBApiNextError, EventName } from "../../..";
 
 describe("RxJS Wrapper: getPnL()", () => {
   test("Error Event", (done) => {
     const apiNext = new IBApiNext();
-    const api = ((apiNext as unknown) as Record<string, unknown>)
-      .api as IBApiAutoConnection;
+    const api = ((apiNext as unknown) as Record<string, unknown>).api as IBApi;
 
     // emit a error event and verify RxJS result
 
@@ -37,8 +31,7 @@ describe("RxJS Wrapper: getPnL()", () => {
 
   test("Value update", (done) => {
     const apiNext = new IBApiNext();
-    const api = ((apiNext as unknown) as Record<string, unknown>)
-      .api as IBApiAutoConnection;
+    const api = ((apiNext as unknown) as Record<string, unknown>).api as IBApi;
 
     // emit a pnl event and verify RxJS result
 
@@ -66,8 +59,7 @@ describe("RxJS Wrapper: getPnL()", () => {
 
   test("Initial value replay to late observers", (done) => {
     const apiNext = new IBApiNext();
-    const api = ((apiNext as unknown) as Record<string, unknown>)
-      .api as IBApiAutoConnection;
+    const api = ((apiNext as unknown) as Record<string, unknown>).api as IBApi;
 
     // emit a pnl event and verify RxJS result
 
@@ -105,8 +97,7 @@ describe("RxJS Wrapper: getPnL()", () => {
 
   test("Multi-account with multiple-subscribers", (done) => {
     const apiNext = new IBApiNext();
-    const api = ((apiNext as unknown) as Record<string, unknown>)
-      .api as IBApiAutoConnection;
+    const api = ((apiNext as unknown) as Record<string, unknown>).api as IBApi;
 
     // testing values
 

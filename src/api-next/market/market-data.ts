@@ -1,4 +1,4 @@
-import { ItemListUpdate, TickType } from "..";
+import { TickType, ItemListUpdate } from "../..";
 
 /**  A market data tick on [[IBApiNext]]. */
 export interface MarketDataTick {

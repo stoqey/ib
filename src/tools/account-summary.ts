@@ -6,6 +6,7 @@ import path from "path";
 import { Subscription } from "rxjs";
 
 import { IBApiNextError } from "../api-next";
+import LogLevel from "../api/data/enum/log-level";
 import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
@@ -66,6 +67,7 @@ class PrintAccountSummaryApp extends IBApiNextApp {
   start(): void {
     const scriptName = path.basename(__filename);
     logger.debug(`Starting ${scriptName} script`);
+
     this.connect(this.cmdLineArgs.watch ? 10000 : 0);
     this.subscription$ = this.api
       .getAccountSummary(

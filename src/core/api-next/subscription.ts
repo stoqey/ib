@@ -1,8 +1,7 @@
-import { IBApiNextError, IBApiNext } from "../../api-next";
+import { IBApiNextError, IBApiNext, ItemListUpdate } from "../../api-next";
 import { Observable, ReplaySubject, Subscription } from "rxjs";
 import { ConnectionState } from "../../api-next/common/connection-state";
 import { IBApiNextItemListUpdate } from "./item-list-update";
-import { DataUpdate } from "../../api-next";
 import { map } from "rxjs/operators";
 
 /**
@@ -88,8 +87,8 @@ export class IBApiNextSubscription<T> {
    * Create an Observable to start/stop the subscription on
    * TWS, receive update and error events.
    */
-  createObservable(): Observable<DataUpdate<T>> {
-    return new Observable<DataUpdate<T>>((subscriber) => {
+  createObservable(): Observable<ItemListUpdate<T>> {
+    return new Observable<ItemListUpdate<T>>((subscriber) => {
       // create new subject and reqId if there is an has error
 
       if (this.subject.hasError) {
@@ -106,7 +105,7 @@ export class IBApiNextSubscription<T> {
               ? ({
                   all: val.all,
                   added: val.all,
-                } as DataUpdate<T>)
+                } as ItemListUpdate<T>)
               : val;
           })
         )

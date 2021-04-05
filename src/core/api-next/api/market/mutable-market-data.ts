@@ -1,5 +1,5 @@
+import { TickType } from "../../../..";
 import {
-  TickType,
   MarketDataTick,
   MarketDataTicks,
   MarketDataUpdate,

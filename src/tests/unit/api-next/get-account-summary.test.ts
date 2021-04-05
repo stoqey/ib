@@ -3,18 +3,12 @@
  */
 
 import { take } from "rxjs/operators";
-import {
-  IBApiNext,
-  IBApiAutoConnection,
-  IBApiNextError,
-  EventName,
-} from "../../..";
+import { IBApi, IBApiNext, IBApiNextError, EventName } from "../../..";
 
 describe("RxJS Wrapper: getAccountSummary()", () => {
   test("Error Event", (done) => {
     const apiNext = new IBApiNext();
-    const api = ((apiNext as unknown) as Record<string, unknown>)
-      .api as IBApiAutoConnection;
+    const api = ((apiNext as unknown) as Record<string, unknown>).api as IBApi;
 
     // emit a error event and verify RxJS result
 
@@ -38,8 +32,7 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
 
   test("Update multicast", (done) => {
     const apiNext = new IBApiNext();
-    const api = ((apiNext as unknown) as Record<string, unknown>)
-      .api as IBApiAutoConnection;
+    const api = ((apiNext as unknown) as Record<string, unknown>).api as IBApi;
 
     // testing values
 
@@ -154,8 +147,7 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
 
   test("Aggregate into all", (done) => {
     const apiNext = new IBApiNext();
-    const api = ((apiNext as unknown) as Record<string, unknown>)
-      .api as IBApiAutoConnection;
+    const api = ((apiNext as unknown) as Record<string, unknown>).api as IBApi;
 
     // testing values
 
@@ -286,8 +278,7 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
 
   test("Detected changes", (done) => {
     const apiNext = new IBApiNext();
-    const api = ((apiNext as unknown) as Record<string, unknown>)
-      .api as IBApiAutoConnection;
+    const api = ((apiNext as unknown) as Record<string, unknown>).api as IBApi;
 
     // testing values
 
@@ -345,8 +336,7 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
     // create IBApiNext and reqId counter
 
     const apiNext = new IBApiNext();
-    const api = ((apiNext as unknown) as Record<string, unknown>)
-      .api as IBApiAutoConnection;
+    const api = ((apiNext as unknown) as Record<string, unknown>).api as IBApi;
 
     // testing values
 
