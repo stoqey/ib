@@ -56,7 +56,7 @@ IBApi is returning `Number.MAX_SAFE_INTEGER` when there is no value from IB, com
 ## IBApi Examples
 
 ```js
-/* Example: Print all portfolio posistions to console. */
+/* Example: Print all portfolio positions to console. */
 
 import { IBApi, EventName, ErrorCode, Contract } from "@stoqey/ib";
 
@@ -83,7 +83,7 @@ ib.on(EventName.error, (err: Error, code: ErrorCode, reqId: number) => {
   }
 )
 .once(EventName.positionEnd, () => {
-  console.log(`Total: ${positionsCount} posistions.`);
+  console.log(`Total: ${positionsCount} positions.`);
   ib.disconnect();
 });
 
