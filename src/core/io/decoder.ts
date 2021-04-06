@@ -3618,10 +3618,10 @@ class OrderDecoder {
               break;
             }
           }
-
-          this.order.conditionsIgnoreRth = this.decoder.readBool();
-          this.order.conditionsCancelOrder = this.decoder.readBool();
         }
+
+        this.order.conditionsIgnoreRth = this.decoder.readBool();
+        this.order.conditionsCancelOrder = this.decoder.readBool();
       }
     }
   }
