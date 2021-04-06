@@ -1,5 +1,7 @@
 import { Observable } from "rxjs";
-import { EventName, IBApiAutoConnection, IBApiNextError, IBApiNext, DataUpdate } from "../../api-next";
+import { EventName } from "../..";
+import { IBApiNextError, IBApiNext, ItemListUpdate } from "../../api-next";
+import { IBApiAutoConnection } from "./auto-connection";
 import { IBApiNextMap } from "./map";
 import { IBApiNextSubscription } from "./subscription";
 
@@ -94,7 +96,7 @@ export class IBApiNextSubscriptionRegistry {
       ) => void
     ][],
     instanceId?: string
-  ): Observable<DataUpdate<T>> {
+  ): Observable<ItemListUpdate<T>> {
     // get the existing registry entries, or add if not existing yet
 
     const entires: RegistryEntry[] = [];

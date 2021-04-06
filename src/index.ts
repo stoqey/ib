@@ -126,33 +126,8 @@ export default IBApi;
 
 // export IBApiNext types
 
-export {
-  IBApiNext,
-  IBApiNextError,
-  IBApiAutoConnection,
-  AccountId,
-  ConId,
-  CurrencyCode,
-  ItemListUpdate,
-  AccountSummaries,
-  AccountSummaryTagName,
-  AccountSummaryTagValues,
-  AccountSummaryValue,
-  AccountSummaryValues,
-  AccountSummariesUpdate,
-  ContractDetailsUpdate,
-  PnL,
-  PnLSingle,
-  Position,
-  AccountPositions,
-  AccountPositionsUpdate,
-  MarketDataTick,
-  MarketDataTicks,
-  MarketDataUpdate,
-  MarketDataType,
-} from "./api-next";
+export * from "./api-next";
 
-import { TickType as IBApiNextTickType } from "./api-next/market/tick-type";
-
+import { IBApiNextTickType } from "./api-next";
 /** Combination of IBApi and IBApiNext market data tick types. */
 export type TickType = IBApiTickType | IBApiNextTickType;

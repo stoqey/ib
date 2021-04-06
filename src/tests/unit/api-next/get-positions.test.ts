@@ -3,8 +3,8 @@
  */
 
 import {
+  IBApi,
   IBApiNext,
-  IBApiAutoConnection,
   IBApiNextError,
   EventName,
   Contract,
@@ -13,8 +13,7 @@ import {
 describe("RxJS Wrapper: getPositions()", () => {
   test("Update multicast", (done) => {
     const apiNext = new IBApiNext();
-    const api = ((apiNext as unknown) as Record<string, unknown>)
-      .api as IBApiAutoConnection;
+    const api = ((apiNext as unknown) as Record<string, unknown>).api as IBApi;
 
     // testing values
 
@@ -62,8 +61,7 @@ describe("RxJS Wrapper: getPositions()", () => {
 
   test("Detected added / changed / removed", (done) => {
     const apiNext = new IBApiNext();
-    const api = ((apiNext as unknown) as Record<string, unknown>)
-      .api as IBApiAutoConnection;
+    const api = ((apiNext as unknown) as Record<string, unknown>).api as IBApi;
 
     // testing values
 
@@ -121,8 +119,7 @@ describe("RxJS Wrapper: getPositions()", () => {
 
   test("Initial value replay to late observers", (done) => {
     const apiNext = new IBApiNext();
-    const api = ((apiNext as unknown) as Record<string, unknown>)
-      .api as IBApiAutoConnection;
+    const api = ((apiNext as unknown) as Record<string, unknown>).api as IBApi;
 
     // testing values
 

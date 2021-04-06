@@ -1,7 +1,6 @@
 import colors from "colors";
 import * as util from "util";
-import { Logger, LogLevel } from "../../api-next";
-
+import { Logger, LogLevel } from "../..";
 
 /**
  * @internal

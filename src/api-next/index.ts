@@ -1,27 +1,4 @@
-export {
-  IBApi,
-  IBApiCreationOptions,
-  EventName,
-  ErrorCode,
-  LogLevel,
-  Contract,
-} from "..";
-
-export { IBApiNext, IBApiNextCreationOptions } from "./api-next";
-
-export { IBApiNextError } from "./common/error";
-export { Logger } from "./common/logger";
-export { ItemListUpdate as DataUpdate } from "./common/item-list-update";
-export { ConnectionState } from "./common/connection-state";
-export { IBApiAutoConnection as IBApiAutoConnection } from "../core/api-next/auto-connection";
-
-import { TickType as IBApiTickType } from "../api/market/tickType";
-export { IBApiTickType };
-
-import { TickType as IBApiNextTickType } from "./market/tick-type";
-export { IBApiNextTickType };
-
-export type TickType = IBApiTickType | IBApiNextTickType;
+// account
 
 export {
   AccountSummaries,
@@ -32,14 +9,37 @@ export {
   AccountSummariesUpdate,
 } from "./account/account-summary";
 
-export { ContractDetailsUpdate } from "./contract/contract-details-update";
-
-export { ItemListUpdate } from "./common/item-list-update";
+// common
 
 export { AccountId, ConId, CurrencyCode } from "./common/common-types";
+export { IBApiNextError } from "./common/error";
+export { Logger } from "./common/logger";
+export { ItemListUpdate } from "./common/item-list-update";
+export { ConnectionState } from "./common/connection-state";
+
+// contract
+
+export { ContractDetailsUpdate } from "./contract/contract-details-update";
+
+// market
+
+export { MarketDataType } from "./market/market-data-type";
+export {
+  MarketDataTick,
+  MarketDataTicks,
+  MarketDataUpdate,
+} from "./market/market-data";
+import { TickType as IBApiTickType } from "../api/market/tickType";
+export { IBApiTickType };
+import { TickType as IBApiNextTickType } from "./market/tick-type";
+export { IBApiNextTickType };
+
+// pnl
 
 export { PnL } from "./pnl/pnl";
 export { PnLSingle } from "./pnl/pnl-single";
+
+// position
 
 export {
   Position,
@@ -47,9 +47,6 @@ export {
   AccountPositionsUpdate,
 } from "./position/position";
 
-export {
-  MarketDataTick,
-  MarketDataTicks,
-  MarketDataUpdate,
-} from "./market/market-data";
-export { MarketDataType } from "./market/market-data-type";
+// IBApiNext
+
+export { IBApiNext, IBApiNextCreationOptions } from "./api-next";

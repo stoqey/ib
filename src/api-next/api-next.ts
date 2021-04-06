@@ -5,7 +5,6 @@ import LogLevel from "../api/data/enum/log-level";
 import {
   AccountSummaryValue,
   ConnectionState,
-  IBApiAutoConnection,
   IBApiNextError,
   IBApiTickType,
   MarketDataTick,
@@ -31,6 +30,7 @@ import {
 import { MutableAccountPositions } from "../core/api-next/api/position/mutable-account-positions-update";
 import { MutableMarketData } from "../core/api-next/api/market/mutable-market-data";
 import { IBApiNextLogger } from "../core/api-next/logger";
+import { IBApiAutoConnection } from "../core/api-next/auto-connection";
 
 /**
  * @internal

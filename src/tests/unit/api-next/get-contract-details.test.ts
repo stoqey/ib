@@ -3,8 +3,8 @@
  */
 
 import {
+  IBApi,
   IBApiNext,
-  IBApiAutoConnection,
   IBApiNextError,
   EventName,
   ContractDetails,
@@ -13,8 +13,7 @@ import {
 describe("RxJS Wrapper: getContractDetails()", () => {
   test("Error Event", (done) => {
     const apiNext = new IBApiNext();
-    const api = ((apiNext as unknown) as Record<string, unknown>)
-      .api as IBApiAutoConnection;
+    const api = ((apiNext as unknown) as Record<string, unknown>).api as IBApi;
 
     // emit a error event and verify RxJS result
 
@@ -38,8 +37,7 @@ describe("RxJS Wrapper: getContractDetails()", () => {
 
   test("Incremental collection", (done) => {
     const apiNext = new IBApiNext();
-    const api = ((apiNext as unknown) as Record<string, unknown>)
-      .api as IBApiAutoConnection;
+    const api = ((apiNext as unknown) as Record<string, unknown>).api as IBApi;
 
     // emit contractDetails and contractDetailsEnd event and verify all subscribers receive it
 

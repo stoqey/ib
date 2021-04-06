@@ -1,4 +1,4 @@
-import { Contract, AccountId, ItemListUpdate } from "..";
+import { AccountId, Contract, ItemListUpdate } from "../..";
 
 /**
  * A position on an IBKR account.
