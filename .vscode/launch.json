@@ -169,7 +169,22 @@
         "!**/node_modules/**"
       ]
     },
-
-
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Tool: managed-accts",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "runtimeArgs": [
+        "--trace-warnings"
+      ],
+      "program": "${workspaceFolder}/dist/tools/managed-accts.js",
+      "outputCapture": "std",
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ]
+    },
   ]
 }
