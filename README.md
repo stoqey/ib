@@ -10,9 +10,6 @@
 
 </div>
 
-
-
-
 `@stoqey/ib` is an <ins>unofficial</ins> [Interactive Brokers](http://interactivebrokers.com/) TWS (or IB Gateway) Typescript API client library for [Node.js](http://nodejs.org/). It is a direct port of Interactive Brokers' Java Client Version 9.76 from May 08 2019.
 
 Refer to the [Trader Workstation API](https://interactivebrokers.github.io/tws-api/) for official documentation and the C#/Java/VB/C++/Python client.
@@ -23,7 +20,7 @@ The module makes a socket connection to TWS (or IB Gateway) using the [net](http
 
     $ npm install @stoqey/ib
 
-  or
+or
 
     $ yarn add @stoqey/ib
 
@@ -45,12 +42,12 @@ IBApiNext still is in preview stage. Not all functions are available yet and we 
 
 ## IB socket ports
 
-| Platform  |  Port |
-|---|---|
-|IB Gateway live account   | 4001 |
-|IB Gateway paper account  | 4002 |
-|TWS Live Account          | 7496 |
-|TWS papertrading account  | 7497 |
+| Platform                 | Port  |
+| ------------------------ | ----- |
+| IB Gateway live account  |  4001 |
+| IB Gateway paper account |  4002 |
+| TWS Live Account         | 7496  |
+| TWS papertrading account | 7497  |
 
 ## Important
 
@@ -59,8 +56,7 @@ IBApi is returning `Number.MAX_SAFE_INTEGER` when there is no value from IB, com
 ## IBApi Examples
 
 ```js
-
-/* Example: Print all portfolio posistions to console. */
+/* Example: Print all portfolio positions to console. */
 
 import { IBApi, EventName, ErrorCode, Contract } from "@stoqey/ib";
 
@@ -79,12 +75,15 @@ let positionsCount = 0;
 ib.on(EventName.error, (err: Error, code: ErrorCode, reqId: number) => {
   console.error(`${err.message} - code: ${code} - reqId: ${reqId}`);
 })
-.on(EventName.position, (account: string, contract: Contract, pos: number, avgCost: number) => {
-  console.log(`${account}: ${pos} x ${contract.symbol} @ ${avgCost}`);
-  positionsCount++:
-})
+.on(
+  EventName.position,
+  (account: string, contract: Contract, pos: number, avgCost: number) => {
+    console.log(`${account}: ${pos} x ${contract.symbol} @ ${avgCost}`);
+    positionsCount++;
+  }
+)
 .once(EventName.positionEnd, () => {
-  console.log(`Total: ${positionsCount} posistions.`);
+  console.log(`Total: ${positionsCount} positions.`);
   ib.disconnect();
 });
 
@@ -96,7 +95,7 @@ ib.reqPositions();
 
 ### Sending first order
 
-```
+```js
 ib.once(EventName.nextValidId, (orderId: number) => {
     const contract: Contract = {
       symbol: "AMZN",
@@ -111,7 +110,7 @@ ib.once(EventName.nextValidId, (orderId: number) => {
       lmtPrice: 1,
       orderId,
       totalQuantity: 1,
-      account: <your_account_id>
+      account: 'YOUR_ACCOUNT_ID'
     };
 
     ib.placeOrder(orderId, contract, order);
@@ -127,6 +126,7 @@ The src/tools folder contains a collection of command line tools to run IBApiNex
 Have look on it if you search for IBApiNext sample code.
 
 Example:
+
 ```
 node ./dist/tools/account-summary.js -group=All -tags="NetLiquidation,MaintMarginReq" -watch -inc -port=4002
 {
@@ -163,6 +163,7 @@ node ./dist/tools/account-summary.js -group=All -tags="NetLiquidation,MaintMargi
 Easiest way to start test and playing around with the code is to run included IB Gateway docker container. To set it up use following steps.
 
 Copy `sample.env` to file `.env`
+
 1. run `yarn` to install dependencies
 2. `cp sample.env .env`
 3. fill in the account info
@@ -212,7 +213,6 @@ In addition to that.. a little demo / example app would be nice, to demonstrate 
 Any kind of bugfixes are welcome as well.
 
 If you want to contribute, read the [Developer Guide](https://github.com/stoqey/ib/wiki/Developer-Guide) and start coding.
-
 
 ## License
 
