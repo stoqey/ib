@@ -40,14 +40,9 @@ const OPTION_ARGUMENTS: [string, string][] = [
     "Watch for changes. If specified, the app will keep running and print account summary updates to console as received from TWS." +
       "If not specified, the app will print a one-time snapshot and than exit.",
   ],
-  [
-    "inc",
-    "Print incremental updates only. When not specified and -watch is used, an update of an account summary value will print all account summaries again." +
-      "If the specified, only the changed value(s) will be printed",
-  ],
 ];
 const EXAMPLE_TEXT =
-  "account-summary.js -group=All -tags=NetLiquidation,MaintMarginReq -watch -inc";
+  "account-summary.js -group=All -tags=NetLiquidation,MaintMarginReq -watch";
 
 //////////////////////////////////////////////////////////////////////////////
 // The App code                                                             //
