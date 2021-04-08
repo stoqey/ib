@@ -12,7 +12,7 @@
 
 `@stoqey/ib` is an <ins>unofficial</ins> [Interactive Brokers](http://interactivebrokers.com/) TWS (or IB Gateway) Typescript API client library for [Node.js](http://nodejs.org/). It is a direct port of Interactive Brokers' Java Client Version 9.76 from May 08 2019.
 
-Refer to the [Trader Workstation API](https://interactivebrokers.github.io/tws-api/) for official documentation and the C#/Java/VB/C++/Python client.
+Refer to the [Trader Workstation API](https://interactivebrokers.github.io/tws-api/) for the official documentation and the C#/Java/VB/C++/Python client.
 
 The module makes a socket connection to TWS (or IB Gateway) using the [net](http://nodejs.org/api/net.html) module and all messages are entirely processed in Typescript. It uses [EventEmitter](http://nodejs.org/api/events.html) to pass the result back to user.
 
@@ -36,9 +36,9 @@ IBApi replicates the official TWS API as close as possible, making it easy to mi
 It implements all functions and provies same event callbacks as the official TWS API does.
 
 IBApiNext is a **preview** of a new API that is currently in development.
-The goal of IBApiNext is it, to provide same functionality as IBApi, but focus on usuability rather than replicating the official interface.
+The goal of IBApiNext is it, to provide same functionality as IBApi, but focus on usability rather than replicating the official interface.
 It is not based on a request/event design anymore, but it does use RxJS instead.
-IBApiNext still is in preview stage. Not all functions are available yet and we cannot guarantee stable interfaces (although are we confident that public signatures of already existing functions won't change anymore).
+IBApiNext still is in preview stage. Not all functions are available yet, and we cannot guarantee stable interfaces (although are we confident that public signatures of already existing functions won't change anymore).
 
 ## IB socket ports
 
@@ -160,7 +160,7 @@ node ./dist/tools/account-summary.js -group=All -tags="NetLiquidation,MaintMargi
 
 ! WARNING ! - Make sure to test on papertrading account as tests could contain actions that result in selling and buying financial instruments.
 
-Easiest way to start test and playing around with the code is to run included IB Gateway docker container. To set it up use following steps.
+The easiest way to start testing and playing around with the code is to run included IB Gateway docker container. To set it up use following steps.
 
 Copy `sample.env` to file `.env`
 
@@ -174,15 +174,15 @@ Once docker is up and running with correct credentials it should be ready to acc
 
 ### Running jest test
 
-Test's can be ran from CLI with `jest` tool. Either singular or multible tests at once.
+Tests can be run from CLI with `jest` tool. Either a single one or multiple tests at once.
 
-Running single/multible tests
+Running single/multiple tests
 
 `jest src/test/unit/api/api.test.ts`
 
-to run multible, just use path instead of specific file.
+To run multiple, just use path instead of specific file.
 
-To run all test srun following command.
+To run all tests run the following command.
 
 `yarn test`
 
@@ -209,7 +209,7 @@ continue to work for a least a half more year, but at some point it will be remo
 
 IB does regularly release new API versions, so this library will need permanent maintenance in oder to stay up-to-date with latest TWS features.<br/>
 Also, there is not much testing code yet. Ideally there should be at least one test-case for each public function.<br/>
-In addition to that.. a little demo / example app would be nice, to demonstrate API usage (something like a little live-portoflio-viewer app for node.js console?).<br/>
+In addition to that, a little demo / example app would be nice, to demonstrate API usage (something like a little live-portoflio-viewer app for node.js console?).<br/>
 Any kind of bugfixes are welcome as well.
 
 If you want to contribute, read the [Developer Guide](https://github.com/stoqey/ib/wiki/Developer-Guide) and start coding.
