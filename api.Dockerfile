@@ -19,8 +19,11 @@ RUN yarn
 # Bundle app source
 COPY . .
 
-ENV NODE_ENV development
+# Build app
+RUN yarn build
 
 # EXPOSE 8000
 
-CMD ["yarn","debug"]
+# we run the positions tools (in dev env) as it doesn't require any account id or other stuff as input
+ENV NODE_ENV development
+CMD ["node","./dist/tools/positions.js", "-watch"]
