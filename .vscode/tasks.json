@@ -2,16 +2,19 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"type": "npm",
-			"script": "debug",
-			"problemMatcher": [],
-			"label": "debug",
-			"detail": "run dev app on ts-node-dev for debugging",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
-			"isBackground": true,
-		}
+      "label": "Build and Watch Project",
+      "type": "shell",
+      "command": "npm",
+      "args": [
+        "--silent",
+        "run",
+        "build:watch"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": "$tsc-watch"
+    },
 	]
 }

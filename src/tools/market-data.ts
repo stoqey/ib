@@ -32,7 +32,7 @@ const OPTION_ARGUMENTS: [string, string][] = [
   ["currency=<currency>", "The contract currency."],
 ];
 const EXAMPLE_TEXT =
-  "market-data.js -symbol=AMZ -sectype=STK -exchange=SMART -conid=3691937";
+  "market-data.js -symbol=AMZN -sectype=STK -exchange=SMART -conid=3691937";
 
 //////////////////////////////////////////////////////////////////////////////
 // The App code                                                             //
@@ -102,7 +102,7 @@ class PrintMarketDataApp extends IBApiNextApp {
         },
         error: (err: IBApiNextError) => {
           this.subscription$?.unsubscribe();
-          this.error(`getCurrentTime failed with '${err.error.message}'`);
+          this.error(`getMarketData failed with '${err.error.message}'`);
         },
       });
   }
