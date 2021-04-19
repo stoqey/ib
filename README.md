@@ -10,7 +10,7 @@
 
 </div>
 
-`@stoqey/ib` is an <ins>unofficial</ins> [Interactive Brokers](http://interactivebrokers.com/) TWS (or IB Gateway) Typescript API client library for [Node.js](http://nodejs.org/). It is a direct port of Interactive Brokers' Java Client Version 9.76 from May 08 2019.
+`@stoqey/ib` is an [Interactive Brokers](http://interactivebrokers.com/) TWS (or IB Gateway) Typescript API client library for [Node.js](http://nodejs.org/). It is a direct port of Interactive Brokers' Java Client Version 9.76 from May 08 2019.
 
 Refer to the [Trader Workstation API](https://interactivebrokers.github.io/tws-api/) for the official documentation and the C#/Java/VB/C++/Python client.
 
@@ -192,11 +192,6 @@ Will be added later once it's stable
 
 ## Deprecation process
 
-This library was initially forked from a JScript project (https://github.com/pilwon/node-ib) and ported to Typescript.
-The API interfaces are still largely compatible with the old library, however there are ongoing efforts port this library to more modern Typescript-like codebase and interface design.
-
-Therefore, there is a defined deprecation process:<br/>
-
 Public interfaces, that are planned to be removed, will be marked with a @deprecated. <br/>
 The @deprecated tag will contain a description or link on how migrate to new API (example: IBApiCreationOptions.clientId).<br/>
 VSCode will explicitly mark deprecated functions and attributes, so you cannot miss it.<br/>
@@ -214,28 +209,3 @@ Any kind of bugfixes are welcome as well.
 
 If you want to contribute, read the [Developer Guide](https://github.com/stoqey/ib/wiki/Developer-Guide) and start coding.
 
-## License
-
-<pre>
-The MIT License (MIT)
-
-Copyright (c) 2020 Stoqey
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-</pre>
