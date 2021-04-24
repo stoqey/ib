@@ -87,6 +87,7 @@
     "typescript": "^4.2.4"
   },
   "dependencies": {
+    "colors": "^1.4.0",
     "command-buffer": "^0.1.0",
     "dotenv": "^8.2.0",
     "eventemitter3": "^4.0.7",
