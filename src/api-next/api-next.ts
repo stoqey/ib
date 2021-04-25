@@ -1,6 +1,6 @@
 import { Observable, Subject } from "rxjs";
 import { map, take } from "rxjs/operators";
-import { Contract, ContractDetails, ErrorCode, EventName } from "../";
+import { Bar, Contract, ContractDetails, ErrorCode, EventName } from "../";
 import LogLevel from "../api/data/enum/log-level";
 import {
   AccountSummaryValue,
@@ -1078,5 +1078,241 @@ export class IBApiNext {
         ? undefined
         : `${JSON.stringify(contract)}:${genericTickList}`
     );
+  }
+
+  /** historicalData event handler */
+  private readonly onHistoricalData = (
+    subscriptions: Map<number, IBApiNextSubscription<Bar[]>>,
+    reqId: number,
+    time: string,
+    open: number,
+    high: number,
+    low: number,
+    close: number,
+    volume: number,
+    count: number,
+    WAP: number
+  ): void => {
+    // get subscription
+
+    const subscription = subscriptions.get(reqId);
+    if (!subscription) {
+      return;
+    }
+
+    // append bar or signal completion
+
+    if (time.startsWith("finished")) {
+      subscription.complete();
+    } else {
+      const all = subscription.lastAllValue ?? [];
+      const current: Bar = { time };
+      if (open !== -1) {
+        current.open = open;
+      }
+      if (high !== -1) {
+        current.high = high;
+      }
+      if (low !== -1) {
+        current.low = low;
+      }
+      if (close !== -1) {
+        current.close = close;
+      }
+      if (volume !== -1) {
+        current.volume = volume;
+      }
+      if (count !== -1) {
+        current.count = count;
+      }
+      if (WAP !== -1) {
+        current.WAP = WAP;
+      }
+      all.push(current);
+      subscription.next({
+        all,
+      });
+    }
+  };
+
+  /**
+   * Get a contracts historical data.
+   *
+   * When requesting historical data, a finishing time and date is required along with a duration string.
+   * For example, having:
+   * - endDateTime: 20130701 23:59:59 GMT
+   * - durationStr: 3
+   * will return three days of data counting backwards from July 1st 2013 at 23:59:59 GMT resulting in all the available bars of the last three days
+   * until the date and time specified.
+   *
+   * It is possible to specify a timezone optionally.
+   *
+   * @see https://interactivebrokers.github.io/tws-api/historical_bars.html for details.
+   *
+   * @param contract The contract for which we want to retrieve the data.
+   * @param endDateTime Request's ending time with format yyyyMMdd HH:mm:ss {TMZ}.
+   * @param durationStr The amount of time for which the data needs to be retrieved:
+   * - [n] S (seconds)
+   * - [n] D (days)
+   * - [n] W (weeks)
+   * - [n] M (months)
+   * - [n] Y (years)
+   * @param barSizeSetting the size of the bar:
+   * - 1 sec
+   * - 5 secs
+   * - 15 secs
+   * - 30 secs
+   * - 1 min
+   * - 2 mins
+   * - 3 mins
+   * - 5 mins
+   * - 15 mins
+   * - 30 mins
+   * - 1 hour
+   * - 1 day
+   * @param whatToShow the kind of information being retrieved:
+   * - TRADES
+   * - MIDPOINT
+   * - BID
+   * - ASK
+   * - BID_ASK
+   * - HISTORICAL_VOLATILITY
+   * - OPTION_IMPLIED_VOLATILITY
+   * - FEE_RATE
+   * - REBATE_RATE
+   * @param useRTH Set to 0 to obtain the data which was also generated outside of the Regular Trading Hours, set to 1 to obtain only the RTH data
+   * @param formatDate Set to 1 to obtain the bars' time as yyyyMMdd HH:mm:ss, set to 2 to obtain it like system time format in seconds
+   */
+  getHistoricalData(
+    contract: Contract,
+    endDateTime: string | undefined,
+    durationStr: string,
+    barSizeSetting: string,
+    whatToShow: string,
+    useRTH: number,
+    formatDate: number
+  ): Promise<Bar[]> {
+    return this.subscriptions
+      .register<Bar[]>(
+        (reqId) => {
+          this.api.reqHistoricalData(
+            reqId,
+            contract,
+            endDateTime,
+            durationStr,
+            barSizeSetting,
+            whatToShow,
+            useRTH,
+            formatDate,
+            false
+          );
+        },
+        undefined,
+        [[EventName.historicalData, this.onHistoricalData]],
+        undefined
+      )
+      .pipe(map((v) => v.all))
+      .toPromise();
+  }
+
+  /** historicalDataUpdate event handler */
+  private readonly onHistoricalDataUpdate = (
+    subscriptions: Map<number, IBApiNextSubscription<Bar>>,
+    reqId: number,
+    time: string,
+    open: number,
+    high: number,
+    low: number,
+    close: number,
+    volume: number,
+    count: number,
+    WAP: number
+  ): void => {
+    // get subscription
+
+    const subscription = subscriptions.get(reqId);
+    if (!subscription) {
+      return;
+    }
+
+    // update bar
+
+    const current = subscription.lastAllValue ?? { time };
+    current.open = open !== -1 ? open : undefined;
+    current.high = high !== -1 ? high : undefined;
+    current.low = low !== -1 ? low : undefined;
+    current.close = close !== -1 ? close : undefined;
+    current.volume = volume !== -1 ? volume : undefined;
+    current.count = count !== -1 ? count : undefined;
+    current.WAP = WAP !== -1 ? WAP : undefined;
+    subscription.next({
+      all: current,
+    });
+  };
+
+  /**
+   * Create a subscription to receive update on the most recent historical data bar of a contract.
+   *
+   * Use {@link IBApiNext.getHistoricalData} to receive history data and use this function if
+   * you want to continue receiving real-time updates on most recent bar.
+   *
+   * @see https://interactivebrokers.github.io/tws-api/historical_bars.html for details.
+   *
+   * @param contract The contract for which we want to retrieve the data.
+   * @param barSizeSetting the size of the bar:
+   * - 1 sec
+   * - 5 secs
+   * - 15 secs
+   * - 30 secs
+   * - 1 min
+   * - 2 mins
+   * - 3 mins
+   * - 5 mins
+   * - 15 mins
+   * - 30 mins
+   * - 1 hour
+   * - 1 day
+   * @param whatToShow the kind of information being retrieved:
+   * - TRADES
+   * - MIDPOINT
+   * - BID
+   * - ASK
+   * - BID_ASK
+   * - HISTORICAL_VOLATILITY
+   * - OPTION_IMPLIED_VOLATILITY
+   * - FEE_RATE
+   * - REBATE_RATE
+   * @param formatDate Set to 1 to obtain the bars' time as yyyyMMdd HH:mm:ss, set to 2 to obtain it like system time format in seconds
+   */
+  getHistoricalDataUpdates(
+    contract: Contract,
+    barSizeSetting: string,
+    whatToShow: string,
+    formatDate: number
+  ): Observable<Bar> {
+    return this.subscriptions
+      .register<Bar>(
+        (reqId) => {
+          this.api.reqHistoricalData(
+            reqId,
+            contract,
+            "",
+            "1 D",
+            barSizeSetting,
+            whatToShow,
+            0,
+            formatDate,
+            true
+          );
+        },
+        (reqId) => {
+          this.api.cancelHistoricalData(reqId);
+        },
+        [[EventName.historicalDataUpdate, this.onHistoricalDataUpdate]],
+        `${JSON.stringify(
+          contract
+        )}:${barSizeSetting}:${whatToShow}:${formatDate}`
+      )
+      .pipe(map((v) => v.all));
   }
 }
