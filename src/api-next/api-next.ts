@@ -1237,7 +1237,8 @@ export class IBApiNext {
 
     // update bar
 
-    const current = subscription.lastAllValue ?? { time };
+    const current = subscription.lastAllValue ?? {};
+    current.time = time;
     current.open = open !== -1 ? open : undefined;
     current.high = high !== -1 ? high : undefined;
     current.low = low !== -1 ? low : undefined;
