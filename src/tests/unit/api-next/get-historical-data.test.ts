@@ -65,20 +65,20 @@ describe("RxJS Wrapper: getHistoricalData()", () => {
         fail(err.error.message);
       });
 
-    REF_BARS.forEach((bar) => {
+    for (let i = 0; i < REF_BARS.length; i++) {
       api.emit(
         EventName.historicalData,
         1,
-        bar.time,
-        bar.open,
-        bar.high,
-        bar.low,
-        bar.close,
-        bar.volume,
-        bar.count,
-        bar.WAP
+        REF_BARS[i].time,
+        REF_BARS[i].open,
+        REF_BARS[i].high,
+        REF_BARS[i].low,
+        REF_BARS[i].close,
+        REF_BARS[i].volume,
+        REF_BARS[i].count,
+        REF_BARS[i].WAP
       );
-    });
+    }
 
     api.emit(
       EventName.historicalData,
