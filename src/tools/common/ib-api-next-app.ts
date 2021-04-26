@@ -59,7 +59,7 @@ export class IBApiNextApp {
   protected cmdLineArgs: Record<string, string>;
 
   /** Connect to TWS. */
-  connect(reconnectInterval: number): void {
+  connect(reconnectInterval?: number): void {
     // create the IBApiNext object
 
     if (!this.api) {

@@ -59,7 +59,7 @@ export class IBApiAutoConnection extends IBApi {
    * the connection will be considered as "dead" and a new connection
    * will be initialized after the [[reconnectInterval]].
    */
-  readonly CONNECTION_WATCHDOG_INTERVAL = 4000;
+  readonly CONNECTION_WATCHDOG_INTERVAL = 10000;
 
   /**
    * If defined, this is the client id that will be used on all
@@ -263,7 +263,7 @@ export class IBApiAutoConnection extends IBApi {
       }
       // trigger at least some message if connection is idle
       this.reqCurrentTime();
-    }, this.CONNECTION_WATCHDOG_INTERVAL);
+    }, this.CONNECTION_WATCHDOG_INTERVAL / 2);
   }
 
   /**
