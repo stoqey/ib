@@ -19,7 +19,7 @@ describe("RequestAllOpenOrders", () => {
 
   test("placeOrder with PriceCondition", (done) => {
     const ib = new IBApi({
-      port: 7497, // use Gateway
+      port: 4002, // use Gateway
     });
 
     ib.on(EventName.error, (error: Error, code: ErrorCode, reqId: number) => {
