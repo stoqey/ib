@@ -2391,8 +2391,14 @@ export declare interface IBApi {
     event: EventName.orderStatus,
     listener: (
       orderId: number,
-      apiClientId: number,
-      apiOrderId: number,
+      status: string,
+      filled: number,
+      remaining: number,
+      avgFillPrice: number,
+      permId: number,
+      parentId: number,
+      lastFillPrice: number,
+      clientId: number,
       whyHeld: string,
       mktCapPrice: number
     ) => void
