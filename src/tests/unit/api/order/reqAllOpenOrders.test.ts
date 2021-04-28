@@ -33,19 +33,16 @@ describe("RequestAllOpenOrders", () => {
         ib.disconnect();
       }
     })
-      .on(
-        EventName.orderStatus,
-        (orderId, apiClientId, apiOrderId, whyHeld, mktCapPrice) => {
-          // todo add proper verification code here
+      .on(EventName.orderStatus, (orderId) => {
+        // todo add proper verification code here
 
-          expect(typeof orderId).toEqual("number");
-          orderStatusReceived = true;
-          if (openOrderReceived && orderStatusReceived) {
-            // done
-            ib.disconnect();
-          }
+        expect(typeof orderId).toEqual("number");
+        orderStatusReceived = true;
+        if (openOrderReceived && orderStatusReceived) {
+          // done
+          ib.disconnect();
         }
-      )
+      })
       .on(EventName.connected, () => {
         ib.reqAllOpenOrders();
       })
