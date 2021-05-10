@@ -93,7 +93,6 @@ export interface IBApiNextCreationOptions {
    * activity and triggers a re-connect if TWS/IB Gateway does not response within
    * the given amount of time.
    * If 0 or undefined, the connection-watchdog will be disabled.
-   * Default is 60 (1min).
    */
   connectionWatchdogInterval?: number;
 
