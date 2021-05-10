@@ -24,8 +24,8 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
   constructor(private ib: IBApi, private options?: IBApiCreationOptions) {
     this.socket = new Socket(this, this.options);
     this.commands.pause();
-    const rate = configuration.max_req_per_second ?? 40;
-    this.rateLimiter = rateLimit(rate / 10, 1000 / 10, (tokens) => {
+    const rate = options.maxReqPerSec ?? configuration.max_req_per_second ?? 40;
+    this.rateLimiter = rateLimit(rate / 10, 1000 / 10, (tokens: unknown[]) => {
       this.socket.send(tokens);
     });
   }
@@ -37,7 +37,7 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
   private readonly commands = new CommandBuffer(Controller.execute, this);
 
   /** The rate limiter function. */
-  private readonly rateLimiter: (arg: unknown) => void;
+  private readonly rateLimiter: (tokens: unknown[]) => void;
 
   /** The API message encoder. */
   readonly encoder = new Encoder(this);

@@ -56,6 +56,16 @@ export interface IBApiCreationOptions {
    * Use clientId argument [[IBApi.connect]] instead.
    */
   clientId?: number;
+
+  /**
+   * Max. number of requests per second, sent to TWS/IB Gateway.
+   * Default is 40. IB specifies 50 requests/s as maximum.
+   *
+   * Note that sending large amount of requests within a small amount of time, significantly increases resource
+   * consumption of the TWS/IB Gateway (especially memory consumption). If you experience any lags, hangs or crashes
+   * on TWS/IB Gateway while sending request bursts, try to reduce this value.
+   */
+  maxReqPerSec?: number;
 }
 
 /** Maximum supported version. */
