@@ -87,6 +87,26 @@ export interface IBApiNextCreationOptions {
   reconnectInterval?: number;
 
   /**
+   * The connection-watchdog timeout interval in seconds.
+   *
+   * The connection-watchdog monitors the socket connection to TWS/IB Gateway for
+   * activity and triggers a re-connect if TWS/IB Gateway does not response within
+   * the given amount of time.
+   * If 0 or undefined, the connection-watchdog will be disabled.
+   */
+  connectionWatchdogInterval?: number;
+
+  /**
+   * Max. number of requests per second, sent to TWS/IB Gateway.
+   * Default is 40. IB specifies 50 requests/s as maximum.
+   *
+   * Note that sending large amount of requests within a small amount of time, significantly increases resource
+   * consumption of the TWS/IB Gateway (especially memory consumption). If you experience any lags, hangs or crashes
+   * on TWS/IB Gateway while sending request bursts, try to reduce this value.
+   */
+  maxReqPerSec?: number;
+
+  /**
    * Custom logger implementation.
    *
    * By default [[IBApiNext]] does log to console.
@@ -131,6 +151,7 @@ export class IBApiNext {
 
     this.api = new IBApiAutoConnection(
       options?.reconnectInterval ?? 0,
+      (options?.connectionWatchdogInterval ?? 0) * 1000,
       this.logger,
       options
     );

@@ -26,11 +26,14 @@ export class IBApiAutoConnection extends IBApi {
    *
    * @param reconnectInterval The auto-reconnect interval in milliseconds.
    * Use 0 to disable auto re-connect.
+   * @param reconnectInterval The watchdog interval in milliseconds.
+   * Use 0 to disable auto re-connect.
    * @param options [[IBApi]] Creation options.
    * @param logger The [[IBApiNextLogger]] logger instance ot receive log messages
    */
   constructor(
     public readonly reconnectInterval: number,
+    private readonly watchdogInterval: number,
     private readonly logger: Logger,
     public readonly options?: IBApiCreationOptions
   ) {
@@ -49,17 +52,6 @@ export class IBApiAutoConnection extends IBApi {
     });
     this.on(EventName.currentTime, () => (this.lastDataIngressTm = Date.now()));
   }
-
-  /**
-   * Tick interval of the connection watchdog in milliseconds.
-   *
-   * The connection to TWS / IB Gateway will be checked at
-   * this interval by requesting the current TWS time.
-   * If there is no reply from TWS until two consecutive watchdog ticks,
-   * the connection will be considered as "dead" and a new connection
-   * will be initialized after the [[reconnectInterval]].
-   */
-  readonly CONNECTION_WATCHDOG_INTERVAL = 10000;
 
   /**
    * If defined, this is the client id that will be used on all
@@ -233,7 +225,7 @@ export class IBApiAutoConnection extends IBApi {
    */
   private runWatchdog(): void {
     // verify state
-    if (this.connectionWatchdogTimeout) {
+    if (!this.watchdogInterval || this.connectionWatchdogTimeout) {
       return;
     }
 
@@ -241,7 +233,7 @@ export class IBApiAutoConnection extends IBApi {
 
     this.logger.debug(
       LOG_TAG,
-      `Starting connection watchdog with ${this.CONNECTION_WATCHDOG_INTERVAL}ms interval.`
+      `Starting connection watchdog with ${!this.watchdogInterval}ms interval.`
     );
 
     this.connectionWatchdogTimeout = setInterval(() => {
@@ -250,7 +242,7 @@ export class IBApiAutoConnection extends IBApi {
         triggerReconnect = true;
       } else {
         const elapsed = Date.now() - this.lastDataIngressTm;
-        if (elapsed > this.CONNECTION_WATCHDOG_INTERVAL) {
+        if (elapsed > this.watchdogInterval) {
           triggerReconnect = true;
         }
       }
@@ -263,7 +255,7 @@ export class IBApiAutoConnection extends IBApi {
       }
       // trigger at least some message if connection is idle
       this.reqCurrentTime();
-    }, this.CONNECTION_WATCHDOG_INTERVAL / 2);
+    }, this.watchdogInterval / 2);
   }
 
   /**
