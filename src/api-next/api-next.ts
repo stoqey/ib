@@ -163,6 +163,15 @@ export class IBApiNext {
       EventName.error,
       (error: Error, code: ErrorCode, reqId: number) => {
         const apiError: IBApiNextError = { error, code, reqId };
+        // handle warnings - they are also reported on TWS error callback, but we DO NOT want to emit
+        // it as error into the subject (and cancel the subscription).
+        if (code >= 2100 && code < 3000) {
+          this.logger.warn(
+            TWS_LOG_TAG,
+            `${error.message} - Code: ${code} - ReqId: ${reqId}`
+          );
+          return;
+        }
         // emit to the subscription subject
         if (reqId !== INVALID_REQ_ID) {
           this.subscriptions.dispatchError(reqId, apiError);
