@@ -41,11 +41,7 @@ export class IBApiAutoConnection extends IBApi {
     this.on(EventName.connected, () => this.onConnected());
     this.on(EventName.disconnected, () => this.onDisconnected());
     this.on(EventName.received, () => (this.lastDataIngressTm = Date.now()));
-    this.on(EventName.error, (error, code, reqId) => {
-      this.logger.error(
-        "TWS",
-        `${error.message} - Code: ${code} - ReqId: ${reqId}`
-      );
+    this.on(EventName.error, (error, code) => {
       if (code === ErrorCode.CONNECT_FAIL) {
         this.onDisconnected();
       }
