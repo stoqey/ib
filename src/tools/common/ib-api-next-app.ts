@@ -70,7 +70,7 @@ export class IBApiNextApp {
       : 4004
       this.api = new IBApiNext({
         reconnectInterval,
-        host: this.cmdLineArgs.host ?? "127.0.0.1",
+        host: this.cmdLineArgs.host ?? configuration.ib_host,
         port
       });
       if (this.cmdLineArgs.log) {

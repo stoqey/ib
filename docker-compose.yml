@@ -16,6 +16,7 @@ services:
       dockerfile: ./api.Dockerfile
     links:
       - tws
+    env_file: .env
     volumes:
       - .:/usr/src/app
       # More info on the node_modules volume at:
