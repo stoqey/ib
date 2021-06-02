@@ -16,7 +16,7 @@ const DESCRIPTION_TEXT =
   "Prints the accounts to which the logged user has access to.";
 const USAGE_TEXT = "Usage: managed-accts.js <options>";
 const OPTION_ARGUMENTS: [string, string][] = [];
-const EXAMPLE_TEXT = "managed-accts.js -port=4002";
+const EXAMPLE_TEXT = "managed-accts.js -port=4004";
 
 //////////////////////////////////////////////////////////////////////////////
 // The App code                                                             //

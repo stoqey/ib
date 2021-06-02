@@ -1,6 +1,6 @@
 import { IBApi } from "../../../api/api";
 import { EventName } from "../../../api/data/enum/event-name";
-import configuration from "../../../core/utils/configuration";
+import configuration from "../../../common/configuration";
 import logger from "../../../common/logger";
 
 describe("IBApi Tests", () => {

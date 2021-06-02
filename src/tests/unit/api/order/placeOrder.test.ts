@@ -2,24 +2,17 @@
  * This file implement test code for the placeOrder function .
  */
 import {
-  ConjunctionConnection,
-  Contract,
-  ErrorCode,
-  EventName,
-  IBApi,
-  OrderAction,
-  OrderType,
-  PriceCondition,
-  SecType,
-  TriggerMethod,
+    ConjunctionConnection, Contract, ErrorCode, EventName, IBApi, OrderAction, OrderType,
+    PriceCondition, SecType, TriggerMethod
 } from "../../../..";
 import OptionType from "../../../../api/data/enum/option-type";
+
 describe("RequestAllOpenOrders", () => {
   jest.setTimeout(20000);
 
   test("placeOrder with PriceCondition", (done) => {
     const ib = new IBApi({
-      port: 4002, // use Gateway
+      port: 4004, // use Gateway
     });
 
     ib.on(EventName.error, (error: Error, code: ErrorCode, reqId: number) => {

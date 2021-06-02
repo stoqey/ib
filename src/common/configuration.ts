@@ -32,7 +32,7 @@ export interface Configuration {
 
 let configuration: Configuration = null;
 
-const envsToInclude = ["ci", "env_config_test"];
+const envsToInclude = ["ci", "env_config_test", "ib_host", "ib_port", "client_version", "max_req_per_second"];
 
 function readJson(readPath: string) {
   try {
