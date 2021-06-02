@@ -2,6 +2,7 @@ import { Observable, Subject } from "rxjs";
 import { map, take } from "rxjs/operators";
 import { Bar, Contract, ContractDetails, ErrorCode, EventName } from "../";
 import LogLevel from "../api/data/enum/log-level";
+import configuration from "../common/configuration";
 import {
   AccountSummaryValue,
   ConnectionState,
@@ -19,7 +20,7 @@ import {
   IBApiNextTickType,
 } from "./";
 import { ConsoleLogger } from "../core/api-next/console-logger";
-import { Logger } from "./common/logger";
+import { IBApiNextLogger } from "../core/api-next/logger";
 import { IBApiNextSubscription } from "../core/api-next/subscription";
 import { IBApiNextSubscriptionRegistry } from "../core/api-next/subscription-registry";
 import {

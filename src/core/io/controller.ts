@@ -3,8 +3,8 @@ import rateLimit from "function-rate-limit";
 
 import { IBApi, IBApiCreationOptions } from "../../api/api";
 import { EventName } from "../../api/data/enum/event-name";
+import configuration from "../../common/configuration";
 import { ErrorCode } from "../../common/errorCode";
-import configuration from "../utils/configuration";
 import { Decoder, DecoderCallbacks } from "./decoder";
 import { Encoder, EncoderCallbacks } from "./encoder";
 import { Socket } from "./socket";

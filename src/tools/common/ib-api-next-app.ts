@@ -1,7 +1,9 @@
 import colors from "colors";
-import { IBApiNext } from "../../api-next";
 import { Subscription } from "rxjs";
+
+import { IBApiNext } from "../../api-next";
 import LogLevel from "../../api/data/enum/log-level";
+import configuration from "../../common/configuration";
 
 /**
  * @internal
@@ -63,14 +65,13 @@ export class IBApiNextApp {
     // create the IBApiNext object
 
     if (!this.api) {
+      const port = configuration.ib_port;
       this.api = new IBApiNext({
         reconnectInterval,
-        host: this.cmdLineArgs.host ?? "127.0.0.1",
-        port:
-          this.cmdLineArgs.port !== undefined
-            ? Number(this.cmdLineArgs.port)
-            : 4002,
+        host: this.cmdLineArgs.host,
+        port
       });
+      console.log(port)
       if (this.cmdLineArgs.log) {
         switch (this.cmdLineArgs.log) {
           case "error":
