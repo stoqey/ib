@@ -43,7 +43,7 @@ export interface IBApiCreationOptions {
   /**
    * Hostname of the TWS (or IB Gateway).
    *
-   * Default is 7496, which is the TWS default (4001 is default for IB Gateway Live-Accounts and 4004 for Demo-Accounts).
+   * Default is 7496, which is the TWS default (4001 is default for IB Gateway Live-Accounts and 4002 for Demo-Accounts).
    */
   port?: number;
 
