@@ -67,7 +67,7 @@ export class IBApiNextApp {
     if (!this.api) {
       const port = configuration.ib_port ? configuration.ib_port : this.cmdLineArgs.port !== undefined
       ? Number(this.cmdLineArgs.port)
-      : 4004
+      : 4004;
       this.api = new IBApiNext({
         reconnectInterval,
         host: this.cmdLineArgs.host ?? configuration.ib_host,
