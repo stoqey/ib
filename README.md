@@ -45,7 +45,7 @@ IBApiNext still is in preview stage. Not all functions are available yet, and we
 | Platform                 | Port  |
 | ------------------------ | ----- |
 | IB Gateway live account  |  4001 |
-| IB Gateway paper account |  4004 |
+| IB Gateway paper account |  4002 |
 | TWS Live Account         | 7496  |
 | TWS papertrading account | 7497  |
 
