@@ -153,7 +153,7 @@ export class Encoder {
    *
    * @param callback A [[EncoderCallbacks]] implementation.
    */
-  constructor(private callback: EncoderCallbacks) { }
+  constructor(private callback: EncoderCallbacks) {}
 
   /** Get the API server version. */
   private get serverVersion(): number {

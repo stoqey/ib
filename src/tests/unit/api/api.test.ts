@@ -165,7 +165,6 @@ describe("IBApi Tests", () => {
           expect(ticks.length).toBeGreaterThan(0);
           if (isConnected) {
             ib.disconnect();
-            isConnected = false;
           }
           done();
         }
