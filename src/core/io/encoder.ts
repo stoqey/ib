@@ -153,7 +153,7 @@ export class Encoder {
    *
    * @param callback A [[EncoderCallbacks]] implementation.
    */
-  constructor(private callback: EncoderCallbacks) {}
+  constructor(private callback: EncoderCallbacks) { }
 
   /** Get the API server version. */
   private get serverVersion(): number {
@@ -2045,18 +2045,30 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       );
     }
 
-    this.sendMsg(
-      OUT_MSG_ID.REQ_HISTORICAL_TICKS,
-      tickerId,
-      this.encodeContract(contract),
-      startDateTime,
-      endDateTime,
-      numberOfTicks,
-      whatToShow,
-      useRth,
-      ignoreSize,
-      this.encodeTagValues(miscOptions)
-    );
+    const args: unknown[] = [OUT_MSG_ID.REQ_HISTORICAL_TICKS, tickerId];
+
+    args.push(contract.conId);
+    args.push(contract.symbol);
+    args.push(contract.secType);
+    args.push(contract.lastTradeDateOrContractMonth);
+    args.push(contract.strike);
+    args.push(contract.right);
+    args.push(contract.multiplier);
+    args.push(contract.exchange);
+    args.push(contract.primaryExch);
+    args.push(contract.currency);
+    args.push(contract.localSymbol);
+    args.push(contract.tradingClass);
+    args.push(contract.includeExpired);
+    args.push(startDateTime);
+    args.push(endDateTime);
+    args.push(numberOfTicks);
+    args.push(whatToShow);
+    args.push(useRth);
+    args.push(ignoreSize);
+    args.push(this.encodeTagValues(miscOptions));
+
+    this.sendMsg(args);
   }
 
   /**
