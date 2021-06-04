@@ -7,7 +7,6 @@ services:
       - ${IB_API_PORT:-4004}:4004
     environment:
       - TZ=America/NewYork
-      - TWS_MAJOR_VRSN=981
 
   ib-api:
     container_name: ib-api
