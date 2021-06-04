@@ -153,7 +153,7 @@ describe("IBApi Tests", () => {
       .on(EventName.connected, function onConnected() {
         isConnected = true;
       })
-      .on(EventName.error, function onError(err: Error, code: ErrorCode, id: number) {
+      .on(EventName.error, function onError(err: Error) {
         if (isConnected) {
           ib.disconnect();
         }
@@ -161,7 +161,7 @@ describe("IBApi Tests", () => {
       })
       .on(
         EventName.historicalTicksLast,
-        function onData(reqId: number, ticks: [], isDone: boolean) {
+        function onData(reqId: number, ticks: []) {
           expect(ticks.length).toBeGreaterThan(0);
           if (isConnected) {
             ib.disconnect();
@@ -171,9 +171,9 @@ describe("IBApi Tests", () => {
       );
 
     const contract: Contract = {
-      symbol: 'SPY',
-      exchange: 'SMART',
-      currency: 'USD',
+      symbol: "SPY",
+      exchange: "SMART",
+      currency: "USD",
       secType: SecType.STK
     };
 
