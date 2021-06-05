@@ -27,7 +27,7 @@ export interface HistoricalTickBidAsk {
   /** The ask price of the historical tick. */
   priceAsk?: number;
 
-  /** he bid size of the historical tick. */
+  /** The bid size of the historical tick. */
   sizeBid?: number;
 
   /** The ask size of the historical tick. */
