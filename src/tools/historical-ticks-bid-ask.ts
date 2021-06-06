@@ -95,7 +95,7 @@ class PrintHistoricalTicksMidApp extends IBApiNextApp {
       )
       .subscribe({
         next: (ticks) => {
-          // this called each time a new tick arrives (e.g. to show a progress indicator,
+          // this is called each time a new ticks arrive from TWS (e.g. to show a progress indicator,
           // or to display results incrementally - we don't, but simply wait for complete)
           allTicks = ticks;
         },

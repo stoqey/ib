@@ -46,7 +46,7 @@ const EXAMPLE_TEXT =
 // The App code                                                             //
 //////////////////////////////////////////////////////////////////////////////
 
-class PrintHistoricalTicksMidApp extends IBApiNextApp {
+class PrintHistoricalTicksLastApp extends IBApiNextApp {
   constructor() {
     super(DESCRIPTION_TEXT, USAGE_TEXT, OPTION_ARGUMENTS, EXAMPLE_TEXT);
   }
@@ -94,7 +94,7 @@ class PrintHistoricalTicksMidApp extends IBApiNextApp {
       )
       .subscribe({
         next: (ticks) => {
-          // this called each time a new tick arrives (e.g. to show a progress indicator,
+          // this is called each time a new ticks arrive from TWS (e.g. to show a progress indicator,
           // or to display results incrementally - we don't, but simply wait for complete)
           allTicks = ticks;
         },
@@ -121,4 +121,4 @@ class PrintHistoricalTicksMidApp extends IBApiNextApp {
 
 // run the app
 
-new PrintHistoricalTicksMidApp().start();
+new PrintHistoricalTicksLastApp().start();
