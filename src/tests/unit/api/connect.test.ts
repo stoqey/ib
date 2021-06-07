@@ -12,8 +12,8 @@ describe("IBApi Tests", () => {
   beforeEach(async () => {
     ib = new IBApi({
       clientId: _clientId++,
-      host: configuration.ib_test_host,
-      port: configuration.ib_test_port,
+      host: configuration.ib_host,
+      port: configuration.ib_port,
     });
   });
 
