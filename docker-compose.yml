@@ -1,10 +1,10 @@
 version: "3.1"
 services:
   tws:
-    image: industrialninja/ib_gateway
+    image: industrialninja/ib_gateway:latest
     env_file: .env
     ports:
-      - ${IB_API_PORT:-4004}:4004
+      - 4004:${IB_PORT:-4002}
     environment:
       - TZ=America/NewYork
 
@@ -16,6 +16,8 @@ services:
     links:
       - tws
     env_file: .env
+    environment:
+      - IB_HOST=tws
     volumes:
       - .:/usr/src/app
       # More info on the node_modules volume at:

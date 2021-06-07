@@ -48,7 +48,7 @@ export class IBApiNextApp {
       "host=<hostname>",
       "IP or hostname of the TWS or IB Gateway. Default is 127.0.0.1.",
     ],
-    ["port=<number>", "Post number of the TWS or IB Gateway. Default is 4004."],
+    ["port=<number>", "Post number of the TWS or IB Gateway. Default is 4002."],
   ];
 
   /** The [[IBApiNext]] instance. */
@@ -67,7 +67,7 @@ export class IBApiNextApp {
     if (!this.api) {
       const port = configuration.ib_port ? configuration.ib_port : this.cmdLineArgs.port !== undefined
       ? Number(this.cmdLineArgs.port)
-      : 4004;
+      : 4002;
       this.api = new IBApiNext({
         reconnectInterval,
         host: this.cmdLineArgs.host ?? configuration.ib_host,

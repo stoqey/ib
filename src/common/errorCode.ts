@@ -13,7 +13,7 @@ export enum ErrorCode {
    *
    * Live Trading ports: TWS: 7496; IB Gateway: 4001.
    *
-   * Simulated Trading ports for new installations of version 954.1 or newer: TWS: 7497; IB Gateway: 4004
+   * Simulated Trading ports for new installations of version 954.1 or newer: TWS: 7497; IB Gateway: 4002
    */
   CONNECT_FAIL = 502,
 
