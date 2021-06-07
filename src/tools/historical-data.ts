@@ -12,11 +12,11 @@ import { IBApiNextApp } from "./common/ib-api-next-app";
 /////////////////////////////////////////////////////////////////////////////////
 
 const DESCRIPTION_TEXT = "Print historical chart data of a contract.";
-const USAGE_TEXT = "Usage: historical-data-updates.js <options>";
+const USAGE_TEXT = "Usage: historical-data.js <options>";
 const OPTION_ARGUMENTS: [string, string][] = [
   [
     "conid=<number>",
-    "(required) Contract ID (conId) of contract to receive daily PnL updates for.",
+    "(required) Contract ID (conId) of contract to receive historical chart data for.",
   ],
   ["exchange=<name>", "The destination exchange name."],
   [

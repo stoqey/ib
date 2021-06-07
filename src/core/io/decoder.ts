@@ -2184,10 +2184,14 @@ export class Decoder {
     const tickCount = this.readInt();
     const ticks: HistoricalTick[] = new Array(tickCount);
     for (let i = 0; i < tickCount; i++) {
+      const time = this.readInt();
+      this.readInt();//for consistency
+      const price = this.readDouble();
+      const size = this.readInt();
       ticks[i] = {
-        time: this.readInt(),
-        price: this.readDouble(),
-        size: this.readInt(),
+        time,
+        price,
+        size,
       };
     }
     const done = this.readBool();

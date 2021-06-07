@@ -17,7 +17,7 @@ const USAGE_TEXT = "Usage: historical-data.js <options>";
 const OPTION_ARGUMENTS: [string, string][] = [
   [
     "conid=<number>",
-    "(required) Contract ID (conId) of contract to receive daily PnL updates for.",
+    "(required) Contract ID (conId) of contract to receive real-time bar updates for.",
   ],
   ["exchange=<name>", "The destination exchange name."],
   ["barSize=<durationString>", "(required) The data granularity."],
