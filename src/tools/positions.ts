@@ -44,17 +44,17 @@ class PrintPositionsApp extends IBApiNextApp {
     const scriptName = path.basename(__filename);
     logger.debug(`Starting ${scriptName} script`);
     this.connect(this.cmdLineArgs.watch ? 10000 : 0);
-    this.subscription$ = this.api.getPositions().subscribe(
-      (positions) => {
+    this.subscription$ = this.api.getPositions().subscribe({
+      next: (positions) => {
         this.printObject(positions);
         if (!this.cmdLineArgs.watch) {
           this.stop();
         }
       },
-      (err: IBApiNextError) => {
+      error: (err: IBApiNextError) => {
         this.error(`getPositions failed with '${err.error.message}'`);
-      }
-    );
+      },
+    });
   }
 
   /**

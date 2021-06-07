@@ -54,24 +54,26 @@ class PrintPositionsApp extends IBApiNextApp {
     if (!this.cmdLineArgs.conid) {
       this.error("-conid argument missing.");
     }
+
     this.connect(this.cmdLineArgs.watch ? 10000 : 0);
+
     this.subscription$ = this.api
       .getPnLSingle(
         this.cmdLineArgs.account,
         this.cmdLineArgs.model,
         Number(this.cmdLineArgs.conid)
       )
-      .subscribe(
-        (pnlSingle) => {
+      .subscribe({
+        next: (pnlSingle) => {
           this.printObject(pnlSingle);
           if (!this.cmdLineArgs.watch) {
             this.stop();
           }
         },
-        (err: IBApiNextError) => {
+        error: (err: IBApiNextError) => {
           this.error(`getPnLSingle failed with '${err.error.message}'`);
-        }
-      );
+        },
+      });
   }
 
   /**
