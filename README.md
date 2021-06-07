@@ -122,20 +122,21 @@ ib.reqIds();
 
 ## IBApiNext and RxJS
 
-While IBApi uses a request function / event callback design where subscriptions are managed by the user, IBApiNext does use RxJS 7 to manage subscriptions .\
-In general, there are four type of functions on IBApiNext:
+While IBApi uses a request function / event callback design where subscriptions are managed by the user, IBApiNext does use RxJS 7 to manage subscriptions.\
+In general, there are four types of functions on IBApiNext:
 
 - On-shot functions, returning a Promise, such as `IBApiNext.getCurrentTime`. Such functions will send a request to TWS and return the result (or error) on the Promise.
 
-- On-shot functions, returning an Observable, such as `IBApiNext.getContractDetails`. Such functions will send a request to TWS and invoke the `next` callback while collecting results from TWS. After all results
-  have been collected, `complete` callback will be invoked. The `next` callback can be used to show progress information, or display results incrementally, while new ones are still being collected.\
+- On-shot functions, returning an Observable, such as `IBApiNext.getContractDetails`. Such functions will send a request to TWS and invoke the `next` callback while collecting results from TWS. After all results have been collected, `complete` callback will be invoked. The `next` callback can be used to show progress information, or display results incrementally, while new ones are still being collected.\
   If you are not interested on incremental update events, but only on the final result-set, use the RxJS `lastValueFrom()` (example `lastValueFrom(IBApiNext.getContractDetails(contract))`) to convert the Observable into a Promise.
 
-- Functions that collect a set of values first and continue to deliver updates after colleted initially, such as `IBApiNext.getAccountSummary`. Such functions will send a request to TWS and invoke the `next` callback while collecting results from TWS. After all values have been collected, `complete` callback will be invoked. With each update after the initial collection, the `next` callback will invoked be invoked again.\
+- Functions that collect a set of values first and continue to deliver updates after colleted initially, such as `IBApiNext.getAccountSummary`.
+  Such functions will send a request to TWS and invoke the `next` callback while collecting results from TWS.
+  After all values have been collected, `complete` callback will be invoked. With each update after the initial collection, the `next` callback will invoked be invoked again.\
   Note that you can convert this to a Promise, using `lastValueFrom()`, however the Promise will resolve after the initial set of values is collected and subscription will be canceled afterwards (you will not receive any updates).
 
 - Endless stream subscriptions, returning an Observable, such `IBApiNext.getMarketData`.
-  Such functions will deliver an endless stream of update events. The `complete` callback NEVER be invoked (do not try to convert to a Promise - it will never resolve!)
+  Such functions will deliver an endless stream of update events. The `complete` callback will NEVER be invoked (do not try to convert to a Promise - it will never resolve!)
 
 ## IB-Shell / IBApiNext Examples
 
