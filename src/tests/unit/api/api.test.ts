@@ -1,7 +1,7 @@
 /**
  * This file implement test code for the public API interfaces.
  */
-import { Contract, ErrorCode, EventName, IBApi } from "../../..";
+import { Contract, ErrorCode, EventName, IBApi, SecType } from "../../..";
 import configuration from "../../../common/configuration";
 import logger from "../../../common/logger";
 
@@ -138,5 +138,54 @@ describe("IBApi Tests", () => {
     );
 
     ib.reqPnLSingle(44, _account, null, _conId);
+  });
+
+  it("Test request tick history", async function (done) {
+    const ib = new IBApi({
+      clientId: _clientId++,
+      host: TEST_SERVER_HOST,
+      port: TEST_SERVER_POST,
+    }).connect();
+
+    let isConnected = false;
+
+    ib
+      .on(EventName.connected, function onConnected() {
+        isConnected = true;
+      })
+      .on(EventName.error, function onError(err: Error) {
+        if (isConnected) {
+          ib.disconnect();
+        }
+        throw err;
+      })
+      .on(
+        EventName.historicalTicksLast,
+        function onData(reqId: number, ticks: []) {
+          expect(ticks.length).toBeGreaterThan(0);
+          if (isConnected) {
+            ib.disconnect();
+          }
+          done();
+        }
+      );
+
+    const contract: Contract = {
+      symbol: "SPY",
+      exchange: "SMART",
+      currency: "USD",
+      secType: SecType.STK
+    };
+
+    ib.reqHistoricalTicks(
+      45,
+      contract,
+      "20210101 10:00:00",
+      null,
+      1000,
+      "TRADES",
+      0,
+      true
+    );
   });
 });
