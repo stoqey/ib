@@ -2,8 +2,7 @@
  * This App will print historical mid price Time&Sales data of and instrument.
  */
 import path from "path";
-import { Subscription } from "rxjs";
-import { HistoricalTick } from "..";
+import { lastValueFrom } from "rxjs";
 
 import { IBApiNextError } from "../api-next";
 import logger from "../common/logger";
@@ -51,9 +50,6 @@ class PrintHistoricalTicksMidApp extends IBApiNextApp {
     super(DESCRIPTION_TEXT, USAGE_TEXT, OPTION_ARGUMENTS, EXAMPLE_TEXT);
   }
 
-  /** The [[Subscription]] on the historic ticks while being collected from TWS (list will grow incrementally). */
-  private subscription$: Subscription;
-
   /**
    * Start the the app.
    */
@@ -79,10 +75,13 @@ class PrintHistoricalTicksMidApp extends IBApiNextApp {
 
     this.connect();
 
-    let allTicks: HistoricalTick[];
+    // We use lastValueFrom here as we are not interested in getting
+    // incremental updates.
+    // If you do so (e.g. to show results incrementally as received from TWS),
+    // use .subscribe({next: update => ...}) instead.
 
-    this.subscription$ = this.api
-      .getHistoricalTicksMid(
+    lastValueFrom(
+      this.api.getHistoricalTicksMid(
         {
           conId: Number(this.cmdLineArgs.conid),
           exchange: this.cmdLineArgs.exchange,
@@ -92,21 +91,13 @@ class PrintHistoricalTicksMidApp extends IBApiNextApp {
         Number(this.cmdLineArgs.count),
         Number(this.cmdLineArgs.rth === undefined ? 1 : this.cmdLineArgs.rth)
       )
-      .subscribe({
-        next: (ticks) => {
-          // this is called each time a new ticks arrive from TWS (e.g. to show a progress indicator,
-          // or to display results incrementally - we don't, but simply wait for complete)
-          allTicks = ticks;
-        },
-        complete: () => {
-          this.printObject(allTicks);
-          this.stop();
-        },
-        error: (err: IBApiNextError) => {
-          this.error(
-            `getHistoricalTicksMid failed with '${err.error.message}'`
-          );
-        },
+    )
+      .then((ticks) => {
+        this.printObject(ticks);
+        this.stop();
+      })
+      .catch((err: IBApiNextError) => {
+        this.error(`getHistoricalTicksMid failed with '${err.error.message}'`);
       });
   }
 
@@ -114,7 +105,6 @@ class PrintHistoricalTicksMidApp extends IBApiNextApp {
    * Stop the the app with success code.
    */
   stop() {
-    this.subscription$?.unsubscribe();
     this.exit();
   }
 }

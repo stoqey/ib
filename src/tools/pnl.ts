@@ -46,20 +46,22 @@ class PrintPositionsApp extends IBApiNextApp {
     if (!this.cmdLineArgs.account) {
       this.error("-account argument missing.");
     }
+
     this.connect(this.cmdLineArgs.watch ? 10000 : 0);
+
     this.subscription$ = this.api
       .getPnL(this.cmdLineArgs.account, this.cmdLineArgs.model)
-      .subscribe(
-        (pnl) => {
+      .subscribe({
+        next: (pnl) => {
           this.printObject(pnl);
           if (!this.cmdLineArgs.watch) {
             this.stop();
           }
         },
-        (err: IBApiNextError) => {
+        error: (err: IBApiNextError) => {
           this.error(`getPnL failed with '${err.error.message}'`);
-        }
-      );
+        },
+      });
   }
 
   /**

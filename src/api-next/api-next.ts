@@ -1,4 +1,4 @@
-import { Observable, Subject } from "rxjs";
+import { lastValueFrom, Observable, Subject } from "rxjs";
 import { map, take } from "rxjs/operators";
 import {
   Bar,
@@ -305,19 +305,20 @@ export class IBApiNext {
    * Get TWS's current time.
    */
   getCurrentTime(): Promise<number> {
-    return this.subscriptions
-      .register<number>(
-        () => {
-          this.api.reqCurrentTime();
-        },
-        undefined,
-        [[EventName.currentTime, this.onCurrentTime]]
-      )
-      .pipe(
-        take(1),
-        map((v: { all: any }) => v.all)
-      )
-      .toPromise();
+    return lastValueFrom(
+      this.subscriptions
+        .register<number>(
+          () => {
+            this.api.reqCurrentTime();
+          },
+          undefined,
+          [[EventName.currentTime, this.onCurrentTime]]
+        )
+        .pipe(
+          take(1),
+          map((v: { all: number }) => v.all)
+        )
+    );
   }
 
   /** managedAccounts event handler.  */
@@ -333,19 +334,20 @@ export class IBApiNext {
    * Get the accounts to which the logged user has access to.
    */
   getManagedAccounts(): Promise<string[]> {
-    return this.subscriptions
-      .register<string[]>(
-        () => {
-          this.api.reqManagedAccts();
-        },
-        undefined,
-        [[EventName.managedAccounts, this.onManagedAccts]]
-      )
-      .pipe(
-        take(1),
-        map((v: { all: string[] }) => v.all)
-      )
-      .toPromise();
+    return lastValueFrom(
+      this.subscriptions
+        .register<string[]>(
+          () => {
+            this.api.reqManagedAccts();
+          },
+          undefined,
+          [[EventName.managedAccounts, this.onManagedAccts]]
+        )
+        .pipe(
+          take(1),
+          map((v: { all: string[] }) => v.all)
+        )
+    );
   }
 
   /** accountSummary event handler */
@@ -1231,27 +1233,28 @@ export class IBApiNext {
     useRTH: number,
     formatDate: number
   ): Promise<Bar[]> {
-    return this.subscriptions
-      .register<Bar[]>(
-        (reqId) => {
-          this.api.reqHistoricalData(
-            reqId,
-            contract,
-            endDateTime,
-            durationStr,
-            barSizeSetting,
-            whatToShow,
-            useRTH,
-            formatDate,
-            false
-          );
-        },
-        undefined,
-        [[EventName.historicalData, this.onHistoricalData]],
-        undefined
-      )
-      .pipe(map((v: { all: Bar[] }) => v.all))
-      .toPromise();
+    return lastValueFrom(
+      this.subscriptions
+        .register<Bar[]>(
+          (reqId) => {
+            this.api.reqHistoricalData(
+              reqId,
+              contract,
+              endDateTime,
+              durationStr,
+              barSizeSetting,
+              whatToShow,
+              useRTH,
+              formatDate,
+              false
+            );
+          },
+          undefined,
+          [[EventName.historicalData, this.onHistoricalData]],
+          undefined
+        )
+        .pipe(map((v: { all: Bar[] }) => v.all))
+    );
   }
 
   /** historicalDataUpdate event handler */

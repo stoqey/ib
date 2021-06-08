@@ -2,8 +2,7 @@
  * This App will print historical last trade price Time&Sales data of and instrument.
  */
 import path from "path";
-import { Subscription } from "rxjs";
-import { HistoricalTickLast } from "..";
+import { lastValueFrom, Subscription } from "rxjs";
 
 import { IBApiNextError } from "../api-next";
 import logger from "../common/logger";
@@ -79,10 +78,13 @@ class PrintHistoricalTicksLastApp extends IBApiNextApp {
 
     this.connect();
 
-    let allTicks: HistoricalTickLast[];
+    // We use lastValueFrom here as we are not interested in getting
+    // incremental updates.
+    // If you do so (e.g. to show results incrementally as received from TWS),
+    // use .subscribe({next: update => ...}) instead.
 
-    this.subscription$ = this.api
-      .getHistoricalTicksLast(
+    lastValueFrom(
+      this.api.getHistoricalTicksLast(
         {
           conId: Number(this.cmdLineArgs.conid),
           exchange: this.cmdLineArgs.exchange,
@@ -92,21 +94,15 @@ class PrintHistoricalTicksLastApp extends IBApiNextApp {
         Number(this.cmdLineArgs.count),
         Number(this.cmdLineArgs.rth === undefined ? 1 : this.cmdLineArgs.rth)
       )
-      .subscribe({
-        next: (ticks) => {
-          // this is called each time a new ticks arrive from TWS (e.g. to show a progress indicator,
-          // or to display results incrementally - we don't, but simply wait for complete)
-          allTicks = ticks;
-        },
-        complete: () => {
-          this.printObject(allTicks);
-          this.stop();
-        },
-        error: (err: IBApiNextError) => {
-          this.error(
-            `getHistoricalTicksBidAsk failed with '${err.error.message}'`
-          );
-        },
+    )
+      .then((ticks) => {
+        this.printObject(ticks);
+        this.stop();
+      })
+      .catch((err: IBApiNextError) => {
+        this.error(
+          `getHistoricalTicksBidAsk failed with '${err.error.message}'`
+        );
       });
   }
 

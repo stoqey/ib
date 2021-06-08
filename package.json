@@ -24,7 +24,7 @@
     "tsc": "./node_modules/.bin/tsc"
   },
   "engines": {
-    "node": ">=14.17.0"
+    "node": ">=4.2.0"
   },
   "repository": {
     "type": "git",
@@ -92,6 +92,6 @@
     "dotenv": "^8.2.0",
     "eventemitter3": "^4.0.7",
     "function-rate-limit": "^1.1.0",
-    "rxjs": "^6.6.3"
+    "rxjs": "^7.1.0"
   }
 }

@@ -33,7 +33,7 @@ or
 There are two APIs on this package, IBApi and IBApiNext.
 
 IBApi replicates the official TWS API as close as possible, making it easy to migrate or port existing code.
-It implements all functions and provies same event callbacks as the official TWS API does.
+It implements all functions and provides same event callbacks as the official TWS API does.
 
 IBApiNext is a **preview** of a new API that is currently in development.
 The goal of IBApiNext is it, to provide same functionality as IBApi, but focus on usability rather than replicating the official interface.
@@ -75,17 +75,17 @@ let positionsCount = 0;
 ib.on(EventName.error, (err: Error, code: ErrorCode, reqId: number) => {
   console.error(`${err.message} - code: ${code} - reqId: ${reqId}`);
 })
-.on(
-  EventName.position,
-  (account: string, contract: Contract, pos: number, avgCost: number) => {
-    console.log(`${account}: ${pos} x ${contract.symbol} @ ${avgCost}`);
-    positionsCount++;
-  }
-)
-.once(EventName.positionEnd, () => {
-  console.log(`Total: ${positionsCount} positions.`);
-  ib.disconnect();
-});
+  .on(
+    EventName.position,
+    (account: string, contract: Contract, pos: number, avgCost: number) => {
+      console.log(`${account}: ${pos} x ${contract.symbol} @ ${avgCost}`);
+      positionsCount++;
+    }
+  )
+  .once(EventName.positionEnd, () => {
+    console.log(`Total: ${positionsCount} positions.`);
+    ib.disconnect();
+  });
 
 // call API functions
 
@@ -97,28 +97,46 @@ ib.reqPositions();
 
 ```js
 ib.once(EventName.nextValidId, (orderId: number) => {
-    const contract: Contract = {
-      symbol: "AMZN",
-      exchange: "SMART",
-      currency: "USD",
-      secType: SecType.STK,
-    };
+  const contract: Contract = {
+    symbol: "AMZN",
+    exchange: "SMART",
+    currency: "USD",
+    secType: SecType.STK,
+  };
 
-    const order: Order = {
-      orderType: OrderType.LMT,
-      action: OrderAction.BUY,
-      lmtPrice: 1,
-      orderId,
-      totalQuantity: 1,
-      account: 'YOUR_ACCOUNT_ID'
-    };
+  const order: Order = {
+    orderType: OrderType.LMT,
+    action: OrderAction.BUY,
+    lmtPrice: 1,
+    orderId,
+    totalQuantity: 1,
+    account: "YOUR_ACCOUNT_ID",
+  };
 
-    ib.placeOrder(orderId, contract, order);
-  });
+  ib.placeOrder(orderId, contract, order);
+});
 
 ib.connect();
 ib.reqIds();
 ```
+
+## IBApiNext and RxJS
+
+While IBApi uses a request function / event callback design where subscriptions are managed by the user, IBApiNext does use RxJS 7 to manage subscriptions.\
+In general, there are four types of functions on IBApiNext:
+
+- On-shot functions, returning a Promise, such as `IBApiNext.getCurrentTime`. Such functions will send a request to TWS and return the result (or error) on the Promise.
+
+- On-shot functions, returning an Observable, such as `IBApiNext.getContractDetails`. Such functions will send a request to TWS and invoke the `next` callback while collecting results from TWS. After all results have been collected, `complete` callback will be invoked. The `next` callback can be used to show progress information, or display results incrementally, while new ones are still being collected.\
+  If you are not interested on incremental update events, but only on the final result-set, use the RxJS `lastValueFrom()` (example `lastValueFrom(IBApiNext.getContractDetails(contract))`) to convert the Observable into a Promise.
+
+- Functions that collect a set of values first and continue to deliver updates after colleted initially, such as `IBApiNext.getAccountSummary`.
+  Such functions will send a request to TWS and invoke the `next` callback while collecting results from TWS.
+  After all values have been collected, `complete` callback will be invoked. With each update after the initial collection, the `next` callback will be invoked again.\
+  Note that you can convert this to a Promise, using `lastValueFrom()`, however the Promise will resolve after the initial set of values is collected and subscription will be canceled afterwards (you will not receive any updates).
+
+- Endless stream subscriptions, returning an Observable, such `IBApiNext.getMarketData`.
+  Such functions will deliver an endless stream of update events. The `complete` callback will NEVER be invoked (do not try to convert to a Promise - it will never resolve!)
 
 ## IB-Shell / IBApiNext Examples
 
@@ -208,4 +226,3 @@ In addition to that, a little demo / example app would be nice, to demonstrate A
 Any kind of bugfixes are welcome as well.
 
 If you want to contribute, read the [Developer Guide](https://github.com/stoqey/ib/wiki/Developer-Guide) and start coding.
-
