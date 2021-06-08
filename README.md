@@ -132,7 +132,7 @@ In general, there are four types of functions on IBApiNext:
 
 - Functions that collect a set of values first and continue to deliver updates after colleted initially, such as `IBApiNext.getAccountSummary`.
   Such functions will send a request to TWS and invoke the `next` callback while collecting results from TWS.
-  After all values have been collected, `complete` callback will be invoked. With each update after the initial collection, the `next` callback will invoked be invoked again.\
+  After all values have been collected, `complete` callback will be invoked. With each update after the initial collection, the `next` callback will be invoked again.\
   Note that you can convert this to a Promise, using `lastValueFrom()`, however the Promise will resolve after the initial set of values is collected and subscription will be canceled afterwards (you will not receive any updates).
 
 - Endless stream subscriptions, returning an Observable, such `IBApiNext.getMarketData`.
