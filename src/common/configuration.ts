@@ -11,9 +11,6 @@ export interface Configuration {
   default_config_test: string;
   local_config_test: string;
   environment_config_test: string;
-  // Test env config
-  ib_test_port: number;
-  ib_test_host: string;
 
   // package config
   ib_host: string;
@@ -32,7 +29,7 @@ export interface Configuration {
 
 let configuration: Configuration = null;
 
-const envsToInclude = ["ci", "env_config_test"];
+const envsToInclude = ["ci", "env_config_test", "ib_host", "ib_port", "client_version", "max_req_per_second"];
 
 function readJson(readPath: string) {
   try {
@@ -123,7 +120,6 @@ function load() {
   config.ci = config.ci || process.env.CIRCLECI;
 
   const intFields: (keyof Configuration)[] = [
-    "ib_test_port",
     "ib_port",
     "default_client_id",
     "client_version",

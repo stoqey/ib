@@ -8,7 +8,7 @@ jobs:
     environment:
       NODE_ENV: development
     docker:
-      - image: circleci/node:12.18.4
+      - image: circleci/node:14.17.0
     working_directory: ~/repo
     steps:
       - restore_cache:
@@ -65,7 +65,7 @@ jobs:
       - JAVA_PATH=/opt/i4j_jres/1.8.0_152/bin # JRE is bundled starting with TWS 952
       - APP=GATEWAY
     docker:
-      - image: circleci/node:12.18.4
+      - image: circleci/node:14.17.0
     working_directory: ~/repo
     steps:
       - restore_cache:
@@ -98,18 +98,10 @@ jobs:
       # CC_TEST_REPORTER_ID: <insert id>
       NODE_ENV: development
     docker:
-      - image: circleci/node:12.18.4
-      - image: industrialninja/ibg_docker_tws:latest
+      - image: circleci/node:14.17.0
+      - image: industrialninja/ib_gateway:latest
         environment:
           - TZ=America/NewYork
-          # Variables pulled from /IBController/IBControllerGatewayStart.sh
-          - TWS_MAJOR_VRSN=974
-          - IBC_INI=/root/IBController/IBController.ini
-          - IBC_PATH=/opt/IBController
-          - TWS_PATH=/root/Jts
-          - TWS_CONFIG_PATH=/root/Jts
-          - LOG_PATH=/opt/IBController/Logs
-          - JAVA_PATH=/opt/i4j_jres/1.8.0_152/bin # JRE is bundled starting with TWS 952
           - APP=GATEWAY
           - TRADING_MODE=paper
         ports:

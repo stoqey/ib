@@ -1,26 +1,13 @@
 version: "3.1"
 services:
   tws:
-    image: industrialninja/ibg_docker_tws
+    image: industrialninja/ib_gateway:latest
     env_file: .env
     ports:
-      - ${IB_API_PORT:-4001}:4003
-      - ${IBG_VNC_PORT:-5901}:5900
-    volumes:
-      - ./config/ib/IBController.ini:/root/IBController/IBController.ini
-      - ./config/ib/jts.ini:/root/Jts/jts.ini
-
+      - 4004:${IB_PORT:-4002}
     environment:
       - TZ=America/NewYork
-      # Variables pulled from /IBController/IBControllerGatewayStart.sh
-      - TWS_MAJOR_VRSN=974
-      - IBC_INI=/root/IBController/IBController.ini
-      - IBC_PATH=/opt/IBController
-      - TWS_PATH=/root/Jts
-      - TWS_CONFIG_PATH=/root/Jts
-      - LOG_PATH=/opt/IBController/Logs
-      - JAVA_PATH=/opt/i4j_jres/1.8.0_152/bin # JRE is bundled starting with TWS 952
-      - APP=GATEWAY
+
   ib-api:
     container_name: ib-api
     build:
@@ -28,6 +15,9 @@ services:
       dockerfile: ./api.Dockerfile
     links:
       - tws
+    env_file: .env
+    environment:
+      - IB_HOST=tws
     volumes:
       - .:/usr/src/app
       # More info on the node_modules volume at:

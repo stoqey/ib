@@ -4,8 +4,6 @@
   "default_config_test": "default",
   "local_config_test": "default",
   "environment_config_test": "default",
-  "ib_test_port": 4001,
-  "ib_test_host": "localhost",
   "ib_host": "127.0.0.1",
   "ib_port": 4002,
   "default_client_id": 0,

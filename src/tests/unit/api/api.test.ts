@@ -1,12 +1,12 @@
 /**
  * This file implement test code for the public API interfaces.
  */
-import { IBApi, EventName, Contract, ErrorCode } from "../../..";
-import configuration from "../../../core/utils/configuration";
+import { Contract, ErrorCode, EventName, IBApi } from "../../..";
+import configuration from "../../../common/configuration";
 import logger from "../../../common/logger";
 
-const TEST_SERVER_HOST = configuration.ib_test_host;
-const TEST_SERVER_POST = configuration.ib_test_port;
+const TEST_SERVER_HOST = configuration.ib_host;
+const TEST_SERVER_POST = configuration.ib_port;
 
 describe("IBApi Tests", () => {
   jest.setTimeout(30000);
