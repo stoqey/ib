@@ -231,5 +231,74 @@
         "!**/node_modules/**"
       ]
     },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Tool: historical-ticks-mid",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "runtimeArgs": [
+        "--trace-warnings"
+      ],
+      "program": "${workspaceFolder}/dist/tools/historical-ticks-mid.js",
+      "args": [
+        "-conid=3691937",
+        "-exchange=SMART",
+        "-start=20210604 16:00:00",
+        "-count=100"
+      ],
+      "outputCapture": "std",
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Tool: historical-ticks-bid-ask",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "runtimeArgs": [
+        "--trace-warnings"
+      ],
+      "program": "${workspaceFolder}/dist/tools/historical-ticks-bid-ask.js",
+      "args": [
+        "-conid=3691937",
+        "-exchange=SMART",
+        "-start=20210604 16:00:00",
+        "-count=100"
+      ],
+      "outputCapture": "std",
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Tool: historical-ticks-last",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "runtimeArgs": [
+        "--trace-warnings"
+      ],
+      "program": "${workspaceFolder}/dist/tools/historical-ticks-last.js",
+      "args": [
+        "-conid=3691937",
+        "-exchange=SMART",
+        "-start=20210604 16:00:00",
+        "-count=100"
+      ],
+      "outputCapture": "std",
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ]
+    },
   ]
 }
