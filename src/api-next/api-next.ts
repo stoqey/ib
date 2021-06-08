@@ -1,6 +1,15 @@
 import { Observable, Subject } from "rxjs";
 import { map, take } from "rxjs/operators";
-import { Bar, Contract, ContractDetails, ErrorCode, EventName } from "../";
+import {
+  Bar,
+  Contract,
+  ContractDetails,
+  ErrorCode,
+  EventName,
+  HistoricalTick,
+  HistoricalTickBidAsk,
+  HistoricalTickLast,
+} from "../";
 import LogLevel from "../api/data/enum/log-level";
 import {
   AccountSummaryValue,
@@ -306,7 +315,7 @@ export class IBApiNext {
       )
       .pipe(
         take(1),
-        map((v) => v.all)
+        map((v: { all: any }) => v.all)
       )
       .toPromise();
   }
@@ -334,7 +343,7 @@ export class IBApiNext {
       )
       .pipe(
         take(1),
-        map((v) => v.all)
+        map((v: { all: string[] }) => v.all)
       )
       .toPromise();
   }
@@ -639,7 +648,7 @@ export class IBApiNext {
         [[EventName.pnl, this.onPnL]],
         `${account}:${model}`
       )
-      .pipe(map((v) => v.all));
+      .pipe(map((v: { all: PnL }) => v.all));
   }
 
   /** pnlSingle event handler. */
@@ -695,7 +704,7 @@ export class IBApiNext {
         [[EventName.pnlSingle, this.onPnLSingle]],
         `${account}:${modelCode}:${conId}`
       )
-      .pipe(map((v) => v.all));
+      .pipe(map((v: { all: PnLSingle }) => v.all));
   }
 
   /**
@@ -1241,7 +1250,7 @@ export class IBApiNext {
         [[EventName.historicalData, this.onHistoricalData]],
         undefined
       )
-      .pipe(map((v) => v.all))
+      .pipe(map((v: { all: Bar[] }) => v.all))
       .toPromise();
   }
 
@@ -1344,6 +1353,212 @@ export class IBApiNext {
           contract
         )}:${barSizeSetting}:${whatToShow}:${formatDate}`
       )
-      .pipe(map((v) => v.all));
+      .pipe(map((v: { all: Bar }) => v.all));
+  }
+
+  /** historicalTicks event handler */
+  private readonly onHistoricalTicks = (
+    subscriptions: Map<number, IBApiNextSubscription<HistoricalTick[]>>,
+    reqId: number,
+    ticks: HistoricalTick[],
+    done: boolean
+  ): void => {
+    // get subscription
+
+    const subscription = subscriptions.get(reqId);
+    if (!subscription) {
+      return;
+    }
+
+    // append tick
+
+    let allTicks = subscription.lastAllValue;
+    allTicks = allTicks ? allTicks.concat(ticks) : ticks;
+
+    subscription.next({
+      all: allTicks,
+    });
+
+    if (done) {
+      subscription.complete();
+    }
+  };
+
+  /**
+   * Create a subscription to receive historical mid prices from Time&Sales data of an instrument.
+   * The next callback will be invoked each time a new tick is received from TWS.
+   * The complete callback will be invoked when all required ticks have been
+   * received.
+   *
+   * @param contract [[Contract]] object that is subject of query
+   * @param startDateTime "20170701 12:01:00". Uses TWS timezone specified at login.
+   * @param endDateTime "20170701 13:01:00". In TWS timezone. Exactly one of start time and end time has to be defined.
+   * @param numberOfTicks Number of distinct data points. Max currently 1000 per request.
+   * @param useRTH Data from regular trading hours (1), or all available hours (0)
+   */
+  getHistoricalTicksMid(
+    contract: Contract,
+    startDateTime: string,
+    endDateTime: string,
+    numberOfTicks: number,
+    useRTH: number
+  ): Observable<HistoricalTick[]> {
+    return this.subscriptions
+      .register<HistoricalTick[]>(
+        (reqId) => {
+          this.api.reqHistoricalTicks(
+            reqId,
+            contract,
+            startDateTime,
+            endDateTime,
+            numberOfTicks,
+            "MIDPOINT",
+            useRTH,
+            false
+          );
+        },
+        undefined,
+        [[EventName.historicalTicks, this.onHistoricalTicks]],
+        undefined
+      )
+      .pipe(map((v: { all: HistoricalTick[] }) => v.all));
+  }
+
+  /** historicalTicksBidAsk event handler */
+  private readonly onHistoricalTicksBidAsk = (
+    subscriptions: Map<number, IBApiNextSubscription<HistoricalTickBidAsk[]>>,
+    reqId: number,
+    ticks: HistoricalTickBidAsk[],
+    done: boolean
+  ): void => {
+    // get subscription
+
+    const subscription = subscriptions.get(reqId);
+    if (!subscription) {
+      return;
+    }
+
+    // append tick
+
+    let allTicks = subscription.lastAllValue;
+    allTicks = allTicks ? allTicks.concat(ticks) : ticks;
+
+    subscription.next({
+      all: allTicks,
+    });
+
+    if (done) {
+      subscription.complete();
+    }
+  };
+
+  /**
+   * Create a subscription to receive historical bid and ask prices from Time&Sales data of an instrument.
+   * The next callback will be invoked each time a new tick is received from TWS.
+   * The complete callback will be invoked when all required ticks have been
+   * received.
+   *
+   * @param contract [[Contract]] object that is subject of query
+   * @param startDateTime "20170701 12:01:00". Uses TWS timezone specified at login.
+   * @param endDateTime "20170701 13:01:00". In TWS timezone. Exactly one of start time and end time has to be defined.
+   * @param numberOfTicks Number of distinct data points. Max currently 1000 per request.
+   * @param useRTH Data from regular trading hours (1), or all available hours (0)
+   * @param ignoreSize A filter only used when the source price is Bid_Ask
+   */
+  getHistoricalTicksBidAsk(
+    contract: Contract,
+    startDateTime: string,
+    endDateTime: string,
+    numberOfTicks: number,
+    useRTH: number,
+    ignoreSize: boolean
+  ): Observable<HistoricalTickBidAsk[]> {
+    return this.subscriptions
+      .register<HistoricalTickBidAsk[]>(
+        (reqId) => {
+          this.api.reqHistoricalTicks(
+            reqId,
+            contract,
+            startDateTime,
+            endDateTime,
+            numberOfTicks,
+            "BID_ASK",
+            useRTH,
+            ignoreSize
+          );
+        },
+        undefined,
+        [[EventName.historicalTicksBidAsk, this.onHistoricalTicksBidAsk]],
+        undefined
+      )
+      .pipe(map((v: { all: HistoricalTickBidAsk[] }) => v.all));
+  }
+
+  /** historicalTicksLast event handler */
+  private readonly onHistoricalTicksLast = (
+    subscriptions: Map<number, IBApiNextSubscription<HistoricalTickLast[]>>,
+    reqId: number,
+    ticks: HistoricalTickLast[],
+    done: boolean
+  ): void => {
+    // get subscription
+
+    const subscription = subscriptions.get(reqId);
+    if (!subscription) {
+      return;
+    }
+
+    // append tick
+
+    let allTicks = subscription.lastAllValue;
+    allTicks = allTicks ? allTicks.concat(ticks) : ticks;
+
+    subscription.next({
+      all: allTicks,
+    });
+
+    if (done) {
+      subscription.complete();
+    }
+  };
+
+  /**
+   * Create a subscription to receive historical last trade prices from Time&Sales data of an instrument.
+   * The next callback will be invoked each time a new tick is received from TWS.
+   * The complete callback will be invoked when all required ticks have been
+   * received.
+   *
+   * @param contract [[Contract]] object that is subject of query
+   * @param startDateTime "20170701 12:01:00". Uses TWS timezone specified at login.
+   * @param endDateTime "20170701 13:01:00". In TWS timezone. Exactly one of start time and end time has to be defined.
+   * @param numberOfTicks Number of distinct data points. Max 1000 per request.
+   * @param useRTH Data from regular trading hours (1), or all available hours (0)
+   */
+  getHistoricalTicksLast(
+    contract: Contract,
+    startDateTime: string,
+    endDateTime: string,
+    numberOfTicks: number,
+    useRTH: number
+  ): Observable<HistoricalTickLast[]> {
+    return this.subscriptions
+      .register<HistoricalTickLast[]>(
+        (reqId) => {
+          this.api.reqHistoricalTicks(
+            reqId,
+            contract,
+            startDateTime,
+            endDateTime,
+            numberOfTicks,
+            "TRADES",
+            useRTH,
+            false
+          );
+        },
+        undefined,
+        [[EventName.historicalTicksLast, this.onHistoricalTicksLast]],
+        undefined
+      )
+      .pipe(map((v: { all: HistoricalTickLast[] }) => v.all));
   }
 }

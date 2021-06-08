@@ -2,18 +2,11 @@
  * This file implement test code for the placeOrder function .
  */
 import {
-  ConjunctionConnection,
-  Contract,
-  ErrorCode,
-  EventName,
-  IBApi,
-  OrderAction,
-  OrderType,
-  PriceCondition,
-  SecType,
-  TriggerMethod,
+    ConjunctionConnection, Contract, ErrorCode, EventName, IBApi, OrderAction, OrderType,
+    PriceCondition, SecType, TriggerMethod
 } from "../../../..";
 import OptionType from "../../../../api/data/enum/option-type";
+
 describe("RequestAllOpenOrders", () => {
   jest.setTimeout(20000);
 

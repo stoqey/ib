@@ -1,5 +1,6 @@
 import { EventEmitter } from "eventemitter3";
 
+import { ErrorCode } from "../common/errorCode";
 import { Controller } from "../core/io/controller";
 import { Contract } from "./contract/contract";
 import { ContractDescription } from "./contract/contractDescription";
@@ -15,7 +16,6 @@ import FADataType from "./data/enum/fad-data-type";
 import LogLevel from "./data/enum/log-level";
 import MIN_SERVER_VER from "./data/enum/min-server-version";
 import OptionExerciseAction from "./data/enum/option-exercise-action";
-import { ErrorCode } from "../common/errorCode";
 import { HistogramEntry } from "./historical/histogramEntry";
 import { HistoricalTick } from "./historical/historicalTick";
 import { HistoricalTickBidAsk } from "./historical/historicalTickBidAsk";

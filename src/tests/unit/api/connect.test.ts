@@ -1,6 +1,6 @@
 import { IBApi } from "../../../api/api";
 import { EventName } from "../../../api/data/enum/event-name";
-import configuration from "../../../core/utils/configuration";
+import configuration from "../../../common/configuration";
 import logger from "../../../common/logger";
 
 describe("IBApi Tests", () => {
@@ -12,8 +12,8 @@ describe("IBApi Tests", () => {
   beforeEach(async () => {
     ib = new IBApi({
       clientId: _clientId++,
-      host: configuration.ib_test_host,
-      port: configuration.ib_test_port,
+      host: configuration.ib_host,
+      port: configuration.ib_port,
     });
   });
 

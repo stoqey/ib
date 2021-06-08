@@ -1,8 +1,8 @@
 /**
  * This file implement test code for the public API interfaces.
  */
-import { IBApi, EventName, Contract, ErrorCode, SecType } from "../../..";
-import configuration from "../../../core/utils/configuration";
+import { Contract, ErrorCode, EventName, IBApi, SecType } from "../../..";
+import configuration from "../../../common/configuration";
 import logger from "../../../common/logger";
 
 const TEST_SERVER_HOST = configuration.ib_host;
