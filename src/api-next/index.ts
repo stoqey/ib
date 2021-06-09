@@ -47,6 +47,16 @@ export {
   AccountPositionsUpdate,
 } from "./position/position";
 
+// market depth
+
+export {
+  OrderBookRow,
+  OrderBookRowPosition,
+  OrderBookRows,
+  OrderBook,
+  OrderBookUpdate,
+} from "./market-depth/order-book";
+
 // IBApiNext
 
 export { IBApiNext, IBApiNextCreationOptions } from "./api-next";

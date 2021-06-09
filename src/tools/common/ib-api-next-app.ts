@@ -65,11 +65,21 @@ export class IBApiNextApp {
   connect(reconnectInterval?: number): void {
     // create the IBApiNext object
 
+<<<<<<< HEAD
     const port = this.cmdLineArgs.port as number ?? configuration.ib_port;
     const host = this.cmdLineArgs.host as string ?? configuration.ib_host;
 
     logger.debug(`Logging into server: ${host}:${port}`);
     if (!this.api) {
+=======
+    const port = configuration.ib_port ? configuration.ib_port : this.cmdLineArgs.port !== undefined
+    ? Number(this.cmdLineArgs.port)
+    : 4002;
+    const host = this.cmdLineArgs.host ?? configuration.ib_host;
+
+    if (!this.api) {
+
+>>>>>>> a90bc37... Stage changes
       this.api = new IBApiNext({
         reconnectInterval,
         host,
@@ -109,7 +119,12 @@ export class IBApiNextApp {
       });
     }
 
+    try{
     this.api.connect();
+    }catch(error){
+      logger.error("Connection error", error.message);
+      logger.debug(`IB host: ${host} - IB port: ${port}`)
+    }
   }
 
   /**
