@@ -61,17 +61,13 @@ class PrintContractDetailsApp extends IBApiNextApp {
 
     lastValueFrom(
       this.api.getContractDetails({
-        symbol: this.cmdLineArgs.symbol,
-        conId: this.cmdLineArgs.conid
-          ? Number(this.cmdLineArgs.conid)
-          : undefined,
+        symbol: this.cmdLineArgs.symbol as string,
+        conId: this.cmdLineArgs.conid as number ?? undefined,
         secType: this.cmdLineArgs.sectype as SecType,
-        exchange: this.cmdLineArgs.exchange,
-        currency: this.cmdLineArgs.currency,
-        lastTradeDateOrContractMonth: this.cmdLineArgs.expiry,
-        strike: this.cmdLineArgs.strike
-          ? Number(this.cmdLineArgs.strike)
-          : undefined,
+        exchange: this.cmdLineArgs.exchange as string,
+        currency: this.cmdLineArgs.currency as string,
+        lastTradeDateOrContractMonth: this.cmdLineArgs.expiry as string,
+        strike: this.cmdLineArgs.strike as number ?? undefined,
         right: this.cmdLineArgs.right as OptionType,
       })
     )

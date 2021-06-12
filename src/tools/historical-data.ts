@@ -78,12 +78,12 @@ class PrintPositionsApp extends IBApiNextApp {
     this.api
       .getHistoricalData(
         {
-          conId: Number(this.cmdLineArgs.conid),
-          exchange: this.cmdLineArgs.exchange,
+          conId: this.cmdLineArgs.conid as number,
+          exchange: this.cmdLineArgs.exchange as string,
         },
-        this.cmdLineArgs.endTime,
-        this.cmdLineArgs.duration,
-        this.cmdLineArgs.barSize,
+        this.cmdLineArgs.endTime as string,
+        this.cmdLineArgs.duration as string,
+        this.cmdLineArgs.barSize as string,
         "MIDPOINT",
         0,
         1
