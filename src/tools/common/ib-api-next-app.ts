@@ -68,7 +68,7 @@ export class IBApiNextApp {
     const port = this.cmdLineArgs.port as number ?? configuration.ib_port;
     const host = this.cmdLineArgs.host as string ?? configuration.ib_host;
 
-    logger.debug(`Logging into server: ${host}:${port}`)
+    logger.debug(`Logging into server: ${host}:${port}`);
     if (!this.api) {
       this.api = new IBApiNext({
         reconnectInterval,
