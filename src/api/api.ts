@@ -499,7 +499,7 @@ export class IBApi extends EventEmitter {
    * Use a sequential id starting with the id received at the nextValidId method.
    * If a new order is placed with an order ID less than or equal to the order ID of a previous order an error will occur.
    * @param contract The order's [[Contract]].
-   * @param order The [[Oder]] object.
+   * @param order The [[Order]] object.
    *
    * @see [[reqAllOpenOrders]], [[reqAutoOpenOrders]], [[reqOpenOrders]], [[cancelOrder]], [[reqGlobalCancel]]
    */

@@ -83,13 +83,13 @@ class PrintHistoricalTicksMidApp extends IBApiNextApp {
     lastValueFrom(
       this.api.getHistoricalTicksMid(
         {
-          conId: Number(this.cmdLineArgs.conid),
-          exchange: this.cmdLineArgs.exchange,
+          conId: this.cmdLineArgs.conid as number,
+          exchange: this.cmdLineArgs.exchange as string,
         },
-        this.cmdLineArgs.start,
-        this.cmdLineArgs.end,
-        Number(this.cmdLineArgs.count),
-        Number(this.cmdLineArgs.rth === undefined ? 1 : this.cmdLineArgs.rth)
+        this.cmdLineArgs.start as string,
+        this.cmdLineArgs.end as string,
+        this.cmdLineArgs.count as number,
+        this.cmdLineArgs.rth as number ?? 1
       )
     )
       .then((ticks) => {

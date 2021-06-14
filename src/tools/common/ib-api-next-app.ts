@@ -4,6 +4,7 @@ import { Subscription } from "rxjs";
 import { IBApiNext } from "../../api-next";
 import LogLevel from "../../api/data/enum/log-level";
 import configuration from "../../common/configuration";
+import logger from "../../common/logger";
 
 /**
  * @internal
@@ -58,19 +59,20 @@ export class IBApiNextApp {
   protected error$: Subscription;
 
   /** The command-line arguments. */
-  protected cmdLineArgs: Record<string, string>;
+  protected cmdLineArgs: Record<string, string | number>;
 
   /** Connect to TWS. */
   connect(reconnectInterval?: number): void {
     // create the IBApiNext object
 
+    const port = this.cmdLineArgs.port as number ?? configuration.ib_port;
+    const host = this.cmdLineArgs.host as string ?? configuration.ib_host;
+
+    logger.debug(`Logging into server: ${host}:${port}`);
     if (!this.api) {
-      const port = configuration.ib_port ? configuration.ib_port : this.cmdLineArgs.port !== undefined
-      ? Number(this.cmdLineArgs.port)
-      : 4002;
       this.api = new IBApiNext({
         reconnectInterval,
-        host: this.cmdLineArgs.host ?? configuration.ib_host,
+        host,
         port
       });
       if (this.cmdLineArgs.log) {
@@ -102,6 +104,7 @@ export class IBApiNextApp {
       this.error$ = this.api.errorSubject.subscribe((error) => {
         if (error.reqId === -1) {
           this.error(`${error.error.message}`);
+          logger.error(`Encountered error, IB host: ${configuration.ib_host} Port: ${configuration.ib_port}`);
         }
       });
     }

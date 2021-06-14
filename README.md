@@ -220,7 +220,7 @@ continue to work for a least a half more year, but at some point it will be remo
 
 ## How to contribute
 
-IB does regularly release new API versions, so this library will need permanent maintenance in oder to stay up-to-date with latest TWS features.<br/>
+IB does regularly release new API versions, so this library will need permanent maintenance in order to stay up-to-date with latest TWS features.<br/>
 Also, there is not much testing code yet. Ideally there should be at least one test-case for each public function.<br/>
 In addition to that, a little demo / example app would be nice, to demonstrate API usage (something like a little live-portoflio-viewer app for node.js console?).<br/>
 Any kind of bugfixes are welcome as well.

@@ -6,12 +6,7 @@ import path from "path";
 import { Subscription } from "rxjs";
 
 import { SecType } from "../";
-import {
-  IBApiNextError,
-  IBApiNextTickType,
-  IBApiTickType,
-  MarketDataType,
-} from "../api-next";
+import { IBApiNextError, IBApiNextTickType, IBApiTickType, MarketDataType } from "../api-next";
 import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
@@ -57,13 +52,11 @@ class PrintMarketDataApp extends IBApiNextApp {
     this.subscription$ = this.api
       .getMarketData(
         {
-          conId: this.cmdLineArgs.conid
-            ? Number(this.cmdLineArgs.conid)
-            : undefined,
-          symbol: this.cmdLineArgs.symbol,
+          conId: this.cmdLineArgs.conid as number ?? undefined,
+          symbol: this.cmdLineArgs.symbol as string,
           secType: this.cmdLineArgs.sectype as SecType,
-          exchange: this.cmdLineArgs.exchange,
-          currency: this.cmdLineArgs.currency,
+          exchange: this.cmdLineArgs.exchange as string,
+          currency: this.cmdLineArgs.currency as string,
         },
         "",
         false,

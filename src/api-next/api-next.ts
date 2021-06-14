@@ -4,6 +4,7 @@ import {
   Bar,
   Contract,
   ContractDetails,
+  DepthMktDataDescription,
   ErrorCode,
   EventName,
   HistoricalTick,
@@ -298,7 +299,11 @@ export class IBApiNext {
     subscriptions: Map<number, IBApiNextSubscription<number>>,
     time: number
   ): void => {
-    subscriptions.forEach((sub) => sub.next({ all: time }));
+    subscriptions.forEach((sub) => {
+      sub.next({ all: time });
+      sub.complete();
+    });
+    subscriptions.clear();
   };
 
   /**
@@ -328,6 +333,7 @@ export class IBApiNext {
   ): void => {
     const accounts = accountsList.split(",");
     subscriptions.forEach((sub) => sub.next({ all: accounts }));
+    subscriptions.clear();
   };
 
   /**
@@ -1563,5 +1569,40 @@ export class IBApiNext {
         undefined
       )
       .pipe(map((v: { all: HistoricalTickLast[] }) => v.all));
+  }
+
+  /** mktDepthExchanges event handler */
+  private readonly onMktDepthExchanges = (
+    subscriptions: Map<
+      number,
+      IBApiNextSubscription<DepthMktDataDescription[]>
+    >,
+    depthMktDataDescriptions: DepthMktDataDescription[]
+  ): void => {
+    subscriptions.forEach((sub) => {
+      sub.next({
+        all: depthMktDataDescriptions,
+      });
+      sub.complete();
+    });
+    subscriptions.clear();
+  };
+
+  /**
+   * Get venues for which market data is returned on getMarketDepthL2 (those with market makers).
+   */
+  getMarketDepthExchanges(): Promise<DepthMktDataDescription[]> {
+    return lastValueFrom(
+      this.subscriptions
+        .register<DepthMktDataDescription[]>(
+          () => {
+            this.api.reqMktDepthExchanges();
+          },
+          undefined,
+          [[EventName.mktDepthExchanges, this.onMktDepthExchanges]],
+          undefined
+        )
+        .pipe(map((v: { all: DepthMktDataDescription[] }) => v.all))
+    );
   }
 }

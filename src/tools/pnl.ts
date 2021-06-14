@@ -50,7 +50,7 @@ class PrintPositionsApp extends IBApiNextApp {
     this.connect(this.cmdLineArgs.watch ? 10000 : 0);
 
     this.subscription$ = this.api
-      .getPnL(this.cmdLineArgs.account, this.cmdLineArgs.model)
+      .getPnL(this.cmdLineArgs.account as string, this.cmdLineArgs.model as string)
       .subscribe({
         next: (pnl) => {
           this.printObject(pnl);

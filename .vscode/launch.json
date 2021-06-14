@@ -300,5 +300,25 @@
         "!**/node_modules/**"
       ]
     },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Tool: market-depth-exchanges",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "runtimeArgs": [
+        "--trace-warnings"
+      ],
+      "program": "${workspaceFolder}/dist/tools/market-depth-exchanges.js",
+      "args": [
+        "-port=4002"
+      ],
+      "outputCapture": "std",
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ]
+    },
   ]
 }
