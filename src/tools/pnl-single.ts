@@ -59,9 +59,9 @@ class PrintPositionsApp extends IBApiNextApp {
 
     this.subscription$ = this.api
       .getPnLSingle(
-        this.cmdLineArgs.account,
-        this.cmdLineArgs.model,
-        Number(this.cmdLineArgs.conid)
+        this.cmdLineArgs.account as string,
+        this.cmdLineArgs.model as string,
+        this.cmdLineArgs.conid as number
       )
       .subscribe({
         next: (pnlSingle) => {

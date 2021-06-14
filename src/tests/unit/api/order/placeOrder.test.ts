@@ -15,7 +15,7 @@ describe("RequestAllOpenOrders", () => {
       port: 4002, // use Gateway
     });
 
-    ib.on(EventName.error, (error: Error, code: ErrorCode, reqId: number) => {
+    ib.on(EventName.error, (error: Error, _code: ErrorCode, _reqId: number) => {
       fail(error.message);
     }).once(EventName.nextValidId, (orderId: number) => {
       // buy an Apple call, with a PriceCondition on underlying
@@ -55,7 +55,7 @@ describe("RequestAllOpenOrders", () => {
       // verify result
       let finished = false;
 
-      ib.on(EventName.openOrder, (orderId, contract, order, orderState) => {
+      ib.on(EventName.openOrder, (orderId, _contract, _order, _orderState) => {
         if (orderId === orderId) {
           // done
           ib.disconnect();
