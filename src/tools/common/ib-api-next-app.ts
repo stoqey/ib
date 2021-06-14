@@ -159,14 +159,14 @@ export class IBApiNextApp {
       const pair = arg.split("=");
       const name = pair[0].substr(1);
       if (!optionArguments.find((v) => v[0].split("=")[0] == name)) {
-        console.error("ERROR: Unknown argument -" + pair[0]);
+        logger.error("ERROR: Unknown argument -" + pair[0]);
         process.exit(1);
       }
       this.cmdLineArgs[name] = pair.length > 1 ? pair[1] ?? "1" : "1";
     });
 
     if (this.cmdLineArgs.h || this.cmdLineArgs.help) {
-      console.info(
+      logger.info(
         this.formatHelpText(description, usage, optionArguments, example)
       );
       process.exit(0);
