@@ -101,7 +101,7 @@ export { OrderAction } from "./api/order/enum/order-action";
 export { OrderConditionType } from "./api/order/enum/order-condition-type";
 export { OrderType } from "./api/order/enum/orderType";
 export { TriggerMethod } from "./api/order/enum/trigger-method";
-export { OrderStatus as OderStatus } from "./api/order/enum/order-status";
+export { OrderStatus } from "./api/order/enum/order-status";
 
 // export order types
 

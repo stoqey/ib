@@ -1,11 +1,11 @@
-import { OderStatus } from "../..";
+import { OrderStatus } from "../..";
 
 /**
  * Provides an active order's current state.
  */
 export interface OrderState {
   /** The order's current status. */
-  status?: OderStatus;
+  status?: OrderStatus;
 
   /** The account's current initial margin. */
   initMarginBefore?: number;
