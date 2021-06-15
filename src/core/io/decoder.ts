@@ -26,7 +26,7 @@ import VolumeCondition from "../../api/order/condition/volume-condition";
 import { ConjunctionConnection } from "../../api/order/enum/conjunction-connection";
 import OrderAction from "../../api/order/enum/order-action";
 import { OrderConditionType } from "../../api/order/enum/order-condition-type";
-import OrderStatus from "../../api/order/enum/order-status";
+import { OrderStatus } from "../../api/order/enum/order-status";
 import { OrderType } from "../../api/order/enum/orderType";
 import { TriggerMethod } from "../../api/order/enum/trigger-method";
 import { Execution } from "../../api/order/execution";
