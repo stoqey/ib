@@ -1642,50 +1642,38 @@ export class IBApiNext {
     size: number,
     isSmartDepth: boolean
   ): void => {
-    // Step 1:
-    // Get the subscription that is bound the given ticker id
-
+    // get subscription
     const subscription = subscriptions.get(tickerId);
     if (!subscription) {
-      // No subscription found that is bound to the given id:
-      // subscribes have been unsubscribed in the meanwhile, so simply exist here
       return;
     }
 
-    // Step 2:
-    // Get the cached order-book rows, or allocate a new oder-book if none is existing yet
+    // update cached
 
     const cached = subscription.lastAllValue ?? {
       bids: new Map<OrderBookRowPosition, OrderBookRow>(),
       asks: new Map<OrderBookRowPosition, OrderBookRow>(),
     };
 
-    // Step 3:
-    // Allocate a order-book to store the applied change
-
     const changed = {
       bids: new Map<OrderBookRowPosition, OrderBookRow>(),
       asks: new Map<OrderBookRowPosition, OrderBookRow>(),
     };
 
-    // Step 4:
-    // Select the rows on the correct side (bid or ask)
-
     let cachedRows: Map<OrderBookRowPosition, OrderBookRow> = undefined;
     let changedRows: Map<OrderBookRowPosition, OrderBookRow> = undefined;
 
     if (side == 0) {
-      // ask side, cast to make it mutable
+      // ask side
       cachedRows = <Map<OrderBookRowPosition, OrderBookRow>>cached.asks;
       changedRows = <Map<OrderBookRowPosition, OrderBookRow>>changed.asks;
     } else if (side == 1) {
-      // bid side, cast to make it mutable
+      // bid side
       cachedRows = <Map<OrderBookRowPosition, OrderBookRow>>cached.bids;
       changedRows = <Map<OrderBookRowPosition, OrderBookRow>>changed.bids;
     }
 
     if (cachedRows === undefined || changedRows === undefined) {
-      // side is neither 0 nor 1, should never happen.. but who knows
       this.logger.error(
         LOG_TAG,
         `onUpdateMktDepthL2: unknown side value ${side} received from TWS`
@@ -1693,16 +1681,12 @@ export class IBApiNext {
       return;
     }
 
-    // Step 3
-    // Update the row
-
     switch (operation) {
       case 0:
       case 1:
-        // It's an insert or update
+        // it's an insert or update
         const isUpdate = cachedRows.has(position);
 
-        // set on cached order-book
         cachedRows.set(position, {
           price: price,
           marketMaker: marketMaker,
@@ -1710,7 +1694,6 @@ export class IBApiNext {
           isSmartDepth: isSmartDepth,
         });
 
-        // set on changed order-book
         changedRows.set(position, {
           marketMaker: marketMaker,
           price: price,
@@ -1718,44 +1701,35 @@ export class IBApiNext {
           isSmartDepth: isSmartDepth,
         });
 
-        // notify subscribes
         if (isUpdate) {
           subscription.next({
             all: cached,
-            // it's an insert, changed = added
-            added: changed,
+            changed: changed,
           });
         } else {
           subscription.next({
             all: cached,
-            // it's an update, changed = changed
-            changed: changed,
+            added: changed,
           });
         }
 
         break;
 
       case 2:
-        // It's a delete (delete the existing order at the row identified by 'position')
+        // it's a delete
         const deletedRow = cachedRows.get(position);
 
-        // delete on cached order-book
         cachedRows.delete(position);
-
-        // add to changed order-book
         changedRows.set(position, deletedRow);
 
-        // notify subscribes
         subscription.next({
           all: cached,
-          // it's a delete, changed = removed
           removed: changed,
         });
 
         break;
 
       default:
-        // should never happen.. but who knows
         this.logger.error(
           LOG_TAG,
           `onUpdateMktDepthL2: unknown operation value ${operation} received from TWS`
@@ -1784,18 +1758,7 @@ export class IBApiNext {
     isSmartDepth: boolean,
     mktDepthOptions?: TagValue[]
   ): Observable<OrderBookUpdate> {
-    // Step 1:
-    // Register a subscription on subscriptions registry.
-    // Note that the this.subscriptions.register() function returns a ItemListUpdate<T>.
-    // We use T=OrderBook, resulting a Observable<OrderBookUpdate> as return type (OrderBookUpdate as a ItemListUpdate<OrderBook>).
-
     return this.subscriptions.register<OrderBook>(
-      // Step 2:
-      // Implement the TWS request callback.
-      // It will be called when request to TWS shall be send.
-      // This is the case when the first subscriber subscribes on the returned Observable,
-      // or after a re-connect on the underlying network connection.
-
       (reqId) => {
         this.api.reqMktDepth(
           reqId,
@@ -1805,38 +1768,13 @@ export class IBApiNext {
           mktDepthOptions
         );
       },
-
-      // Step 3:
-      // Implement the cancel callback.
-      // It will be called when request to TWS shall be canceled.
-      // This is the case when the last subscriber on the Observable has
-      // has unsubscribed (no more subscriber means no more need for the TWS request = cancel it).
-
       (reqId) => {
         this.api.cancelMktDepth(reqId, isSmartDepth);
       },
-
-      // Step 4:
-      // Map the callbacks.
-      // When a callback of this type arrives, IBApiNext will invoke the mapped function with the
-      // list of currently active subscriptions as first argument. We have two callbacks we need to handle.
-
       [
         [EventName.updateMktDepth, this.onUpdateMktDepth],
         [EventName.updateMktDepthL2, this.onUpdateMktDepthL2],
       ],
-
-      // Step 5:
-      // Format a subscription instance id.
-      // When subscription instance is not undefined, it is an id that uniquely identifies
-      // the subscription instance. This is used to avoid creation of multiple subscriptions,
-      // that will end up on same TWS request (i.e. request L2 of same contract, multiple times).
-      // In this case, the existing subscription instance will be re-used instead of creating an new one.
-      // As a general rule: don't use instanceId when there is no reqId/tickerId or when you want to return a
-      // one-shot result. Use it everywhere else.
-      // We simply format a string from all function arguments, so next call using same arguments
-      // will match on instance id and IBApiNext will recycle the existing subscription, instead of creating a new one.
-
       `${JSON.stringify(
         contract
       )}:${numRows}:${isSmartDepth}:${mktDepthOptions}`

@@ -1,7 +1,7 @@
 /**
  * This file implements tests for the [[IBApiNext.getMarketDepthExchanges]] function.
  */
-import { IBApi, IBApiNext, IBApiNextError } from "../../..";
+import { EventName, IBApi, IBApiNext, IBApiNextError } from "../../..";
 
 describe("RxJS Wrapper: getMarketDepthL2()", () => {
   test("Insert rows", (done) => {
@@ -10,37 +10,102 @@ describe("RxJS Wrapper: getMarketDepthL2()", () => {
     const apiNext = new IBApiNext();
     const api = (apiNext as unknown as Record<string, unknown>).api as IBApi;
 
-    // Emit a EventName.updateMktDepth event, adding new rows to both, bid and ask side
-    // and verify RxJS result.
+    let eventCount = 0;
 
     apiNext
       .getMarketDepth({}, 100, false)
       // eslint-disable-next-line rxjs/no-ignored-subscription
       .subscribe({
         next: (update) => {
-          // TODO:
-          // verify update.all is the full order book
-          // verify update.added has the emitted change
-          // call done() after done
+          switch (eventCount) {
+            case 0:
+              expect(update.all.asks.size).toEqual(1);
+              expect(update.all.asks.get(0).price).toEqual(1);
+              expect(update.all.asks.get(0).size).toEqual(2);
+              break;
+            case 1:
+              expect(update.all.asks.size).toEqual(1);
+              expect(update.all.asks.get(0).price).toEqual(1);
+              expect(update.all.asks.get(0).size).toEqual(2);
+              expect(update.all.bids.size).toEqual(1);
+              expect(update.all.bids.get(0).price).toEqual(11);
+              expect(update.all.bids.get(0).size).toEqual(12);
+              break;
+            case 2:
+              expect(update.all.asks.size).toEqual(2);
+              expect(update.all.asks.get(0).price).toEqual(1);
+              expect(update.all.asks.get(0).size).toEqual(2);
+              expect(update.all.asks.get(1).price).toEqual(21);
+              expect(update.all.asks.get(1).size).toEqual(22);
+              expect(update.all.bids.size).toEqual(1);
+              expect(update.all.bids.get(0).price).toEqual(11);
+              expect(update.all.bids.get(0).size).toEqual(12);
+              break;
+            case 3:
+              expect(update.all.asks.size).toEqual(2);
+              expect(update.all.asks.get(0).price).toEqual(1);
+              expect(update.all.asks.get(0).size).toEqual(2);
+              expect(update.all.asks.get(1).price).toEqual(21);
+              expect(update.all.asks.get(1).size).toEqual(22);
+              expect(update.all.bids.size).toEqual(2);
+              expect(update.all.bids.get(0).price).toEqual(11);
+              expect(update.all.bids.get(0).size).toEqual(12);
+              expect(update.all.bids.get(1).price).toEqual(31);
+              expect(update.all.bids.get(1).size).toEqual(32);
+              done();
+              break;
+            default:
+              fail();
+          }
         },
         error: (error: IBApiNextError) => {
           fail(error.error.message);
         },
       });
 
-    // TODO emit insert events
+    api.emit(
+      EventName.updateMktDepth,
+      1 /* ticker id */,
+      0 /* position */,
+      0 /* insert */,
+      0 /* ask */,
+      1 /* price */,
+      2 /* size */
+    );
+    eventCount++;
 
-    // insert bid on 0
-    //api.emit(EventName.updateMktDepth, ..
+    api.emit(
+      EventName.updateMktDepth,
+      1 /* ticker id */,
+      0 /* position */,
+      0 /* insert */,
+      1 /* bid */,
+      11 /* price */,
+      12 /* size */
+    );
+    eventCount++;
 
-    // insert bid on 1
-    //api.emit(EventName.updateMktDepth, ..
+    api.emit(
+      EventName.updateMktDepth,
+      1 /* ticker id */,
+      1 /* position */,
+      0 /* insert */,
+      0 /* ask */,
+      21 /* price */,
+      22 /* size */
+    );
+    eventCount++;
 
-    // insert ask on 0
-    //api.emit(EventName.updateMktDepth, ..
-
-    // insert ask on 1
-    //api.emit(EventName.updateMktDepth, ..
+    api.emit(
+      EventName.updateMktDepth,
+      1 /* ticker id */,
+      1 /* position */,
+      0 /* insert */,
+      1 /* bid */,
+      31 /* price */,
+      32 /* size */
+    );
+    eventCount++;
   });
 
   test("Update rows", (done) => {
@@ -49,19 +114,44 @@ describe("RxJS Wrapper: getMarketDepthL2()", () => {
     const apiNext = new IBApiNext();
     const api = (apiNext as unknown as Record<string, unknown>).api as IBApi;
 
-    // Emit a EventName.updateMktDepth event, updating rows to both, bid and ask side
-    // and verify RxJS result.
+    let eventCount = 0;
 
     apiNext
       .getMarketDepth({}, 100, false)
       // eslint-disable-next-line rxjs/no-ignored-subscription
       .subscribe({
         next: (update) => {
-          // TODO:
-          // verify update.all is the full order book
-          // verify update.added has the emitted change when added
-          // verify update.change has the emitted change when changed
-          // call done() after done
+          switch (eventCount) {
+            case 0:
+              expect(update.all.asks.size).toEqual(1);
+              expect(update.all.asks.get(0).price).toEqual(1);
+              expect(update.all.asks.get(0).size).toEqual(2);
+              break;
+            case 1:
+              expect(update.all.asks.size).toEqual(1);
+              expect(update.all.asks.get(0).price).toEqual(11);
+              expect(update.all.asks.get(0).size).toEqual(12);
+              break;
+            case 2:
+              expect(update.all.asks.size).toEqual(1);
+              expect(update.all.asks.get(0).price).toEqual(11);
+              expect(update.all.asks.get(0).size).toEqual(12);
+              expect(update.all.bids.size).toEqual(1);
+              expect(update.all.bids.get(0).price).toEqual(1);
+              expect(update.all.bids.get(0).size).toEqual(2);
+              break;
+            case 3:
+              expect(update.all.asks.size).toEqual(1);
+              expect(update.all.asks.get(0).price).toEqual(11);
+              expect(update.all.asks.get(0).size).toEqual(12);
+              expect(update.all.bids.size).toEqual(1);
+              expect(update.all.bids.get(0).price).toEqual(11);
+              expect(update.all.bids.get(0).size).toEqual(12);
+              done();
+              break;
+            default:
+              fail();
+          }
         },
         error: (error: IBApiNextError) => {
           fail(error.error.message);
@@ -70,56 +160,103 @@ describe("RxJS Wrapper: getMarketDepthL2()", () => {
 
     // TODO emit insert events
 
-    // insert bid on 0
-    //api.emit(EventName.updateMktDepth, ..
+    api.emit(
+      EventName.updateMktDepth,
+      1 /* ticker id */,
+      0 /* position */,
+      0 /* insert */,
+      0 /* ask */,
+      1 /* price */,
+      2 /* size */
+    );
+    eventCount++;
 
-    // change bid on 0
-    //api.emit(EventName.updateMktDepth, ..
+    api.emit(
+      EventName.updateMktDepth,
+      1 /* ticker id */,
+      0 /* position */,
+      1 /* update */,
+      0 /* ask */,
+      11 /* price */,
+      12 /* size */
+    );
+    eventCount++;
 
-    // insert ask on 0
-    //api.emit(EventName.updateMktDepth, ..
+    api.emit(
+      EventName.updateMktDepth,
+      1 /* ticker id */,
+      0 /* position */,
+      0 /* insert */,
+      1 /* bid */,
+      1 /* price */,
+      2 /* size */
+    );
+    eventCount++;
 
-    // change ask on 0
-    //api.emit(EventName.updateMktDepth, ..
+    api.emit(
+      EventName.updateMktDepth,
+      1 /* ticker id */,
+      0 /* position */,
+      1 /* update */,
+      1 /* bid */,
+      11 /* price */,
+      12 /* size */
+    );
+    eventCount++;
   });
 
-  test("Update rows", (done) => {
+  test("Delete rows", (done) => {
     // create IBApiNext
 
     const apiNext = new IBApiNext();
     const api = (apiNext as unknown as Record<string, unknown>).api as IBApi;
 
-    // Emit a EventName.updateMktDepth event, deleting rows to both, bid and ask side
-    // and verify RxJS result.
+    let eventCount = 0;
 
     apiNext
       .getMarketDepth({}, 100, false)
       // eslint-disable-next-line rxjs/no-ignored-subscription
       .subscribe({
         next: (update) => {
-          // TODO:
-          // verify update.all is the full order book
-          // verify update.added has the emitted change when added
-          // verify update.removed has the emitted change when deleted
-          // call done() after done
+          switch (eventCount) {
+            case 0:
+              expect(update.all.asks.size).toEqual(1);
+              expect(update.all.asks.get(0).price).toEqual(1);
+              expect(update.all.asks.get(0).size).toEqual(2);
+              break;
+            case 1:
+              expect(update.all.asks.size).toEqual(0);
+              done();
+              break;
+            default:
+              fail();
+          }
         },
         error: (error: IBApiNextError) => {
           fail(error.error.message);
         },
       });
 
-    // TODO emit insert events
+    api.emit(
+      EventName.updateMktDepth,
+      1 /* ticker id */,
+      0 /* position */,
+      0 /* insert */,
+      0 /* ask */,
+      1 /* price */,
+      2 /* size */
+    );
+    eventCount++;
 
-    // insert bid on 0
-    //api.emit(EventName.updateMktDepth, ..
-
-    // deleted bid on 0
-    //api.emit(EventName.updateMktDepth, ..
-
-    // insert ask on 0
-    //api.emit(EventName.updateMktDepth, ..
-
-    // deleted ask on 0
-    //api.emit(EventName.updateMktDepth, ..
+    api.emit(
+      EventName.updateMktDepth,
+      1 /* ticker id */,
+      0 /* position */,
+      2 /* delete */,
+      0 /* ask */,
+      11 /* price */,
+      12 /* size */
+    );
+    eventCount++;
   });
 });
