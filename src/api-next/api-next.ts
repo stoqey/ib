@@ -1,5 +1,5 @@
 import { lastValueFrom, Observable, Subject } from "rxjs";
-import { map, take } from "rxjs/operators";
+import { map } from "rxjs/operators";
 import {
   Bar,
   Contract,
@@ -303,7 +303,6 @@ export class IBApiNext {
       sub.next({ all: time });
       sub.complete();
     });
-    subscriptions.clear();
   };
 
   /**
@@ -317,12 +316,10 @@ export class IBApiNext {
             this.api.reqCurrentTime();
           },
           undefined,
-          [[EventName.currentTime, this.onCurrentTime]]
+          [[EventName.currentTime, this.onCurrentTime]],
+          "reqCurrentTime" // use same instance id each time, to make sure there is only 1 pending request at time
         )
-        .pipe(
-          take(1),
-          map((v: { all: number }) => v.all)
-        )
+        .pipe(map((v: { all: number }) => v.all))
     );
   }
 
@@ -332,8 +329,10 @@ export class IBApiNext {
     accountsList: string
   ): void => {
     const accounts = accountsList.split(",");
-    subscriptions.forEach((sub) => sub.next({ all: accounts }));
-    subscriptions.clear();
+    subscriptions.forEach((sub) => {
+      sub.next({ all: accounts });
+      sub.complete();
+    });
   };
 
   /**
@@ -347,12 +346,10 @@ export class IBApiNext {
             this.api.reqManagedAccts();
           },
           undefined,
-          [[EventName.managedAccounts, this.onManagedAccts]]
+          [[EventName.managedAccounts, this.onManagedAccts]],
+          "getManagedAccounts" // use same instance id each time, to make sure there is only 1 pending request at time
         )
-        .pipe(
-          take(1),
-          map((v: { all: string[] }) => v.all)
-        )
+        .pipe(map((v: { all: string[] }) => v.all))
     );
   }
 
@@ -1585,7 +1582,6 @@ export class IBApiNext {
       });
       sub.complete();
     });
-    subscriptions.clear();
   };
 
   /**
@@ -1600,7 +1596,7 @@ export class IBApiNext {
           },
           undefined,
           [[EventName.mktDepthExchanges, this.onMktDepthExchanges]],
-          undefined
+          "reqMktDepthExchanges" // use same instance id each time, to make sure there is only 1 pending request at time
         )
         .pipe(map((v: { all: DepthMktDataDescription[] }) => v.all))
     );
