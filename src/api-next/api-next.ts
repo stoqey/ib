@@ -1618,8 +1618,12 @@ export class IBApiNext {
     });
   }
 
+  /**
+   *  Ends the subscrition once all openOrders are recieved
+   *  @param subscriptions
+   */
   private readonly onOpenOrderEnd = (subscriptions: Map<number, IBApiNextSubscription<OpenOrder[]>>): void => {
-    logger.info("open order end")
+    logger.debug("Recieved end of Orders")
     subscriptions.forEach((sub) => {
       sub.complete()
     });
@@ -1629,12 +1633,9 @@ export class IBApiNext {
    /**
    * Response to API bind order control message.
    *
-   * @param listener Completion callback.
-   * orderId: permId
-   * apiClientId: API client id.
-   *
-   *
-   * apiOrderId: API order id.
+   * @param orderId: permId
+   * @param apiClientId: API client id.
+   * @param apiOrderId: API order id.
    *
    * @see [[reqOpenOrders]]
    */
@@ -1643,15 +1644,17 @@ export class IBApiNext {
     subscription: Map<number, IBApiNextSubscription<OpenOrder[]>>,
     orderId: number, apiClientId: number, apiOrderId: number
   ): void => {
+    // not sure what it's used for
     logger.error(`missing OrderBound implementation - ${orderId}, ${apiClientId}, ${apiOrderId}`)
   }
+
   /**
    * Requests all current open orders in associated accounts at the current moment.
    * The existing orders will be received via the openOrder and orderStatus events.
    *
    * Open orders are returned once; this function does not initiate a subscription.
+   * Author: Tsopic - proud father of his first rxjs function
    */
-
   getAllOpenOrders(): Promise<OpenOrder[]> {
     return lastValueFrom(this.subscriptions.register<OpenOrder[]>(
       () => {
@@ -1660,7 +1663,7 @@ export class IBApiNext {
       undefined,
       [
         [EventName.openOrder, this.onOpenOrder],
-        [EventName.orderBound, this.onOrderBound],
+        [EventName.orderStatus, this.onOrderBound],
         [EventName.openOrderEnd, this.onOpenOrderEnd]
       ]
     ).pipe(map((v: { all: OpenOrder[] }) => v.all)));

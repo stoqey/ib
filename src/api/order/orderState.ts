@@ -1,9 +1,11 @@
+import OrderStatus from "./enum/order-status";
+
 /**
  * Provides an active order's current state.
  */
 export interface OrderState {
   /** The order's current status. */
-  status?: string;
+  status?: OrderStatus;
 
   /** The account's current initial margin. */
   initMarginBefore?: string;

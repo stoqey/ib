@@ -26,7 +26,10 @@
  * ````
  */
 
+import { IBApiNextTickType } from "./api-next";
 import { IBApi } from "./api/api";
+// export realtime market-data types
+import { TickType as IBApiTickType } from "./api/market/tickType";
 
 // export the IB Api class and function argument types
 
@@ -76,9 +79,6 @@ export { HistoricalTick } from "./api/historical/historicalTick";
 export { HistoricalTickBidAsk } from "./api/historical/historicalTickBidAsk";
 export { HistoricalTickLast } from "./api/historical/historicalTickLast";
 
-// export realtime market-data types
-
-import { TickType as IBApiTickType } from "./api/market/tickType";
 export { TickByTickDataType } from "./api/market/tickByTickDataType";
 export { ScannerSubscription } from "./api/market/scannerSubscription";
 
@@ -100,6 +100,7 @@ export { ConjunctionConnection } from "./api/order/enum/conjunction-connection";
 export { OrderAction } from "./api/order/enum/order-action";
 export { OrderConditionType } from "./api/order/enum/order-condition-type";
 export { OrderType } from "./api/order/enum/orderType";
+export { OrderStatus } from "./api/order/enum/order-status"
 export { TriggerMethod } from "./api/order/enum/trigger-method";
 
 // export order types
@@ -128,6 +129,5 @@ export default IBApi;
 
 export * from "./api-next";
 
-import { IBApiNextTickType } from "./api-next";
 /** Combination of IBApi and IBApiNext market data tick types. */
 export type TickType = IBApiTickType | IBApiNextTickType;
