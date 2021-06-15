@@ -1,10 +1,5 @@
 import { lastValueFrom, Observable, Subject } from "rxjs";
-<<<<<<< HEAD
 import { map } from "rxjs/operators";
-=======
-import { map, take } from "rxjs/operators";
-
->>>>>>> a90bc37... Stage changes
 import {
   Bar,
   Contract,

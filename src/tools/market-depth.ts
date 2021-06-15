@@ -59,16 +59,14 @@ class PrintMarketDepthExchangesApp extends IBApiNextApp {
     this.subscription$ = this.api
       .getMarketDepth(
         {
-          conId: this.cmdLineArgs.conid
-            ? Number(this.cmdLineArgs.conid)
-            : undefined,
-          exchange: this.cmdLineArgs.exchange,
+          conId: this.cmdLineArgs.conid as number,
+          exchange: this.cmdLineArgs.exchange as string,
         },
         this.cmdLineArgs.rows !== undefined
-          ? Number(this.cmdLineArgs.rows)
+          ? (this.cmdLineArgs.rows as number)
           : 100,
         this.cmdLineArgs.smart !== undefined
-          ? Number(this.cmdLineArgs.smart) == 1
+          ? this.cmdLineArgs.smart === "1"
           : true
       )
       .subscribe({

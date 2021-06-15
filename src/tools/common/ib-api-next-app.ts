@@ -64,26 +64,15 @@ export class IBApiNextApp {
   /** Connect to TWS. */
   connect(reconnectInterval?: number): void {
     // create the IBApiNext object
-
-<<<<<<< HEAD
-    const port = this.cmdLineArgs.port as number ?? configuration.ib_port;
-    const host = this.cmdLineArgs.host as string ?? configuration.ib_host;
+    const port = (this.cmdLineArgs.port as number) ?? configuration.ib_port;
+    const host = (this.cmdLineArgs.host as string) ?? configuration.ib_host;
 
     logger.debug(`Logging into server: ${host}:${port}`);
     if (!this.api) {
-=======
-    const port = configuration.ib_port ? configuration.ib_port : this.cmdLineArgs.port !== undefined
-    ? Number(this.cmdLineArgs.port)
-    : 4002;
-    const host = this.cmdLineArgs.host ?? configuration.ib_host;
-
-    if (!this.api) {
-
->>>>>>> a90bc37... Stage changes
       this.api = new IBApiNext({
         reconnectInterval,
         host,
-        port
+        port,
       });
       if (this.cmdLineArgs.log) {
         switch (this.cmdLineArgs.log) {
@@ -114,16 +103,18 @@ export class IBApiNextApp {
       this.error$ = this.api.errorSubject.subscribe((error) => {
         if (error.reqId === -1) {
           this.error(`${error.error.message}`);
-          logger.error(`Encountered error, IB host: ${configuration.ib_host} Port: ${configuration.ib_port}`);
+          logger.error(
+            `Encountered error, IB host: ${configuration.ib_host} Port: ${configuration.ib_port}`
+          );
         }
       });
     }
 
-    try{
-    this.api.connect();
-    }catch(error){
+    try {
+      this.api.connect();
+    } catch (error) {
       logger.error("Connection error", error.message);
-      logger.debug(`IB host: ${host} - IB port: ${port}`)
+      logger.debug(`IB host: ${host} - IB port: ${port}`);
     }
   }
 
