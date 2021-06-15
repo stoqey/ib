@@ -25,7 +25,7 @@ const OPTION_ARGUMENTS: [string, string][] = [
   ],
 ];
 const EXAMPLE_TEXT =
-  "market-depth-depth.js -conid=385666824 -exchange=NYSELIFFE -rows=200 -smart=0 -port=4002";
+  "market-depth.js -conid=385666824 -exchange=NYSELIFFE -rows=200 -smart=0 -port=4002";
 
 //////////////////////////////////////////////////////////////////////////////
 // The App code                                                             //
