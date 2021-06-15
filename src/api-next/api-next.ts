@@ -1651,7 +1651,7 @@ export class IBApiNext {
    *
    * Open orders are returned once; this function does not initiate a subscription.
    */
-  *
+
   getAllOpenOrders(): Promise<OpenOrder[]> {
     return lastValueFrom(this.subscriptions.register<OpenOrder[]>(
       () => {
