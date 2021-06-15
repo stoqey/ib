@@ -39,8 +39,8 @@ import { OrderStatus } from "../../api/order/enum/order-status";
 /**
  * @internal
  *
- * Verify if the value if a valid OptionType.
- * Returns the value if valid, undefined otherwise.
+ * Verify if the value is a valid OptionType.
+ * Returns the value is valid, undefined otherwise.
  */
 function validateOptionType(v: OptionType): OptionType | undefined {
   return v in OptionType ? v : undefined;
