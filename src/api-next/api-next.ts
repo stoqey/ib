@@ -10,6 +10,7 @@ import {
   HistoricalTick,
   HistoricalTickBidAsk,
   HistoricalTickLast,
+  Order,
 } from "../";
 import LogLevel from "../api/data/enum/log-level";
 import {
@@ -1600,5 +1601,51 @@ export class IBApiNext {
         )
         .pipe(map((v: { all: DepthMktDataDescription[] }) => v.all))
     );
+  }
+
+  /** nextValidId event handler */
+  private readonly onNextValidId = (
+    subscriptions: Map<number, IBApiNextSubscription<number>>,
+    orderId: number
+  ): void => {
+    subscriptions.forEach((sub) => {
+      sub.next({
+        all: orderId,
+      });
+      sub.complete();
+    });
+  };
+
+  /**
+   * Requests the next valid order ID at the current moment.
+   */
+  getNextValidOrderId(): Promise<number> {
+    return lastValueFrom(
+      this.subscriptions
+        .register<number>(
+          () => {
+            this.api.reqIds();
+          },
+          undefined,
+          [[EventName.nextValidId, this.onNextValidId]],
+          "getNextUnusedOrderId" // use same instance id each time, to make sure there is only 1 pending request at time
+        )
+        .pipe(map((v: { all: number }) => v.all))
+    );
+  }
+
+  /**
+   * Places or modifies an order.
+   *
+   * @param id The order's unique identifier.
+   * Use a sequential id starting with the id received from the getNextValidOrderId() method.
+   * If a new order is placed with an order ID less than or equal to the order ID of a previous order an error will occur.
+   * @param contract The order's [[Contract]].
+   * @param order The [[Order]] object.
+   *
+   * @see [[reqAllOpenOrders]], [[reqAutoOpenOrders]], [[reqOpenOrders]], [[cancelOrder]], [[reqGlobalCancel]]
+   */
+  placeOrder(id: number, contract: Contract, order: Order): void {
+    this.api.placeOrder(id, contract, order);
   }
 }

@@ -320,5 +320,25 @@
         "!**/node_modules/**"
       ]
     },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Tool: next-unused-order-id",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "runtimeArgs": [
+        "--trace-warnings"
+      ],
+      "program": "${workspaceFolder}/dist/tools/next-unused-order-id.js",
+      "args": [
+        "-port=4002"
+      ],
+      "outputCapture": "std",
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ]
+    },
   ]
 }
