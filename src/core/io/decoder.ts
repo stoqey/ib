@@ -35,6 +35,17 @@ import { OrderState } from "../../api/order/orderState";
 import { CommissionReport } from "../../api/report/commissionReport";
 import { ErrorCode } from "../../common/errorCode";
 import { IN_MSG_ID } from "./enum/in-msg-id";
+import { OrderStatus } from "../../api/order/enum/order-status";
+
+/**
+ * @internal
+ *
+ * Verify if the value is a valid OptionType.
+ * Returns the value is valid, undefined otherwise.
+ */
+function validateOptionType(v: OptionType): OptionType | undefined {
+  return v in OptionType ? v : undefined;
+}
 
 /**
  * @internal
@@ -758,7 +769,7 @@ export class Decoder {
     contract.secType = this.readStr() as SecType;
     contract.lastTradeDateOrContractMonth = this.readStr();
     contract.strike = this.readDouble();
-    contract.right = this.readStr() as OptionType;
+    contract.right = validateOptionType(this.readStr() as OptionType);
 
     if (version >= 7) {
       contract.multiplier = this.readInt();
@@ -854,7 +865,7 @@ export class Decoder {
     contract.contract.secType = this.readStr() as SecType;
     this.readLastTradeDate(contract, false);
     contract.contract.strike = this.readDouble();
-    contract.contract.right = this.readStr() as OptionType;
+    contract.contract.right = validateOptionType(this.readStr() as OptionType);
     contract.contract.exchange = this.readStr();
     contract.contract.currency = this.readStr();
     contract.contract.localSymbol = this.readStr();
@@ -958,7 +969,7 @@ export class Decoder {
     contract.secType = this.readStr() as SecType;
     contract.lastTradeDateOrContractMonth = this.readStr();
     contract.strike = this.readDouble();
-    contract.right = this.readStr() as OptionType;
+    contract.right = validateOptionType(this.readStr() as OptionType);
 
     if (version >= 9) {
       contract.multiplier = this.readInt();
@@ -1363,7 +1374,9 @@ export class Decoder {
       contract.contract.secType = this.readStr() as SecType;
       this.readLastTradeDate(contract, false);
       contract.contract.strike = this.readDouble();
-      contract.contract.right = this.readStr() as OptionType;
+      contract.contract.right = validateOptionType(
+        this.readStr() as OptionType
+      );
       contract.contract.exchange = this.readStr();
       contract.contract.currency = this.readStr();
       contract.contract.localSymbol = this.readStr();
@@ -1688,7 +1701,7 @@ export class Decoder {
     contract.secType = this.readStr() as SecType;
     contract.lastTradeDateOrContractMonth = this.readStr();
     contract.strike = this.readDouble();
-    contract.right = this.readStr() as OptionType;
+    contract.right = validateOptionType(this.readStr() as OptionType);
     contract.multiplier = this.readInt();
     contract.exchange = this.readStr();
     contract.currency = this.readStr();
@@ -1779,7 +1792,7 @@ export class Decoder {
     contract.secType = this.readStr() as SecType;
     contract.lastTradeDateOrContractMonth = this.readStr();
     contract.strike = this.readDouble();
-    contract.right = this.readStr() as OptionType;
+    contract.right = validateOptionType(this.readStr() as OptionType);
     contract.multiplier = this.readInt();
     contract.exchange = this.readStr();
     contract.currency = this.readStr();
@@ -2186,7 +2199,7 @@ export class Decoder {
     const ticks: HistoricalTick[] = new Array(tickCount);
     for (let i = 0; i < tickCount; i++) {
       const time = this.readInt();
-      this.readInt();//for consistency
+      this.readInt(); //for consistency
       const price = this.readDouble();
       const size = this.readInt();
       ticks[i] = {
@@ -2355,7 +2368,7 @@ export class Decoder {
     contract.secType = this.readStr() as SecType;
     contract.lastTradeDateOrContractMonth = this.readStr();
     contract.strike = this.readDouble();
-    contract.right = this.readStr() as OptionType;
+    contract.right = validateOptionType(this.readStr() as OptionType);
     if (this.serverVersion >= 32) {
       contract.multiplier = this.readDouble();
     }
@@ -2776,7 +2789,7 @@ export class Decoder {
     contract.secType = this.readStr() as SecType;
     contract.lastTradeDateOrContractMonth = this.readStr();
     contract.strike = this.readDouble();
-    contract.right = this.readStr() as OptionType;
+    contract.right = validateOptionType(this.readStr() as OptionType);
 
     if (version >= 32) {
       contract.multiplier = this.readInt();
@@ -2976,7 +2989,9 @@ class OrderDecoder {
     this.contract.secType = this.decoder.readStr() as SecType;
     this.contract.lastTradeDateOrContractMonth = this.decoder.readStr();
     this.contract.strike = this.decoder.readDouble();
-    this.contract.right = this.decoder.readStr() as OptionType;
+    this.contract.right = validateOptionType(
+      this.decoder.readStr() as OptionType
+    );
     if (this.version >= 32) {
       this.contract.multiplier = +this.decoder.readStr();
     }
@@ -3469,17 +3484,17 @@ class OrderDecoder {
       this.readOrderStatus();
 
       if (this.serverVersion >= MIN_SERVER_VER.WHAT_IF_EXT_FIELDS) {
-        this.orderState.initMarginBefore = this.decoder.readStr();
-        this.orderState.maintMarginBefore = this.decoder.readStr();
-        this.orderState.equityWithLoanBefore = this.decoder.readStr();
-        this.orderState.initMarginChange = this.decoder.readStr();
-        this.orderState.maintMarginChange = this.decoder.readStr();
-        this.orderState.equityWithLoanChange = this.decoder.readStr();
+        this.orderState.initMarginBefore = this.decoder.readDoubleMax();
+        this.orderState.maintMarginBefore = this.decoder.readDoubleMax();
+        this.orderState.equityWithLoanBefore = this.decoder.readDoubleMax();
+        this.orderState.initMarginChange = this.decoder.readDoubleMax();
+        this.orderState.maintMarginChange = this.decoder.readDoubleMax();
+        this.orderState.equityWithLoanChange = this.decoder.readDoubleMax();
       }
 
-      this.orderState.initMarginAfter = this.decoder.readStr();
-      this.orderState.maintMarginAfter = this.decoder.readStr();
-      this.orderState.equityWithLoanAfter = this.decoder.readStr();
+      this.orderState.initMarginAfter = this.decoder.readDoubleMax();
+      this.orderState.maintMarginAfter = this.decoder.readDoubleMax();
+      this.orderState.equityWithLoanAfter = this.decoder.readDoubleMax();
       this.orderState.commission = this.decoder.readDoubleMax();
       this.orderState.minCommission = this.decoder.readDoubleMax();
       this.orderState.maxCommission = this.decoder.readDoubleMax();

@@ -1,4 +1,4 @@
-import OrderStatus from "./enum/order-status";
+import { OrderStatus } from "../..";
 
 /**
  * Provides an active order's current state.
@@ -8,31 +8,31 @@ export interface OrderState {
   status?: OrderStatus;
 
   /** The account's current initial margin. */
-  initMarginBefore?: string;
+  initMarginBefore?: number;
 
   /** The account's current maintenance margin. */
-  maintMarginBefore?: string;
+  maintMarginBefore?: number;
 
   /** The account's current equity with loan. */
-  equityWithLoanBefore?: string;
+  equityWithLoanBefore?: number;
 
   /** The change of the account's initial margin. */
-  initMarginChange?: string;
+  initMarginChange?: number;
 
   /** The change of the account's maintenance margin. */
-  maintMarginChange?: string;
+  maintMarginChange?: number;
 
   /** The change of the account's equity with loan. */
-  equityWithLoanChange?: string;
+  equityWithLoanChange?: number;
 
   /** The order's impact on the account's initial margin. */
-  initMarginAfter?: string;
+  initMarginAfter?: number;
 
   /** The order's impact on the account's maintenance margin. */
-  maintMarginAfter?: string;
+  maintMarginAfter?: number;
 
   /** Shows the impact the order would have on the account's equity with loan. */
-  equityWithLoanAfter?: string;
+  equityWithLoanAfter?: number;
 
   /** The order's generated commission. */
   commission?: number;

@@ -1,17 +1,17 @@
 /**
  * Order status.
  */
-export enum OrderStatus{
-    API_PENDING = "ApiPending",
-    API_CANCELLED = "ApiCancelled",
-    PRE_SUBMITTED = "PreSubmitted",
-    PENDING_CANCEL = "PendingCancel",
-    CANCELLED = "Cancelled",
-    SUBMITTED = "Submitted",
-    FILLED = "Filled",
-    INACTIVE = "Inactive",
-    PENDING_SUBMIT = "PendingSubmit",
-    UNKNOWN = "Unknown"
+export enum OrderStatus {
+  ApiPending = "ApiPending",
+  ApiCancelled = "ApiCancelled",
+  PreSubmitted = "PreSubmitted",
+  PendingCancel = "PendingCancel",
+  Cancelled = "Cancelled",
+  Submitted = "Submitted",
+  Filled = "Filled",
+  Inactive = "Inactive",
+  PendingSubmit = "PendingSubmit",
+  Unknown = "Unknown",
 }
 
 export default OrderStatus;
