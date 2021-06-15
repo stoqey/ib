@@ -1588,8 +1588,7 @@ export class IBApiNext {
         )
         .pipe(map((v: { all: DepthMktDataDescription[] }) => v.all))
     );
-  };
-
+  }
   /**
    * Feeds in currently open orders.
    *
@@ -1611,13 +1610,19 @@ export class IBApiNext {
       order: Order,
       orderState: OrderState): void => {
     subscriptions.forEach((sub) => {
+      const allOrders = sub.lastAllValue ?? [];
+      allOrders.push({ orderId, contract, order, orderState })
       sub.next({
-        all: [{ orderId, contract, order, orderState }],
+        all: allOrders,
       });
-      sub.complete();
     });
-    subscriptions.clear();
+  }
 
+  private readonly onOpenOrderEnd = (subscriptions: Map<number, IBApiNextSubscription<OpenOrder[]>>): void => {
+    logger.info("open order end")
+    subscriptions.forEach((sub) => {
+      sub.complete()
+    });
   }
 
 
@@ -1626,8 +1631,8 @@ export class IBApiNext {
    *
    * @param listener Completion callback.
    * orderId: permId
-   *
    * apiClientId: API client id.
+   *
    *
    * apiOrderId: API order id.
    *
@@ -1635,34 +1640,29 @@ export class IBApiNext {
    */
   private readonly onOrderBound = (
     // TODO finish implementation
-    subscription: Map<number, IBApiNextSubscription<Order[]>>,
+    subscription: Map<number, IBApiNextSubscription<OpenOrder[]>>,
     orderId: number, apiClientId: number, apiOrderId: number
   ): void => {
     logger.error(`missing OrderBound implementation - ${orderId}, ${apiClientId}, ${apiOrderId}`)
   }
-
-
   /**
    * Requests all current open orders in associated accounts at the current moment.
    * The existing orders will be received via the openOrder and orderStatus events.
    *
    * Open orders are returned once; this function does not initiate a subscription.
-   *
    */
+  *
   getAllOpenOrders(): Promise<OpenOrder[]> {
-    return lastValueFrom(
-      this.subscriptions.register<OpenOrder[]>(
-        () => {
-          this.api.reqAllOpenOrders();
-        },
-        undefined,
-        [
-          [EventName.openOrder, this.onOpenOrder],
-          [EventName.orderBound, this.onOrderBound]
-        ]
-      ).pipe(map(value => value.all))
-    );
+    return lastValueFrom(this.subscriptions.register<OpenOrder[]>(
+      () => {
+        this.api.reqAllOpenOrders();
+      },
+      undefined,
+      [
+        [EventName.openOrder, this.onOpenOrder],
+        [EventName.orderBound, this.onOrderBound],
+        [EventName.openOrderEnd, this.onOpenOrderEnd]
+      ]
+    ).pipe(map((v: { all: OpenOrder[] }) => v.all)));
   }
-
-
 }
