@@ -285,7 +285,7 @@ export class IBApi extends EventEmitter {
    *
    * @param tickerId The request's identifier.
    *
-   * @see [[reqHistoricalData]]
+   * @see [[reqHistogramData]]
    */
   cancelHistogramData(tickerId: number): IBApi {
     this.controller.schedule(() =>
@@ -2112,7 +2112,7 @@ export declare interface IBApi {
    * The time zone of the bar is the time zone chosen on the TWS login screen.
    * Smallest bar size is 1 second.
    *
-   * @see [[reqHistogramData]]
+   * @see [[reqHistoricalData]]
    */
   on(
     event: EventName.historicalDataUpdate,

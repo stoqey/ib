@@ -1124,6 +1124,62 @@ export class IBApiNext {
     );
   }
 
+  /** headTimestamp event handler.  */
+  private onHeadTimestamp = (
+    subscriptions: Map<number, IBApiNextSubscription<string>>,
+    reqId: number,
+    headTimestamp: string
+  ): void => {
+    // get subscription
+
+    const subscription = subscriptions.get(reqId);
+    if (!subscription) {
+      return;
+    }
+
+    // signal timestamp
+
+    subscription.next({ all: headTimestamp });
+    subscription.complete();
+  };
+
+  /**
+   * Get the timestamp of earliest available historical data for a contract and data type.
+   *
+   * @param reqId An identifier for the request.
+   * @param contract [[Contract]] object for which head timestamp is being requested.
+   * @param whatToShow Type of data for head timestamp - "BID", "ASK", "TRADES", etc
+   * @param useRTH Use regular trading hours only, `true` for yes or `false` for no.
+   * @param formatDate Set to 1 to obtain the bars' time as yyyyMMdd HH:mm:ss, set to 2 to obtain it like system time format in seconds.
+   */
+  getHeadTimestamp(
+    contract: Contract,
+    whatToShow: string,
+    useRTH: boolean,
+    formatDate: number
+  ): Promise<string> {
+    return lastValueFrom(
+      this.subscriptions
+        .register<string>(
+          (reqId) => {
+            this.api.reqHeadTimestamp(
+              reqId,
+              contract,
+              whatToShow,
+              useRTH,
+              formatDate
+            );
+          },
+          (reqId) => {
+            this.api.cancelHeadTimestamp(reqId);
+          },
+          [[EventName.headTimestamp, this.onHeadTimestamp]],
+          `${JSON.stringify(contract)}:${whatToShow}:${useRTH}:${formatDate}`
+        )
+        .pipe(map((v: { all: string }) => v.all))
+    );
+  }
+
   /** historicalData event handler */
   private readonly onHistoricalData = (
     subscriptions: Map<number, IBApiNextSubscription<Bar[]>>,
