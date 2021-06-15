@@ -63,20 +63,6 @@ class PrintAccountSummaryApp extends IBApiNextApp {
       .catch((err: IBApiNextError) => {
         this.error(`getAllOpenOrders failed with '${err.error.message}'`);
       });
-    //     //this.cmdLineArgs.group as string ?? DEFAULT_GROUP,
-    //     //this.cmdLineArgs.tags as string ?? DEFAULT_TAGS
-    //   )
-    //   .subscribe({
-    //     next: (summaries) => {
-    //       this.printObject(summaries);
-    //       if (!this.cmdLineArgs.watch) {
-    //         this.stop();
-    //       }
-    //     },
-    //     error: (err: IBApiNextError) => {
-    //       this.error(`getAccountSummary failed with '${err.error.message}'`);
-    //     },
-    //   });
   }
 
   /**

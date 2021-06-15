@@ -25,6 +25,7 @@ import {
     MarketDataType, MarketDataUpdate, PnL, PnLSingle, Position
 } from "./";
 import { Logger } from "./common/logger";
+import { OpenOrder } from "./order/open-order";
 
 /**
  * @internal
@@ -1604,14 +1605,14 @@ export class IBApiNext {
    * @see [[placeOrder]], [[reqAllOpenOrders]], [[reqAutoOpenOrders]]
    */
   private readonly onOpenOrder = (
-      subscriptions: Map<number, IBApiNextSubscription<Order[]>>,
+      subscriptions: Map<number, IBApiNextSubscription<OpenOrder[]>>,
       orderId: number,
       contract: Contract,
       order: Order,
       orderState: OrderState): void => {
     subscriptions.forEach((sub) => {
       sub.next({
-        all: [order],
+        all: [{ orderId, contract, order, orderState }],
       });
       sub.complete();
     });
@@ -1633,22 +1634,13 @@ export class IBApiNext {
    * @see [[reqOpenOrders]]
    */
   private readonly onOrderBound = (
+    // TODO finish implementation
     subscription: Map<number, IBApiNextSubscription<Order[]>>,
     orderId: number, apiClientId: number, apiOrderId: number
   ): void => {
-    logger.info(`${orderId}, ${apiClientId}, ${apiOrderId}`)
+    logger.error(`missing OrderBound implementation - ${orderId}, ${apiClientId}, ${apiOrderId}`)
   }
 
-    /*on(
-    event: EventName.openOrder,
-    listener: (
-      orderId: number,
-      contract: Contract,
-      order: Order,
-      orderState: OrderState
-    ) => void
-      */
-  //};
 
   /**
    * Requests all current open orders in associated accounts at the current moment.
@@ -1657,9 +1649,9 @@ export class IBApiNext {
    * Open orders are returned once; this function does not initiate a subscription.
    *
    */
-  getAllOpenOrders(): Promise<Order[]> {
+  getAllOpenOrders(): Promise<OpenOrder[]> {
     return lastValueFrom(
-      this.subscriptions.register<Order[]>(
+      this.subscriptions.register<OpenOrder[]>(
         () => {
           this.api.reqAllOpenOrders();
         },
