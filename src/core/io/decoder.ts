@@ -34,6 +34,7 @@ import { Order } from "../../api/order/order";
 import { OrderState } from "../../api/order/orderState";
 import { CommissionReport } from "../../api/report/commissionReport";
 import { IN_MSG_ID } from "./enum/in-msg-id";
+import { OrderStatus } from "../../api/order/enum/order-status";
 
 /**
  * @internal
@@ -2610,7 +2611,7 @@ export class Decoder {
       order.solicited = this.readBool();
     }
 
-    orderState.status = this.readStr();
+    orderState.status = this.readStr() as OrderStatus;
 
     if (this.serverVersion >= 34) {
       order.randomizeSize = this.readBool();
@@ -3482,17 +3483,17 @@ class OrderDecoder {
       this.readOrderStatus();
 
       if (this.serverVersion >= MIN_SERVER_VER.WHAT_IF_EXT_FIELDS) {
-        this.orderState.initMarginBefore = this.decoder.readStr();
-        this.orderState.maintMarginBefore = this.decoder.readStr();
-        this.orderState.equityWithLoanBefore = this.decoder.readStr();
-        this.orderState.initMarginChange = this.decoder.readStr();
-        this.orderState.maintMarginChange = this.decoder.readStr();
-        this.orderState.equityWithLoanChange = this.decoder.readStr();
+        this.orderState.initMarginBefore = this.decoder.readDoubleMax();
+        this.orderState.maintMarginBefore = this.decoder.readDoubleMax();
+        this.orderState.equityWithLoanBefore = this.decoder.readDoubleMax();
+        this.orderState.initMarginChange = this.decoder.readDoubleMax();
+        this.orderState.maintMarginChange = this.decoder.readDoubleMax();
+        this.orderState.equityWithLoanChange = this.decoder.readDoubleMax();
       }
 
-      this.orderState.initMarginAfter = this.decoder.readStr();
-      this.orderState.maintMarginAfter = this.decoder.readStr();
-      this.orderState.equityWithLoanAfter = this.decoder.readStr();
+      this.orderState.initMarginAfter = this.decoder.readDoubleMax();
+      this.orderState.maintMarginAfter = this.decoder.readDoubleMax();
+      this.orderState.equityWithLoanAfter = this.decoder.readDoubleMax();
       this.orderState.commission = this.decoder.readDoubleMax();
       this.orderState.minCommission = this.decoder.readDoubleMax();
       this.orderState.maxCommission = this.decoder.readDoubleMax();
@@ -3502,7 +3503,7 @@ class OrderDecoder {
   }
 
   readOrderStatus(): void {
-    this.orderState.status = this.decoder.readStr();
+    this.orderState.status = this.decoder.readStr() as OrderStatus;
   }
 
   readVolRandomizeFlags(): void {
