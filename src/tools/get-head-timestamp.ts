@@ -54,7 +54,6 @@ class PrintHeadTimestampApp extends IBApiNextApp {
     this.connect(0);
 
     // print next unused order id
-
     this.api
       .getHeadTimestamp(
         {
@@ -82,5 +81,4 @@ class PrintHeadTimestampApp extends IBApiNextApp {
 }
 
 // run the app
-
 new PrintHeadTimestampApp().start();
