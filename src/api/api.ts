@@ -1,4 +1,5 @@
 import { EventEmitter } from "eventemitter3";
+import { DurationUnit } from "..";
 
 import { ErrorCode } from "../common/errorCode";
 import { Controller } from "../core/io/controller";
@@ -812,20 +813,24 @@ export class IBApi extends EventEmitter {
    * @param tickerId An identifier for the request.
    * @param contract [[Contract]] object for which histogram is being requested
    * @param useRTH Use regular trading hours only, `true` for yes or `false` for no.
-   * @param period Period of which data is being requested, e.g. "3 days"
+   * @param period Period of which data is being requested
+   * @param periodUnit Unit of the period of which data is being requested
    */
   reqHistogramData(
     tickerId: number,
     contract: Contract,
     useRTH: boolean,
-    period: string
+    period: number,
+    periodUnit: DurationUnit
   ): IBApi {
+    const periodStr =
+      period + " " + periodUnit.toString().toLowerCase() + "s";
     this.controller.schedule(() =>
       this.controller.encoder.reqHistogramData(
         tickerId,
         contract,
         useRTH,
-        period
+        periodStr
       )
     );
     return this;

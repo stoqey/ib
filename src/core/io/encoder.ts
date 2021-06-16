@@ -2914,8 +2914,8 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       OUT_MSG_ID.REQ_HISTOGRAM_DATA,
       tickerId,
       this.encodeContract(contract),
-      useRTH,
-      timePeriod
+      timePeriod,
+      useRTH ? 1 : 0
     );
   }
 
