@@ -1611,14 +1611,12 @@ export class IBApiNext {
     data: HistogramEntry[]
   ): void => {
     // get the subscription
-
     const sub = subscriptions.get(reqId);
     if (!sub) {
       return;
     }
-
+    
     // deliver data
-
     sub.next({ all: data });
     sub.complete();
   };
