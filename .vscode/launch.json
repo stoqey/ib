@@ -311,7 +311,29 @@
         "--trace-warnings"
       ],
       "program": "${workspaceFolder}/dist/tools/market-depth-exchanges.js",
+      "args": [],
+      "outputCapture": "std",
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Tool: market-depth",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "runtimeArgs": [
+        "--trace-warnings"
+      ],
+      "program": "${workspaceFolder}/dist/tools/market-depth.js",
       "args": [
+        "-conid=385666824",
+        "-exchange=NYSELIFFE",
+        "-rows=200",
+        "-smart=0",
         "-port=4002"
       ],
       "outputCapture": "std",
