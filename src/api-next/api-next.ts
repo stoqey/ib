@@ -1131,14 +1131,12 @@ export class IBApiNext {
     headTimestamp: string
   ): void => {
     // get subscription
-
     const subscription = subscriptions.get(reqId);
     if (!subscription) {
       return;
     }
 
     // signal timestamp
-
     subscription.next({ all: headTimestamp });
     subscription.complete();
   };
