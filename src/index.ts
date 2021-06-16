@@ -75,6 +75,7 @@ export { HistogramEntry } from "./api/historical/histogramEntry";
 export { HistoricalTick } from "./api/historical/historicalTick";
 export { HistoricalTickBidAsk } from "./api/historical/historicalTickBidAsk";
 export { HistoricalTickLast } from "./api/historical/historicalTickLast";
+export { DurationUnit } from "./api/data/enum/duration-unit";
 
 // export realtime market-data types
 
