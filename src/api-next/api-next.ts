@@ -1780,6 +1780,8 @@ export class IBApiNext {
       `${JSON.stringify(
         contract
       )}:${numRows}:${isSmartDepth}:${mktDepthOptions}`
+    );
+  }
 
   /** histogramData event handler */
   private readonly onHistogramData = (
@@ -1792,7 +1794,7 @@ export class IBApiNext {
     if (!sub) {
       return;
     }
-    
+
     // deliver data
     sub.next({ all: data });
     sub.complete();
