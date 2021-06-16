@@ -1658,7 +1658,7 @@ export class IBApiNext {
     );
   }
 
-  /** mktDepthExchanges event handler */
+  /** histogramData event handler */
   private readonly onHistogramData = (
     subscriptions: Map<number, IBApiNextSubscription<HistogramEntry[]>>,
     reqId: number,
