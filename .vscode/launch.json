@@ -320,5 +320,29 @@
         "!**/node_modules/**"
       ]
     },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Tool: histogram-data",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "runtimeArgs": [
+        "--trace-warnings"
+      ],
+      "program": "${workspaceFolder}/dist/tools/histogram-data.js",
+      "args": [
+        "-conid=3691937",
+        "-exchange=SMART",
+        "-period=3",
+        "-periodUnit=DAY",
+        "-port=4002"
+      ],
+      "outputCapture": "std",
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ]
+    },
   ]
 }
