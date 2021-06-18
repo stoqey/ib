@@ -5,8 +5,10 @@ import {
   Contract,
   ContractDetails,
   DepthMktDataDescription,
+  DurationUnit,
   ErrorCode,
   EventName,
+  HistogramEntry,
   HistoricalTick,
   HistoricalTickBidAsk,
   HistoricalTickLast,
@@ -1647,5 +1649,58 @@ export class IBApiNext {
    */
   placeOrder(id: number, contract: Contract, order: Order): void {
     this.api.placeOrder(id, contract, order);
+  }
+
+  /** mktDepthExchanges event handler */
+  private readonly onHistogramData = (
+    subscriptions: Map<number, IBApiNextSubscription<HistogramEntry[]>>,
+    reqId: number,
+    data: HistogramEntry[]
+  ): void => {
+    // get the subscription
+    const sub = subscriptions.get(reqId);
+    if (!sub) {
+      return;
+    }
+    
+    // deliver data
+    sub.next({ all: data });
+    sub.complete();
+  };
+
+  /**
+   * Get data histogram of specified contract.
+   *
+   * @param contract [[Contract]] object for which histogram is being requested
+   * @param useRTH Use regular trading hours only, `true` for yes or `false` for no.
+   * @param duration Period duration of which data is being requested
+   * @param durationUnit Duration unit of which data is being requested
+   */
+  getHistogramData(
+    contract: Contract,
+    useRTH: boolean,
+    duration: number,
+    durationUnit: DurationUnit
+  ): Promise<HistogramEntry[]> {
+    return lastValueFrom(
+      this.subscriptions
+        .register<HistogramEntry[]>(
+          (reqId) => {
+            this.api.reqHistogramData(
+              reqId,
+              contract,
+              useRTH,
+              duration,
+              durationUnit
+            );
+          },
+          (reqId) => {
+            this.api.cancelHistogramData(reqId);
+          },
+          [[EventName.histogramData, this.onHistogramData]],
+          `${JSON.stringify(contract)}:${useRTH}:${duration}:${durationUnit}`
+        )
+        .pipe(map((v: { all: HistogramEntry[] }) => v.all))
+    );
   }
 }
