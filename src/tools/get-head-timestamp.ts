@@ -3,8 +3,8 @@
  */
 
 import path from "path";
-import { OptionType, SecType } from "..";
 
+import { OptionType, SecType } from "../";
 import { IBApiNextError } from "../api-next";
 import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
@@ -34,7 +34,7 @@ const OPTION_ARGUMENTS: [string, string][] = [
   ["right=<P|C>", " The option type. Valid values are P, PUT, C, CALL."],
 ];
 const EXAMPLE_TEXT =
-  "get-head-timestamp.js -symbol=AMZN -sectype=STK -currency=USD -port=4002";
+  "get-head-timestamp.js -symbol=AMZN -sectype=STK -currency=USD -exchange=SMART -conid=3691937 -port=4002";
 
 //////////////////////////////////////////////////////////////////////////////
 // The App code                                                             //
