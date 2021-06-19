@@ -364,6 +364,29 @@
         "!**/node_modules/**"
       ]
     },
-
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Tool: get-head-timestamp",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "runtimeArgs": [
+        "--trace-warnings"
+      ],
+      "program": "${workspaceFolder}/dist/tools/get-head-timestamp.js",
+      "args": [
+        "-symbol=AMZN",
+        "-sectype=STK",
+        "-exchange=SMART",
+        "-conid=3691937",
+        "-port=4002"
+      ],
+      "outputCapture": "std",
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ]
+    }
   ]
 }

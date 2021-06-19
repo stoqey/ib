@@ -1695,8 +1695,8 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       OUT_MSG_ID.REQ_HEAD_TIMESTAMP,
       reqId,
       this.encodeContract(contract),
-      useRTH,
       whatToShow,
+      useRTH ? 1 : 0,
       formatDate
     );
   }
