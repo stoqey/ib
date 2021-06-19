@@ -273,10 +273,8 @@ export class IBApiNext {
   /**
    * Connect to the TWS or IB Gateway.
    *
-   * @param clientId A fixed client id to be used on all connection
-   * attempts. If not specified, the first connection will use the
-   * default client id (0) and increment it with each re-connection
-   * attempt.
+   * @param clientId The client id oo the TWS connection.
+   * If not specified, 0 will be used.
    *
    * @sse [[connectionState]] for observing the connection state.
    */
@@ -1664,12 +1662,16 @@ export class IBApiNext {
     subscriptions: Map<number, IBApiNextSubscription<number>>,
     orderId: number
   ): void => {
-    subscriptions.forEach((sub) => {
-      sub.next({
+    // this is special to other one-shot callbacks:
+    // we only want to complete one subscription at a time,
+    // to avoid multiple getNextValidOrderId calls to return same value
+    const next = subscriptions.entries().next();
+    if (next && !next.done && next.value[1]) {
+      next.value[1].next({
         all: orderId,
       });
-      sub.complete();
-    });
+      next.value[1].complete();
+    }
   };
 
   /**
@@ -1683,8 +1685,7 @@ export class IBApiNext {
             this.api.reqIds();
           },
           undefined,
-          [[EventName.nextValidId, this.onNextValidId]],
-          "getNextUnusedOrderId" // use same instance id each time, to make sure there is only 1 pending request at time
+          [[EventName.nextValidId, this.onNextValidId]]
         )
         .pipe(map((v: { all: number }) => v.all))
     );
@@ -1692,17 +1693,36 @@ export class IBApiNext {
 
   /**
    * Places or modifies an order.
-   *
    * @param id The order's unique identifier.
-   * Use a sequential id starting with the id received from the getNextValidOrderId() method.
+   * Use a sequential id starting with the id received at the nextValidId method.
    * If a new order is placed with an order ID less than or equal to the order ID of a previous order an error will occur.
    * @param contract The order's [[Contract]].
    * @param order The [[Order]] object.
-   *
-   * @see [[reqAllOpenOrders]], [[reqAutoOpenOrders]], [[reqOpenOrders]], [[cancelOrder]], [[reqGlobalCancel]]
    */
   placeOrder(id: number, contract: Contract, order: Order): void {
     this.api.placeOrder(id, contract, order);
+  }
+
+  /**
+   * Cancels an active order placed by from the same API client ID.
+   *
+   * Note: API clients cannot cancel individual orders placed by other clients.
+   * Use [[cancelAllOrders]] instead.
+   *
+   * @param id The order id.
+   */
+  cancelOrder(id: number): void {
+    this.api.cancelOrder(id);
+  }
+
+  /**
+   * Cancels all active orders.
+   * This method will cancel ALL open orders including those placed directly from TWS.
+   *
+   * @see [[cancelOrder]]
+   */
+  cancelAllOrders(): void {
+    this.api.reqGlobalCancel();
   }
 
   /** histogramData event handler */
@@ -1716,7 +1736,7 @@ export class IBApiNext {
     if (!sub) {
       return;
     }
-    
+
     // deliver data
     sub.next({ all: data });
     sub.complete();

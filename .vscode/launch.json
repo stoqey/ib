@@ -323,14 +323,14 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Tool: next-unused-order-id",
+      "name": "Tool: next-valid-order-id",
       "skipFiles": [
         "<node_internals>/**"
       ],
       "runtimeArgs": [
         "--trace-warnings"
       ],
-      "program": "${workspaceFolder}/dist/tools/next-unused-order-id.js",
+      "program": "${workspaceFolder}/dist/tools/next-valid-order-id.js",
       "args": [
         "-port=4002"
       ],
