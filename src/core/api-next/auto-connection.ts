@@ -54,10 +54,7 @@ export class IBApiAutoConnection extends IBApi {
    * re-connection attempt. If undefined [[currentClientId]] will
    * be used and incremented on each attempt.
    */
-  private fixedClientId?: number;
-
-  /** The current client id. */
-  private currentClientId: number;
+  private clientId?: number;
 
   /** true if auto re-connect is enabled, false otherwise. */
   private autoReconnectEnabled = true;
@@ -84,26 +81,24 @@ export class IBApiAutoConnection extends IBApi {
   /**
    * Connect to the TWS or IB Gateway.
    *
-   * @param clientId A fixed client id to be used on all connection
-   * attempts. If not specified, the first connection will use the
-   * default client id (0) and increment it with each re-connection
-   * attempt.
+   * @param clientId The client id to be for connecting to TWS.
+   * If not specified, this.options?.clientId or 0 will be used.
    *
    * @sse [[connectionState]] for observing the connection state.
    */
   connect(clientId?: number): IBApi {
     this.autoReconnectEnabled = true;
-    this.fixedClientId = clientId;
-    this.currentClientId =
-      (clientId === undefined ? this.options?.clientId : clientId) ??
-      Math.floor(Math.random() * 100) + 1;
+    this.clientId = clientId === undefined ? this.options?.clientId : clientId;
+    if (this.clientId === undefined) {
+      this.clientId = 0;
+    }
     if (this._connectionState.getValue() === ConnectionState.Disconnected) {
       this._connectionState.next(ConnectionState.Connecting);
       this.logger.info(
         LOG_TAG,
-        `Connecting to TWS with client id ${this.currentClientId}`
+        `Connecting to TWS with client id ${this.clientId}`
       );
-      super.connect(this.currentClientId);
+      super.connect(this.clientId);
     }
     return this;
   }
@@ -118,7 +113,7 @@ export class IBApiAutoConnection extends IBApi {
     if (this._connectionState.getValue() !== ConnectionState.Disconnected) {
       this.logger.info(
         LOG_TAG,
-        `Disconnecting client id ${this.currentClientId} from TWS.`
+        `Disconnecting client id ${this.clientId} from TWS.`
       );
       this._connectionState.next(ConnectionState.Disconnected);
       if (this.isConnected) {
@@ -138,7 +133,7 @@ export class IBApiAutoConnection extends IBApi {
       this._connectionState.next(ConnectionState.Connected);
       this.logger.info(
         LOG_TAG,
-        `Successfully connected to TWS with client id ${this.currentClientId}.`
+        `Successfully connected to TWS with client id ${this.clientId}.`
       );
 
       // cancel reconnect timer and run the connection watchdog
@@ -164,18 +159,13 @@ export class IBApiAutoConnection extends IBApi {
 
     // connect to IB
 
-    this.currentClientId =
-      this.fixedClientId !== undefined
-        ? this.fixedClientId
-        : this.currentClientId + 1;
-
     this.logger.info(
       LOG_TAG,
-      `Re-Connecting to TWS with client id ${this.currentClientId}`
+      `Re-Connecting to TWS with client id ${this.clientId}`
     );
 
     super.disconnect();
-    super.connect(this.currentClientId);
+    super.connect(this.clientId);
   }
 
   /**
@@ -280,7 +270,7 @@ export class IBApiAutoConnection extends IBApi {
     if (this.isConnected) {
       this.logger.debug(
         LOG_TAG,
-        `Disconnecting client id ${this.currentClientId} from TWS (state-sync).`
+        `Disconnecting client id ${this.clientId} from TWS (state-sync).`
       );
       this.disconnect();
       this.autoReconnectEnabled = true;
