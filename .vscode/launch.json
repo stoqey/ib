@@ -26,18 +26,10 @@
       "type": "node",
       "request": "launch",
       "name": "Tool: account-summary",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "runtimeArgs": [
-        "--trace-warnings"
-      ],
+      "skipFiles": ["<node_internals>/**"],
+      "runtimeArgs": ["--trace-warnings"],
       "program": "${workspaceFolder}/dist/tools/account-summary.js",
-      "args": [
-        "-group=All",
-        "-tags=NetLiquidation,MaintMarginReq",
-        "-watch"
-      ],
+      "args": ["-group=All", "-tags=NetLiquidation,MaintMarginReq", "-watch"],
       "outputCapture": "std",
       "resolveSourceMapLocations": [
         "${workspaceFolder}/**",
@@ -48,18 +40,10 @@
       "type": "node",
       "request": "launch",
       "name": "Tool: contract-details",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "runtimeArgs": [
-        "--trace-warnings"
-      ],
+      "skipFiles": ["<node_internals>/**"],
+      "runtimeArgs": ["--trace-warnings"],
       "program": "${workspaceFolder}/dist/tools/contract-details.js",
-      "args": [
-        "-symbol=AMZN",
-        "-sectype=STK",
-        "-currency=USD"
-      ],
+      "args": ["-symbol=AMZN", "-sectype=STK", "-currency=USD"],
       "outputCapture": "std",
       "resolveSourceMapLocations": [
         "${workspaceFolder}/**",
@@ -70,12 +54,8 @@
       "type": "node",
       "request": "launch",
       "name": "Tool: curren-time",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "runtimeArgs": [
-        "--trace-warnings"
-      ],
+      "skipFiles": ["<node_internals>/**"],
+      "runtimeArgs": ["--trace-warnings"],
       "program": "${workspaceFolder}/dist/tools/current-time.js",
       "outputCapture": "std",
       "resolveSourceMapLocations": [
@@ -87,12 +67,8 @@
       "type": "node",
       "request": "launch",
       "name": "Tool: market-data",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "runtimeArgs": [
-        "--trace-warnings"
-      ],
+      "skipFiles": ["<node_internals>/**"],
+      "runtimeArgs": ["--trace-warnings"],
       "args": [
         "-symbol=AMZN",
         "-sectype=STK",
@@ -110,17 +86,9 @@
       "type": "node",
       "request": "launch",
       "name": "Tool: pnl-single",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "runtimeArgs": [
-        "--trace-warnings"
-      ],
-      "args": [
-        "-account=DU1234567",
-        "-conid=3691937",
-        "-watch"
-      ],
+      "skipFiles": ["<node_internals>/**"],
+      "runtimeArgs": ["--trace-warnings"],
+      "args": ["-account=DU1234567", "-conid=3691937", "-watch"],
       "program": "${workspaceFolder}/dist/tools/pnl-single.js",
       "outputCapture": "std",
       "resolveSourceMapLocations": [
@@ -132,16 +100,9 @@
       "type": "node",
       "request": "launch",
       "name": "Tool: pnl",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "runtimeArgs": [
-        "--trace-warnings"
-      ],
-      "args": [
-        "-conid=3691937",
-        "-watch"
-      ],
+      "skipFiles": ["<node_internals>/**"],
+      "runtimeArgs": ["--trace-warnings"],
+      "args": ["-conid=3691937", "-watch"],
       "program": "${workspaceFolder}/dist/tools/pnl.js",
       "outputCapture": "std",
       "resolveSourceMapLocations": [
@@ -153,15 +114,9 @@
       "type": "node",
       "request": "launch",
       "name": "Tool: positions",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "runtimeArgs": [
-        "--trace-warnings"
-      ],
-      "args": [
-        "-watch"
-      ],
+      "skipFiles": ["<node_internals>/**"],
+      "runtimeArgs": ["--trace-warnings"],
+      "args": ["-watch"],
       "program": "${workspaceFolder}/dist/tools/positions.js",
       "outputCapture": "std",
       "resolveSourceMapLocations": [
@@ -173,12 +128,8 @@
       "type": "node",
       "request": "launch",
       "name": "Tool: managed-accts",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "runtimeArgs": [
-        "--trace-warnings"
-      ],
+      "skipFiles": ["<node_internals>/**"],
+      "runtimeArgs": ["--trace-warnings"],
       "program": "${workspaceFolder}/dist/tools/managed-accts.js",
       "outputCapture": "std",
       "resolveSourceMapLocations": [
@@ -190,12 +141,8 @@
       "type": "node",
       "request": "launch",
       "name": "Tool: historical-data",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "runtimeArgs": [
-        "--trace-warnings"
-      ],
+      "skipFiles": ["<node_internals>/**"],
+      "runtimeArgs": ["--trace-warnings"],
       "program": "${workspaceFolder}/dist/tools/historical-data.js",
       "args": [
         "-conid=3691937",
@@ -213,18 +160,10 @@
       "type": "node",
       "request": "launch",
       "name": "Tool: historical-data-updates",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "runtimeArgs": [
-        "--trace-warnings"
-      ],
+      "skipFiles": ["<node_internals>/**"],
+      "runtimeArgs": ["--trace-warnings"],
       "program": "${workspaceFolder}/dist/tools/historical-data-updates.js",
-      "args": [
-        "-conid=3691937",
-        "-exchange=SMART",
-        "-barSize=15 mins"
-      ],
+      "args": ["-conid=3691937", "-exchange=SMART", "-barSize=15 mins"],
       "outputCapture": "std",
       "resolveSourceMapLocations": [
         "${workspaceFolder}/**",
@@ -235,12 +174,8 @@
       "type": "node",
       "request": "launch",
       "name": "Tool: historical-ticks-mid",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "runtimeArgs": [
-        "--trace-warnings"
-      ],
+      "skipFiles": ["<node_internals>/**"],
+      "runtimeArgs": ["--trace-warnings"],
       "program": "${workspaceFolder}/dist/tools/historical-ticks-mid.js",
       "args": [
         "-conid=3691937",
@@ -258,12 +193,8 @@
       "type": "node",
       "request": "launch",
       "name": "Tool: historical-ticks-bid-ask",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "runtimeArgs": [
-        "--trace-warnings"
-      ],
+      "skipFiles": ["<node_internals>/**"],
+      "runtimeArgs": ["--trace-warnings"],
       "program": "${workspaceFolder}/dist/tools/historical-ticks-bid-ask.js",
       "args": [
         "-conid=3691937",
@@ -281,12 +212,8 @@
       "type": "node",
       "request": "launch",
       "name": "Tool: historical-ticks-last",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "runtimeArgs": [
-        "--trace-warnings"
-      ],
+      "skipFiles": ["<node_internals>/**"],
+      "runtimeArgs": ["--trace-warnings"],
       "program": "${workspaceFolder}/dist/tools/historical-ticks-last.js",
       "args": [
         "-conid=3691937",
@@ -304,16 +231,10 @@
       "type": "node",
       "request": "launch",
       "name": "Tool: market-depth-exchanges",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "runtimeArgs": [
-        "--trace-warnings"
-      ],
+      "skipFiles": ["<node_internals>/**"],
+      "runtimeArgs": ["--trace-warnings"],
       "program": "${workspaceFolder}/dist/tools/market-depth-exchanges.js",
-      "args": [
-        "-port=4002"
-      ],
+      "args": ["-port=4002"],
       "outputCapture": "std",
       "resolveSourceMapLocations": [
         "${workspaceFolder}/**",
@@ -324,12 +245,8 @@
       "type": "node",
       "request": "launch",
       "name": "Tool: histogram-data",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "runtimeArgs": [
-        "--trace-warnings"
-      ],
+      "skipFiles": ["<node_internals>/**"],
+      "runtimeArgs": ["--trace-warnings"],
       "program": "${workspaceFolder}/dist/tools/histogram-data.js",
       "args": [
         "-conid=3691937",
@@ -344,5 +261,19 @@
         "!**/node_modules/**"
       ]
     },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Tool: open-orders",
+      "skipFiles": ["<node_internals>/**"],
+      "runtimeArgs": ["--trace-warnings"],
+      "program": "${workspaceFolder}/dist/tools/open-orders.js",
+      "args": [],
+      "outputCapture": "std",
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ]
+    }
   ]
 }

@@ -35,7 +35,6 @@ import { OrderState } from "../../api/order/orderState";
 import { CommissionReport } from "../../api/report/commissionReport";
 import { ErrorCode } from "../../common/errorCode";
 import { IN_MSG_ID } from "./enum/in-msg-id";
-import { OrderStatus } from "../../api/order/enum/order-status";
 
 /**
  * @internal

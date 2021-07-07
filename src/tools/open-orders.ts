@@ -33,7 +33,7 @@ const OPTION_ARGUMENTS: [string, string][] = [
   ],
 ];
 const EXAMPLE_TEXT =
-  "account-summary.js -group=All -tags=NetLiquidation,MaintMarginReq -watch";
+  "open-orders.js -group=All -tags=NetLiquidation,MaintMarginReq -watch";
 
 //////////////////////////////////////////////////////////////////////////////
 // The App code                                                             //
