@@ -1,48 +1,31 @@
 import { lastValueFrom, Observable, Subject } from "rxjs";
 import { map } from "rxjs/operators";
+
 import {
-  Bar,
-  Contract,
-  ContractDetails,
-  DepthMktDataDescription,
-  DurationUnit,
-  ErrorCode,
-  EventName,
-  HistogramEntry,
-  HistoricalTick,
-  HistoricalTickBidAsk,
-  HistoricalTickLast,
+    Bar, Contract, ContractDetails, DepthMktDataDescription, DurationUnit, ErrorCode, EventName,
+    HistogramEntry, HistoricalTick, HistoricalTickBidAsk, HistoricalTickLast, Order, OrderState
 } from "../";
 import LogLevel from "../api/data/enum/log-level";
+import logger from "../common/logger";
 import {
-  AccountSummaryValue,
-  ConnectionState,
-  IBApiNextError,
-  IBApiTickType,
-  MarketDataTick,
-  MarketDataType,
-  PnL,
-  PnLSingle,
-  AccountSummariesUpdate,
-  AccountPositionsUpdate,
-  Position,
-  ContractDetailsUpdate,
-  MarketDataUpdate,
-  IBApiNextTickType,
-} from "./";
+    MutableAccountSummaries, MutableAccountSummaryTagValues, MutableAccountSummaryValues
+} from "../core/api-next/api/account/mutable-account-summary";
+import { MutableMarketData } from "../core/api-next/api/market/mutable-market-data";
+import {
+    MutableAccountPositions
+} from "../core/api-next/api/position/mutable-account-positions-update";
+import { IBApiAutoConnection } from "../core/api-next/auto-connection";
 import { ConsoleLogger } from "../core/api-next/console-logger";
-import { Logger } from "./common/logger";
+import { IBApiNextLogger } from "../core/api-next/logger";
 import { IBApiNextSubscription } from "../core/api-next/subscription";
 import { IBApiNextSubscriptionRegistry } from "../core/api-next/subscription-registry";
 import {
-  MutableAccountSummaryTagValues,
-  MutableAccountSummaryValues,
-  MutableAccountSummaries,
-} from "../core/api-next/api/account/mutable-account-summary";
-import { MutableAccountPositions } from "../core/api-next/api/position/mutable-account-positions-update";
-import { MutableMarketData } from "../core/api-next/api/market/mutable-market-data";
-import { IBApiNextLogger } from "../core/api-next/logger";
-import { IBApiAutoConnection } from "../core/api-next/auto-connection";
+    AccountPositionsUpdate, AccountSummariesUpdate, AccountSummaryValue, ConnectionState,
+    ContractDetailsUpdate, IBApiNextError, IBApiNextTickType, IBApiTickType, MarketDataTick,
+    MarketDataType, MarketDataUpdate, PnL, PnLSingle, Position
+} from "./";
+import { Logger } from "./common/logger";
+import { OpenOrder } from "./order/open-order";
 
 /**
  * @internal
@@ -580,7 +563,6 @@ export class IBApiNext {
     reqId: number
   ) => {
     // get the subscription
-
     const subscription = subscriptions.get(reqId);
     if (!subscription) {
       return;
@@ -1669,7 +1651,7 @@ export class IBApiNext {
     if (!sub) {
       return;
     }
-    
+
     // deliver data
     sub.next({ all: data });
     sub.complete();
@@ -1709,5 +1691,84 @@ export class IBApiNext {
         )
         .pipe(map((v: { all: HistogramEntry[] }) => v.all))
     );
+  }
+  /**
+   * Feeds in currently open orders.
+   *
+   * @param listener
+   * orderId: The order's unique id.
+   *
+   * contract: The order's [[Contract]]
+   *
+   * order: The currently active [[Order]]
+   *
+   * orderState: The order's [[OrderState]]
+   *
+   * @see [[placeOrder]], [[reqAllOpenOrders]], [[reqAutoOpenOrders]]
+   */
+  private readonly onOpenOrder = (
+      subscriptions: Map<number, IBApiNextSubscription<OpenOrder[]>>,
+      orderId: number,
+      contract: Contract,
+      order: Order,
+      orderState: OrderState): void => {
+    subscriptions.forEach((sub) => {
+      const allOrders = sub.lastAllValue ?? [];
+      allOrders.push({ orderId, contract, order, orderState })
+      sub.next({
+        all: allOrders,
+      });
+    });
+  }
+
+  /**
+   *  Ends the subscrition once all openOrders are recieved
+   *  @param subscriptions
+   */
+  private readonly onOpenOrderEnd = (subscriptions: Map<number, IBApiNextSubscription<OpenOrder[]>>): void => {
+    logger.debug("Recieved end of Orders")
+    subscriptions.forEach((sub) => {
+      sub.complete()
+    });
+  }
+
+
+   /**
+   * Response to API bind order control message.
+   *
+   * @param orderId: permId
+   * @param apiClientId: API client id.
+   * @param apiOrderId: API order id.
+   *
+   * @see [[reqOpenOrders]]
+   */
+  private readonly onOrderBound = (
+    // TODO finish implementation
+    subscription: Map<number, IBApiNextSubscription<OpenOrder[]>>,
+    orderId: number, apiClientId: number, apiOrderId: number
+  ): void => {
+    // not sure what it's used for
+    logger.error(`missing OrderBound implementation - ${orderId}, ${apiClientId}, ${apiOrderId}`)
+  }
+
+  /**
+   * Requests all current open orders in associated accounts at the current moment.
+   * The existing orders will be received via the openOrder and orderStatus events.
+   *
+   * Open orders are returned once; this function does not initiate a subscription.
+   * Author: Tsopic - proud father of his first rxjs function
+   */
+  getAllOpenOrders(): Promise<OpenOrder[]> {
+    return lastValueFrom(this.subscriptions.register<OpenOrder[]>(
+      () => {
+        this.api.reqAllOpenOrders();
+      },
+      undefined,
+      [
+        [EventName.openOrder, this.onOpenOrder],
+        [EventName.orderStatus, this.onOrderBound],
+        [EventName.openOrderEnd, this.onOpenOrderEnd]
+      ]
+    ).pipe(map((v: { all: OpenOrder[] }) => v.all)));
   }
 }

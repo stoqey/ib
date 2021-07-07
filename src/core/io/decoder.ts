@@ -12,7 +12,6 @@ import { EventName } from "../../api/data/enum/event-name";
 import MIN_SERVER_VER from "../../api/data/enum/min-server-version";
 import OptionType from "../../api/data/enum/option-type";
 import SecType from "../../api/data/enum/sec-type";
-import { ErrorCode } from "../../common/errorCode";
 import { HistogramEntry } from "../../api/historical/histogramEntry";
 import { HistoricalTick } from "../../api/historical/historicalTick";
 import { HistoricalTickBidAsk } from "../../api/historical/historicalTickBidAsk";
@@ -27,14 +26,15 @@ import VolumeCondition from "../../api/order/condition/volume-condition";
 import { ConjunctionConnection } from "../../api/order/enum/conjunction-connection";
 import OrderAction from "../../api/order/enum/order-action";
 import { OrderConditionType } from "../../api/order/enum/order-condition-type";
+import { OrderStatus } from "../../api/order/enum/order-status";
 import { OrderType } from "../../api/order/enum/orderType";
 import { TriggerMethod } from "../../api/order/enum/trigger-method";
 import { Execution } from "../../api/order/execution";
 import { Order } from "../../api/order/order";
 import { OrderState } from "../../api/order/orderState";
 import { CommissionReport } from "../../api/report/commissionReport";
+import { ErrorCode } from "../../common/errorCode";
 import { IN_MSG_ID } from "./enum/in-msg-id";
-import { OrderStatus } from "../../api/order/enum/order-status";
 
 /**
  * @internal
