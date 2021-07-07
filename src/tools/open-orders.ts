@@ -61,7 +61,7 @@ class PrintAccountSummaryApp extends IBApiNextApp {
          this.stop();
       })
       .catch((err: IBApiNextError) => {
-        this.error(`getAllOpenOrders failed with '${err.error.message}'`);
+        this.error(`getAllOpenOrders failed with '${err}'`);
       });
   }
 

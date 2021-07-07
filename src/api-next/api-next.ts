@@ -1692,6 +1692,7 @@ export class IBApiNext {
         .pipe(map((v: { all: HistogramEntry[] }) => v.all))
     );
   }
+
   /**
    * Feeds in currently open orders.
    *
