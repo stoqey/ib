@@ -27,11 +27,11 @@ or
 
 ## Update from 1.1.x to 1.2.x
 
-If you currently use version 1.1.x and want to upgrade to 1.2.x please note that there is breaking change that might affect your code:
+If you currently use version 1.1.x and want to upgrade to 1.2.x please note that there is a breaking change that might affect your code:
 
-Versions up to 1.1.x did use `Number.MAX_VALUE` for values that are not available. This was to b in-sync with the official TWS API Java interfaces. Since the usage of `Number.MAX_VALUE` is very uncommon in JScript/TS, all versions starting from 1.2.1 will return `undefined` instead.
+Versions up to 1.1.x did return `Number.MAX_VALUE` on values that are not available. This was to be in-sync with the official TWS API Java interfaces. Since the usage of `Number.MAX_VALUE` is very uncommon in JScript/TS and caused / causes lot of confusion, all versions starting from 1.2.1 will return `undefined` instead.
 
-If you have checked for `Number.MAX_VALUE` up to now, you can drop it. If you have not checked for `undefined` yet, you should add it.
+If you have checked for `Number.MAX_VALUE` up to now, you can drop this check. If you have not checked for `undefined` yet, you should add it.
 
 ## API Documenation
 
