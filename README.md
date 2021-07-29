@@ -25,6 +25,14 @@ or
 
     $ yarn add @stoqey/ib
 
+## Update from 1.1.x to 1.2.x
+
+If you currently use version 1.1.x and want to upgrade to 1.2.x please note that there is breaking change that might affect your code:
+
+Versions up to 1.1.x did use `Number.MAX_VALUE` for values that are not available. This was to b in-sync with the official TWS API Java interfaces. Since the usage of `Number.MAX_VALUE` is very uncommon in JScript/TS, all versions starting from 1.2.1 will return `undefined` instead.
+
+If you have checked for `Number.MAX_VALUE` up to now, you can drop it. If you have not checked for `undefined` yet, you should add it.
+
 ## API Documenation
 
 <b>[See API documentation here.](https://stoqey.github.io/ib-doc/)</b>
@@ -49,10 +57,6 @@ IBApiNext still is in preview stage. Not all functions are available yet, and we
 | IB Gateway paper account |  4002 |
 | TWS Live Account         | 7496  |
 | TWS papertrading account | 7497  |
-
-## Important
-
-IBApi is returning `Number.MAX_SAFE_INTEGER` when there is no value from IB, commonly seen when there is no bid / offer or other missing market data.
 
 ## IBApi Examples
 
