@@ -507,12 +507,12 @@ export class Decoder {
     const tickType = this.readInt();
     const price = this.readDouble();
 
-    let size = 0;
+    let size = undefined;
     if (version >= 2) {
       size = this.readInt();
     }
 
-    let canAutoExecute = false;
+    let canAutoExecute = undefined;
     if (version >= 3) {
       canAutoExecute = this.readBool();
     }
@@ -521,7 +521,7 @@ export class Decoder {
 
     this.emit(EventName.tickPrice, tickerId, tickType, price, canAutoExecute);
 
-    let sizeTickType = -1;
+    let sizeTickType = undefined;
     if (version >= 2) {
       switch (tickType) {
         case TickType.BID:
@@ -576,22 +576,22 @@ export class Decoder {
     const remaining = this.readInt();
     const avgFillPrice = this.readDouble();
 
-    let permId = 0;
+    let permId: number | undefined = undefined;
     if (version >= 2) {
       permId = this.readInt();
     }
 
-    let parentId = 0;
+    let parentId: number | undefined = undefined;
     if (version >= 3) {
       parentId = this.readInt();
     }
 
-    let lastFillPrice = 0;
+    let lastFillPrice: number | undefined = undefined;
     if (version >= 4) {
       lastFillPrice = this.readDouble();
     }
 
-    let clientId = 0;
+    let clientId: number | undefined = undefined;
     if (version >= 5) {
       clientId = this.readInt();
     }
@@ -1064,7 +1064,7 @@ export class Decoder {
     const price = this.readDouble();
     const size = this.readInt();
 
-    let isSmartDepth = false;
+    let isSmartDepth = undefined;
     if (this.serverVersion >= MIN_SERVER_VER.SMART_DEPTH) {
       isSmartDepth = this.readBool();
     }
@@ -1157,7 +1157,7 @@ export class Decoder {
         hasGaps = this.readBool();
       }
 
-      let barCount = -1;
+      let barCount: number | undefined = undefined;
       if (version >= 3) {
         barCount = this.readInt();
       }
@@ -2086,16 +2086,13 @@ export class Decoder {
    * Decode a HISTORICAL_NEWS message from data queue and emit a historicalNews event.
    */
   private decodeMsg_HISTORICAL_NEWS(): void {
-    const nNewsProviders = this.readInt();
-    const newProviders: NewsProvider[] = new Array(nNewsProviders);
-    for (let i = 0; i < nNewsProviders; i++) {
-      newProviders[i] = {
-        providerCode: this.readStr(),
-        providerName: this.readStr(),
-      };
-    }
+    const requestId = this.readInt();
+    const time = this.readStr();
+    const providerCode = this.readStr();
+    const articleId = this.readStr();
+    const headline = this.readStr();
 
-    this.emit(EventName.historicalNews, newProviders);
+    this.emit(EventName.historicalNews, requestId, time, providerCode, articleId, headline);
   }
 
   /**

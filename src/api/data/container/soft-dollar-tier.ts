@@ -9,7 +9,7 @@ export interface SoftDollarTier {
   value?: string;
 
   /** The display name of the Soft Dollar Tier. */
-  displayName: string;
+  displayName?: string;
 }
 
 export default SoftDollarTier;

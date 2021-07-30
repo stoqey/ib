@@ -471,7 +471,7 @@ export class IBApiNext {
     account: string,
     contract: Contract,
     pos: number,
-    avgCost: number
+    avgCost?: number
   ): void => {
     const updatedPosition: Position = { account, contract, pos, avgCost };
 
@@ -611,8 +611,8 @@ export class IBApiNext {
     subscriptions: Map<number, IBApiNextSubscription<PnL>>,
     reqId: number,
     dailyPnL: number,
-    unrealizedPnL: number,
-    realizedPnL: number
+    unrealizedPnL?: number,
+    realizedPnL?: number
   ): void => {
     // get subscription
 
@@ -655,8 +655,8 @@ export class IBApiNext {
     reqId: number,
     pos: number,
     dailyPnL: number,
-    unrealizedPnL: number,
-    realizedPnL: number,
+    unrealizedPnL: number | undefined,
+    realizedPnL: number | undefined,
     value: number
   ) => {
     // get subscription
@@ -727,8 +727,8 @@ export class IBApiNext {
   private readonly onTick = (
     subscriptions: Map<number, IBApiNextSubscription<MutableMarketData>>,
     reqId: number,
-    tickType: IBApiTickType,
-    value: number
+    tickType?: IBApiTickType,
+    value?: number
   ): void => {
     // convert -1 on Bid/Ask to undefined
 
@@ -1176,7 +1176,7 @@ export class IBApiNext {
     low: number,
     close: number,
     volume: number,
-    count: number,
+    count: number | undefined,
     WAP: number
   ): void => {
     // get subscription

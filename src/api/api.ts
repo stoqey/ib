@@ -823,8 +823,7 @@ export class IBApi extends EventEmitter {
     period: number,
     periodUnit: DurationUnit
   ): IBApi {
-    const periodStr =
-      period + " " + periodUnit.toString().toLowerCase() + "s";
+    const periodStr = period + " " + periodUnit.toString().toLowerCase() + "s";
     this.controller.schedule(() =>
       this.controller.encoder.reqHistogramData(
         tickerId,
@@ -2002,7 +2001,7 @@ export declare interface IBApi {
    * Returns array of sample contract descriptions.
    *
    * @param listener
-   * familyCodes Array of family codes.
+   * contractDescriptions Array of contract descriptions.
    *
    * @see [[reqFamilyCodes]]
    */
@@ -2090,7 +2089,7 @@ export declare interface IBApi {
       low: number,
       close: number,
       volume: number,
-      count: number,
+      count: number | undefined,
       WAP: number,
       hasGaps: boolean | undefined
     ) => void
@@ -2410,12 +2409,12 @@ export declare interface IBApi {
       filled: number,
       remaining: number,
       avgFillPrice: number,
-      permId: number,
-      parentId: number,
-      lastFillPrice: number,
-      clientId: number,
-      whyHeld: string,
-      mktCapPrice: number
+      permId?: number,
+      parentId?: number,
+      lastFillPrice?: number,
+      clientId?: number,
+      whyHeld?: string,
+      mktCapPrice?: number
     ) => void
   ): this;
 
@@ -2438,8 +2437,8 @@ export declare interface IBApi {
     listener: (
       reqId: number,
       dailyPnL: number,
-      unrealizedPnL: number,
-      realizedPnL: number
+      unrealizedPnL?: number,
+      realizedPnL?: number
     ) => void
   ): this;
 
@@ -2465,8 +2464,8 @@ export declare interface IBApi {
       reqId: number,
       pos: number,
       dailyPnL: number,
-      unrealizedPnL: number,
-      realizedPnL: number,
+      unrealizedPnL: number | undefined,
+      realizedPnL: number | undefined,
       value: number
     ) => void
   ): this;
@@ -2491,7 +2490,7 @@ export declare interface IBApi {
       account: string,
       contract: Contract,
       pos: number,
-      avgCost: number
+      avgCost?: number
     ) => void
   ): this;
 
@@ -2671,7 +2670,7 @@ export declare interface IBApi {
       distance: string,
       benchmark: string,
       projection: string,
-      legsStr: string
+      legsStr?: string
     ) => void
   ): this;
 
@@ -2962,8 +2961,6 @@ export declare interface IBApi {
    *
    * impliedVolatility: The implied volatility calculated by the TWS option modeler, using the specified tick type value.
    *
-   * tickAttrib: 0 - return based, 1- price based.
-   *
    * delta: The option delta value.
    *
    * value: The tick value.
@@ -2987,15 +2984,14 @@ export declare interface IBApi {
     listener: (
       tickerId: number,
       field: TickType,
-      tickAttrib: number,
-      impliedVolatility: number,
-      delta: number,
-      optPrice: number,
-      pvDividend: number,
-      gamma: number,
-      vega: number,
-      theta: number,
-      undPrice: number
+      impliedVolatility?: number,
+      delta?: number,
+      optPrice?: number,
+      pvDividend?: number,
+      gamma?: number,
+      vega?: number,
+      theta?: number,
+      undPrice?: number
     ) => void
   ): this;
 
@@ -3024,7 +3020,7 @@ export declare interface IBApi {
       tickerId: number,
       field: TickType,
       value: number,
-      attribs: unknown /* TODO: replace with TickAttrib type as soon as available. */
+      attribs?: unknown /* TODO: replace with TickAttrib type as soon as available. */
     ) => void
   ): this;
 
@@ -3054,13 +3050,13 @@ export declare interface IBApi {
    *
    * field: The type of size being received (i.e. bid size)
    *
-   * size: The actual size. US stocks have a multiplier of 100.
+   * size: The actual size.
    *
    * @see [[reqMktData]]
    */
   on(
     event: EventName.tickSize,
-    listener: (tickerId: number, field: TickType, value: number) => void
+    listener: (tickerId: number, field?: TickType, value?: number) => void
   ): this;
 
   /**
@@ -3261,10 +3257,10 @@ export declare interface IBApi {
       position: number,
       marketPrice: number,
       marketValue: number,
-      averageCost: number,
-      unrealizedPNL: number,
-      realizedPNL: number,
-      accountName: string
+      averageCost?: number,
+      unrealizedPNL?: number,
+      realizedPNL?: number,
+      accountName?: string
     ) => void
   ): this;
 
@@ -3336,7 +3332,7 @@ export declare interface IBApi {
       side: number,
       price: number,
       size: number,
-      isSmartDepth: boolean
+      isSmartDepth?: boolean
     ) => void
   ): this;
 

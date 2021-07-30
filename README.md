@@ -82,7 +82,7 @@ ib.on(EventName.error, (err: Error, code: ErrorCode, reqId: number) => {
 })
   .on(
     EventName.position,
-    (account: string, contract: Contract, pos: number, avgCost: number) => {
+    (account: string, contract: Contract, pos: number, avgCost?: number) => {
       console.log(`${account}: ${pos} x ${contract.symbol} @ ${avgCost}`);
       positionsCount++;
     }
