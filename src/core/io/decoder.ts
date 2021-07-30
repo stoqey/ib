@@ -430,7 +430,7 @@ export class Decoder {
    */
   readDouble(): number | undefined {
     const token = this.readStr();
-    if (token === null || token === "") {
+    if (!token || token === "") {
       return 0;
     }
     const val = parseFloat(token);
@@ -444,7 +444,7 @@ export class Decoder {
    */
   readDoubleOrUndefined(): number | undefined {
     const token = this.readStr();
-    if (token === null || token === "") {
+    if (!token || token === "") {
       return undefined;
     }
     const val = parseFloat(token);
@@ -459,7 +459,7 @@ export class Decoder {
    */
   readInt(): number | undefined {
     const token = this.readStr();
-    if (token === null || token === "") {
+    if (!token || token === "") {
       return 0;
     }
     const val = parseInt(token, 10);
@@ -473,7 +473,7 @@ export class Decoder {
    */
   readIntOrUndefined(): number | undefined {
     const token = this.readStr();
-    if (token === null || token === "") {
+    if (!token || token === "") {
       return undefined;
     }
     const val = parseInt(token, 10);
