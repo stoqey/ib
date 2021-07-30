@@ -426,50 +426,58 @@ export class Decoder {
    * Read a token from queue and return it as floating point value.
    *
    * Returns 0 if the token is empty.
+   * Returns undefined is the token is Number.MAX_VALUE.
    */
-  readDouble(): number {
+  readDouble(): number | undefined {
     const token = this.readStr();
     if (token === null || token === "") {
       return 0;
     }
-    return parseFloat(token);
+    const val = parseFloat(token);
+    return val === Number.MAX_VALUE ? undefined : val;
   }
 
   /**
-   * Read a token from queue and return it as floating point value,
-   * or undefined if the token is empty.
+   * Read a token from queue and return it as floating point value.
+   *
+   * Returns undefined if the token is empty or Number.MAX_VALUE.
    */
   readDoubleOrUndefined(): number | undefined {
     const token = this.readStr();
     if (token === null || token === "") {
       return undefined;
     }
-    return parseFloat(token);
+    const val = parseFloat(token);
+    return val === Number.MAX_VALUE ? undefined : val;
   }
 
   /**
    * Read a token from queue and return it as integer value.
    *
    * Returns 0 if the token is empty.
+   * Returns undefined is the token is Number.MAX_VALUE.
    */
-  readInt(): number {
+  readInt(): number | undefined {
     const token = this.readStr();
     if (token === null || token === "") {
       return 0;
     }
-    return parseInt(token, 10);
+    const val = parseInt(token, 10);
+    return val === Number.MAX_VALUE ? undefined : val;
   }
 
   /**
    * Read a token from queue and return it as integer value.
-   * or undefined if the token is empty.
+   *
+   * Returns undefined if the token is empty or Number.MAX_VALUE.
    */
   readIntOrUndefined(): number | undefined {
     const token = this.readStr();
     if (token === null || token === "") {
       return undefined;
     }
-    return parseInt(token, 10);
+    const val = parseInt(token, 10);
+    return val === Number.MAX_VALUE ? undefined : val;
   }
 
   /**
@@ -545,7 +553,7 @@ export class Decoder {
       }
     }
 
-    if (sizeTickType !== -1) {
+    if (sizeTickType) {
       this.emit(EventName.tickSize, tickerId, sizeTickType, size);
     }
   }
@@ -2092,7 +2100,14 @@ export class Decoder {
     const articleId = this.readStr();
     const headline = this.readStr();
 
-    this.emit(EventName.historicalNews, requestId, time, providerCode, articleId, headline);
+    this.emit(
+      EventName.historicalNews,
+      requestId,
+      time,
+      providerCode,
+      articleId,
+      headline
+    );
   }
 
   /**

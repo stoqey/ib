@@ -727,7 +727,7 @@ export class IBApiNext {
   private readonly onTick = (
     subscriptions: Map<number, IBApiNextSubscription<MutableMarketData>>,
     reqId: number,
-    tickType?: IBApiTickType,
+    tickType: IBApiTickType,
     value?: number
   ): void => {
     // convert -1 on Bid/Ask to undefined
