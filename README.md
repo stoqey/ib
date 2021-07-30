@@ -33,6 +33,38 @@ Versions up to 1.1.x did return `Number.MAX_VALUE` on values that are not availa
 
 If you have checked for `Number.MAX_VALUE` up to now, you can drop this check. If you have not checked for `undefined` yet, you should add it.
 
+Example:
+
+```js
+ib.on(EventName.pnlSingle, (
+      reqId: number,
+      pos: number,
+      dailyPnL: number,
+      unrealizedPnL: number,
+      realizedPnL: number,
+      value: number
+    ) => {
+      ...
+    }
+  );
+```
+
+now is (look at `unrealizedPnL` and `realizedPnL`)
+
+```js
+ib.on(EventName.pnlSingle, (
+      reqId: number,
+      pos: number,
+      dailyPnL: number,
+      unrealizedPnL: number | undefined,
+      realizedPnL: number | undefined,
+      value: number
+    ) => {
+      ...
+    }
+  );
+```
+
 ## API Documenation
 
 <b>[See API documentation here.](https://stoqey.github.io/ib-doc/)</b>
