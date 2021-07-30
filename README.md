@@ -4,10 +4,11 @@
     <h1 align="center">Typescript API</h1>
   </p>
   <div style="display: flex;justify-content:center;">
-    <img alt="NPM" src="https://img.shields.io/npm/dt/@stoqey/ib.svg"></img>
-    <img alt="NPM" src="https://circleci.com/gh/stoqey/ib.svg?style=svg"></img>
+    <img src="https://img.shields.io/github/package-json/v/stoqey/ib"></img>
+    <img src="https://circleci.com/gh/stoqey/ib.svg?style=svg"></img>
+    <img src="https://img.shields.io/lgtm/grade/javascript/g/stoqey/ib.svg?logo=lgtm"></img>
+    <img src="https://img.shields.io/npm/dt/@stoqey/ib.svg"></img>
   </div>
-
 </div>
 
 `@stoqey/ib` is an [Interactive Brokers](http://interactivebrokers.com/) TWS (or IB Gateway) Typescript API client library for [Node.js](http://nodejs.org/). It is a direct port of Interactive Brokers' Java Client Version 9.76 from May 08 2019.
