@@ -15,6 +15,7 @@ export interface Configuration {
   // package config
   ib_host: string;
   ib_port: number;
+  ib_test_account: string;
   default_client_id: number;
   client_version: number;
   max_req_per_second: number;
@@ -29,7 +30,7 @@ export interface Configuration {
 
 let configuration: Configuration = null;
 
-const envsToInclude = ["ci", "env_config_test", "ib_host", "ib_port", "client_version", "max_req_per_second"];
+const envsToInclude = ["ci", "env_config_test", "ib_host", "ib_port", "ib_test_account", "client_version", "max_req_per_second"];
 
 function readJson(readPath: string) {
   try {

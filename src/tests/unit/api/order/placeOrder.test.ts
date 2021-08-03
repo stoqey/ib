@@ -6,13 +6,14 @@ import {
     PriceCondition, SecType, TriggerMethod
 } from "../../../..";
 import OptionType from "../../../../api/data/enum/option-type";
+import configuration from "../../../../common/configuration";
 
 describe("RequestAllOpenOrders", () => {
   jest.setTimeout(20000);
 
   test("placeOrder with PriceCondition", (done) => {
     const ib = new IBApi({
-      port: 4002, // use Gateway
+      port: configuration.ib_port, // use Gateway
     });
 
     ib.on(EventName.error, (error: Error, _code: ErrorCode, _reqId: number) => {
