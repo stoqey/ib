@@ -107,8 +107,13 @@ export enum OUT_MSG_ID {
  * @@internal
  *
  * Helper function to nullify a number of Number.MAX_VALUE
+ *
+ * Note that this is still there for legacy reason.
+ * With v1.2.1, Number.MAX_VALUE has been dropped and replaced with undefined on decoder-side,
+ * but we still support it on encoder-side to avoid any unreasonably large numbers submitted to
+ * TWS if any client code was not migrated.
  */
-function nullifyMax(number): number | null {
+function nullifyMax(number?: number): number | null {
   if (number === Number.MAX_VALUE) {
     return null;
   } else {
@@ -931,7 +936,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     if (this.serverVersion < MIN_SERVER_VER.CASH_QTY) {
-      if (order.cashQty !== undefined && order.cashQty != Number.MAX_VALUE) {
+      if (order.cashQty !== undefined) {
         return this.emitError(
           "It does not support cash quantity parameter",
           ErrorCode.UPDATE_TWS,
@@ -1213,11 +1218,11 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       // Volatility orders had specific watermark price attribs in server version 26
       const lower =
         this.serverVersion === 26 && order.orderType === "VOL"
-          ? Number.MAX_VALUE
+          ? undefined
           : order.stockRangeLower;
       const upper =
         this.serverVersion === 26 && order.orderType === "VOL"
-          ? Number.MAX_VALUE
+          ? undefined
           : order.stockRangeUpper;
       tokens.push(lower);
       tokens.push(upper);
@@ -1264,9 +1269,9 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       if (this.serverVersion === 26) {
         // Volatility orders had specific watermark price attribs in server version 26
         const lower =
-          order.orderType === "VOL" ? order.stockRangeLower : Number.MAX_VALUE;
+          order.orderType === "VOL" ? order.stockRangeLower : undefined;
         const upper =
-          order.orderType === "VOL" ? order.stockRangeUpper : Number.MAX_VALUE;
+          order.orderType === "VOL" ? order.stockRangeUpper : undefined;
         tokens.push(nullifyMax(lower));
         tokens.push(nullifyMax(upper));
       }
@@ -1296,8 +1301,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
 
     if (
       this.serverVersion >= MIN_SERVER_VER.SCALE_ORDERS3 &&
-      order.scalePriceIncrement != null &&
-      order.scalePriceIncrement !== Number.MAX_VALUE
+      order.scalePriceIncrement !== undefined
     ) {
       tokens.push(nullifyMax(order.scalePriceAdjustValue));
       tokens.push(nullifyMax(order.scalePriceAdjustInterval));

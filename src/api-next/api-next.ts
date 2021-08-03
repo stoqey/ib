@@ -66,15 +66,6 @@ const LOG_TAG = "IBApiNext";
 const TWS_LOG_TAG = "TWS";
 
 /**
- * @internal
- *
- * Returns undefined is the value is Number.MAX_VALUE, or the value otherwise.
- */
-function undefineMax(v: number | undefined): number | undefined {
-  return v === undefined || v === Number.MAX_VALUE ? undefined : v;
-}
-
-/**
  * Input arguments on the [[IBApiNext]] constructor.
  */
 export interface IBApiNextCreationOptions {
@@ -480,7 +471,7 @@ export class IBApiNext {
     account: string,
     contract: Contract,
     pos: number,
-    avgCost: number
+    avgCost?: number
   ): void => {
     const updatedPosition: Position = { account, contract, pos, avgCost };
 
@@ -620,8 +611,8 @@ export class IBApiNext {
     subscriptions: Map<number, IBApiNextSubscription<PnL>>,
     reqId: number,
     dailyPnL: number,
-    unrealizedPnL: number,
-    realizedPnL: number
+    unrealizedPnL?: number,
+    realizedPnL?: number
   ): void => {
     // get subscription
 
@@ -664,8 +655,8 @@ export class IBApiNext {
     reqId: number,
     pos: number,
     dailyPnL: number,
-    unrealizedPnL: number,
-    realizedPnL: number,
+    unrealizedPnL: number | undefined,
+    realizedPnL: number | undefined,
     value: number
   ) => {
     // get subscription
@@ -680,10 +671,10 @@ export class IBApiNext {
     subscription.next({
       all: {
         position: pos,
-        dailyPnL: undefineMax(dailyPnL),
-        unrealizedPnL: undefineMax(unrealizedPnL),
-        realizedPnL: undefineMax(realizedPnL),
-        marketValue: undefineMax(value),
+        dailyPnL: dailyPnL,
+        unrealizedPnL: unrealizedPnL,
+        realizedPnL: realizedPnL,
+        marketValue: value,
       },
     });
   };
@@ -737,9 +728,9 @@ export class IBApiNext {
     subscriptions: Map<number, IBApiNextSubscription<MutableMarketData>>,
     reqId: number,
     tickType: IBApiTickType,
-    value: number
+    value?: number
   ): void => {
-    // filter -1 on Bid/Ask and Number.MAX_VALUE on all.
+    // convert -1 on Bid/Ask to undefined
 
     if (
       value === -1 &&
@@ -748,10 +739,7 @@ export class IBApiNext {
         tickType === IBApiTickType.ASK ||
         tickType === IBApiTickType.DELAYED_ASK)
     ) {
-      value = Number.MAX_VALUE;
-    }
-    if (value === Number.MAX_VALUE) {
-      return;
+      value = undefined;
     }
 
     // get subscription
@@ -1043,14 +1031,12 @@ export class IBApiNext {
     const changed = new MutableMarketData();
 
     ticks.forEach((tick) => {
-      if (tick[1].value !== Number.MAX_VALUE && tick[1].value !== undefined) {
-        if (cached.has(tick[0])) {
-          changed.set(tick[0], tick[1]);
-        } else {
-          added.set(tick[0], tick[1]);
-        }
-        cached.set(tick[0], tick[1]);
+      if (cached.has(tick[0])) {
+        changed.set(tick[0], tick[1]);
+      } else {
+        added.set(tick[0], tick[1]);
       }
+      cached.set(tick[0], tick[1]);
     });
 
     // deliver to subject
@@ -1190,7 +1176,7 @@ export class IBApiNext {
     low: number,
     close: number,
     volume: number,
-    count: number,
+    count: number | undefined,
     WAP: number
   ): void => {
     // get subscription
@@ -1669,7 +1655,7 @@ export class IBApiNext {
     if (!sub) {
       return;
     }
-    
+
     // deliver data
     sub.next({ all: data });
     sub.complete();
