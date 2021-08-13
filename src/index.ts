@@ -71,6 +71,7 @@ export { EventName } from "./api/data/enum/event-name";
 // export historic market-data types
 
 export { Bar } from "./api/historical/bar";
+export { BarSizeSetting } from "./api/historical/bar-size-setting";
 export { HistogramEntry } from "./api/historical/histogramEntry";
 export { HistoricalTick } from "./api/historical/historicalTick";
 export { HistoricalTickBidAsk } from "./api/historical/historicalTickBidAsk";
