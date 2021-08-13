@@ -1,5 +1,5 @@
 /**
- * Allows bar size settings for historical market data:
+ * Allowed bar size settings for historical market data:
  * https://interactivebrokers.github.io/tws-api/historical_bars.html
  */
 export enum BarSizeSetting {
