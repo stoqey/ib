@@ -18,6 +18,7 @@ import { OrderConditionType } from "../../api/order/enum/order-condition-type";
 import { OrderType } from "../../api/order/enum/orderType";
 import { Order } from "../../api/order/order";
 import { ExecutionFilter } from "../../api/report/executionFilter";
+import { BarSizeSetting } from "../../api/historical/bar-size-setting";
 
 /**
  * @internal
@@ -1930,7 +1931,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     contract: Contract,
     endDateTime: string,
     durationStr: string,
-    barSizeSetting: string,
+    barSizeSetting: BarSizeSetting,
     whatToShow: string,
     useRTH: number,
     formatDate: number,

@@ -3,6 +3,7 @@
  */
 
 import { IBApi, IBApiNext, IBApiNextError, EventName, Bar } from "../../..";
+import { BarSizeSetting } from "../../../api/historical/bar-size-setting";
 
 describe("RxJS Wrapper: getHistoricalData()", () => {
   test("Promise result", (done) => {
@@ -47,7 +48,7 @@ describe("RxJS Wrapper: getHistoricalData()", () => {
     ];
 
     apiNext
-      .getHistoricalData({}, "", "", "", "", 0, 1)
+      .getHistoricalData({}, "", "", "" as BarSizeSetting, "", 0, 1)
       .then((bars) => {
         for (let i = 0; i < REF_BARS.length; i++) {
           expect(bars[i].time).toEqual(REF_BARS[i].time);
@@ -103,7 +104,7 @@ describe("RxJS Wrapper: getHistoricalData()", () => {
     // emit EventName.error and verify RxJS result
 
     apiNext
-      .getHistoricalData({}, "", "", "", "", 0, 1)
+      .getHistoricalData({}, "", "", "" as BarSizeSetting, "", 0, 1)
       .then(() => {
         fail();
       })
