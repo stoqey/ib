@@ -43,6 +43,7 @@ import { MutableAccountPositions } from "../core/api-next/api/position/mutable-a
 import { MutableMarketData } from "../core/api-next/api/market/mutable-market-data";
 import { IBApiNextLogger } from "../core/api-next/logger";
 import { IBApiAutoConnection } from "../core/api-next/auto-connection";
+import { BarSizeSetting } from "../api/historical/bar-size-setting";
 
 /**
  * @internal
@@ -1273,7 +1274,7 @@ export class IBApiNext {
     contract: Contract,
     endDateTime: string | undefined,
     durationStr: string,
-    barSizeSetting: string,
+    barSizeSetting: BarSizeSetting,
     whatToShow: string,
     useRTH: number,
     formatDate: number
@@ -1374,7 +1375,7 @@ export class IBApiNext {
    */
   getHistoricalDataUpdates(
     contract: Contract,
-    barSizeSetting: string,
+    barSizeSetting: BarSizeSetting,
     whatToShow: string,
     formatDate: number
   ): Observable<Bar> {

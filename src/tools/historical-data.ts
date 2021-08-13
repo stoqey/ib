@@ -6,6 +6,7 @@ import path from "path";
 import { IBApiNextError } from "../api-next";
 import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
+import { BarSizeSetting } from "../api/historical/bar-size-setting";
 
 /////////////////////////////////////////////////////////////////////////////////
 // The help text                                                               //
@@ -83,7 +84,7 @@ class PrintPositionsApp extends IBApiNextApp {
         },
         this.cmdLineArgs.endTime as string,
         this.cmdLineArgs.duration as string,
-        this.cmdLineArgs.barSize as string,
+        this.cmdLineArgs.barSize as BarSizeSetting,
         "MIDPOINT",
         0,
         1
