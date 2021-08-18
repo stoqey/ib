@@ -222,9 +222,10 @@ Copy `sample.env` to file `.env`
 1. run `yarn` to install dependencies
 2. `cp sample.env .env`
 3. fill in the account info
-4. run command `yarn build` to compile TypeScript code
-5. run command `docker-compose up` (use flag `-d` to run de-attached mode in background). Now the docker instance of IB Gateway should be running.
-6. to take the container down just run `docker-compose down`
+4. you might need to change the value of `IB_PORT` from `4002` to `4004` if using IB Gateway from `docker-compose` (Step 6)
+5. run command `yarn build` to compile TypeScript code
+6. run command `docker-compose up` (use flag `-d` to run de-attached mode in background). Now the docker instance of IB Gateway should be running.
+7. to take the container down just run `docker-compose down`
 
 Once docker is up and running with correct credentials it should be ready to accept connections.
 
