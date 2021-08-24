@@ -1228,7 +1228,7 @@ export class IBApiNext {
    * When requesting historical data, a finishing time and date is required along with a duration string.
    * For example, having:
    * - endDateTime: 20130701 23:59:59 GMT
-   * - durationStr: 3
+   * - durationStr: 3 D
    * will return three days of data counting backwards from July 1st 2013 at 23:59:59 GMT resulting in all the available bars of the last three days
    * until the date and time specified.
    *
