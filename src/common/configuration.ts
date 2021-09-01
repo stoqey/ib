@@ -99,9 +99,6 @@ const ensureInteger = (
     }
   });
 
-const isTrue = (value: any) =>
-  [true, "true", "1", "True", "yes", "Yes"].indexOf(value) > -1;
-
 function load() {
   const nodeEnvironment = process.env.NODE_ENV;
 
