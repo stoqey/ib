@@ -29,7 +29,14 @@ export interface Configuration {
 
 let configuration: Configuration = null;
 
-const envsToInclude = ["ci", "env_config_test", "ib_host", "ib_port", "client_version", "max_req_per_second"];
+const envsToInclude = [
+  "ci",
+  "env_config_test",
+  "ib_host",
+  "ib_port",
+  "client_version",
+  "max_req_per_second",
+];
 
 function readJson(readPath: string) {
   try {
@@ -137,8 +144,5 @@ export function get() {
   return configuration;
 }
 
-if (!configuration) {
-  configuration = load();
-}
-
+configuration = load();
 export default configuration;

@@ -82,7 +82,7 @@ class PrintPositionsApp extends IBApiNextApp {
           conId: this.cmdLineArgs.conid as number,
           exchange: this.cmdLineArgs.exchange as string,
         },
-        this.cmdLineArgs.endTime as string,
+        endTime as string,
         this.cmdLineArgs.duration as string,
         this.cmdLineArgs.barSize as BarSizeSetting,
         "MIDPOINT",
