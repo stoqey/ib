@@ -19,7 +19,7 @@ const USAGE_TEXT = "Usage: positions.js <options>";
 const OPTION_ARGUMENTS: [string, string][] = [
   [
     "watch",
-    "Watch for changes. If specified, the app will keep running and print positions updates to console as received from TWS." +
+    "Watch for changes. If specified, the app will keep running and print positions updates to console as received from TWS. " +
       "If not specified, the app will print a one-time snapshot and than exit.",
   ],
 ];
