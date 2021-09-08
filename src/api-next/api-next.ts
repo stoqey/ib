@@ -12,6 +12,8 @@ import {
   HistoricalTick,
   HistoricalTickBidAsk,
   HistoricalTickLast,
+  Order,
+  OrderState,
 } from "../";
 import LogLevel from "../api/data/enum/log-level";
 import {
@@ -44,6 +46,7 @@ import { MutableMarketData } from "../core/api-next/api/market/mutable-market-da
 import { IBApiNextLogger } from "../core/api-next/logger";
 import { IBApiAutoConnection } from "../core/api-next/auto-connection";
 import { BarSizeSetting } from "../api/historical/bar-size-setting";
+import { OpenOrder } from "./order/open-order";
 
 /**
  * @internal
@@ -1695,6 +1698,96 @@ export class IBApiNext {
           `${JSON.stringify(contract)}:${useRTH}:${duration}:${durationUnit}`
         )
         .pipe(map((v: { all: HistogramEntry[] }) => v.all))
+    );
+  }
+
+  /**
+   * Feeds in currently open orders.
+   *
+   * @param listener
+   * orderId: The order's unique id.
+   *
+   * contract: The order's [[Contract]]
+   *
+   * order: The currently active [[Order]]
+   *
+   * orderState: The order's [[OrderState]]
+   *
+   * @see [[placeOrder]], [[reqAllOpenOrders]], [[reqAutoOpenOrders]]
+   */
+  private readonly onOpenOrder = (
+    subscriptions: Map<number, IBApiNextSubscription<OpenOrder[]>>,
+    orderId: number,
+    contract: Contract,
+    order: Order,
+    orderState: OrderState
+  ): void => {
+    subscriptions.forEach((sub) => {
+      const allOrders = sub.lastAllValue ?? [];
+      allOrders.push({ orderId, contract, order, orderState });
+      sub.next({
+        all: allOrders,
+      });
+    });
+  };
+
+  /**
+   *  Ends the subscrition once all openOrders are recieved
+   *  @param subscriptions
+   */
+  private readonly onOpenOrderEnd = (
+    subscriptions: Map<number, IBApiNextSubscription<OpenOrder[]>>
+  ): void => {
+    console.log("Recieved end of Orders");
+    subscriptions.forEach((sub) => {
+      sub.complete();
+    });
+  };
+
+  /**
+   * Response to API bind order control message.
+   *
+   * @param orderId: permId
+   * @param apiClientId: API client id.
+   * @param apiOrderId: API order id.
+   *
+   * @see [[reqOpenOrders]]
+   */
+  private readonly onOrderBound = (
+    // TODO finish implementation
+    subscription: Map<number, IBApiNextSubscription<OpenOrder[]>>,
+    orderId: number,
+    apiClientId: number,
+    apiOrderId: number
+  ): void => {
+    // not sure what it's used for
+    console.log(
+      `missing OrderBound implementation - ${orderId}, ${apiClientId}, ${apiOrderId}`
+    );
+  };
+
+  /**
+   * Requests all current open orders in associated accounts at the current moment.
+   * The existing orders will be received via the openOrder and orderStatus events.
+   *
+   * Open orders are returned once; this function does not initiate a subscription.
+   * Author: Tsopic - proud father of his first rxjs function
+   */
+  getAllOpenOrders(): Promise<OpenOrder[]> {
+    return lastValueFrom(
+      this.subscriptions
+        .register<OpenOrder[]>(
+          () => {
+            this.api.reqAllOpenOrders();
+          },
+          undefined,
+          [
+            [EventName.openOrder, this.onOpenOrder],
+            [EventName.orderStatus, this.onOrderBound],
+            [EventName.openOrderEnd, this.onOpenOrderEnd],
+          ]
+        )
+        .pipe(map((v: { all: OpenOrder[] }) => v.all))
     );
   }
 }
