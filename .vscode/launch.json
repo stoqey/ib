@@ -367,6 +367,23 @@
         "${workspaceFolder}/**",
         "!**/node_modules/**"
       ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Tool: open-orders",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "runtimeArgs": [
+        "--trace-warnings"
+      ],
+      "program": "${workspaceFolder}/dist/tools/open-orders.js",
+      "outputCapture": "std",
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ]
     }
   ]
 }

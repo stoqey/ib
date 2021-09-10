@@ -47,6 +47,10 @@ export {
   AccountPositionsUpdate,
 } from "./position/position";
 
+// Order
+export { OpenOrder } from "./order/open-order";
+export { OpenOrdersUpdate } from "./order/open-order-update";
+
 // IBApiNext
 
 export { IBApiNext, IBApiNextCreationOptions } from "./api-next";
