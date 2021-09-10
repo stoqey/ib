@@ -1764,10 +1764,6 @@ export class IBApiNext {
 
   /**
    * Requests all current open orders in associated accounts at the current moment.
-   * The existing orders will be received via the openOrder and orderStatus events.
-   *
-   * Open orders are returned once; this function does not initiate a subscription.
-   * Author: Tsopic - proud father of his first rxjs function
    */
   getAllOpenOrders(): Promise<OpenOrder[]> {
     return lastValueFrom(
