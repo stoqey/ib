@@ -1760,9 +1760,6 @@ export class IBApiNext {
     apiOrderId: number
   ): void => {
     // not sure what it's used for
-    console.log(
-      `missing OrderBound implementation - ${orderId}, ${apiClientId}, ${apiOrderId}`
-    );
   };
 
   /**
