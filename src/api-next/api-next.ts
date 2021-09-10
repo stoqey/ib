@@ -1738,7 +1738,6 @@ export class IBApiNext {
   private readonly onOpenOrderEnd = (
     subscriptions: Map<number, IBApiNextSubscription<OpenOrder[]>>
   ): void => {
-    console.log("Recieved end of Orders");
     subscriptions.forEach((sub) => {
       sub.complete();
     });
