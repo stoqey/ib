@@ -1666,11 +1666,12 @@ export class IBApiNext {
     // we only want to complete one subscription at a time,
     // to avoid multiple getNextValidOrderId calls to return same value
     const next = subscriptions.entries().next();
-    if (next && !next.done && next.value[1]) {
+    if (next && !next.done) {
       next.value[1].next({
         all: orderId,
       });
       next.value[1].complete();
+      subscriptions.delete(next.value[0]);
     }
   };
 
