@@ -388,7 +388,7 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Tool: place-order",
+      "name": "Tool: place-order (!!DANGER!!)",
       "skipFiles": [
         "<node_internals>/**"
       ],
