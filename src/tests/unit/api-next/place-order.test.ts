@@ -10,6 +10,7 @@ import IBApi, {
   OrderType,
   SecType,
 } from "../../..";
+import configuration from "../../../common/configuration";
 // import configuration from "../../../common/configuration";
 
 describe("Place orders to IB", () => {
@@ -58,7 +59,7 @@ describe("Place orders to IB", () => {
       lmtPrice: 120,
       orderId,
       totalQuantity: 10,
-      account: "DU3360023",
+      account: configuration.ib_test_account,
     };
 
     apiNext.placeOrder(orderId, contract, order);

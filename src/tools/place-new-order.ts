@@ -3,16 +3,8 @@
  */
 
 import path from "path";
-import { Subscription } from "rxjs";
 
-import {
-  Contract,
-  IBApiNextError,
-  Order,
-  OrderAction,
-  OrderType,
-  SecType,
-} from "../";
+import { Contract, Order, OrderAction, OrderType, SecType } from "../";
 import configuration from "../common/configuration";
 import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
@@ -21,16 +13,16 @@ import { IBApiNextApp } from "./common/ib-api-next-app";
 // The help text.                                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-const DESCRIPTION_TEXT = "Place order.";
-const USAGE_TEXT = "Usage: place-orders.js <options>";
+const DESCRIPTION_TEXT = "Place new order.";
+const USAGE_TEXT = "Usage: place-new-orders.js <options>";
 const OPTION_ARGUMENTS: [string, string][] = [];
-const EXAMPLE_TEXT = "place-orders.js";
+const EXAMPLE_TEXT = "place-new-orders.js";
 
 //////////////////////////////////////////////////////////////////////////////
 // The App code                                                             //
 //////////////////////////////////////////////////////////////////////////////
 
-class PlaceOrdersApp extends IBApiNextApp {
+class PlaceNewOrdersApp extends IBApiNextApp {
   constructor() {
     super(DESCRIPTION_TEXT, USAGE_TEXT, OPTION_ARGUMENTS, EXAMPLE_TEXT);
   }
@@ -43,32 +35,23 @@ class PlaceOrdersApp extends IBApiNextApp {
 
     this.connect(this.cmdLineArgs.watch ? 10000 : 0);
 
-    this.api
-      .getNextValidOrderId()
-      .then((id) => {
-        this.printText(`${id}`);
-        const contract: Contract = {
-          symbol: "AAPL",
-          exchange: "SMART",
-          currency: "USD",
-          secType: SecType.STK,
-        };
+    const contract: Contract = {
+      symbol: "AAPL",
+      exchange: "SMART",
+      currency: "USD",
+      secType: SecType.STK,
+    };
 
-        const order: Order = {
-          orderType: OrderType.LMT,
-          action: OrderAction.BUY,
-          lmtPrice: 120,
-          orderId: id,
-          totalQuantity: 10,
-          account: configuration.ib_test_account,
-          transmit: true,
-        };
-        this.api.placeOrder(id, contract, order);
-        this.stop();
-      })
-      .catch((err: IBApiNextError) => {
-        this.error(`getNextValidOrderId failed with '${err.error.message}'`);
-      });
+    const order: Order = {
+      orderType: OrderType.LMT,
+      action: OrderAction.BUY,
+      lmtPrice: 120,
+      totalQuantity: 10,
+      account: configuration.ib_test_account,
+      transmit: true,
+    };
+    this.api.placeNewOrder(contract, order);
+    //setTimeout(process.exit(0), 3000);
   }
 
   /**
@@ -81,4 +64,4 @@ class PlaceOrdersApp extends IBApiNextApp {
 
 // run the app
 
-new PlaceOrdersApp().start();
+new PlaceNewOrdersApp().start();

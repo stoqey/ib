@@ -1830,6 +1830,34 @@ export class IBApiNext {
   }
 
   /**
+   * Places new order.
+   * Use a sequential id starting with the id received at the nextValidId method.
+   * If a new order is placed with an order ID less than or equal to the order ID of a previous order an error will occur.
+   * @param contract The order's [[Contract]].
+   * @param order The [[Order]] object.
+   *  @see [[getNextValidOrderId]]
+   */
+  placeNewOrder(contract: Contract, order: Order): void {
+    this.getNextValidOrderId().then((orderId: number) => {
+      order.orderId = orderId;
+      console.log(orderId);
+      this.placeOrder(orderId, contract, order);
+    });
+  }
+
+  /**
+   * Places new order.
+   *  * @param id The order's unique identifier.
+
+   * @param contract The order's [[Contract]].
+   * @param order The [[Order]] object.
+   *
+   */
+  modifyOrder(id: number, contract: Contract, order: Order): void {
+    this.api.placeOrder(id, contract, order);
+  }
+
+  /**
    * Cancels an active order placed by from the same API client ID.
    *
    * Note: API clients cannot cancel individual orders placed by other clients.
