@@ -19,7 +19,7 @@ const OPTION_ARGUMENTS: [string, string][] = [
   ["price=<number>", "price of an order."],
   ["symbol=<name>", "The symbol name."],
   ["quantity=<number>", "Quantity of an order."],
-  ["clientId=<number>", "Client id of current ib connection."],
+  ["clientId=<number>", "Client id of current ib connection. Default is 0"],
 ];
 const EXAMPLE_TEXT =
   "place-new-orders.js -price=120 -symbol=AMZN -quantity=10 -clientId=0";
@@ -59,7 +59,10 @@ class PlaceNewOrdersApp extends IBApiNextApp {
       account: configuration.ib_test_account,
       transmit: true,
     };
-    this.api.placeNewOrder(contract, order);
+    this.api.placeNewOrder(contract, order).then((orderId: number) => {
+      this.printText(orderId.toString());
+      this.stop();
+    });
     //setTimeout(process.exit(0), 3000);
   }
 

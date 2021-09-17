@@ -18,7 +18,7 @@ const USAGE_TEXT = "Usage: modify-orders.js <options>";
 const OPTION_ARGUMENTS: [string, string][] = [
   ["price=<number>", "price of an order."],
   ["quantity=<number>", "Quantity of an order."],
-  ["clientId=<number>", "Client id of current ib connection."],
+  ["clientId=<number>", "Client id of current ib connection. Default is 0"],
   ["orderId=<number>", "id of an order."],
 ];
 const EXAMPLE_TEXT =
@@ -41,7 +41,7 @@ class ModifyOrdersApp extends IBApiNextApp {
 
     this.connect(
       this.cmdLineArgs.watch ? 10000 : 0,
-      this.cmdLineArgs.clientId ? +this.cmdLineArgs.clientId : 0
+      +this.cmdLineArgs.clientId ?? 0
     );
     const id: number = +this.cmdLineArgs.orderId;
 
