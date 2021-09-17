@@ -1839,8 +1839,6 @@ export class IBApiNext {
    */
   placeNewOrder(contract: Contract, order: Order): void {
     this.getNextValidOrderId().then((orderId: number) => {
-      order.orderId = orderId;
-      console.log(orderId);
       this.placeOrder(orderId, contract, order);
     });
   }

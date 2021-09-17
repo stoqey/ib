@@ -1,5 +1,5 @@
 /**
- * This App will print IBKR account place new orders to console.
+ * This App will print IBKR account modify orders to console.
  */
 
 import path from "path";
@@ -13,22 +13,22 @@ import { IBApiNextApp } from "./common/ib-api-next-app";
 // The help text.                                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-const DESCRIPTION_TEXT = "Place new order.";
-const USAGE_TEXT = "Usage: place-new-orders.js <options>";
+const DESCRIPTION_TEXT = "Modify order.";
+const USAGE_TEXT = "Usage: modify-orders.js <options>";
 const OPTION_ARGUMENTS: [string, string][] = [
   ["price=<number>", "price of an order."],
-  ["symbol=<name>", "The symbol name."],
   ["quantity=<number>", "Quantity of an order."],
   ["clientId=<number>", "Client id of current ib connection."],
+  ["orderId=<number>", "id of an order."],
 ];
 const EXAMPLE_TEXT =
-  "place-new-orders.js -price=120 -symbol=AMZN -quantity=10 -clientId=0";
+  "modify-orders.js -price=120 -quantity=10 -clientId=0 -orderId=2";
 
 //////////////////////////////////////////////////////////////////////////////
 // The App code                                                             //
 //////////////////////////////////////////////////////////////////////////////
 
-class PlaceNewOrdersApp extends IBApiNextApp {
+class ModifyOrdersApp extends IBApiNextApp {
   constructor() {
     super(DESCRIPTION_TEXT, USAGE_TEXT, OPTION_ARGUMENTS, EXAMPLE_TEXT);
   }
@@ -43,9 +43,10 @@ class PlaceNewOrdersApp extends IBApiNextApp {
       this.cmdLineArgs.watch ? 10000 : 0,
       this.cmdLineArgs.clientId ? +this.cmdLineArgs.clientId : 0
     );
+    const id: number = +this.cmdLineArgs.orderId;
 
     const contract: Contract = {
-      symbol: this.cmdLineArgs.symbol as string,
+      symbol: "AAPL",
       exchange: "SMART",
       currency: "USD",
       secType: SecType.STK,
@@ -55,12 +56,13 @@ class PlaceNewOrdersApp extends IBApiNextApp {
       orderType: OrderType.LMT,
       action: OrderAction.BUY,
       lmtPrice: +this.cmdLineArgs.price,
+      orderId: id,
       totalQuantity: +this.cmdLineArgs.quantity,
       account: configuration.ib_test_account,
       transmit: true,
     };
-    this.api.placeNewOrder(contract, order);
-    //setTimeout(process.exit(0), 3000);
+
+    this.api.modifyOrder(id, contract, order);
   }
 
   /**
@@ -73,4 +75,4 @@ class PlaceNewOrdersApp extends IBApiNextApp {
 
 // run the app
 
-new PlaceNewOrdersApp().start();
+new ModifyOrdersApp().start();

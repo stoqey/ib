@@ -3,7 +3,6 @@
  */
 
 import path from "path";
-import { Subscription } from "rxjs";
 
 import {
   Contract,
@@ -20,11 +19,14 @@ import { IBApiNextApp } from "./common/ib-api-next-app";
 /////////////////////////////////////////////////////////////////////////////////
 // The help text.                                                              //
 /////////////////////////////////////////////////////////////////////////////////
-
 const DESCRIPTION_TEXT = "Place order.";
 const USAGE_TEXT = "Usage: place-orders.js <options>";
-const OPTION_ARGUMENTS: [string, string][] = [];
-const EXAMPLE_TEXT = "place-orders.js";
+const OPTION_ARGUMENTS: [string, string][] = [
+  ["price=<number>", "price of an order."],
+  ["symbol=<name>", "The symbol name."],
+  ["quantity=<number>", "Quantity of an order."],
+];
+const EXAMPLE_TEXT = "place-orders.js -price=120 -symbol=AMZN -quantity=10";
 
 //////////////////////////////////////////////////////////////////////////////
 // The App code                                                             //
@@ -48,7 +50,7 @@ class PlaceOrdersApp extends IBApiNextApp {
       .then((id) => {
         this.printText(`${id}`);
         const contract: Contract = {
-          symbol: "AAPL",
+          symbol: this.cmdLineArgs.symbol as string,
           exchange: "SMART",
           currency: "USD",
           secType: SecType.STK,
@@ -57,9 +59,9 @@ class PlaceOrdersApp extends IBApiNextApp {
         const order: Order = {
           orderType: OrderType.LMT,
           action: OrderAction.BUY,
-          lmtPrice: 120,
+          lmtPrice: +this.cmdLineArgs.price,
           orderId: id,
-          totalQuantity: 10,
+          totalQuantity: +this.cmdLineArgs.quantity,
           account: configuration.ib_test_account,
           transmit: true,
         };
