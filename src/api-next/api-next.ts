@@ -1831,22 +1831,21 @@ export class IBApiNext {
 
   /**
    * Places new order.
-   * Use a sequential id starting with the id received at the nextValidId method.
-   * If a new order is placed with an order ID less than or equal to the order ID of a previous order an error will occur.
+   * This method does use the order id as returned by getNextValidOrderId() method and returns it as a result.
+   * If you want to send multiple orders, consider using  placeOrder method instead and increase the order id manually for each new order, avoiding the overhead of calling getNextValidOrderId() for each.
    * @param contract The order's [[Contract]].
    * @param order The [[Order]] object.
    *  @see [[getNextValidOrderId]]
    */
-  placeNewOrder(contract: Contract, order: Order): void {
-    this.getNextValidOrderId().then((orderId: number) => {
-      this.placeOrder(orderId, contract, order);
-    });
+  async placeNewOrder(contract: Contract, order: Order): Promise<number> {
+    const orderId = await this.getNextValidOrderId();
+    this.placeOrder(orderId, contract, order);
+    return orderId;
   }
 
   /**
    * Places new order.
-   *  * @param id The order's unique identifier.
-
+   * @param id The order's unique identifier.
    * @param contract The order's [[Contract]].
    * @param order The [[Order]] object.
    *

@@ -4,7 +4,7 @@
 
 import { IBApi, IBApiNext, IBApiNextError, EventName } from "../../..";
 
-describe("RxJS Wrapper: getNextUnusedOrderId()", () => {
+describe("RxJS Wrapper: getNextValidOrderId()", () => {
   test("Promise result", (done) => {
     // create IBApiNext
 
