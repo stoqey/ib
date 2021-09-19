@@ -2,12 +2,15 @@ import { lastValueFrom, Observable, Subject } from "rxjs";
 import { map } from "rxjs/operators";
 import {
   Bar,
+  CommissionReport,
   Contract,
   ContractDetails,
   DepthMktDataDescription,
   DurationUnit,
   ErrorCode,
   EventName,
+  Execution,
+  ExecutionFilter,
   HistogramEntry,
   HistoricalTick,
   HistoricalTickBidAsk,
@@ -47,6 +50,7 @@ import { IBApiNextLogger } from "../core/api-next/logger";
 import { IBApiAutoConnection } from "../core/api-next/auto-connection";
 import { BarSizeSetting } from "../api/historical/bar-size-setting";
 import { OpenOrder } from "./order/open-order";
+import { ExecutionDetail } from "./order/execution-detail";
 
 /**
  * @internal
@@ -1780,6 +1784,187 @@ export class IBApiNext {
           ]
         )
         .pipe(map((v: { all: OpenOrder[] }) => v.all))
+    );
+  }
+
+  /** nextValidId event handler */
+  private readonly onNextValidId = (
+    subscriptions: Map<number, IBApiNextSubscription<number>>,
+    orderId: number
+  ): void => {
+    // this is special to other one-shot callbacks:
+    // we only want to complete one subscription at a time,
+    // to avoid multiple getNextValidOrderId calls to return same value
+    const next = subscriptions.entries().next();
+    if (next && !next.done && next.value[1]) {
+      next.value[1].next({
+        all: orderId,
+      });
+      next.value[1].complete();
+    }
+  };
+
+  /**
+   * Requests the next valid order ID at the current moment.
+   */
+  getNextValidOrderId(): Promise<number> {
+    return lastValueFrom(
+      this.subscriptions
+        .register<number>(
+          () => {
+            this.api.reqIds();
+          },
+          undefined,
+          [[EventName.nextValidId, this.onNextValidId]]
+        )
+        .pipe(map((v: { all: number }) => v.all))
+    );
+  }
+
+  /**
+   * Places or modifies an order.
+   * @param id The order's unique identifier.
+   * Use a sequential id starting with the id received at the nextValidId method.
+   * If a new order is placed with an order ID less than or equal to the order ID of a previous order an error will occur.
+   * @param contract The order's [[Contract]].
+   * @param order The [[Order]] object.
+   */
+  placeOrder(id: number, contract: Contract, order: Order): void {
+    this.api.placeOrder(id, contract, order);
+  }
+
+  /**
+   * Places new order.
+   * This method does use the order id as returned by getNextValidOrderId() method and returns it as a result.
+   * If you want to send multiple orders, consider using  placeOrder method instead and increase the order id manually for each new order, avoiding the overhead of calling getNextValidOrderId() for each.
+   * @param contract The order's [[Contract]].
+   * @param order The [[Order]] object.
+   *  @see [[getNextValidOrderId]]
+   */
+  async placeNewOrder(contract: Contract, order: Order): Promise<number> {
+    const orderId = await this.getNextValidOrderId();
+    this.placeOrder(orderId, contract, order);
+    return orderId;
+  }
+
+  /**
+   * Places new order.
+   * @param id The order's unique identifier.
+   * @param contract The order's [[Contract]].
+   * @param order The [[Order]] object.
+   *
+   */
+  modifyOrder(id: number, contract: Contract, order: Order): void {
+    this.api.placeOrder(id, contract, order);
+  }
+
+  /**
+   * Cancels an active order placed by from the same API client ID.
+   *
+   * Note: API clients cannot cancel individual orders placed by other clients.
+   * Use [[cancelAllOrders]] instead.
+   *
+   * @param id The order id.
+   */
+  cancelOrder(id: number): void {
+    this.api.cancelOrder(id);
+  }
+
+  /**
+   * Cancels all active orders.
+   * This method will cancel ALL open orders including those placed directly from TWS.
+   *
+   * @see [[cancelOrder]]
+   */
+  cancelAllOrders(): void {
+    this.api.reqGlobalCancel();
+  }
+
+  /**
+   *  Ends the subscrition once all trades are recieved
+   *  @param subscriptions
+   *  @param reqId
+   *  @param contract  Contract details that is used for order
+   *  @param execution Execution details of an order
+   */
+  private readonly onExecDetails = (
+    subscriptions: Map<number, IBApiNextSubscription<ExecutionDetail[]>>,
+    reqId: number,
+    contract: Contract,
+    execution: Execution
+  ): void => {
+    try {
+      subscriptions.forEach((sub) => {
+        const allTrades = sub.lastAllValue ?? [];
+        allTrades.push({ reqId, contract, execution });
+        sub.next({
+          all: allTrades,
+        });
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  /**
+   *  Ends the subscrition once all trades are recieved
+   *  @param subscriptions
+   */
+  private readonly onExecDetailsEnd = (
+    subscriptions: Map<number, IBApiNextSubscription<ExecutionDetail[]>>,
+    reqId: number
+  ): void => {
+    console.log(reqId);
+    subscriptions.forEach((sub) => {
+      sub.complete();
+    });
+  };
+
+  /**
+   *  Commision report of all the clients
+   *  @param subscriptions
+   *  @param commissionReport commissionReport details
+   */
+  private readonly onComissionReport = (
+    subscriptions: Map<number, IBApiNextSubscription<ExecutionDetail[]>>,
+    commissionReport: CommissionReport
+  ): void => {
+    console.log(
+      "CommissionReport. " +
+        commissionReport.execId +
+        " - " +
+        commissionReport.commission +
+        " " +
+        commissionReport.currency +
+        " RPNL " +
+        commissionReport.realizedPNL
+    );
+  };
+  /**
+   *  Ends the subscrition once all trades are recieved
+   *  @param filter  filter trade data on [[ExecutionFilter]]
+   *  @see [[onExecDetails]]
+   *  @see [[onExecDetailsEnd]]
+   */
+  getClosedOrders(filter: ExecutionFilter): Promise<ExecutionDetail[]> {
+    return lastValueFrom(
+      this.subscriptions
+        .register<ExecutionDetail[]>(
+          (reqId) => {
+            this.api.reqExecutions(reqId, filter);
+          },
+          // TODO: Cancel is called after executing request function
+          // (...arg) => {
+          //   console.log(arg);
+          // },
+          undefined,
+          [
+            [EventName.execDetails, this.onExecDetails],
+            [EventName.execDetailsEnd, this.onExecDetailsEnd],
+            [EventName.commissionReport, this.onComissionReport],
+          ]
+        )
+        .pipe(map((v: { all: ExecutionDetail[] }) => v.all))
     );
   }
 }
