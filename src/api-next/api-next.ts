@@ -1914,10 +1914,21 @@ export class IBApiNext {
     subscriptions: Map<number, IBApiNextSubscription<ExecutionDetail[]>>,
     reqId: number
   ): void => {
-    console.log(reqId);
-    subscriptions.forEach((sub) => {
+    const sub = subscriptions.get(reqId);
+    if (!sub) {
+      return;
+    }
+    // if no value recieved.
+    if (!sub.lastAllValue) {
+      sub.next({ all: [] });
+    }
+    // deliver data
+    try {
+      // sub.next({ all: [] });
       sub.complete();
-    });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   /**

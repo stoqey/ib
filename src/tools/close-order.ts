@@ -1,18 +1,9 @@
 /**
  * This App will print IBKR account place new orders to console.
  */
-
 import path from "path";
 
-import {
-  Contract,
-  ExecutionFilter,
-  Order,
-  OrderAction,
-  OrderType,
-  SecType,
-} from "../";
-import configuration from "../common/configuration";
+import { ExecutionFilter } from "../";
 import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
@@ -51,9 +42,15 @@ class CloseOrdersApp extends IBApiNextApp {
     const executionFilter: ExecutionFilter = {
       clientId: "0",
     };
-    this.api.getClosedOrders(executionFilter).then((closedOrders) => {
-      this.printObject(closedOrders);
-    });
+    this.api.getClosedOrders(executionFilter).then(
+      (closedOrders) => {
+        this.printObject(closedOrders);
+        this.exit();
+      },
+      (error) => {
+        console.log(error);
+      }
+    );
   }
 
   /**
