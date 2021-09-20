@@ -42,7 +42,7 @@ class CloseOrdersApp extends IBApiNextApp {
     const executionFilter: ExecutionFilter = {
       clientId: "0",
     };
-    this.api.getClosedOrders(executionFilter).then(
+    this.api.getExecutionDetails(executionFilter).then(
       (closedOrders) => {
         this.printObject(closedOrders);
         this.exit();

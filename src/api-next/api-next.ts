@@ -1949,12 +1949,13 @@ export class IBApiNext {
     }
   };
   /**
-   *  Ends the subscrition once all trades are recieved
+   *  Ends the subscrition once all executed trades are recieved
    *  @param filter  filter trade data on [[ExecutionFilter]]
    *  @see [[onExecDetails]]
    *  @see [[onExecDetailsEnd]]
+   *  Executed trades only
    */
-  getClosedOrders(filter: ExecutionFilter): Promise<ExecutionDetail[]> {
+  getExecutionDetails(filter: ExecutionFilter): Promise<ExecutionDetail[]> {
     return lastValueFrom(
       this.subscriptions
         .register<ExecutionDetail[]>(
