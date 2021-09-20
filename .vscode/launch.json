@@ -467,6 +467,26 @@
         "${workspaceFolder}/**",
         "!**/node_modules/**"
       ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Tool: commission-report",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "runtimeArgs": [
+        "--trace-warnings"
+      ],
+      "program": "${workspaceFolder}/dist/tools/commission-report.js",
+      "args": [
+        "-clientId=0",
+      ],
+      "outputCapture": "std",
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ]
     }
   ]
 }

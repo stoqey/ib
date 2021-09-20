@@ -1911,24 +1911,20 @@ export class IBApiNext {
    *  @param subscriptions
    */
   private readonly onExecDetailsEnd = (
-    subscriptions: Map<number, IBApiNextSubscription<ExecutionDetail[]>>,
+    subscriptions: Map<
+      number,
+      IBApiNextSubscription<ExecutionDetail[] | CommissionReport[]>
+    >,
     reqId: number
   ): void => {
     const sub = subscriptions.get(reqId);
     if (!sub) {
       return;
     }
-    // if no value recieved.
     if (!sub.lastAllValue) {
       sub.next({ all: [] });
     }
-    // deliver data
-    try {
-      // sub.next({ all: [] });
-      sub.complete();
-    } catch (error) {
-      console.log(error);
-    }
+    sub.complete();
   };
 
   /**
@@ -1937,19 +1933,20 @@ export class IBApiNext {
    *  @param commissionReport commissionReport details
    */
   private readonly onComissionReport = (
-    subscriptions: Map<number, IBApiNextSubscription<ExecutionDetail[]>>,
+    subscriptions: Map<number, IBApiNextSubscription<CommissionReport[]>>,
     commissionReport: CommissionReport
   ): void => {
-    console.log(
-      "CommissionReport. " +
-        commissionReport.execId +
-        " - " +
-        commissionReport.commission +
-        " " +
-        commissionReport.currency +
-        " RPNL " +
-        commissionReport.realizedPNL
-    );
+    try {
+      subscriptions.forEach((sub) => {
+        const commissionReports = sub.lastAllValue ?? [];
+        commissionReports.push(commissionReport);
+        sub.next({
+          all: commissionReports,
+        });
+      });
+    } catch (error) {
+      console.log(error);
+    }
   };
   /**
    *  Ends the subscrition once all trades are recieved
@@ -1964,18 +1961,31 @@ export class IBApiNext {
           (reqId) => {
             this.api.reqExecutions(reqId, filter);
           },
-          // TODO: Cancel is called after executing request function
-          // (...arg) => {
-          //   console.log(arg);
-          // },
           undefined,
           [
             [EventName.execDetails, this.onExecDetails],
             [EventName.execDetailsEnd, this.onExecDetailsEnd],
-            [EventName.commissionReport, this.onComissionReport],
+            // [EventName.commissionReport, this.onComissionReport],
           ]
         )
         .pipe(map((v: { all: ExecutionDetail[] }) => v.all))
+    );
+  }
+  getCommissionReport(filter: ExecutionFilter): Promise<CommissionReport[]> {
+    return lastValueFrom(
+      this.subscriptions
+        .register<CommissionReport[]>(
+          (reqId) => {
+            this.api.reqExecutions(reqId, filter);
+          },
+          undefined,
+          [
+            //[EventName.execDetails, this.onExecDetails],
+            [EventName.execDetailsEnd, this.onExecDetailsEnd],
+            [EventName.commissionReport, this.onComissionReport],
+          ]
+        )
+        .pipe(map((v: { all: CommissionReport[] }) => v.all))
     );
   }
 }
