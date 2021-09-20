@@ -62,7 +62,7 @@ export class IBApiNextApp {
   protected cmdLineArgs: Record<string, string | number>;
 
   /** Connect to TWS. */
-  connect(reconnectInterval?: number): void {
+  connect(reconnectInterval?: number, clientId?: number): void {
     // create the IBApiNext object
 
     const port = (this.cmdLineArgs.port as number) ?? configuration.ib_port;
@@ -111,7 +111,7 @@ export class IBApiNextApp {
       });
     }
 
-    this.api.connect(+this.cmdLineArgs.clientId ?? 0);
+    this.api.connect(clientId);
   }
 
   /**
