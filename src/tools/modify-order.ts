@@ -43,7 +43,7 @@ class ModifyOrdersApp extends IBApiNextApp {
       +this.cmdLineArgs.clientId ?? 0
     );
 
-    const id = 8;
+    const id: number = this.cmdLineArgs.orderId;
 
     const contract: Contract = {
       symbol: "AAPL",
