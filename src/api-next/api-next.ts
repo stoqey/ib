@@ -1893,17 +1893,13 @@ export class IBApiNext {
     contract: Contract,
     execution: Execution
   ): void => {
-    try {
-      subscriptions.forEach((sub) => {
-        const allTrades = sub.lastAllValue ?? [];
-        allTrades.push({ reqId, contract, execution });
-        sub.next({
-          all: allTrades,
-        });
+    subscriptions.forEach((sub) => {
+      const allTrades = sub.lastAllValue ?? [];
+      allTrades.push({ reqId, contract, execution });
+      sub.next({
+        all: allTrades,
       });
-    } catch (error) {
-      console.log(error);
-    }
+    });
   };
 
   /**
@@ -1936,17 +1932,13 @@ export class IBApiNext {
     subscriptions: Map<number, IBApiNextSubscription<CommissionReport[]>>,
     commissionReport: CommissionReport
   ): void => {
-    try {
-      subscriptions.forEach((sub) => {
-        const commissionReports = sub.lastAllValue ?? [];
-        commissionReports.push(commissionReport);
-        sub.next({
-          all: commissionReports,
-        });
+    subscriptions.forEach((sub) => {
+      const commissionReports = sub.lastAllValue ?? [];
+      commissionReports.push(commissionReport);
+      sub.next({
+        all: commissionReports,
       });
-    } catch (error) {
-      console.log(error);
-    }
+    });
   };
   /**
    *  Ends the subscrition once all executed trades are recieved
