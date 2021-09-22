@@ -440,7 +440,47 @@
         "-price=115",
         "-quantity=12",
         "-clientId=0",
-        "-orderId=2",
+        "-orderId=1",
+      ],
+      "outputCapture": "std",
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Tool: closed-orders",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "runtimeArgs": [
+        "--trace-warnings"
+      ],
+      "program": "${workspaceFolder}/dist/tools/close-order.js",
+      "args": [
+        "-clientId=0",
+      ],
+      "outputCapture": "std",
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Tool: commission-report",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "runtimeArgs": [
+        "--trace-warnings"
+      ],
+      "program": "${workspaceFolder}/dist/tools/commission-report.js",
+      "args": [
+        "-clientId=0",
       ],
       "outputCapture": "std",
       "resolveSourceMapLocations": [

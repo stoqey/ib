@@ -2,12 +2,15 @@ import { lastValueFrom, Observable, Subject } from "rxjs";
 import { map } from "rxjs/operators";
 import {
   Bar,
+  CommissionReport,
   Contract,
   ContractDetails,
   DepthMktDataDescription,
   DurationUnit,
   ErrorCode,
   EventName,
+  Execution,
+  ExecutionFilter,
   HistogramEntry,
   HistoricalTick,
   HistoricalTickBidAsk,
@@ -47,6 +50,7 @@ import { IBApiNextLogger } from "../core/api-next/logger";
 import { IBApiAutoConnection } from "../core/api-next/auto-connection";
 import { BarSizeSetting } from "../api/historical/bar-size-setting";
 import { OpenOrder } from "./order/open-order";
+import { ExecutionDetail } from "./order/execution-detail";
 
 /**
  * @internal
@@ -1874,5 +1878,107 @@ export class IBApiNext {
    */
   cancelAllOrders(): void {
     this.api.reqGlobalCancel();
+  }
+
+  /**
+   *  Ends the subscrition once all trades are recieved
+   *  @param subscriptions
+   *  @param reqId
+   *  @param contract  Contract details that is used for order
+   *  @param execution Execution details of an order
+   */
+  private readonly onExecDetails = (
+    subscriptions: Map<number, IBApiNextSubscription<ExecutionDetail[]>>,
+    reqId: number,
+    contract: Contract,
+    execution: Execution
+  ): void => {
+    subscriptions.forEach((sub) => {
+      const allTrades = sub.lastAllValue ?? [];
+      allTrades.push({ reqId, contract, execution });
+      sub.next({
+        all: allTrades,
+      });
+    });
+  };
+
+  /**
+   *  Ends the subscrition once all trades are recieved
+   *  @param subscriptions
+   */
+  private readonly onExecDetailsEnd = (
+    subscriptions: Map<
+      number,
+      IBApiNextSubscription<ExecutionDetail[] | CommissionReport[]>
+    >,
+    reqId: number
+  ): void => {
+    const sub = subscriptions.get(reqId);
+    if (!sub) {
+      return;
+    }
+    if (!sub.lastAllValue) {
+      sub.next({ all: [] });
+    }
+    sub.complete();
+  };
+
+  /**
+   *  Commision report of all the clients
+   *  @param subscriptions
+   *  @param commissionReport commissionReport details
+   */
+  private readonly onComissionReport = (
+    subscriptions: Map<number, IBApiNextSubscription<CommissionReport[]>>,
+    commissionReport: CommissionReport
+  ): void => {
+    subscriptions.forEach((sub) => {
+      const commissionReports = sub.lastAllValue ?? [];
+      commissionReports.push(commissionReport);
+      sub.next({
+        all: commissionReports,
+      });
+    });
+  };
+  /**
+   *  Ends the subscrition once all executed trades are recieved
+   *  @param filter  filter trade data on [[ExecutionFilter]]
+   *  @see [[onExecDetails]]
+   *  @see [[onExecDetailsEnd]]
+   *  Executed trades only
+   */
+  getExecutionDetails(filter: ExecutionFilter): Promise<ExecutionDetail[]> {
+    return lastValueFrom(
+      this.subscriptions
+        .register<ExecutionDetail[]>(
+          (reqId) => {
+            this.api.reqExecutions(reqId, filter);
+          },
+          undefined,
+          [
+            [EventName.execDetails, this.onExecDetails],
+            [EventName.execDetailsEnd, this.onExecDetailsEnd],
+            // [EventName.commissionReport, this.onComissionReport],
+          ]
+        )
+        .pipe(map((v: { all: ExecutionDetail[] }) => v.all))
+    );
+  }
+  getCommissionReport(filter: ExecutionFilter): Promise<CommissionReport[]> {
+    return lastValueFrom(
+      this.subscriptions
+        .register<CommissionReport[]>(
+          (reqId) => {
+            this.api.reqExecutions(reqId, filter);
+          },
+          undefined,
+          [
+            //[EventName.execDetails, this.onExecDetails],
+            [EventName.execDetailsEnd, this.onExecDetailsEnd],
+            [EventName.commissionReport, this.onComissionReport],
+          ]
+        )
+        .pipe(map((v: { all: CommissionReport[] }) => v.all))
+    );
   }
 }
