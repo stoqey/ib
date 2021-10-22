@@ -62,8 +62,9 @@ export class IBApiNextApp {
   protected cmdLineArgs: Record<string, string | number>;
 
   /** Connect to TWS. */
-  connect(reconnectInterval?: number): void {
+  connect(reconnectInterval?: number, clientId?: number): void {
     // create the IBApiNext object
+
     const port = (this.cmdLineArgs.port as number) ?? configuration.ib_port;
     const host = (this.cmdLineArgs.host as string) ?? configuration.ib_host;
 
@@ -111,7 +112,7 @@ export class IBApiNextApp {
     }
 
     try {
-      this.api.connect();
+      this.api.connect(clientId);
     } catch (error) {
       logger.error("Connection error", error.message);
       logger.debug(`IB host: ${host} - IB port: ${port}`);

@@ -4,10 +4,11 @@
     <h1 align="center">Typescript API</h1>
   </p>
   <div style="display: flex;justify-content:center;">
-    <img alt="NPM" src="https://img.shields.io/npm/dt/@stoqey/ib.svg"></img>
-    <img alt="NPM" src="https://circleci.com/gh/stoqey/ib.svg?style=svg"></img>
+    <img src="https://img.shields.io/github/package-json/v/stoqey/ib"></img>
+    <img src="https://circleci.com/gh/stoqey/ib.svg?style=svg"></img>
+    <a href="https://lgtm.com/projects/g/stoqey/ib/context:javascript"><img alt="Language grade: JavaScript" src="https://img.shields.io/lgtm/grade/javascript/g/stoqey/ib.svg?logo=lgtm&logoWidth=18"/></a>
+    <img src="https://img.shields.io/npm/dt/@stoqey/ib.svg"></img>
   </div>
-
 </div>
 
 `@stoqey/ib` is an [Interactive Brokers](http://interactivebrokers.com/) TWS (or IB Gateway) Typescript API client library for [Node.js](http://nodejs.org/). It is a direct port of Interactive Brokers' Java Client Version 9.76 from May 08 2019.
@@ -23,6 +24,46 @@ The module makes a socket connection to TWS (or IB Gateway) using the [net](http
 or
 
     $ yarn add @stoqey/ib
+
+## Update from 1.1.x to 1.2.x
+
+If you currently use version 1.1.x and want to upgrade to 1.2.x please note that there is a breaking change that might affect your code:
+
+Versions up to 1.1.x did return `Number.MAX_VALUE` on values that are not available. This was to be in-sync with the official TWS API Java interfaces. Since the usage of `Number.MAX_VALUE` is very uncommon in JScript/TS and caused / causes lot of confusion, all versions starting from 1.2.1 will return `undefined` instead.
+
+If you have checked for `Number.MAX_VALUE` up to now, you can drop this check. If you have not checked for `undefined` yet, you should add it.
+
+Example:
+
+```js
+ib.on(EventName.pnlSingle, (
+      reqId: number,
+      pos: number,
+      dailyPnL: number,
+      unrealizedPnL: number,
+      realizedPnL: number,
+      value: number
+    ) => {
+      ...
+    }
+  );
+```
+
+now is (look at `unrealizedPnL` and `realizedPnL`)
+
+```js
+ib.on(EventName.pnlSingle, (
+      reqId: number,
+      pos: number,
+      dailyPnL: number,
+      unrealizedPnL: number | undefined,
+      realizedPnL: number | undefined,
+      value: number
+    ) => {
+      ...
+    }
+  );
+```
 
 ## API Documenation
 
@@ -49,10 +90,6 @@ IBApiNext still is in preview stage. Not all functions are available yet, and we
 | TWS Live Account         | 7496  |
 | TWS papertrading account | 7497  |
 
-## Important
-
-IBApi is returning `Number.MAX_SAFE_INTEGER` when there is no value from IB, commonly seen when there is no bid / offer or other missing market data.
-
 ## IBApi Examples
 
 ```js
@@ -77,7 +114,7 @@ ib.on(EventName.error, (err: Error, code: ErrorCode, reqId: number) => {
 })
   .on(
     EventName.position,
-    (account: string, contract: Contract, pos: number, avgCost: number) => {
+    (account: string, contract: Contract, pos: number, avgCost?: number) => {
       console.log(`${account}: ${pos} x ${contract.symbol} @ ${avgCost}`);
       positionsCount++;
     }
@@ -185,8 +222,10 @@ Copy `sample.env` to file `.env`
 1. run `yarn` to install dependencies
 2. `cp sample.env .env`
 3. fill in the account info
-4. run command `docker-compose up` (use flag `-d` to run de-attached mode in background). Now the docker instance of IB Gateway should be running.
-5. to take the container down just run `docker-compose down`
+4. you might need to change the value of `IB_PORT` from `4002` to `4004` if using IB Gateway from `docker-compose` (Step 6)
+5. run command `yarn build` to compile TypeScript code
+6. run command `docker-compose up` (use flag `-d` to run de-attached mode in background). Now the docker instance of IB Gateway should be running.
+7. to take the container down just run `docker-compose down`
 
 Once docker is up and running with correct credentials it should be ready to accept connections.
 

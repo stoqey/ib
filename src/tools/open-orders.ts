@@ -1,35 +1,28 @@
 /**
- * This App will print all positions on your IBKR accounts to console.
+ * This App will print IBKR account open orders to console.
  */
 
 import path from "path";
 import { Subscription } from "rxjs";
 
-import { IBApiNextError } from "../api-next";
+import { IBApiNextError } from "../";
 import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
 /////////////////////////////////////////////////////////////////////////////////
-// The help text                                                               //
+// The help text.                                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-const DESCRIPTION_TEXT =
-  "Prints all positions on your IBKR accounts to console.";
-const USAGE_TEXT = "Usage: positions.js <options>";
-const OPTION_ARGUMENTS: [string, string][] = [
-  [
-    "watch",
-    "Watch for changes. If specified, the app will keep running and print positions updates to console as received from TWS. " +
-      "If not specified, the app will print a one-time snapshot and than exit.",
-  ],
-];
-const EXAMPLE_TEXT = "positions.js -watch";
+const DESCRIPTION_TEXT = "Prints the account open orders.";
+const USAGE_TEXT = "Usage: open-orders.js <options>";
+const OPTION_ARGUMENTS: [string, string][] = [];
+const EXAMPLE_TEXT = "open-orders.js";
 
 //////////////////////////////////////////////////////////////////////////////
 // The App code                                                             //
 //////////////////////////////////////////////////////////////////////////////
 
-class PrintPositionsApp extends IBApiNextApp {
+class OpenOrdersApp extends IBApiNextApp {
   constructor() {
     super(DESCRIPTION_TEXT, USAGE_TEXT, OPTION_ARGUMENTS, EXAMPLE_TEXT);
   }
@@ -43,18 +36,17 @@ class PrintPositionsApp extends IBApiNextApp {
   start(): void {
     const scriptName = path.basename(__filename);
     logger.debug(`Starting ${scriptName} script`);
+
     this.connect(this.cmdLineArgs.watch ? 10000 : 0);
-    this.subscription$ = this.api.getPositions().subscribe({
-      next: (positions) => {
-        this.printObject(positions);
-        if (!this.cmdLineArgs.watch) {
-          this.stop();
-        }
-      },
-      error: (err: IBApiNextError) => {
-        this.error(`getPositions failed with '${err.error.message}'`);
-      },
-    });
+    this.api
+      .getAllOpenOrders()
+      .then((orders) => {
+        this.printObject(orders);
+        this.stop();
+      })
+      .catch((err: IBApiNextError) => {
+        this.error(`getAllOpenOrders failed with '${err}'`);
+      });
   }
 
   /**
@@ -68,4 +60,4 @@ class PrintPositionsApp extends IBApiNextApp {
 
 // run the app
 
-new PrintPositionsApp().start();
+new OpenOrdersApp().start();

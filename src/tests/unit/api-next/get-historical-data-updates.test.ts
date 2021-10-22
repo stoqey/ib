@@ -3,6 +3,7 @@
  */
 
 import { IBApi, IBApiNext, IBApiNextError, EventName, Bar } from "../../..";
+import { BarSizeSetting } from "../../../api/historical/bar-size-setting";
 
 describe("RxJS Wrapper: getHistoricalDataUpdates()", () => {
   test("Observable updates", (done) => {
@@ -49,7 +50,7 @@ describe("RxJS Wrapper: getHistoricalDataUpdates()", () => {
     let updateCount = 0;
 
     apiNext
-      .getHistoricalDataUpdates({}, "", "", 0)
+      .getHistoricalDataUpdates({}, "" as BarSizeSetting, "", 0)
       // eslint-disable-next-line rxjs/no-ignored-subscription
       .subscribe({
         next: (update) => {

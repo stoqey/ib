@@ -14,7 +14,7 @@ export interface Position {
   readonly pos: number;
 
   /** The average cost of the position. */
-  readonly avgCost: number;
+  readonly avgCost?: number;
 }
 
 /** Summary of all linked accounts, with account id as key. */

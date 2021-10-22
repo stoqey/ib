@@ -2,7 +2,9 @@ import net from "net";
 import { TextEncoder } from "util";
 
 import {
-    IBApiCreationOptions, MAX_SUPPORTED_SERVER_VERSION, MIN_SERVER_VER_SUPPORTED
+  IBApiCreationOptions,
+  MAX_SUPPORTED_SERVER_VERSION,
+  MIN_SERVER_VER_SUPPORTED,
 } from "../../api/api";
 import { EventName } from "../../api/data/enum/event-name";
 import MIN_SERVER_VER from "../../api/data/enum/min-server-version";
@@ -76,7 +78,7 @@ export class Socket {
   private _v100MessageBuffer: Buffer = Buffer.alloc(0);
 
   /** The current client id. */
-  private _clientId = configuration.default_client_id;
+  private _clientId: number;
 
   /** Returns `true` if connected to TWS/IB Gateway, `false` otherwise.  */
   get connected(): boolean {

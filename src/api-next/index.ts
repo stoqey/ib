@@ -57,6 +57,12 @@ export {
   OrderBookUpdate,
 } from "./market-depth/order-book";
 
+// Order
+
+export { OpenOrder } from "./order/open-order";
+export { OpenOrdersUpdate } from "./order/open-order-update";
+export { ExecutionDetail } from "./order/execution-detail";
+
 // IBApiNext
 
 export { IBApiNext, IBApiNextCreationOptions } from "./api-next";

@@ -17,6 +17,7 @@ import FADataType from "./data/enum/fad-data-type";
 import LogLevel from "./data/enum/log-level";
 import MIN_SERVER_VER from "./data/enum/min-server-version";
 import OptionExerciseAction from "./data/enum/option-exercise-action";
+import { BarSizeSetting } from "./historical/bar-size-setting";
 import { HistogramEntry } from "./historical/histogramEntry";
 import { HistoricalTick } from "./historical/historicalTick";
 import { HistoricalTickBidAsk } from "./historical/historicalTickBidAsk";
@@ -44,7 +45,8 @@ export interface IBApiCreationOptions {
   /**
    * Hostname of the TWS (or IB Gateway).
    *
-   * Default is 7496, which is the TWS default (4001 is default for IB Gateway Live-Accounts and 4002 for Demo-Accounts).
+   * Default is 7496, which is the TWS default (4001 is default for IB Gateway Live-Accounts and 4002 for
+   * Demo-Accounts).
    */
   port?: number;
 
@@ -78,7 +80,8 @@ export const MIN_SERVER_VER_SUPPORTED = 38;
 /**
  * Typescript implementation of the Interactive Brokers TWS (or IB Gateway) API.
  *
- * Refer to the official {@link https://interactivebrokers.github.io/tws-api/|Trader Workstation API documentation} for details.
+ * Refer to the official {@link https://interactivebrokers.github.io/tws-api/|Trader Workstation API documentation} for
+ * details.
  */
 export class IBApi extends EventEmitter {
   /**
@@ -286,7 +289,7 @@ export class IBApi extends EventEmitter {
    *
    * @param tickerId The request's identifier.
    *
-   * @see [[reqHistoricalData]]
+   * @see [[reqHistogramData]]
    */
   cancelHistogramData(tickerId: number): IBApi {
     this.controller.schedule(() =>
@@ -470,8 +473,8 @@ export class IBApi extends EventEmitter {
    * @param override Specifies whether your setting will override the system's natural action.
    * For example, if your action is "exercise" and the option is not in-the-money,
    * by natural action the option would not exercise.
-   * If you have override set to "yes" the natural action would be overridden and the out-of-the money option would be exercised.
-   * Set to 1 to override, set to 0 not to.
+   * If you have override set to "yes" the natural action would be overridden and the out-of-the money option would be
+   *   exercised. Set to 1 to override, set to 0 not to.
    */
   exerciseOptions(
     tickerId: number,
@@ -498,7 +501,8 @@ export class IBApi extends EventEmitter {
    * Places or modifies an order.
    * @param id The order's unique identifier.
    * Use a sequential id starting with the id received at the nextValidId method.
-   * If a new order is placed with an order ID less than or equal to the order ID of a previous order an error will occur.
+   * If a new order is placed with an order ID less than or equal to the order ID of a previous order an error will
+   *   occur.
    * @param contract The order's [[Contract]].
    * @param order The [[Order]] object.
    *
@@ -526,10 +530,12 @@ export class IBApi extends EventEmitter {
   /**
    * Replaces Financial Advisor's settings A Financial Advisor can define three different configurations:
    *
-   * - Groups: offer traders a way to create a group of accounts and apply a single allocation method to all accounts in the group.
+   * - Groups: offer traders a way to create a group of accounts and apply a single allocation method to all accounts
+   * in the group.
    * - Profiles: let you allocate shares on an account-by-account basis using a predefined calculation value.
    * - Account Aliases: let you easily identify the accounts by meaningful names rather than account numbers.
-   * More information at https://www.interactivebrokers.com/en/?f=%2Fen%2Fsoftware%2Fpdfhighlights%2FPDF-AdvisorAllocations.php%3Fib_entity%3Dllc
+   * More information at
+   * https://www.interactivebrokers.com/en/?f=%2Fen%2Fsoftware%2Fpdfhighlights%2FPDF-AdvisorAllocations.php%3Fib_entity%3Dllc
    *
    * @param faDataType The configuration to change.
    * @param xml Zhe xml-formatted configuration string.
@@ -553,17 +559,22 @@ export class IBApi extends EventEmitter {
    * or set to a specific Advisor Account Group name that has already been created in TWS Global Configuration.
    * @param tags A comma separated list with the desired tags:
    * - AccountType — Identifies the IB account structure
-   * - NetLiquidation — The basis for determining the price of the assets in your account. Total cash value + stock value + options value + bond value
+   * - NetLiquidation — The basis for determining the price of the assets in your account. Total cash value + stock
+   *   value + options value + bond value
    * - TotalCashValue — Total cash balance recognized at the time of trade + futures PNL
-   * - SettledCash — Cash recognized at the time of settlement - purchases at the time of trade - commissions - taxes - fees
+   * - SettledCash — Cash recognized at the time of settlement - purchases at the time of trade - commissions - taxes -
+   *   fees
    * - AccruedCash — Total accrued cash value of stock, commodities and securities
-   * - BuyingPower — Buying power serves as a measurement of the dollar value of securities that one may purchase in a securities account without depositing additional funds
-   * - EquityWithLoanValue — Forms the basis for determining whether a client has the necessary assets to either initiate or maintain security positions. Cash + stocks + bonds + mutual funds
+   * - BuyingPower — Buying power serves as a measurement of the dollar value of securities that one may purchase in a
+   *   securities account without depositing additional funds
+   * - EquityWithLoanValue — Forms the basis for determining whether a client has the necessary assets to either
+   *   initiate or maintain security positions. Cash + stocks + bonds + mutual funds
    * - PreviousEquityWithLoanValue — Marginable Equity with Loan value as of 16:00 ET the previous day
    * - GrossPositionValue — The sum of the absolute value of all stock and equity option positions
    * - RegTEquity — Regulation T equity for universal account
    * - RegTMargin — Regulation T margin for universal account
-   * - SMA — Special Memorandum Account: Line of credit created when the market value of securities in a Regulation T account increase in value
+   * - SMA — Special Memorandum Account: Line of credit created when the market value of securities in a Regulation T
+   *   account increase in value
    * - InitMarginReq — Initial Margin requirement of whole portfolio
    * - MaintMarginReq — Maintenance Margin requirement of whole portfolio
    * - AvailableFunds — This value tells what you have available for trading
@@ -579,7 +590,8 @@ export class IBApi extends EventEmitter {
    * - LookAheadAvailableFunds — This value reflects your available funds at the next margin change
    * - LookAheadExcessLiquidity — This value reflects your excess liquidity at the next margin change
    * - HighestSeverity — A measure of how close the account is to liquidation
-   * - DayTradesRemaining — The Number of Open/Close trades a user could put on before Pattern Day Trading is detected. A value of "-1" means that the user can put on unlimited day trades.
+   * - DayTradesRemaining — The Number of Open/Close trades a user could put on before Pattern Day Trading is detected.
+   *   A value of "-1" means that the user can put on unlimited day trades.
    * - Leverage — GrossPositionValue / NetLiquidation
    * - $LEDGER — Single flag to relay all cash balance tags*, only in base currency.
    * - $LEDGER:CURRENCY — Single flag to relay all cash balance tags*, only in the specified currency.
@@ -600,13 +612,14 @@ export class IBApi extends EventEmitter {
    * As a result from the subscription, the account's information, portfolio and last update time will be emitted as
    * updateAccountValue, updateAccountPortfolio, updateAccountTime event respectively.
    *
-   * All account values and positions will be returned initially, and then there will only be updates when there is a change in a position,
-   * or to an account value every 3 minutes if it has changed.
+   * All account values and positions will be returned initially, and then there will only be updates when there is a
+   * change in a position, or to an account value every 3 minutes if it has changed.
    *
    * Only one account can be subscribed at a time.
    *
-   * A second subscription request for another account when the previous one is still active will cause the first one to be canceled in favour of the second one.
-   * Consider user reqPositions if you want to retrieve all your accounts' portfolios directly.
+   * A second subscription request for another account when the previous one is still active will cause the first one
+   * to be canceled in favour of the second one. Consider user reqPositions if you want to retrieve all your accounts'
+   * portfolios directly.
    *
    * @param subscribe Set to true to start the subscription and to false to stop it.
    * @param acctCode The account id (i.e. U123456) for which the information is requested.
@@ -626,7 +639,8 @@ export class IBApi extends EventEmitter {
    * @param reqId Identifier to label the request.
    * @param acctCode Account values can be requested for a particular account
    * @param modelCode Values can also be requested for a model
-   * @param ledgerAndNLV returns light-weight request; only currency positions as opposed to account values and currency positions.
+   * @param ledgerAndNLV returns light-weight request; only currency positions as opposed to account values and
+   *   currency positions.
    *
    * @see [[cancelAccountUpdatesMulti]]
    */
@@ -663,8 +677,8 @@ export class IBApi extends EventEmitter {
   /**
    * Requests status updates about future orders placed from TWS. Can only be used with client ID 0.
    *
-   * @param bAutoBind if set to `true`, the newly created orders will be assigned an API order ID and implicitly associated with this client.
-   * If set to `false, future orders will not be.
+   * @param bAutoBind if set to `true`, the newly created orders will be assigned an API order ID and implicitly
+   *   associated with this client. If set to `false, future orders will not be.
    *
    * @see [[reqAllOpenOrders]], [[reqOpenOrders]], [[cancelOrder]], [[reqGlobalCancel]]
    */
@@ -786,7 +800,8 @@ export class IBApi extends EventEmitter {
    * @param contract [[Contract]] object for which head timestamp is being requested.
    * @param whatToShow Type of data for head timestamp - "BID", "ASK", "TRADES", etc
    * @param useRTH Use regular trading hours only, `true` for yes or `false` for no.
-   * @param formatDate Set to 1 to obtain the bars' time as yyyyMMdd HH:mm:ss, set to 2 to obtain it like system time format in seconds.
+   * @param formatDate Set to 1 to obtain the bars' time as yyyyMMdd HH:mm:ss, set to 2 to obtain it like system time
+   *   format in seconds.
    */
   reqHeadTimestamp(
     reqId: number,
@@ -823,8 +838,7 @@ export class IBApi extends EventEmitter {
     period: number,
     periodUnit: DurationUnit
   ): IBApi {
-    const periodStr =
-      period + " " + periodUnit.toString().toLowerCase() + "s";
+    const periodStr = period + " " + periodUnit.toString().toLowerCase() + "s";
     this.controller.schedule(() =>
       this.controller.encoder.reqHistogramData(
         tickerId,
@@ -837,12 +851,12 @@ export class IBApi extends EventEmitter {
   }
 
   /**
-   * Requests contracts' historical data. When requesting historical data, a finishing time and date is required along with a duration string.
-   * For example, having:
+   * Requests contracts' historical data. When requesting historical data, a finishing time and date is required along
+   * with a duration string. For example, having:
    * ````- endDateTime: 20130701 23:59:59 GMT```
    * ````- durationStr: 3 ```
-   * will return three days of data counting backwards from July 1st 2013 at 23:59:59 GMT resulting in all the available bars of the last three days
-   * until the date and time specified.
+   * will return three days of data counting backwards from July 1st 2013 at 23:59:59 GMT resulting in all the
+   * available bars of the last three days until the date and time specified.
    *
    * It is possible to specify a timezone optionally.
    *
@@ -878,16 +892,19 @@ export class IBApi extends EventEmitter {
    * - OPTION_IMPLIED_VOLATILITY
    * - FEE_RATE
    * - REBATE_RATE
-   * @param useRTH Set to 0 to obtain the data which was also generated outside of the Regular Trading Hours, set to 1 to obtain only the RTH data
-   * @param formatDate Set to 1 to obtain the bars' time as yyyyMMdd HH:mm:ss, set to 2 to obtain it like system time format in seconds
-   * @param keepUpToDate Set to `true` to received continuous updates on most recent bar data. If `true`, and endDateTime cannot be specified.
+   * @param useRTH Set to 0 to obtain the data which was also generated outside of the Regular Trading Hours, set to 1
+   *   to obtain only the RTH data
+   * @param formatDate Set to 1 to obtain the bars' time as yyyyMMdd HH:mm:ss, set to 2 to obtain it like system time
+   *   format in seconds
+   * @param keepUpToDate Set to `true` to received continuous updates on most recent bar data. If `true`, and
+   *   endDateTime cannot be specified.
    */
   reqHistoricalData(
     tickerId: number,
     contract: Contract,
     endDateTime: string,
     durationStr: string,
-    barSizeSetting: string,
+    barSizeSetting: BarSizeSetting,
     whatToShow: string,
     useRTH: number,
     formatDate: number,
@@ -998,7 +1015,8 @@ export class IBApi extends EventEmitter {
   }
 
   /**
-   * Switches data type returned from reqMktData request to "frozen", "delayed" or "delayed-frozen" market data. Requires TWS/IBG v963+.
+   * Switches data type returned from reqMktData request to "frozen", "delayed" or "delayed-frozen" market data.
+   * Requires TWS/IBG v963+.
    *
    * The API can receive frozen market data from Trader Workstation.
    * Frozen market data is the last data recorded in our system.
@@ -1056,9 +1074,10 @@ export class IBApi extends EventEmitter {
 
   /**
    * Requests details about a given market rule.
-   * The market rule for an instrument on a particular exchange provides details about how the minimum price increment changes with price.
-   * A list of market rule ids can be obtained by invoking reqContractDetails on a particular contract.
-   * The returned market rule ID list will provide the market rule ID for the instrument in the correspond valid exchange list in contractDetails.
+   * The market rule for an instrument on a particular exchange provides details about how the minimum price increment
+   * changes with price. A list of market rule ids can be obtained by invoking reqContractDetails on a particular
+   * contract. The returned market rule ID list will provide the market rule ID for the instrument in the correspond
+   * valid exchange list in contractDetails.
    *
    * @param marketRuleId The id of market rule.
    */
@@ -1086,7 +1105,8 @@ export class IBApi extends EventEmitter {
 
   /**
    * Requests real time market data.
-   * Returns market data for an instrument either in real time or 10-15 minutes delayed (depending on the market data type specified).
+   * Returns market data for an instrument either in real time or 10-15 minutes delayed (depending on the market data
+   * type specified).
    *
    * @param tickerId The request's identifier.
    * @param contract The [[Contract]] for which the data is being requested
@@ -1100,7 +1120,8 @@ export class IBApi extends EventEmitter {
    * - 165 Miscellaneous Stats
    * - 221 Mark Price (used in TWS P&L computations)
    * - 225 Auction values (volume, price and imbalance)
-   * - 233 RTVolume - contains the last trade price, last trade size, last trade time, total volume, VWAP, and single trade flag.
+   * - 233 RTVolume - contains the last trade price, last trade size, last trade time, total volume, VWAP, and single
+   *   trade flag.
    * - 236 Shortable
    * - 256 Inventory
    * - 258 Fundamental Ratios
@@ -1108,9 +1129,10 @@ export class IBApi extends EventEmitter {
    * - 456 IBDividends
    * @param snapshot For users with corresponding real time market data subscriptions.
    * A `true` value will return a one-time snapshot, while a `false` value will provide streaming data.
-   * @param regulatorySnapshot Snapshot for US stocks requests NBBO snapshots for users which have "US Securities Snapshot Bundle" subscription
-   * but not corresponding Network A, B, or C subscription necessary for streaming * market data.
-   * One-time snapshot of current market price that will incur a fee of 1 cent to the account per snapshot.
+   * @param regulatorySnapshot Snapshot for US stocks requests NBBO snapshots for users which have "US Securities
+   *   Snapshot Bundle" subscription but not corresponding Network A, B, or C subscription necessary for streaming *
+   *   market data. One-time snapshot of current market price that will incur a fee of 1 cent to the account per
+   *   snapshot.
    *
    * @see [[cancelMktData]]
    */
@@ -1250,7 +1272,8 @@ export class IBApi extends EventEmitter {
    * Initially all positions are returned and then updates are returned for any position changes in real time.
    *
    * @param reqId Request's identifier.
-   * @param account If an account Id is provided, only the account's positions belonging to the specified model will be delivered.
+   * @param account If an account Id is provided, only the account's positions belonging to the specified model will be
+   *   delivered.
    * @param modelCode The code of the model's positions we are interested in.
    *
    * @see [[cancelPositionsMulti]]
@@ -1271,8 +1294,9 @@ export class IBApi extends EventEmitter {
    *
    * Currently, only 5 seconds bars are provided.
    *
-   * This request is subject to the same pacing as any historical data request: no more than 60 API queries in more than 600 seconds.
-   * Real time bars subscriptions are also included in the calculation of the number of Level 1 market data subscriptions allowed in an account.
+   * This request is subject to the same pacing as any historical data request: no more than 60 API queries in more
+   * than 600 seconds. Real time bars subscriptions are also included in the calculation of the number of Level 1
+   * market data subscriptions allowed in an account.
    *
    * @param tickerId The request's unique identifier.
    * @param contract The [[Contract]] for which the depth is being requested
@@ -1394,9 +1418,11 @@ export class IBApi extends EventEmitter {
   /**
    * Requests pre-defined Soft Dollar Tiers.
    *
-   * This is only supported for registered professional advisors and hedge and mutual funds who have configured Soft Dollar Tiers in Account Management.
+   * This is only supported for registered professional advisors and hedge and mutual funds who have configured Soft
+   * Dollar Tiers in Account Management.
    *
-   * Refer to: https://www.interactivebrokers.com/en/software/am/am/manageaccount/requestsoftdollars.htm?Highlight=soft%20dollar%20tier.
+   * Refer to:
+   * https://www.interactivebrokers.com/en/software/am/am/manageaccount/requestsoftdollars.htm?Highlight=soft%20dollar%20tier.
    *
    * @param reqId The id of the request.
    */
@@ -1438,11 +1464,13 @@ export class IBApi extends EventEmitter {
   /**
    * Requests the FA configuration A Financial Advisor can define three different configurations:
    *
-   * - 1. Groups: offer traders a way to create a group of accounts and apply a single allocation method to all accounts in the group.
+   * - 1. Groups: offer traders a way to create a group of accounts and apply a single allocation method to all
+   * accounts in the group.
    * - 2. Profiles: let you allocate shares on an account-by-account basis using a predefined calculation value.
    * - 3. Account Aliases: let you easily identify the accounts by meaningful names rather than account numbers.
    *
-   * More information at https://www.interactivebrokers.com/en/?f=%2Fen%2Fsoftware%2Fpdfhighlights%2FPDF-AdvisorAllocations.php%3Fib_entity%3Dllc
+   * More information at
+   * https://www.interactivebrokers.com/en/?f=%2Fen%2Fsoftware%2Fpdfhighlights%2FPDF-AdvisorAllocations.php%3Fib_entity%3Dllc
    *
    * @param faDataType The configuration to change. Set to 1, 2 or 3 as defined above.
    */
@@ -1474,7 +1502,8 @@ export class IBApi extends EventEmitter {
    * Possible values include:
    * - none = empty selection
    * - contractID = any non-combination contract. Examples 8314 for IBM SMART; 8314 for IBM ARCA
-   * - combo = if any combo is selected Note: This request from the API does not get a TWS response unless an error occurs.
+   * - combo = if any combo is selected Note: This request from the API does not get a TWS response unless an error
+   *   occurs.
    */
   updateDisplayGroup(reqId: number, contractInfo: string): IBApi {
     this.controller.schedule(() =>
@@ -1639,17 +1668,22 @@ export declare interface IBApi {
    *
    * tag: The account's attribute being received. Possible values:
    * - AccountType:Identifies the IB account structure.
-   * - NetLiquidation: The basis for determining the price of the assets in your account. Total cash value + stock value + options value + bond value.
+   * - NetLiquidation: The basis for determining the price of the assets in your account. Total cash value + stock
+   *   value + options value + bond value.
    * - TotalCashValue: Total cash balance recognized at the time of trade + futures PNL.
-   * - SettledCash: Cash recognized at the time of settlement - purchases at the time of trade - commissions - taxes - fees.
+   * - SettledCash: Cash recognized at the time of settlement - purchases at the time of trade - commissions - taxes -
+   *   fees.
    * - AccruedCash: Total accrued cash value of stock, commodities and securities.
-   * - BuyingPower: Buying power serves as a measurement of the dollar value of securities that one may purchase in a securities account without depositing additional funds.
-   * - EquityWithLoanValue: Forms the basis for determining whether a client has the necessary assets to either initiate or maintain security positions. Cash + stocks + bonds + mutual funds
+   * - BuyingPower: Buying power serves as a measurement of the dollar value of securities that one may purchase in a
+   *   securities account without depositing additional funds.
+   * - EquityWithLoanValue: Forms the basis for determining whether a client has the necessary assets to either
+   *   initiate or maintain security positions. Cash + stocks + bonds + mutual funds
    * - PreviousEquityWithLoanValue:  Marginable Equity with Loan value as of 16:00 ET the previous day
    * - GrossPositionValue: The sum of the absolute value of all stock and equity option positions
    * - RegTEquity:Regulation T equity for universal account
    * - RegTMargin. Regulation T margin for universal account
-   * - SMA: Special Memorandum Account: Line of credit created when the market value of securities in a Regulation T account increase in value
+   * - SMA: Special Memorandum Account: Line of credit created when the market value of securities in a Regulation T
+   *   account increase in value
    * - InitMarginReq: Initial Margin requirement of whole portfolio
    * - MaintMarginReq: Maintenance Margin requirement of whole portfolio
    * - AvailableFunds: This value tells what you have available for trading
@@ -1665,7 +1699,8 @@ export declare interface IBApi {
    * - LookAheadAvailableFunds: This value reflects your available funds at the next margin change
    * - LookAheadExcessLiquidity: This value reflects your excess liquidity at the next margin change
    * - HighestSeverity: A measure of how close the account is to liquidation
-   * - DayTradesRemaining: The Number of Open/Close trades a user could put on before Pattern Day Trading is detected. A value of "-1" means that the user can put on unlimited day trades.
+   * - DayTradesRemaining: The Number of Open/Close trades a user could put on before Pattern Day Trading is detected.
+   *   A value of "-1" means that the user can put on unlimited day trades.
    * - Leverage: GrossPositionValue / NetLiquidation
    *
    * value: the account's attribute's value.
@@ -1797,7 +1832,8 @@ export declare interface IBApi {
 
   /**
    * Callback to indicate the API connection has closed.
-   * Following a API <-> TWS broken socket connection, this function is not called automatically but must be triggered by API client code.
+   * Following a API <-> TWS broken socket connection, this function is not called automatically but must be triggered
+   * by API client code.
    *
    * @param listener Connection closed callback function.
    *
@@ -1902,7 +1938,8 @@ export declare interface IBApi {
    * @param listener
    * reqId: The ID of the request.
    *
-   * groups: A list of integers representing visible Group ID separated by the "|" character, and sorted by most used group first.
+   * groups: A list of integers representing visible Group ID separated by the "|" character, and sorted by most used
+   *   group first.
    *
    * @see [[queryDisplayGroups]]
    */
@@ -1931,7 +1968,8 @@ export declare interface IBApi {
    * Handles errors generated within the API itself.
    *
    * If an exception is thrown within the API code it will be notified here.
-   * Possible cases include errors while reading the information from the socket or even mishandling at API implementation.
+   * Possible cases include errors while reading the information from the socket or even mishandling at API
+   * implementation.
    *
    * @param listener
    * error: The thrown exception.
@@ -1942,10 +1980,12 @@ export declare interface IBApi {
    * Errors sent by the TWS are received here.
    *
    * If an exception is thrown within the API code it will be notified here.
-   * Possible cases include errors while reading the information from the socket or even mishandling at API implementation.
+   * Possible cases include errors while reading the information from the socket or even mishandling at API
+   * implementation.
    *
    * @param listener
-   * id: The request identifier which generated the error. Note: -1 will indicate a notification and not true error condition.
+   * id: The request identifier which generated the error. Note: -1 will indicate a notification and not true error
+   *   condition.
    *
    * errorCode: The code identifying the error.
    *
@@ -2002,7 +2042,7 @@ export declare interface IBApi {
    * Returns array of sample contract descriptions.
    *
    * @param listener
-   * familyCodes Array of family codes.
+   * contractDescriptions Array of contract descriptions.
    *
    * @see [[reqFamilyCodes]]
    */
@@ -2090,7 +2130,7 @@ export declare interface IBApi {
       low: number,
       close: number,
       volume: number,
-      count: number,
+      count: number | undefined,
       WAP: number,
       hasGaps: boolean | undefined
     ) => void
@@ -2117,7 +2157,7 @@ export declare interface IBApi {
    * The time zone of the bar is the time zone chosen on the TWS login screen.
    * Smallest bar size is 1 second.
    *
-   * @see [[reqHistogramData]]
+   * @see [[reqHistoricalData]]
    */
   on(
     event: EventName.historicalDataUpdate,
@@ -2235,7 +2275,8 @@ export declare interface IBApi {
 
   /**
    * Returns minimum price increment structure for a particular market rule ID.
-   * Market rule IDs for an instrument on valid exchanges can be obtained from the contractDetails object for that contract.
+   * Market rule IDs for an instrument on valid exchanges can be obtained from the contractDetails object for that
+   * contract.
    *
    * @param listener
    * marketRuleId: The Market rule IDs.
@@ -2367,18 +2408,23 @@ export declare interface IBApi {
    *
    * status: The current status of the order.
    * Possible values:
-   * - PendingSubmit: indicates that you have transmitted the order, but have not yet received confirmation that it has been accepted by the order destination.
-   * - PendingCancel: indicates that you have sent a request to cancel the order but have not yet received cancel confirmation from the order destination.
-   * At this point, your order is not confirmed canceled. It is not guaranteed that the cancellation will be successful.
-   * - PreSubmitted: indicates that a simulated order type has been accepted by the IB system and that this order has yet to be elected.
-   * The order is held in the IB system until the election criteria are met. At that time the order is transmitted to the order destination as specified.
+   * - PendingSubmit: indicates that you have transmitted the order, but have not yet received confirmation that it has
+   *   been accepted by the order destination.
+   * - PendingCancel: indicates that you have sent a request to cancel the order but have not yet received cancel
+   *   confirmation from the order destination. At this point, your order is not confirmed canceled. It is not
+   *   guaranteed that the cancellation will be successful.
+   * - PreSubmitted: indicates that a simulated order type has been accepted by the IB system and that this order has
+   *   yet to be elected. The order is held in the IB system until the election criteria are met. At that time the
+   *   order is transmitted to the order destination as specified.
    * - Submitted: indicates that your order has been accepted by the system.
-   * - ApiCancelled: after an order has been submitted and before it has been acknowledged, an API client client can request its cancellation,
-   * producing this state.
+   * - ApiCancelled: after an order has been submitted and before it has been acknowledged, an API client client can
+   *   request its cancellation, producing this state.
    * - Cancelled: indicates that the balance of your order has been confirmed canceled by the IB system.
    * This could occur unexpectedly when IB or the destination has rejected your order.
-   * - Filled: indicates that the order has been completely filled. Market orders executions will not always trigger a Filled status.
-   * - Inactive: indicates that the order was received by the system but is no longer active because it was rejected or canceled.
+   * - Filled: indicates that the order has been completely filled. Market orders executions will not always trigger a
+   *   Filled status.
+   * - Inactive: indicates that the order was received by the system but is no longer active because it was rejected or
+   *   canceled.
    *
    * filled: Number of filled positions.
    *
@@ -2410,12 +2456,12 @@ export declare interface IBApi {
       filled: number,
       remaining: number,
       avgFillPrice: number,
-      permId: number,
-      parentId: number,
-      lastFillPrice: number,
-      clientId: number,
-      whyHeld: string,
-      mktCapPrice: number
+      permId?: number,
+      parentId?: number,
+      lastFillPrice?: number,
+      clientId?: number,
+      whyHeld?: string,
+      mktCapPrice?: number
     ) => void
   ): this;
 
@@ -2438,8 +2484,8 @@ export declare interface IBApi {
     listener: (
       reqId: number,
       dailyPnL: number,
-      unrealizedPnL: number,
-      realizedPnL: number
+      unrealizedPnL?: number,
+      realizedPnL?: number
     ) => void
   ): this;
 
@@ -2465,8 +2511,8 @@ export declare interface IBApi {
       reqId: number,
       pos: number,
       dailyPnL: number,
-      unrealizedPnL: number,
-      realizedPnL: number,
+      unrealizedPnL: number | undefined,
+      realizedPnL: number | undefined,
       value: number
     ) => void
   ): this;
@@ -2491,7 +2537,7 @@ export declare interface IBApi {
       account: string,
       contract: Contract,
       pos: number,
-      avgCost: number
+      avgCost?: number
     ) => void
   ): this;
 
@@ -2583,7 +2629,8 @@ export declare interface IBApi {
    *
    * @param listener
    * faDataType: one of:
-   * - 1: Groups: offer traders a way to create a group of accounts and apply a single allocation method to all accounts in the group.
+   * - 1: Groups: offer traders a way to create a group of accounts and apply a single allocation method to all
+   *   accounts in the group.
    * - 2: Profiles: let you allocate shares on an account-by-account basis using a predefined calculation value.
    * - 3: Account Aliases: let you easily identify the accounts by meaningful names rather than account numbers.
    *
@@ -2671,7 +2718,7 @@ export declare interface IBApi {
       distance: string,
       benchmark: string,
       projection: string,
-      legsStr: string
+      legsStr?: string
     ) => void
   ): this;
 
@@ -2697,7 +2744,8 @@ export declare interface IBApi {
 
   /**
    * Provides the option chain for an underlying on an exchange specified in reqSecDefOptParams.
-   * There will be multiple callbacks to securityDefinitionOptionParameter if multiple exchanges are specified in reqSecDefOptParams.
+   * There will be multiple callbacks to securityDefinitionOptionParameter if multiple exchanges are specified in
+   * reqSecDefOptParams.
    *
    * @param listener
    * reqId: The id of request.
@@ -2878,7 +2926,8 @@ export declare interface IBApi {
    *
    * tickType: The type of tick being received.
    *
-   * basisPoints: Annualized basis points, which is representative of the financing rate that can be directly compared to broker rates.
+   * basisPoints: Annualized basis points, which is representative of the financing rate that can be directly compared
+   *   to broker rates.
    *
    * formattedBasisPoints: Annualized basis points as a formatted string that depicts them in percentage form.
    *
@@ -2951,7 +3000,8 @@ export declare interface IBApi {
   /**
    * Provides option specific market data.
    * This method is called when the market in an option or its underlier moves.
-   * TWS option model volatilities, prices, and deltas, along with the present value of dividends expected on that options underlier are received.
+   * TWS option model volatilities, prices, and deltas, along with the present value of dividends expected on that
+   * options underlier are received.
    *
    * @param listener
    * tickerId: The id of request.
@@ -2960,9 +3010,8 @@ export declare interface IBApi {
    * Pass the field value into [[TickType.getField]] to retrieve the field description.
    * For example, a field value of 13 will map to modelOptComp, etc. 10 = Bid 11 = Ask 12 = Last
    *
-   * impliedVolatility: The implied volatility calculated by the TWS option modeler, using the specified tick type value.
-   *
-   * tickAttrib: 0 - return based, 1- price based.
+   * impliedVolatility: The implied volatility calculated by the TWS option modeler, using the specified tick type
+   *   value.
    *
    * delta: The option delta value.
    *
@@ -2987,23 +3036,23 @@ export declare interface IBApi {
     listener: (
       tickerId: number,
       field: TickType,
-      tickAttrib: number,
-      impliedVolatility: number,
-      delta: number,
-      optPrice: number,
-      pvDividend: number,
-      gamma: number,
-      vega: number,
-      theta: number,
-      undPrice: number
+      impliedVolatility?: number,
+      delta?: number,
+      optPrice?: number,
+      pvDividend?: number,
+      gamma?: number,
+      vega?: number,
+      theta?: number,
+      undPrice?: number
     ) => void
   ): this;
 
   /**
    * Market data tick price callback. Handles all price related ticks.
    * Every tickPrice callback is followed by a tickSize.
-   * A tickPrice value of -1 or 0 followed by a tickSize of 0 indicates there is no data for this field currently available,
-   * whereas a tickPrice with a positive tickSize indicates an active quote of 0 (typically for a combo contract).
+   * A tickPrice value of -1 or 0 followed by a tickSize of 0 indicates there is no data for this field currently
+   * available, whereas a tickPrice with a positive tickSize indicates an active quote of 0 (typically for a combo
+   * contract).
    *
    * @param listener
    * tickerId: The id of request.
@@ -3024,7 +3073,7 @@ export declare interface IBApi {
       tickerId: number,
       field: TickType,
       value: number,
-      attribs: unknown /* TODO: replace with TickAttrib type as soon as available. */
+      attribs?: unknown /* TODO: replace with TickAttrib type as soon as available. */
     ) => void
   ): this;
 
@@ -3054,18 +3103,19 @@ export declare interface IBApi {
    *
    * field: The type of size being received (i.e. bid size)
    *
-   * size: The actual size. US stocks have a multiplier of 100.
+   * size: The actual size.
    *
    * @see [[reqMktData]]
    */
   on(
     event: EventName.tickSize,
-    listener: (tickerId: number, field: TickType, value: number) => void
+    listener: (tickerId: number, field?: TickType, value?: number) => void
   ): this;
 
   /**
    * Market data callback. Every tickPrice is followed by a tickSize.
-   * There are also independent tickSize callbacks anytime the tickSize changes, and so there will be duplicate tickSize messages following a tickPrice.
+   * There are also independent tickSize callbacks anytime the tickSize changes, and so there will be duplicate
+   * tickSize messages following a tickPrice.
    *
    * @param listener
    * tickerId: The id of request.
@@ -3104,12 +3154,15 @@ export declare interface IBApi {
    * @param listener
    * key: The value being updated. Possible values:
    * - AccountCode: The account ID number.
-   * - AccountOrGroup: "All" to return account summary data for all accounts, or set to a specific Advisor Account Group name that has already been created in TWS Global Configuration.
+   * - AccountOrGroup: "All" to return account summary data for all accounts, or set to a specific Advisor Account
+   *   Group name that has already been created in TWS Global Configuration.
    * - AccountReady: For internal use only.
    * - AccountType: Identifies the IB account structure.
    * - AccruedCash: Total accrued cash value of stock, commodities and securities.
-   * - AccruedCash-C: Reflects the current's month accrued debit and credit interest to date, updated daily in commodity segment.
-   * - AccruedCash-S: Reflects the current's month accrued debit and credit interest to date, updated daily in security segment.
+   * - AccruedCash-C: Reflects the current's month accrued debit and credit interest to date, updated daily in
+   *   commodity segment.
+   * - AccruedCash-S: Reflects the current's month accrued debit and credit interest to date, updated daily in security
+   *   segment.
    * - AccruedDividend: Total portfolio value of dividends accrued.
    * - AccruedDividend-C: Dividends accrued but not paid in commodity segment.
    * - AccruedDividend-S: Dividends accrued but not paid in security segment.
@@ -3119,19 +3172,28 @@ export declare interface IBApi {
    * - Billable: Total portfolio value of treasury bills.
    * - Billable-C: Value of treasury bills in commodity segment.
    * - Billable-S: Value of treasury bills in security segment.
-   * - BuyingPower: Cash Account: Minimum (Equity with Loan Value, Previous Day Equity with Loan Value)-Initial Margin, Standard Margin Account: Minimum (Equity with Loan Value, Previous Day Equity with Loan Value) - Initial Margin *4.
+   * - BuyingPower: Cash Account: Minimum (Equity with Loan Value, Previous Day Equity with Loan Value)-Initial Margin,
+   *   Standard Margin Account: Minimum (Equity with Loan Value, Previous Day Equity with Loan Value) - Initial Margin
+   *   *4.
    * - CashBalance: Cash recognized at the time of trade + futures PNL.
    * - CorporateBondValue: Value of non-Government bonds such as corporate bonds and municipal bonds.
    * - Currency: Open positions are grouped by currency.
    * - Cushion: Excess liquidity as a percentage of net liquidation value.
    * - DayTradesRemaining: Number of Open/Close trades one could do before Pattern Day Trading is detected.
    * - DayTradesRemainingT+1: Number of Open/Close trades one could do tomorrow before Pattern Day Trading is detected.
-   * - DayTradesRemainingT+2: Number of Open/Close trades one could do two days from today before Pattern Day Trading is detected.
-   * - DayTradesRemainingT+3: Number of Open/Close trades one could do three days from today before Pattern Day Trading is detected.
-   * - DayTradesRemainingT+4: Number of Open/Close trades one could do four days from today before Pattern Day Trading is detected.
-   * - EquityWithLoanValue: Forms the basis for determining whether a client has the necessary assets to either initiate or maintain security positions.
-   * - EquityWithLoanValue-C: Cash account: Total cash value + commodities option value - futures maintenance margin requirement + minimum (0, futures PNL) Margin account: Total cash value + commodities option value - futures maintenance margin requirement.
-   * - EquityWithLoanValue-S: Cash account: Settled Cash Margin Account: Total cash value + stock value + bond value + (non-U.S. & Canada securities options value).
+   * - DayTradesRemainingT+2: Number of Open/Close trades one could do two days from today before Pattern Day Trading
+   *   is detected.
+   * - DayTradesRemainingT+3: Number of Open/Close trades one could do three days from today before Pattern Day Trading
+   *   is detected.
+   * - DayTradesRemainingT+4: Number of Open/Close trades one could do four days from today before Pattern Day Trading
+   *   is detected.
+   * - EquityWithLoanValue: Forms the basis for determining whether a client has the necessary assets to either
+   *   initiate or maintain security positions.
+   * - EquityWithLoanValue-C: Cash account: Total cash value + commodities option value - futures maintenance margin
+   *   requirement + minimum (0, futures PNL) Margin account: Total cash value + commodities option value - futures
+   *   maintenance margin requirement.
+   * - EquityWithLoanValue-S: Cash account: Settled Cash Margin Account: Total cash value + stock value + bond value +
+   *   (non-U.S. & Canada securities options value).
    * - ExcessLiquidity: This value shows your margin cushion, before liquidation.
    * - ExcessLiquidity-C: Equity with Loan Value - Maintenance Margin.
    * - ExcessLiquidity-S: Net Liquidation Value - Maintenance Margin.
@@ -3168,17 +3230,22 @@ export declare interface IBApi {
    * - LookAheadExcessLiquidity-C: Net Liquidation Value - look ahead Maintenance Margin.
    * - LookAheadExcessLiquidity-S: Equity with Loan Value - look ahead Maintenance Margin.
    * - LookAheadInitMarginReq: Initial margin requirement of whole portfolio as of next period's margin change.
-   * - LookAheadInitMarginReq-C: Initial margin requirement as of next period's margin change in the base currency of the account.
-   * - LookAheadInitMarginReq-S: Initial margin requirement as of next period's margin change in the base currency of the account.
+   * - LookAheadInitMarginReq-C: Initial margin requirement as of next period's margin change in the base currency of
+   *   the account.
+   * - LookAheadInitMarginReq-S: Initial margin requirement as of next period's margin change in the base currency of
+   *   the account.
    * - LookAheadMaintMarginReq: Maintenance margin requirement of whole portfolio as of next period's margin change.
-   * - LookAheadMaintMarginReq-C: Maintenance margin requirement as of next period's margin change in the base currency of the account.
-   * - LookAheadMaintMarginReq-S: Maintenance margin requirement as of next period's margin change in the base currency of the account.
+   * - LookAheadMaintMarginReq-C: Maintenance margin requirement as of next period's margin change in the base currency
+   *   of the account.
+   * - LookAheadMaintMarginReq-S: Maintenance margin requirement as of next period's margin change in the base currency
+   *   of the account.
    * - MaintMarginReq: Maintenance Margin requirement of whole portfolio.
    * - MaintMarginReq-C: Maintenance Margin for the commodity segment.
    * - MaintMarginReq-S: Maintenance Margin for the security segment.
    * - MoneyMarketFundValue: Market value of money market funds excluding mutual funds.
    * - MutualFundValue: Market value of mutual funds excluding money market funds.
-   * - NetDividend: The sum of the Dividend Payable/Receivable Values for the securities and commodities segments of the account.
+   * - NetDividend: The sum of the Dividend Payable/Receivable Values for the securities and commodities segments of
+   *   the account.
    * - NetLiquidation: The basis for determining the price of the assets in your account.
    * - NetLiquidation-C: Total cash value + futures PNL + commodities options value.
    * - NetLiquidation-S: Total cash value + stock value + securities options value + bond value.
@@ -3188,15 +3255,22 @@ export declare interface IBApi {
    * - PASharesValue-C: Personal Account shares value in commodity segment.
    * - PASharesValue-S: Personal Account shares value in security segment.
    * - PostExpirationExcess: Total projected "at expiration" excess liquidity.
-   * - PostExpirationExcess-C: Provides a projected "at expiration" excess liquidity based on the soon-to expire contracts in your portfolio in commodity segment.
-   * - PostExpirationExcess-S: Provides a projected "at expiration" excess liquidity based on the soon-to expire contracts in your portfolio in security segment.
+   * - PostExpirationExcess-C: Provides a projected "at expiration" excess liquidity based on the soon-to expire
+   *   contracts in your portfolio in commodity segment.
+   * - PostExpirationExcess-S: Provides a projected "at expiration" excess liquidity based on the soon-to expire
+   *   contracts in your portfolio in security segment.
    * - PostExpirationMargin: Total projected "at expiration" margin.
-   * - PostExpirationMargin-C: Provides a projected "at expiration" margin value based on the soon-to expire contracts in your portfolio in commodity segment.
-   * - PostExpirationMargin-S: Provides a projected "at expiration" margin value based on the soon-to expire contracts in your portfolio in security segment.
-   * - PreviousDayEquityWithLoanValue: Marginable Equity with Loan value as of 16:00 ET the previous day in securities segment.
+   * - PostExpirationMargin-C: Provides a projected "at expiration" margin value based on the soon-to expire contracts
+   *   in your portfolio in commodity segment.
+   * - PostExpirationMargin-S: Provides a projected "at expiration" margin value based on the soon-to expire contracts
+   *   in your portfolio in security segment.
+   * - PreviousDayEquityWithLoanValue: Marginable Equity with Loan value as of 16:00 ET the previous day in securities
+   *   segment.
    * - PreviousDayEquityWithLoanValue-S: IMarginable Equity with Loan value as of 16:00 ET the previous day.
    * - RealCurrency: Open positions are grouped by currency.
-   * - RealizedPnL: Shows your profit on closed positions, which is the difference between your entry execution cost and exit execution costs, or (execution price + commissions to open the positions) - (execution price + commissions to close the position).
+   * - RealizedPnL: Shows your profit on closed positions, which is the difference between your entry execution cost
+   *   and exit execution costs, or (execution price + commissions to open the positions) - (execution price +
+   *   commissions to close the position).
    * - RegTEquity: Regulation T equity for universal account.
    * - RegTEquity-S: Regulation T equity for security segment.
    * - RegTMargin: Regulation T margin for universal account.
@@ -3212,7 +3286,8 @@ export declare interface IBApi {
    * - TotalCashValue-C: CashBalance in commodity segment.
    * - TotalCashValue-S: CashBalance in security segment.
    * - TradingType-S: Account Type.
-   * - UnrealizedPnL: The difference between the current market value of your open positions and the average cost, or Value - Average Cost.
+   * - UnrealizedPnL: The difference between the current market value of your open positions and the average cost, or
+   *   Value - Average Cost.
    * - WarrantValue: Value of warrants.
    * - WhatIfPMEnabled: To check projected margin requirements under Portfolio Margin model.
    *
@@ -3261,10 +3336,10 @@ export declare interface IBApi {
       position: number,
       marketPrice: number,
       marketValue: number,
-      averageCost: number,
-      unrealizedPNL: number,
-      realizedPNL: number,
-      accountName: string
+      averageCost?: number,
+      unrealizedPNL?: number,
+      realizedPNL?: number,
+      accountName?: string
     ) => void
   ): this;
 
@@ -3336,7 +3411,7 @@ export declare interface IBApi {
       side: number,
       price: number,
       size: number,
-      isSmartDepth: boolean
+      isSmartDepth?: boolean
     ) => void
   ): this;
 

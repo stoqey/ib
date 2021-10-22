@@ -24,7 +24,7 @@ const OPTION_ARGUMENTS: [string, string][] = [
   ["model=<code>", "Model in which position exists."],
   [
     "watch",
-    "Watch for changes. If specified, the app will keep running and print PnL updates to console as received from TWS." +
+    "Watch for changes. If specified, the app will keep running and print PnL updates to console as received from TWS. " +
       "If not specified, the app will print a one-time snapshot and than exit.",
   ],
 ];

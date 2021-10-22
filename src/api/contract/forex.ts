@@ -31,14 +31,14 @@ export class Forex implements Contract {
   constructor(public symbol: string, public currency: string) {
     // Swap between symbol and currency if the ordering is incorrect.
 
-    let temp;
+    let temp: string;
     if (
       Forex.CURRENCY_SYMBOL_PRIO.indexOf(symbol) >
       Forex.CURRENCY_SYMBOL_PRIO.indexOf(currency)
     ) {
-      temp = symbol;
-      symbol = currency;
-      currency = temp;
+      temp = this.symbol;
+      this.symbol = this.currency;
+      this.currency = temp;
     }
   }
 

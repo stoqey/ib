@@ -2,12 +2,15 @@ import { lastValueFrom, Observable, Subject } from "rxjs";
 import { map } from "rxjs/operators";
 import {
   Bar,
+  CommissionReport,
   Contract,
   ContractDetails,
   DepthMktDataDescription,
   DurationUnit,
   ErrorCode,
   EventName,
+  Execution,
+  ExecutionFilter,
   HistogramEntry,
   HistoricalTick,
   HistoricalTickBidAsk,
@@ -16,8 +19,12 @@ import {
   OrderBook,
   OrderBookRow,
   OrderBookUpdate,
+  Order,
+  OrderState,
+  OpenOrder,
+  BarSizeSetting,
+  ExecutionDetail,
 } from "../";
-
 import LogLevel from "../api/data/enum/log-level";
 import {
   MutableAccountSummaries,
@@ -70,15 +77,6 @@ const LOG_TAG = "IBApiNext";
  * Log tag used on messages that have been received from TWS / IB Gateway.
  */
 const TWS_LOG_TAG = "TWS";
-
-/**
- * @internal
- *
- * Returns undefined is the value is Number.MAX_VALUE, or the value otherwise.
- */
-function undefineMax(v: number | undefined): number | undefined {
-  return v === undefined || v === Number.MAX_VALUE ? undefined : v;
-}
 
 /**
  * Input arguments on the [[IBApiNext]] constructor.
@@ -486,7 +484,7 @@ export class IBApiNext {
     account: string,
     contract: Contract,
     pos: number,
-    avgCost: number
+    avgCost?: number
   ): void => {
     const updatedPosition: Position = { account, contract, pos, avgCost };
 
@@ -626,8 +624,8 @@ export class IBApiNext {
     subscriptions: Map<number, IBApiNextSubscription<PnL>>,
     reqId: number,
     dailyPnL: number,
-    unrealizedPnL: number,
-    realizedPnL: number
+    unrealizedPnL?: number,
+    realizedPnL?: number
   ): void => {
     // get subscription
 
@@ -670,8 +668,8 @@ export class IBApiNext {
     reqId: number,
     pos: number,
     dailyPnL: number,
-    unrealizedPnL: number,
-    realizedPnL: number,
+    unrealizedPnL: number | undefined,
+    realizedPnL: number | undefined,
     value: number
   ) => {
     // get subscription
@@ -686,10 +684,10 @@ export class IBApiNext {
     subscription.next({
       all: {
         position: pos,
-        dailyPnL: undefineMax(dailyPnL),
-        unrealizedPnL: undefineMax(unrealizedPnL),
-        realizedPnL: undefineMax(realizedPnL),
-        marketValue: undefineMax(value),
+        dailyPnL: dailyPnL,
+        unrealizedPnL: unrealizedPnL,
+        realizedPnL: realizedPnL,
+        marketValue: value,
       },
     });
   };
@@ -743,9 +741,9 @@ export class IBApiNext {
     subscriptions: Map<number, IBApiNextSubscription<MutableMarketData>>,
     reqId: number,
     tickType: IBApiTickType,
-    value: number
+    value?: number
   ): void => {
-    // filter -1 on Bid/Ask and Number.MAX_VALUE on all.
+    // convert -1 on Bid/Ask to undefined
 
     if (
       value === -1 &&
@@ -754,10 +752,7 @@ export class IBApiNext {
         tickType === IBApiTickType.ASK ||
         tickType === IBApiTickType.DELAYED_ASK)
     ) {
-      value = Number.MAX_VALUE;
-    }
-    if (value === Number.MAX_VALUE) {
-      return;
+      value = undefined;
     }
 
     // get subscription
@@ -1049,14 +1044,12 @@ export class IBApiNext {
     const changed = new MutableMarketData();
 
     ticks.forEach((tick) => {
-      if (tick[1].value !== Number.MAX_VALUE && tick[1].value !== undefined) {
-        if (cached.has(tick[0])) {
-          changed.set(tick[0], tick[1]);
-        } else {
-          added.set(tick[0], tick[1]);
-        }
-        cached.set(tick[0], tick[1]);
+      if (cached.has(tick[0])) {
+        changed.set(tick[0], tick[1]);
+      } else {
+        added.set(tick[0], tick[1]);
       }
+      cached.set(tick[0], tick[1]);
     });
 
     // deliver to subject
@@ -1132,6 +1125,60 @@ export class IBApiNext {
     );
   }
 
+  /** headTimestamp event handler.  */
+  private onHeadTimestamp = (
+    subscriptions: Map<number, IBApiNextSubscription<string>>,
+    reqId: number,
+    headTimestamp: string
+  ): void => {
+    // get subscription
+    const subscription = subscriptions.get(reqId);
+    if (!subscription) {
+      return;
+    }
+
+    // signal timestamp
+    subscription.next({ all: headTimestamp });
+    subscription.complete();
+  };
+
+  /**
+   * Get the timestamp of earliest available historical data for a contract and data type.
+   *
+   * @param reqId An identifier for the request.
+   * @param contract [[Contract]] object for which head timestamp is being requested.
+   * @param whatToShow Type of data for head timestamp - "BID", "ASK", "TRADES", etc
+   * @param useRTH Use regular trading hours only, `true` for yes or `false` for no.
+   * @param formatDate Set to 1 to obtain the bars' time as yyyyMMdd HH:mm:ss, set to 2 to obtain it like system time format in seconds.
+   */
+  getHeadTimestamp(
+    contract: Contract,
+    whatToShow: string,
+    useRTH: boolean,
+    formatDate: number
+  ): Promise<string> {
+    return lastValueFrom(
+      this.subscriptions
+        .register<string>(
+          (reqId) => {
+            this.api.reqHeadTimestamp(
+              reqId,
+              contract,
+              whatToShow,
+              useRTH,
+              formatDate
+            );
+          },
+          (reqId) => {
+            this.api.cancelHeadTimestamp(reqId);
+          },
+          [[EventName.headTimestamp, this.onHeadTimestamp]],
+          `${JSON.stringify(contract)}:${whatToShow}:${useRTH}:${formatDate}`
+        )
+        .pipe(map((v: { all: string }) => v.all))
+    );
+  }
+
   /** historicalData event handler */
   private readonly onHistoricalData = (
     subscriptions: Map<number, IBApiNextSubscription<Bar[]>>,
@@ -1142,7 +1189,7 @@ export class IBApiNext {
     low: number,
     close: number,
     volume: number,
-    count: number,
+    count: number | undefined,
     WAP: number
   ): void => {
     // get subscription
@@ -1193,7 +1240,7 @@ export class IBApiNext {
    * When requesting historical data, a finishing time and date is required along with a duration string.
    * For example, having:
    * - endDateTime: 20130701 23:59:59 GMT
-   * - durationStr: 3
+   * - durationStr: 3 D
    * will return three days of data counting backwards from July 1st 2013 at 23:59:59 GMT resulting in all the available bars of the last three days
    * until the date and time specified.
    *
@@ -1239,7 +1286,7 @@ export class IBApiNext {
     contract: Contract,
     endDateTime: string | undefined,
     durationStr: string,
-    barSizeSetting: string,
+    barSizeSetting: BarSizeSetting,
     whatToShow: string,
     useRTH: number,
     formatDate: number
@@ -1340,7 +1387,7 @@ export class IBApiNext {
    */
   getHistoricalDataUpdates(
     contract: Contract,
-    barSizeSetting: string,
+    barSizeSetting: BarSizeSetting,
     whatToShow: string,
     formatDate: number
   ): Observable<Bar> {
@@ -1833,6 +1880,283 @@ export class IBApiNext {
           `${JSON.stringify(contract)}:${useRTH}:${duration}:${durationUnit}`
         )
         .pipe(map((v: { all: HistogramEntry[] }) => v.all))
+    );
+  }
+
+  /**
+   * Feeds in currently open orders.
+   *
+   * @param listener
+   * orderId: The order's unique id.
+   *
+   * contract: The order's [[Contract]]
+   *
+   * order: The currently active [[Order]]
+   *
+   * orderState: The order's [[OrderState]]
+   *
+   * @see [[placeOrder]], [[reqAllOpenOrders]], [[reqAutoOpenOrders]]
+   */
+  private readonly onOpenOrder = (
+    subscriptions: Map<number, IBApiNextSubscription<OpenOrder[]>>,
+    orderId: number,
+    contract: Contract,
+    order: Order,
+    orderState: OrderState
+  ): void => {
+    subscriptions.forEach((sub) => {
+      const allOrders = sub.lastAllValue ?? [];
+      allOrders.push({ orderId, contract, order, orderState });
+      sub.next({
+        all: allOrders,
+      });
+    });
+  };
+
+  /**
+   *  Ends the subscrition once all openOrders are recieved
+   *  @param subscriptions
+   */
+  private readonly onOpenOrderEnd = (
+    subscriptions: Map<number, IBApiNextSubscription<OpenOrder[]>>
+  ): void => {
+    subscriptions.forEach((sub) => {
+      sub.complete();
+    });
+  };
+
+  /**
+   * Response to API bind order control message.
+   *
+   * @param orderId: permId
+   * @param apiClientId: API client id.
+   * @param apiOrderId: API order id.
+   *
+   * @see [[reqOpenOrders]]
+   */
+  private readonly onOrderBound = (
+    // TODO finish implementation
+    subscription: Map<number, IBApiNextSubscription<OpenOrder[]>>,
+    orderId: number,
+    apiClientId: number,
+    apiOrderId: number
+  ): void => {
+    // not sure what it's used for
+  };
+
+  /**
+   * Requests all current open orders in associated accounts at the current moment.
+   */
+  getAllOpenOrders(): Promise<OpenOrder[]> {
+    return lastValueFrom(
+      this.subscriptions
+        .register<OpenOrder[]>(
+          () => {
+            this.api.reqAllOpenOrders();
+          },
+          undefined,
+          [
+            [EventName.openOrder, this.onOpenOrder],
+            [EventName.orderStatus, this.onOrderBound],
+            [EventName.openOrderEnd, this.onOpenOrderEnd],
+          ]
+        )
+        .pipe(map((v: { all: OpenOrder[] }) => v.all))
+    );
+  }
+
+  /** nextValidId event handler */
+  private readonly onNextValidId = (
+    subscriptions: Map<number, IBApiNextSubscription<number>>,
+    orderId: number
+  ): void => {
+    // this is special to other one-shot callbacks:
+    // we only want to complete one subscription at a time,
+    // to avoid multiple getNextValidOrderId calls to return same value
+    const next = subscriptions.entries().next();
+    if (next && !next.done && next.value[1]) {
+      next.value[1].next({
+        all: orderId,
+      });
+      next.value[1].complete();
+    }
+  };
+
+  /**
+   * Requests the next valid order ID at the current moment.
+   */
+  getNextValidOrderId(): Promise<number> {
+    return lastValueFrom(
+      this.subscriptions
+        .register<number>(
+          () => {
+            this.api.reqIds();
+          },
+          undefined,
+          [[EventName.nextValidId, this.onNextValidId]]
+        )
+        .pipe(map((v: { all: number }) => v.all))
+    );
+  }
+
+  /**
+   * Places or modifies an order.
+   * @param id The order's unique identifier.
+   * Use a sequential id starting with the id received at the nextValidId method.
+   * If a new order is placed with an order ID less than or equal to the order ID of a previous order an error will occur.
+   * @param contract The order's [[Contract]].
+   * @param order The [[Order]] object.
+   */
+  placeOrder(id: number, contract: Contract, order: Order): void {
+    this.api.placeOrder(id, contract, order);
+  }
+
+  /**
+   * Places new order.
+   * This method does use the order id as returned by getNextValidOrderId() method and returns it as a result.
+   * If you want to send multiple orders, consider using  placeOrder method instead and increase the order id manually for each new order, avoiding the overhead of calling getNextValidOrderId() for each.
+   * @param contract The order's [[Contract]].
+   * @param order The [[Order]] object.
+   *  @see [[getNextValidOrderId]]
+   */
+  async placeNewOrder(contract: Contract, order: Order): Promise<number> {
+    const orderId = await this.getNextValidOrderId();
+    this.placeOrder(orderId, contract, order);
+    return orderId;
+  }
+
+  /**
+   * Places new order.
+   * @param id The order's unique identifier.
+   * @param contract The order's [[Contract]].
+   * @param order The [[Order]] object.
+   *
+   */
+  modifyOrder(id: number, contract: Contract, order: Order): void {
+    this.api.placeOrder(id, contract, order);
+  }
+
+  /**
+   * Cancels an active order placed by from the same API client ID.
+   *
+   * Note: API clients cannot cancel individual orders placed by other clients.
+   * Use [[cancelAllOrders]] instead.
+   *
+   * @param id The order id.
+   */
+  cancelOrder(id: number): void {
+    this.api.cancelOrder(id);
+  }
+
+  /**
+   * Cancels all active orders.
+   * This method will cancel ALL open orders including those placed directly from TWS.
+   *
+   * @see [[cancelOrder]]
+   */
+  cancelAllOrders(): void {
+    this.api.reqGlobalCancel();
+  }
+
+  /**
+   *  Ends the subscrition once all trades are recieved
+   *  @param subscriptions
+   *  @param reqId
+   *  @param contract  Contract details that is used for order
+   *  @param execution Execution details of an order
+   */
+  private readonly onExecDetails = (
+    subscriptions: Map<number, IBApiNextSubscription<ExecutionDetail[]>>,
+    reqId: number,
+    contract: Contract,
+    execution: Execution
+  ): void => {
+    subscriptions.forEach((sub) => {
+      const allTrades = sub.lastAllValue ?? [];
+      allTrades.push({ reqId, contract, execution });
+      sub.next({
+        all: allTrades,
+      });
+    });
+  };
+
+  /**
+   *  Ends the subscrition once all trades are recieved
+   *  @param subscriptions
+   */
+  private readonly onExecDetailsEnd = (
+    subscriptions: Map<
+      number,
+      IBApiNextSubscription<ExecutionDetail[] | CommissionReport[]>
+    >,
+    reqId: number
+  ): void => {
+    const sub = subscriptions.get(reqId);
+    if (!sub) {
+      return;
+    }
+    if (!sub.lastAllValue) {
+      sub.next({ all: [] });
+    }
+    sub.complete();
+  };
+
+  /**
+   *  Commision report of all the clients
+   *  @param subscriptions
+   *  @param commissionReport commissionReport details
+   */
+  private readonly onComissionReport = (
+    subscriptions: Map<number, IBApiNextSubscription<CommissionReport[]>>,
+    commissionReport: CommissionReport
+  ): void => {
+    subscriptions.forEach((sub) => {
+      const commissionReports = sub.lastAllValue ?? [];
+      commissionReports.push(commissionReport);
+      sub.next({
+        all: commissionReports,
+      });
+    });
+  };
+  /**
+   *  Ends the subscrition once all executed trades are recieved
+   *  @param filter  filter trade data on [[ExecutionFilter]]
+   *  @see [[onExecDetails]]
+   *  @see [[onExecDetailsEnd]]
+   *  Executed trades only
+   */
+  getExecutionDetails(filter: ExecutionFilter): Promise<ExecutionDetail[]> {
+    return lastValueFrom(
+      this.subscriptions
+        .register<ExecutionDetail[]>(
+          (reqId) => {
+            this.api.reqExecutions(reqId, filter);
+          },
+          undefined,
+          [
+            [EventName.execDetails, this.onExecDetails],
+            [EventName.execDetailsEnd, this.onExecDetailsEnd],
+            // [EventName.commissionReport, this.onComissionReport],
+          ]
+        )
+        .pipe(map((v: { all: ExecutionDetail[] }) => v.all))
+    );
+  }
+  getCommissionReport(filter: ExecutionFilter): Promise<CommissionReport[]> {
+    return lastValueFrom(
+      this.subscriptions
+        .register<CommissionReport[]>(
+          (reqId) => {
+            this.api.reqExecutions(reqId, filter);
+          },
+          undefined,
+          [
+            //[EventName.execDetails, this.onExecDetails],
+            [EventName.execDetailsEnd, this.onExecDetailsEnd],
+            [EventName.commissionReport, this.onComissionReport],
+          ]
+        )
+        .pipe(map((v: { all: CommissionReport[] }) => v.all))
     );
   }
 }

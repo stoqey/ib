@@ -36,7 +36,7 @@ const OPTION_ARGUMENTS: [string, string][] = [
   ],
   [
     "watch",
-    "Watch for changes. If specified, the app will keep running and print account summary updates to console as received from TWS." +
+    "Watch for changes. If specified, the app will keep running and print account summary updates to console as received from TWS. " +
       "If not specified, the app will print a one-time snapshot and than exit.",
   ],
 ];
@@ -65,8 +65,8 @@ class PrintAccountSummaryApp extends IBApiNextApp {
     this.connect(this.cmdLineArgs.watch ? 10000 : 0);
     this.subscription$ = this.api
       .getAccountSummary(
-        this.cmdLineArgs.group as string ?? DEFAULT_GROUP,
-        this.cmdLineArgs.tags as string ?? DEFAULT_TAGS
+        (this.cmdLineArgs.group as string) ?? DEFAULT_GROUP,
+        (this.cmdLineArgs.tags as string) ?? DEFAULT_TAGS
       )
       .subscribe({
         next: (summaries) => {
