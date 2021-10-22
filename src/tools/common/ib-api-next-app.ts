@@ -111,7 +111,12 @@ export class IBApiNextApp {
       });
     }
 
-    this.api.connect(clientId);
+    try {
+      this.api.connect(clientId);
+    } catch (error) {
+      logger.error("Connection error", error.message);
+      logger.debug(`IB host: ${host} - IB port: ${port}`);
+    }
   }
 
   /**

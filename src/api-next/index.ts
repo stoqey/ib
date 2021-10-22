@@ -47,9 +47,21 @@ export {
   AccountPositionsUpdate,
 } from "./position/position";
 
+// market depth
+
+export {
+  OrderBookRow,
+  OrderBookRowPosition,
+  OrderBookRows,
+  OrderBook,
+  OrderBookUpdate,
+} from "./market-depth/order-book";
+
 // Order
+
 export { OpenOrder } from "./order/open-order";
 export { OpenOrdersUpdate } from "./order/open-order-update";
+export { ExecutionDetail } from "./order/execution-detail";
 
 // IBApiNext
 

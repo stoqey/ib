@@ -15,42 +15,47 @@ import {
   HistoricalTick,
   HistoricalTickBidAsk,
   HistoricalTickLast,
+  TagValue,
+  OrderBook,
+  OrderBookRow,
+  OrderBookUpdate,
   Order,
   OrderState,
+  OpenOrder,
+  BarSizeSetting,
+  ExecutionDetail,
 } from "../";
 import LogLevel from "../api/data/enum/log-level";
 import {
-  AccountSummaryValue,
-  ConnectionState,
-  IBApiNextError,
-  IBApiTickType,
-  MarketDataTick,
-  MarketDataType,
-  PnL,
-  PnLSingle,
-  AccountSummariesUpdate,
-  AccountPositionsUpdate,
-  Position,
-  ContractDetailsUpdate,
-  MarketDataUpdate,
-  IBApiNextTickType,
-} from "./";
+  MutableAccountSummaries,
+  MutableAccountSummaryTagValues,
+  MutableAccountSummaryValues,
+} from "../core/api-next/api/account/mutable-account-summary";
+import { MutableMarketData } from "../core/api-next/api/market/mutable-market-data";
+import { MutableAccountPositions } from "../core/api-next/api/position/mutable-account-positions-update";
+import { IBApiAutoConnection } from "../core/api-next/auto-connection";
 import { ConsoleLogger } from "../core/api-next/console-logger";
-import { Logger } from "./common/logger";
+import { IBApiNextLogger } from "../core/api-next/logger";
 import { IBApiNextSubscription } from "../core/api-next/subscription";
 import { IBApiNextSubscriptionRegistry } from "../core/api-next/subscription-registry";
 import {
-  MutableAccountSummaryTagValues,
-  MutableAccountSummaryValues,
-  MutableAccountSummaries,
-} from "../core/api-next/api/account/mutable-account-summary";
-import { MutableAccountPositions } from "../core/api-next/api/position/mutable-account-positions-update";
-import { MutableMarketData } from "../core/api-next/api/market/mutable-market-data";
-import { IBApiNextLogger } from "../core/api-next/logger";
-import { IBApiAutoConnection } from "../core/api-next/auto-connection";
-import { BarSizeSetting } from "../api/historical/bar-size-setting";
-import { OpenOrder } from "./order/open-order";
-import { ExecutionDetail } from "./order/execution-detail";
+  AccountPositionsUpdate,
+  AccountSummariesUpdate,
+  AccountSummaryValue,
+  ConnectionState,
+  ContractDetailsUpdate,
+  IBApiNextError,
+  IBApiNextTickType,
+  IBApiTickType,
+  MarketDataTick,
+  MarketDataType,
+  MarketDataUpdate,
+  OrderBookRowPosition,
+  PnL,
+  PnLSingle,
+  Position,
+} from "./";
+import { Logger } from "./common/logger";
 
 /**
  * @internal
@@ -1558,14 +1563,12 @@ export class IBApiNext {
     done: boolean
   ): void => {
     // get subscription
-
     const subscription = subscriptions.get(reqId);
     if (!subscription) {
       return;
     }
 
     // append tick
-
     let allTicks = subscription.lastAllValue;
     allTicks = allTicks ? allTicks.concat(ticks) : ticks;
 
@@ -1649,6 +1652,181 @@ export class IBApiNext {
           "reqMktDepthExchanges" // use same instance id each time, to make sure there is only 1 pending request at time
         )
         .pipe(map((v: { all: DepthMktDataDescription[] }) => v.all))
+    );
+  }
+
+  /** updateMktDepth event handler */
+  private readonly onUpdateMktDepth = (
+    subscriptions: Map<number, IBApiNextSubscription<OrderBook>>,
+    tickerId: number,
+    position: number,
+    operation: number,
+    side: number,
+    price: number,
+    size: number
+  ): void => {
+    // forward to L2 handler, but w/o market maker and smart depth set to false
+    this.onUpdateMktDepthL2(
+      subscriptions,
+      tickerId,
+      position,
+      undefined,
+      operation,
+      side,
+      price,
+      size,
+      false
+    );
+  };
+
+  /** marketDepthL2 event handler */
+  private readonly onUpdateMktDepthL2 = (
+    subscriptions: Map<number, IBApiNextSubscription<OrderBook>>,
+    tickerId: number,
+    position: number,
+    marketMaker: string,
+    operation: number,
+    side: number,
+    price: number,
+    size: number,
+    isSmartDepth: boolean
+  ): void => {
+    // get subscription
+    const subscription = subscriptions.get(tickerId);
+    if (!subscription) {
+      return;
+    }
+
+    // update cached
+
+    const cached = subscription.lastAllValue ?? {
+      bids: new Map<OrderBookRowPosition, OrderBookRow>(),
+      asks: new Map<OrderBookRowPosition, OrderBookRow>(),
+    };
+
+    const changed = {
+      bids: new Map<OrderBookRowPosition, OrderBookRow>(),
+      asks: new Map<OrderBookRowPosition, OrderBookRow>(),
+    };
+
+    let cachedRows: Map<OrderBookRowPosition, OrderBookRow> = undefined;
+    let changedRows: Map<OrderBookRowPosition, OrderBookRow> = undefined;
+
+    if (side == 0) {
+      // ask side
+      cachedRows = <Map<OrderBookRowPosition, OrderBookRow>>cached.asks;
+      changedRows = <Map<OrderBookRowPosition, OrderBookRow>>changed.asks;
+    } else if (side == 1) {
+      // bid side
+      cachedRows = <Map<OrderBookRowPosition, OrderBookRow>>cached.bids;
+      changedRows = <Map<OrderBookRowPosition, OrderBookRow>>changed.bids;
+    }
+
+    if (cachedRows === undefined || changedRows === undefined) {
+      this.logger.error(
+        LOG_TAG,
+        `onUpdateMktDepthL2: unknown side value ${side} received from TWS`
+      );
+      return;
+    }
+
+    switch (operation) {
+      case 0:
+      case 1:
+        // it's an insert or update
+        const isUpdate = cachedRows.has(position);
+
+        cachedRows.set(position, {
+          price: price,
+          marketMaker: marketMaker,
+          size: size,
+          isSmartDepth: isSmartDepth,
+        });
+
+        changedRows.set(position, {
+          marketMaker: marketMaker,
+          price: price,
+          size: size,
+          isSmartDepth: isSmartDepth,
+        });
+
+        if (isUpdate) {
+          subscription.next({
+            all: cached,
+            changed: changed,
+          });
+        } else {
+          subscription.next({
+            all: cached,
+            added: changed,
+          });
+        }
+
+        break;
+
+      case 2:
+        // it's a delete
+        const deletedRow = cachedRows.get(position);
+
+        cachedRows.delete(position);
+        changedRows.set(position, deletedRow);
+
+        subscription.next({
+          all: cached,
+          removed: changed,
+        });
+
+        break;
+
+      default:
+        this.logger.error(
+          LOG_TAG,
+          `onUpdateMktDepthL2: unknown operation value ${operation} received from TWS`
+        );
+        break;
+    }
+  };
+
+  /**
+   * Requests the contract's market depth (order book).
+   *
+   * This request must be direct-routed to an exchange and not smart-routed.
+   *
+   * The number of simultaneous market depth requests allowed in an account is calculated based on a formula
+   * that looks at an accounts equity, commissions, and quote booster packs.
+   *
+   * @param tickerId The request's identifier.
+   * @param contract The [[Contract]] for which the depth is being requested.
+   * @param numRows The number of rows on each side of the order book.
+   * @param isSmartDepth Flag indicates that this is smart depth request.
+   * @param mktDepthOptions TODO document
+   */
+  getMarketDepth(
+    contract: Contract,
+    numRows: number,
+    isSmartDepth: boolean,
+    mktDepthOptions?: TagValue[]
+  ): Observable<OrderBookUpdate> {
+    return this.subscriptions.register<OrderBook>(
+      (reqId) => {
+        this.api.reqMktDepth(
+          reqId,
+          contract,
+          numRows,
+          isSmartDepth,
+          mktDepthOptions
+        );
+      },
+      (reqId) => {
+        this.api.cancelMktDepth(reqId, isSmartDepth);
+      },
+      [
+        [EventName.updateMktDepth, this.onUpdateMktDepth],
+        [EventName.updateMktDepthL2, this.onUpdateMktDepthL2],
+      ],
+      `${JSON.stringify(
+        contract
+      )}:${numRows}:${isSmartDepth}:${mktDepthOptions}`
     );
   }
 
