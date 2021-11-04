@@ -11,10 +11,10 @@ export interface Contract {
   conId?: number;
 
   /** The asset symbol. */
-  symbol?: string;
+  symbol: string;
 
   /** The security type   */
-  secType?: SecType;
+  secType: SecType;
 
   /**
    * The contract's last trading day or contract month (for Options and Futures).
@@ -33,10 +33,10 @@ export interface Contract {
   multiplier?: number;
 
   /** The destination exchange. */
-  exchange?: string;
+  exchange: string;
 
   /** The trading currency. */
-  currency?: string;
+  currency: string;
 
   /** The contract's symbol within its primary exchange For options, this will be the OCC symbol. */
   localSymbol?: string;
