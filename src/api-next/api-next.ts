@@ -325,7 +325,10 @@ export class IBApiNext {
           [[EventName.currentTime, this.onCurrentTime]],
           "reqCurrentTime" // use same instance id each time, to make sure there is only 1 pending request at time
         )
-        .pipe(map((v: { all: number }) => v.all))
+        .pipe(map((v: { all: number }) => v.all)),
+      {
+        defaultValue: 0,
+      }
     );
   }
 
@@ -355,7 +358,10 @@ export class IBApiNext {
           [[EventName.managedAccounts, this.onManagedAccts]],
           "getManagedAccounts" // use same instance id each time, to make sure there is only 1 pending request at time
         )
-        .pipe(map((v: { all: string[] }) => v.all))
+        .pipe(map((v: { all: string[] }) => v.all)),
+      {
+        defaultValue: [],
+      }
     );
   }
 
@@ -1175,7 +1181,10 @@ export class IBApiNext {
           [[EventName.headTimestamp, this.onHeadTimestamp]],
           `${JSON.stringify(contract)}:${whatToShow}:${useRTH}:${formatDate}`
         )
-        .pipe(map((v: { all: string }) => v.all))
+        .pipe(map((v: { all: string }) => v.all)),
+      {
+        defaultValue: "",
+      }
     );
   }
 
@@ -1311,7 +1320,10 @@ export class IBApiNext {
           [[EventName.historicalData, this.onHistoricalData]],
           undefined
         )
-        .pipe(map((v: { all: Bar[] }) => v.all))
+        .pipe(map((v: { all: Bar[] }) => v.all)),
+      {
+        defaultValue: [],
+      }
     );
   }
 
@@ -1651,7 +1663,10 @@ export class IBApiNext {
           [[EventName.mktDepthExchanges, this.onMktDepthExchanges]],
           "reqMktDepthExchanges" // use same instance id each time, to make sure there is only 1 pending request at time
         )
-        .pipe(map((v: { all: DepthMktDataDescription[] }) => v.all))
+        .pipe(map((v: { all: DepthMktDataDescription[] }) => v.all)),
+      {
+        defaultValue: [],
+      }
     );
   }
 
@@ -1879,7 +1894,10 @@ export class IBApiNext {
           [[EventName.histogramData, this.onHistogramData]],
           `${JSON.stringify(contract)}:${useRTH}:${duration}:${durationUnit}`
         )
-        .pipe(map((v: { all: HistogramEntry[] }) => v.all))
+        .pipe(map((v: { all: HistogramEntry[] }) => v.all)),
+      {
+        defaultValue: [],
+      }
     );
   }
 
@@ -1961,7 +1979,10 @@ export class IBApiNext {
             [EventName.openOrderEnd, this.onOpenOrderEnd],
           ]
         )
-        .pipe(map((v: { all: OpenOrder[] }) => v.all))
+        .pipe(map((v: { all: OpenOrder[] }) => v.all)),
+      {
+        defaultValue: [],
+      }
     );
   }
 
@@ -1995,7 +2016,10 @@ export class IBApiNext {
           undefined,
           [[EventName.nextValidId, this.onNextValidId]]
         )
-        .pipe(map((v: { all: number }) => v.all))
+        .pipe(map((v: { all: number }) => v.all)),
+      {
+        defaultValue: -1,
+      }
     );
   }
 
@@ -2139,7 +2163,10 @@ export class IBApiNext {
             // [EventName.commissionReport, this.onComissionReport],
           ]
         )
-        .pipe(map((v: { all: ExecutionDetail[] }) => v.all))
+        .pipe(map((v: { all: ExecutionDetail[] }) => v.all)),
+      {
+        defaultValue: [],
+      }
     );
   }
   getCommissionReport(filter: ExecutionFilter): Promise<CommissionReport[]> {
@@ -2156,7 +2183,10 @@ export class IBApiNext {
             [EventName.commissionReport, this.onComissionReport],
           ]
         )
-        .pipe(map((v: { all: CommissionReport[] }) => v.all))
+        .pipe(map((v: { all: CommissionReport[] }) => v.all)),
+      {
+        defaultValue: [],
+      }
     );
   }
 }
