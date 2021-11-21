@@ -571,7 +571,7 @@ export class IBApiNext {
       return;
     }
 
-    // update latest value on cache
+    // append to list
 
     const cached = subscription.lastAllValue ?? [];
     cached.push(details);
@@ -580,7 +580,6 @@ export class IBApiNext {
 
     subscription.next({
       all: cached,
-      added: [details],
     });
   };
 
@@ -589,16 +588,7 @@ export class IBApiNext {
     subscriptions: Map<number, IBApiNextSubscription<ContractDetails[]>>,
     reqId: number
   ) => {
-    // get the subscription
-
-    const subscription = subscriptions.get(reqId);
-    if (!subscription) {
-      return;
-    }
-
-    // signal completion
-
-    subscription.complete();
+    subscriptions.get(reqId)?.complete();
   };
 
   /**
@@ -612,16 +602,20 @@ export class IBApiNext {
    *
    * @param contract The contract used as sample to query the available contracts.
    */
-  getContractDetails(contract: Contract): Observable<ContractDetailsUpdate> {
-    return this.subscriptions.register<ContractDetails[]>(
-      (reqId) => {
-        this.api.reqContractDetails(reqId, contract);
-      },
-      undefined,
-      [
-        [EventName.contractDetails, this.onContractDetails],
-        [EventName.contractDetailsEnd, this.onContractDetailsEnd],
-      ]
+  getContractDetails(contract: Contract): Promise<ContractDetails[]> {
+    return lastValueFrom(
+      this.subscriptions
+        .register<ContractDetails[]>(
+          (reqId) => {
+            this.api.reqContractDetails(reqId, contract);
+          },
+          undefined,
+          [
+            [EventName.contractDetails, this.onContractDetails],
+            [EventName.contractDetailsEnd, this.onContractDetailsEnd],
+          ]
+        )
+        .pipe(map((v: { all: ContractDetails[] }) => v.all))
     );
   }
 
