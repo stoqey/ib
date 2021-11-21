@@ -24,6 +24,7 @@ import {
   OpenOrder,
   BarSizeSetting,
   ExecutionDetail,
+  ContractDescription,
 } from "../";
 import LogLevel from "../api/data/enum/log-level";
 import {
@@ -2125,11 +2126,7 @@ export class IBApiNext {
     sub.complete();
   };
 
-  /**
-   *  Commision report of all the clients
-   *  @param subscriptions
-   *  @param commissionReport commissionReport details
-   */
+  /** comissionReport event handler. */
   private readonly onComissionReport = (
     subscriptions: Map<number, IBApiNextSubscription<CommissionReport[]>>,
     commissionReport: CommissionReport
@@ -2142,12 +2139,10 @@ export class IBApiNext {
       });
     });
   };
+
   /**
-   *  Ends the subscrition once all executed trades are recieved
-   *  @param filter  filter trade data on [[ExecutionFilter]]
-   *  @see [[onExecDetails]]
-   *  @see [[onExecDetailsEnd]]
-   *  Executed trades only
+   * Get execution details of all executed trades.
+   * @param filter  filter trade data on [[ExecutionFilter]]
    */
   getExecutionDetails(filter: ExecutionFilter): Promise<ExecutionDetail[]> {
     return lastValueFrom(
@@ -2160,7 +2155,6 @@ export class IBApiNext {
           [
             [EventName.execDetails, this.onExecDetails],
             [EventName.execDetailsEnd, this.onExecDetailsEnd],
-            // [EventName.commissionReport, this.onComissionReport],
           ]
         )
         .pipe(map((v: { all: ExecutionDetail[] }) => v.all)),
@@ -2169,6 +2163,11 @@ export class IBApiNext {
       }
     );
   }
+
+  /**
+   * Get commication reports details of all executed trades.
+   * @param filter  filter trade data on [[ExecutionFilter]]
+   */
   getCommissionReport(filter: ExecutionFilter): Promise<CommissionReport[]> {
     return lastValueFrom(
       this.subscriptions
@@ -2178,7 +2177,6 @@ export class IBApiNext {
           },
           undefined,
           [
-            //[EventName.execDetails, this.onExecDetails],
             [EventName.execDetailsEnd, this.onExecDetailsEnd],
             [EventName.commissionReport, this.onComissionReport],
           ]
@@ -2187,6 +2185,39 @@ export class IBApiNext {
       {
         defaultValue: [],
       }
+    );
+  }
+
+  /** symbolSamples event handler. */
+  private readonly onSymbolSamples = (
+    subscriptions: Map<number, IBApiNextSubscription<ContractDescription[]>>,
+    reqId: number,
+    contractDescriptions: ContractDescription[]
+  ): void => {
+    const sub = subscriptions.get(reqId);
+    subscriptions.delete(reqId);
+    sub?.next({
+      all: contractDescriptions,
+    });
+    sub?.complete();
+  };
+
+  /**
+   * Search contracts there name of symbol matches the given text pattern.
+   *
+   * @param pattern Either start of ticker symbol or (for larger strings) company name.
+   */
+  searchContracts(pattern: string): Promise<ContractDescription[]> {
+    return lastValueFrom(
+      this.subscriptions
+        .register<ContractDescription[]>(
+          (reqId) => {
+            this.api.reqMatchingSymbols(reqId, pattern);
+          },
+          undefined,
+          [[EventName.symbolSamples, this.onSymbolSamples]]
+        )
+        .pipe(map((v: { all: ContractDescription[] }) => v.all))
     );
   }
 }
