@@ -2203,7 +2203,7 @@ export class IBApiNext {
   };
 
   /**
-   * Search contracts there name of symbol matches the given text pattern.
+   * Search contracts where name or symbol matches the given text pattern.
    *
    * @param pattern Either start of ticker symbol or (for larger strings) company name.
    */
