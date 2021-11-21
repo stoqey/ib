@@ -615,7 +615,10 @@ export class IBApiNext {
             [EventName.contractDetailsEnd, this.onContractDetailsEnd],
           ]
         )
-        .pipe(map((v: { all: ContractDetails[] }) => v.all))
+        .pipe(map((v: { all: ContractDetails[] }) => v.all)),
+      {
+        defaultValue: [],
+      }
     );
   }
 
