@@ -513,14 +513,14 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Tool: search-contract",
+      "name": "Tool: search-contracts",
       "skipFiles": [
         "<node_internals>/**"
       ],
       "runtimeArgs": [
         "--trace-warnings"
       ],
-      "program": "${workspaceFolder}/dist/tools/search-contract.js",
+      "program": "${workspaceFolder}/dist/tools/search-contracts.js",
       "args": [
         "-pattern=Apple",
       ],
