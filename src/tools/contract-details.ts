@@ -3,7 +3,6 @@
  */
 
 import path from "path";
-import { lastValueFrom } from "rxjs";
 
 import { OptionType, SecType } from "../";
 import { IBApiNextError } from "../api-next";
@@ -52,25 +51,19 @@ class PrintContractDetailsApp extends IBApiNextApp {
   start(): void {
     const scriptName = path.basename(__filename);
     logger.debug(`Starting ${scriptName} script`);
-    this.connect(0);
+    this.connect();
 
-    // We use lastValueFrom here as we are not interested in getting
-    // incremental updates.
-    // If you do so (e.g. to show results incrementally as received from TWS),
-    // use .subscribe({next: update => ...}) instead.
-
-    lastValueFrom(
-      this.api.getContractDetails({
+    this.api
+      .getContractDetails({
         symbol: this.cmdLineArgs.symbol as string,
-        conId: this.cmdLineArgs.conid as number ?? undefined,
+        conId: (this.cmdLineArgs.conid as number) ?? undefined,
         secType: this.cmdLineArgs.sectype as SecType,
         exchange: this.cmdLineArgs.exchange as string,
         currency: this.cmdLineArgs.currency as string,
         lastTradeDateOrContractMonth: this.cmdLineArgs.expiry as string,
-        strike: this.cmdLineArgs.strike as number ?? undefined,
+        strike: (this.cmdLineArgs.strike as number) ?? undefined,
         right: this.cmdLineArgs.right as OptionType,
       })
-    )
       .then((details) => {
         this.printObject(details);
         this.stop();
