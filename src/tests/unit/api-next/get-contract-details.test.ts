@@ -21,7 +21,7 @@ describe("RxJS Wrapper: getContractDetails()", () => {
 
     apiNext
       .getContractDetails({})
-      .then(() => fail())
+      .then(fail)
       .catch((error: IBApiNextError) => {
         expect(error.error.message).toEqual(testValue);
         done();
