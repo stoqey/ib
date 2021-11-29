@@ -7,14 +7,12 @@ import { Contract } from "./contract";
 export class Future implements Contract {
   constructor(
     public symbol: string,
-    public expiry: string,
-    public currency?: string,
-    public exchange?: string,
-    public multiplier?: number
-  ) {
-    this.currency = this.currency ?? "USD";
-    this.exchange = this.exchange ?? "ONE";
-  }
+    public localSymbol: string,
+    public lastTradeDateOrContractMonth: string,
+    public exchange: string,
+    public multiplier: number,
+    public currency: string,
+  ) {}
 
   public secType = SecType.FUT;
 }
