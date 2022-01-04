@@ -162,7 +162,7 @@ ib.reqIds();
 While IBApi uses a request function / event callback design where subscriptions are managed by the user, IBApiNext does use RxJS 7 to manage subscriptions.\
 In general, there are two types of functions on IBApiNext:
 
-- On-shot functions, returning a Promise, such as `IBApiNext.getCurrentTime` or `IBApiNext.getContractDetails`. Such functions will send a request to TWS and return the result (or error) on the Promise.
+- One-shot functions, returning a Promise, such as `IBApiNext.getCurrentTime` or `IBApiNext.getContractDetails`. Such functions will send a request to TWS and return the result (or error) on the Promise.
 
 - Endless stream subscriptions, returning an Observable, such as `IBApiNext.getAccountSummary` or `IBApiNext.getMarketData`.
   Such functions will deliver an endless stream of update events. The `complete` callback will NEVER be invoked (do not try to convert to a Promise - it will never resolve!)
