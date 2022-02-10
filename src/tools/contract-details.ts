@@ -21,7 +21,7 @@ const OPTION_ARGUMENTS: [string, string][] = [
   ["symbol=<name>", "The symbol name."],
   [
     "sectype=<type>",
-    "The security type. Valid values: STK, OPT, FUT, IND, FOP, CFD, CASH, BAG, BOND, CMDTY, NEWS and FUND",
+    "The security type. Valid values: STK, OPT, FUT, IND, FOP, CFD, CASH, BAG, BOND, CMDTY, NEWS, FUND and CRYPTO.",
   ],
   ["exchange=<name>", "The destination exchange name."],
   ["currency=<currency>", "The contract currency."],
