@@ -593,7 +593,7 @@ export class IBApiNext {
   };
 
   /**
-   * Request contract information form TWS.
+   * Request contract information from TWS.
    * This method will provide all the contracts matching the contract provided.
    *
    * It can also be used to retrieve complete options and futures chains.
