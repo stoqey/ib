@@ -40,6 +40,9 @@ export enum SecType {
 
   /** Mutual fund. */
   FUND = "FUND",
+
+  /** Cryptocurrency. */
+  CRYPTO = "CRYPTO ",
 }
 
 export default SecType;
