@@ -25,6 +25,7 @@ import {
   BarSizeSetting,
   ExecutionDetail,
   ContractDescription,
+  SecType,
 } from "../";
 import LogLevel from "../api/data/enum/log-level";
 import {
@@ -45,6 +46,7 @@ import {
   AccountSummaryValue,
   ConnectionState,
   ContractDetailsUpdate,
+  SecurityDefinitionOptionParameterType,
   IBApiNextError,
   IBApiNextTickType,
   IBApiTickType,
@@ -617,6 +619,82 @@ export class IBApiNext {
           ]
         )
         .pipe(map((v: { all: ContractDetails[] }) => v.all)),
+      {
+        defaultValue: [],
+      }
+    );
+  }
+
+  /** securityDefinitionOptionParameter event handler */
+  private readonly onSecurityDefinitionOptionParameter = (
+    subscriptions: Map<number, IBApiNextSubscription<SecurityDefinitionOptionParameterType[]>>,
+    reqId: number,
+    exchange: string,
+    underlyingConId: number,
+    tradingClass: string,
+    multiplier: string,
+    expirations: string[],
+    strikes: number[]
+  ) => {
+    // get the subscription
+
+    const subscription = subscriptions.get(reqId);
+    if (!subscription) {
+      return;
+    }
+
+    // append to list
+
+    const cached = subscription.lastAllValue ?? [];
+    cached.push({
+      exchange: exchange as string,
+      underlyingConId: underlyingConId as number,
+      tradingClass: tradingClass as string,
+      multiplier: parseInt(multiplier) as number,
+      expirations: expirations as string[],
+      strikes: strikes as number[]
+    });
+
+    // sent change to subscribers
+
+    subscription.next({
+      all: cached,
+    });
+  };
+
+  /** securityDefinitionOptionParameterEnd event handler */
+  private readonly onSecurityDefinitionOptionParameterEnd = (
+    subscriptions: Map<number, IBApiNextSubscription<SecurityDefinitionOptionParameterType[]>>,
+    reqId: number
+  ) => {
+    subscriptions.get(reqId)?.complete();
+  };
+
+  /**
+   * Requests security definition option parameters for viewing a contract's option chain.
+   * 
+   * This information will be emitted as securityDefinitionOptionParameter event.
+   *
+   * @param underlyingSymbol The underlying symbol to query the available contracts. 
+   * @param futFopExchange The exchange on which the returned options are trading. Can be set to the empty string "" for all exchanges.
+   * @param underlyingSecType The type of the underlying security, i.e. STK. 
+   * @param underlyingConId the contract ID of the underlying security.
+   */
+  getSecDefOptParams(
+    underlyingSymbol: string, futFopExchange: string, underlyingSecType: SecType, underlyingConId: number): Promise<SecurityDefinitionOptionParameterType[]> {
+    return lastValueFrom(
+      this.subscriptions
+        .register<SecurityDefinitionOptionParameterType[]>(
+          (reqId) => {
+            this.api.reqSecDefOptParams(reqId, underlyingSymbol, futFopExchange, underlyingSecType, underlyingConId);
+          },
+          undefined,
+          [
+            [EventName.securityDefinitionOptionParameter, this.onSecurityDefinitionOptionParameter],
+            [EventName.securityDefinitionOptionParameterEnd, this.onSecurityDefinitionOptionParameterEnd],
+          ]
+        )
+        .pipe(map((v: { all: SecurityDefinitionOptionParameterType[] }) => v.all)),
       {
         defaultValue: [],
       }

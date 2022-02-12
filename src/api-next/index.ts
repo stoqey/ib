@@ -20,6 +20,7 @@ export { ConnectionState } from "./common/connection-state";
 // contract
 
 export { ContractDetailsUpdate } from "./contract/contract-details-update";
+export { SecurityDefinitionOptionParameterType } from "./contract/sec-def-opt-param-type";
 
 // market
 
