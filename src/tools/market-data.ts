@@ -25,6 +25,7 @@ const OPTION_ARGUMENTS: [string, string][] = [
   ],
   ["exchange=<name>", "The destination exchange name."],
   ["currency=<currency>", "The contract currency."],
+  ["ticks=<ticks>", "Comma separated list of generic ticks to fetch."],
 ];
 const EXAMPLE_TEXT =
   "market-data.js -symbol=AMZN -sectype=STK -exchange=SMART -conid=3691937";
@@ -58,7 +59,7 @@ class PrintMarketDataApp extends IBApiNextApp {
           exchange: this.cmdLineArgs.exchange as string,
           currency: this.cmdLineArgs.currency as string,
         },
-        "",
+        this.cmdLineArgs.ticks as string,
         false,
         false
       )
