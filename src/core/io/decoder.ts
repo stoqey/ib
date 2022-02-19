@@ -3459,6 +3459,7 @@ class OrderDecoder {
       if (this.order.algoStrategy && this.order.algoStrategy !== "") {
         const algoParamsCount = this.decoder.readInt();
         if (algoParamsCount > 0) {
+          this.order.algoParams = [];
           for (let i = 0; i < algoParamsCount; ++i) {
             const tag = this.decoder.readStr();
             const value = this.decoder.readStr();
