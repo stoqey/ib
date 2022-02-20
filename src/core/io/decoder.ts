@@ -3354,8 +3354,9 @@ class OrderDecoder {
             exemptCode,
           });
         }
-
-        const orderComboLegsCount = this.decoder.readInt();
+      }
+      
+      const orderComboLegsCount = this.decoder.readInt();
         if (orderComboLegsCount > 0) {
           this.order.orderComboLegs = [];
           for (let i = 0; i < orderComboLegsCount; ++i) {
@@ -3366,7 +3367,6 @@ class OrderDecoder {
             });
           }
         }
-      }
     }
   }
 
