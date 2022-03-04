@@ -1157,7 +1157,7 @@ export class IBApiNext {
    * Create a subscription to receive real time market data.
    * Returns market data for an instrument either in real time or 10-15 minutes delayed (depending on the market data type specified,
    * see [[setMarketDataType]]).
-   * If you plan to use `getMarketData` whith either `snapshot` or `regulatorySnapshot`set to `true`
+   * If you plan to use `getMarketData` with either `snapshot` or `regulatorySnapshot`set to `true`
    * then you should consider using `getMarketDataSingle` instead.
    *
    * @param contract The [[Contract]] for which the data is being requested
@@ -1178,7 +1178,8 @@ export class IBApiNext {
    * - 411 Realtime Historical Volatility
    * - 456 IBDividends
    * @param snapshot For users with corresponding real time market data subscriptions.
-   * A `true` value will return a one-time snapshot, while a `false` value will provide streaming data.
+   * A `true` value will return a one-time snapshot, completing the Observable when finished, after 11s latest.
+   * A `false` value will provide endless streaming data, never completing the Observable.
    * @param regulatorySnapshot Snapshot for US stocks requests NBBO snapshots for users which have "US Securities Snapshot Bundle" subscription
    * but not corresponding Network A, B, or C subscription necessary for streaming * market data.
    * One-time snapshot of current market price that will incur a fee of 1 cent to the account per snapshot.
@@ -1227,8 +1228,6 @@ export class IBApiNext {
    * @param contract The [[Contract]] for which the data is being requested
    * @param genericTickList comma  separated ids of the generic ticks
    * Look at getMarketData documentation for a list of available generic ticks.
-   * @param snapshot For users with corresponding real time market data subscriptions.
-   * A `true` value will return a one-time snapshot, while a `false` value will provide streaming data.
    * @param regulatorySnapshot Snapshot for US stocks requests NBBO snapshots for users which have "US Securities Snapshot Bundle" subscription
    * but not corresponding Network A, B, or C subscription necessary for streaming * market data.
    * One-time snapshot of current market price that will incur a fee of 1 cent to the account per snapshot.
@@ -1236,41 +1235,15 @@ export class IBApiNext {
   getMarketDataSingle(
     contract: Contract,
     genericTickList: string,
-    snapshot: boolean,
     regulatorySnapshot: boolean
   ): Promise<MutableMarketData> {
     return lastValueFrom(
-      this.subscriptions
-        .register<MutableMarketData>(
-          (reqId) => {
-            this.api.reqMktData(
-              reqId,
-              contract,
-              genericTickList,
-              snapshot,
-              regulatorySnapshot
-            );
-          },
-          (reqId) => {
-            // when using snapshot, cancel will cause a "Can't find EId with tickerId" error.
-            if (!snapshot && !regulatorySnapshot) {
-              this.api.cancelMktData(reqId);
-            }
-          },
-          // undefined,
-          [
-            [EventName.tickPrice, this.onTick],
-            [EventName.tickSize, this.onTick],
-            [EventName.tickGeneric, this.onTick],
-            [EventName.tickOptionComputation, this.onTickOptionComputation],
-            [EventName.tickSnapshotEnd, this.onTickSnapshotEnd],
-          ],
-          snapshot || regulatorySnapshot
-            ? undefined
-            : `${JSON.stringify(contract)}:${genericTickList}`
-          // undefined
-        )
-        .pipe(map((v: { all: MutableMarketData }) => v.all)),
+      this.getMarketData(
+        contract,
+        genericTickList,
+        true,
+        regulatorySnapshot
+      ).pipe(map((v: { all: MutableMarketData }) => v.all)),
       {
         defaultValue: new MutableMarketData(),
       }

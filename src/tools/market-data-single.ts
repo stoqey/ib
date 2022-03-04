@@ -59,7 +59,6 @@ class PrintMarketDataSingleApp extends IBApiNextApp {
                     currency: this.cmdLineArgs.currency as string,
                 },
                 "",
-                true,
                 false
             )
             .then((marketData) => {
