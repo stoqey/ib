@@ -39,7 +39,7 @@ class PrintHistogramDataApp extends IBApiNextApp {
   }
 
   /**
-   * Start the the app.
+   * Start the app.
    */
   start(): void {
     const scriptName = path.basename(__filename);

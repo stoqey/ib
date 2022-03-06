@@ -37,7 +37,7 @@ const OPTION_ARGUMENTS: [string, string][] = [
   [
     "watch",
     "Watch for changes. If specified, the app will keep running and print account summary updates to console as received from TWS. " +
-      "If not specified, the app will print a one-time snapshot and than exit.",
+    "If not specified, the app will print a one-time snapshot and than exit.",
   ],
 ];
 const EXAMPLE_TEXT =
@@ -56,7 +56,7 @@ class PrintAccountSummaryApp extends IBApiNextApp {
   private subscription$: Subscription;
 
   /**
-   * Start the the app.
+   * Start the app.
    */
   start(): void {
     const scriptName = path.basename(__filename);
@@ -82,7 +82,7 @@ class PrintAccountSummaryApp extends IBApiNextApp {
   }
 
   /**
-   * Stop the the app with success code.
+   * Stop the app with success code.
    */
   stop() {
     this.subscription$?.unsubscribe();

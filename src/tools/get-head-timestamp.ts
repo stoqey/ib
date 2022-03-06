@@ -28,7 +28,7 @@ const OPTION_ARGUMENTS: [string, string][] = [
   [
     "expiry=<YYYYMM>",
     "The contract's last trading day or contract month (for Options and Futures)." +
-      "Strings with format YYYYMM will be interpreted as the Contract Month whereas YYYYMMDD will be interpreted as Last Trading Day.",
+    "Strings with format YYYYMM will be interpreted as the Contract Month whereas YYYYMMDD will be interpreted as Last Trading Day.",
   ],
   ["strike=<number>", "The option's strike price."],
   ["right=<P|C>", " The option type. Valid values are P, PUT, C, CALL."],
@@ -46,7 +46,7 @@ class PrintHeadTimestampApp extends IBApiNextApp {
   }
 
   /**
-   * Start the the app.
+   * Start the app.
    */
   start(): void {
     const scriptName = path.basename(__filename);

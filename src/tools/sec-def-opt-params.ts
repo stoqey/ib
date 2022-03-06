@@ -33,7 +33,7 @@ class PrintOptionsDetailsApp extends IBApiNextApp {
     }
 
     /**
-     * Start the the app.
+     * Start the app.
      */
     start(): void {
         const scriptName = path.basename(__filename);
@@ -57,7 +57,7 @@ class PrintOptionsDetailsApp extends IBApiNextApp {
     }
 
     /**
-     * Stop the the app with success code.
+     * Stop the app with success code.
      */
     stop() {
         this.exit();
