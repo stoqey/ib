@@ -43,7 +43,7 @@ import { OrderStatus } from "../../api/order/enum/order-status";
  * Returns the value is valid, undefined otherwise.
  */
 function validateOptionType(v: OptionType): OptionType | undefined {
-  return v in OptionType ? v : undefined;
+  return Object.values(OptionType).indexOf(v) !== -1 ? v : undefined;
 }
 
 /**
@@ -119,7 +119,7 @@ export class Decoder {
    *
    * @param callback A [[DecoderCallbacks]] implementation.
    */
-  constructor(private callback: DecoderCallbacks) {}
+  constructor(private callback: DecoderCallbacks) { }
 
   /**
    * Input data queue.
@@ -356,8 +356,7 @@ export class Decoder {
         if (verifyMessageBoundary) {
           if (this.dataQueue[0] !== undefined) {
             this.callback.emitError(
-              `Decoding error on ${
-                IN_MSG_ID[msgId]
+              `Decoding error on ${IN_MSG_ID[msgId]
               }: unprocessed data left on queue (${JSON.stringify(
                 this.dataQueue
               )}). Please report to https://github.com/stoqey/ib`,
@@ -2980,7 +2979,7 @@ class OrderDecoder {
     private orderState: OrderState,
     private version: number,
     private serverVersion: number
-  ) {}
+  ) { }
 
   readOrderId(): void {
     this.order.orderId = this.decoder.readInt();
@@ -3355,18 +3354,18 @@ class OrderDecoder {
           });
         }
       }
-      
-      const orderComboLegsCount = this.decoder.readInt();
-        if (orderComboLegsCount > 0) {
-          this.order.orderComboLegs = [];
-          for (let i = 0; i < orderComboLegsCount; ++i) {
-            const price = this.decoder.readDoubleOrUndefined();
 
-            this.order.orderComboLegs.push({
-              price,
-            });
-          }
+      const orderComboLegsCount = this.decoder.readInt();
+      if (orderComboLegsCount > 0) {
+        this.order.orderComboLegs = [];
+        for (let i = 0; i < orderComboLegsCount; ++i) {
+          const price = this.decoder.readDoubleOrUndefined();
+
+          this.order.orderComboLegs.push({
+            price,
+          });
         }
+      }
     }
   }
 
