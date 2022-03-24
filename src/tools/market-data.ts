@@ -5,7 +5,7 @@
 import path from "path";
 import { Subscription } from "rxjs";
 
-import { SecType } from "../";
+import { SecType, OptionType } from "../";
 import { IBApiNextError, IBApiNextTickType, IBApiTickType, MarketDataType } from "../api-next";
 import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
@@ -25,6 +25,13 @@ const OPTION_ARGUMENTS: [string, string][] = [
   ],
   ["exchange=<name>", "The destination exchange name."],
   ["currency=<currency>", "The contract currency."],
+  [
+    "expiry=<YYYYMM>",
+    "The contract's last trading day or contract month (for Options and Futures)." +
+    "Strings with format YYYYMM will be interpreted as the Contract Month whereas YYYYMMDD will be interpreted as Last Trading Day.",
+  ],
+  ["strike=<number>", "The option's strike price."],
+  ["right=<P|C>", " The option type. Valid values are P, PUT, C, CALL."],
   ["ticks=<ticks>", "Comma separated list of generic ticks to fetch."],
 ];
 const EXAMPLE_TEXT =
@@ -58,6 +65,9 @@ class PrintMarketDataApp extends IBApiNextApp {
           secType: this.cmdLineArgs.sectype as SecType,
           exchange: this.cmdLineArgs.exchange as string,
           currency: this.cmdLineArgs.currency as string,
+          lastTradeDateOrContractMonth: this.cmdLineArgs.expiry as string,
+          strike: (this.cmdLineArgs.strike as number) ?? undefined,
+          right: this.cmdLineArgs.right as OptionType,
         },
         this.cmdLineArgs.ticks as string,
         false,
