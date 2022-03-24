@@ -27,9 +27,6 @@ class OpenOrdersApp extends IBApiNextApp {
     super(DESCRIPTION_TEXT, USAGE_TEXT, OPTION_ARGUMENTS, EXAMPLE_TEXT);
   }
 
-  /** The [[Subscription]] on the account summary. */
-  private subscription$: Subscription;
-
   /**
    * Start the app.
    */
@@ -53,7 +50,6 @@ class OpenOrdersApp extends IBApiNextApp {
    * Stop the app with success code.
    */
   stop() {
-    this.subscription$?.unsubscribe();
     this.exit();
   }
 }
