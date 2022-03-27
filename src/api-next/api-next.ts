@@ -54,6 +54,7 @@ import {
   MarketDataType,
   MarketDataUpdate,
   OrderBookRowPosition,
+  OpenOrdersUpdate,
   PnL,
   PnLSingle,
   Position,
@@ -2104,6 +2105,24 @@ export class IBApiNext {
       }
     );
   }
+
+  /**
+   * Requests all open orders placed by this specific API client (identified by the API client id).
+   * For client ID 0, this will bind previous manual TWS orders.
+   */
+  getOpenOrders(): Observable<OpenOrdersUpdate> {
+    return this.subscriptions
+      .register<OpenOrder[]>(
+        () => {
+          this.api.reqOpenOrders();
+        },
+        undefined,
+        [
+          [EventName.openOrder, this.onOpenOrder],
+          [EventName.openOrderEnd, this.onOpenOrderEnd],
+        ]
+      );
+  };
 
   /** nextValidId event handler */
   private readonly onNextValidId = (
