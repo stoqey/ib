@@ -2042,6 +2042,7 @@ export class IBApiNext {
     order: Order,
     orderState: OrderState
   ): void => {
+    console.log('onOpenOrder', orderId);
     subscriptions.forEach((sub) => {
       const allOrders = sub.lastAllValue ?? [];
       allOrders.push({ orderId, contract, order, orderState });
@@ -2058,8 +2059,22 @@ export class IBApiNext {
   private readonly onOpenOrderEnd = (
     subscriptions: Map<number, IBApiNextSubscription<OpenOrder[]>>
   ): void => {
+    console.log('onOpenOrderEnd');
     subscriptions.forEach((sub) => {
       sub.complete();
+    });
+  };
+
+  /**
+   *  Ends the subscrition once all openOrders are recieved
+   *  @param subscriptions
+   */
+  private readonly onOpenOrderEndUpdates = (
+    subscriptions: Map<number, IBApiNextSubscription<OpenOrder[]>>
+  ): void => {
+    console.log('onOpenOrderEndUpdates');
+    subscriptions.forEach((sub) => {
+      // sub.complete();
     });
   };
 
@@ -2079,6 +2094,43 @@ export class IBApiNext {
     apiClientId: number,
     apiOrderId: number
   ): void => {
+    console.log('onOrderBound', orderId);
+    // not sure what it's used for
+  };
+
+  /**
+   * Response to API status order control message.
+   *
+   * @param orderId: permId
+   * @param status
+   * @param filled
+   * @param remaining
+   * @param avgFillPrice
+   * @param permId
+   * @param parentId
+   * @param lastFillPrice
+   * @param clientId
+   * @param whyHeld
+   * @param mktCapPrice
+   *
+   * @see [[reqOpenOrders]]
+   */
+  private readonly onOrderStatus = (
+    // TODO finish implementation
+    subscription: Map<number, IBApiNextSubscription<OpenOrder[]>>,
+    orderId: number,
+    status: string,
+    filled: number,
+    remaining: number,
+    avgFillPrice: number,
+    permId?: number,
+    parentId?: number,
+    lastFillPrice?: number,
+    clientId?: number,
+    whyHeld?: string,
+    mktCapPrice?: number
+  ): void => {
+    console.log('onOrderStatus', orderId);
     // not sure what it's used for
   };
 
@@ -2095,7 +2147,8 @@ export class IBApiNext {
           undefined,
           [
             [EventName.openOrder, this.onOpenOrder],
-            [EventName.orderStatus, this.onOrderBound],
+            [EventName.orderStatus, this.onOrderStatus],
+            [EventName.orderBound, this.onOrderBound],
             [EventName.openOrderEnd, this.onOpenOrderEnd],
           ]
         )
@@ -2119,9 +2172,12 @@ export class IBApiNext {
         undefined,
         [
           [EventName.openOrder, this.onOpenOrder],
-          [EventName.openOrderEnd, this.onOpenOrderEnd],
-        ]
-      );
+          [EventName.orderStatus, this.onOrderStatus],
+          [EventName.orderBound, this.onOrderBound],
+          [EventName.openOrderEnd, this.onOpenOrderEndUpdates],
+        ],
+        'getOpenOrders'  // use same instance id each time, to make sure there is only 1 pending request at time
+      )
   };
 
   /** nextValidId event handler */
