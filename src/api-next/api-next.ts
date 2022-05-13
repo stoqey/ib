@@ -1,3 +1,4 @@
+import OrderStatus from "@stoqey/ib/src/api/order/enum/order-status";
 import { lastValueFrom, Observable, Subject } from "rxjs";
 import { map } from "rxjs/operators";
 import {
@@ -1233,7 +1234,7 @@ export class IBApiNext {
    * but not corresponding Network A, B, or C subscription necessary for streaming * market data.
    * One-time snapshot of current market price that will incur a fee of 1 cent to the account per snapshot.
    */
-  getMarketDataSingle(
+  getMarketDataSnapshot(
     contract: Contract,
     genericTickList: string,
     regulatorySnapshot: boolean
@@ -1250,6 +1251,11 @@ export class IBApiNext {
       }
     );
   }
+
+  /**
+   * @deprecated please use getMarketDataSnapshot instead of getMarketDataSingle.
+   */
+  getMarketDataSingle = this.getMarketDataSnapshot;
 
   /** headTimestamp event handler.  */
   private onHeadTimestamp = (
@@ -1930,7 +1936,6 @@ export class IBApiNext {
    * The number of simultaneous market depth requests allowed in an account is calculated based on a formula
    * that looks at an accounts equity, commissions, and quote booster packs.
    *
-   * @param tickerId The request's identifier.
    * @param contract The [[Contract]] for which the depth is being requested.
    * @param numRows The number of rows on each side of the order book.
    * @param isSmartDepth Flag indicates that this is smart depth request.
@@ -2024,14 +2029,11 @@ export class IBApiNext {
   /**
    * Feeds in currently open orders.
    *
-   * @param listener
-   * orderId: The order's unique id.
-   *
-   * contract: The order's [[Contract]]
-   *
-   * order: The currently active [[Order]]
-   *
-   * orderState: The order's [[OrderState]]
+   * @param subscriptions: listeners
+   * @param orderId: The order's unique id.
+   * @param contract: The order's [[Contract]]
+   * @param order: The currently active [[Order]]
+   * @param orderState: The order's [[OrderState]]
    *
    * @see [[placeOrder]], [[reqAllOpenOrders]], [[reqAutoOpenOrders]]
    */
@@ -2042,46 +2044,58 @@ export class IBApiNext {
     order: Order,
     orderState: OrderState
   ): void => {
-    console.log('onOpenOrder', orderId);
+    // console.log('onOpenOrder', orderId, order.permId);
     subscriptions.forEach((sub) => {
       const allOrders = sub.lastAllValue ?? [];
-      allOrders.push({ orderId, contract, order, orderState });
-      sub.next({
-        all: allOrders,
-      });
+      const changeOrderIndex = allOrders.findIndex(
+        (p) => p.order.permId == order.permId
+      );
+      if (changeOrderIndex === -1) {
+        // new open order - add it
+        const addedOrder: OpenOrder = { orderId, contract, order, orderState, orderStatus: undefined };
+        allOrders.push(addedOrder);
+        sub.next({
+          all: allOrders,
+          added: [addedOrder],
+        });
+      } else {
+        // update
+        const updatedOrder: OpenOrder = allOrders[changeOrderIndex];
+        updatedOrder.order = order;
+        updatedOrder.orderState = orderState;
+        if (updatedOrder.orderStatus !== undefined) {
+          // synchronize orderStatus if exists
+          updatedOrder.orderStatus.clientId = order.clientId;
+          updatedOrder.orderStatus.permId = order.permId;
+          updatedOrder.orderStatus.parentId = order.parentId;
+          updatedOrder.orderStatus.status = orderState.status;
+        }
+        sub.next({
+          all: allOrders,
+          changed: [updatedOrder],
+        });
+      }
     });
   };
 
   /**
    *  Ends the subscrition once all openOrders are recieved
-   *  @param subscriptions
+   *  @param subscriptions: listeners
    */
   private readonly onOpenOrderEnd = (
     subscriptions: Map<number, IBApiNextSubscription<OpenOrder[]>>
   ): void => {
-    console.log('onOpenOrderEnd');
+    // console.log('onOpenOrderEnd');
     subscriptions.forEach((sub) => {
       sub.complete();
     });
   };
 
   /**
-   *  Ends the subscrition once all openOrders are recieved
-   *  @param subscriptions
-   */
-  private readonly onOpenOrderEndUpdates = (
-    subscriptions: Map<number, IBApiNextSubscription<OpenOrder[]>>
-  ): void => {
-    console.log('onOpenOrderEndUpdates');
-    subscriptions.forEach((sub) => {
-      // sub.complete();
-    });
-  };
-
-  /**
    * Response to API bind order control message.
    *
-   * @param orderId: permId
+   * @param subscriptions: listeners
+   * @param orderId: permId (mistake from IB documentation, value is orderId not permId)
    * @param apiClientId: API client id.
    * @param apiOrderId: API order id.
    *
@@ -2089,19 +2103,23 @@ export class IBApiNext {
    */
   private readonly onOrderBound = (
     // TODO finish implementation
-    subscription: Map<number, IBApiNextSubscription<OpenOrder[]>>,
+    subscriptions: Map<number, IBApiNextSubscription<OpenOrder[]>>,
     orderId: number,
     apiClientId: number,
     apiOrderId: number
   ): void => {
-    console.log('onOrderBound', orderId);
-    // not sure what it's used for
+    /*
+     * This is probably unused now.
+     * Neither reqAllOpenOrders, reqAutoOpenOrders nor reqOpenOrders documentation reference this event.
+     * Even getAutoOpenOrders(true) doesn't call it!
+    */
+    this.logger.warn(LOG_TAG, `Unexpected onOrderBound(${orderId}, ${apiClientId}, ${apiOrderId}) called.`);
   };
 
   /**
    * Response to API status order control message.
    *
-   * @param orderId: permId
+   * @param orderId
    * @param status
    * @param filled
    * @param remaining
@@ -2116,10 +2134,9 @@ export class IBApiNext {
    * @see [[reqOpenOrders]]
    */
   private readonly onOrderStatus = (
-    // TODO finish implementation
-    subscription: Map<number, IBApiNextSubscription<OpenOrder[]>>,
+    subscriptions: Map<number, IBApiNextSubscription<OpenOrder[]>>,
     orderId: number,
-    status: string,
+    status: OrderStatus,
     filled: number,
     remaining: number,
     avgFillPrice: number,
@@ -2130,8 +2147,43 @@ export class IBApiNext {
     whyHeld?: string,
     mktCapPrice?: number
   ): void => {
-    console.log('onOrderStatus', orderId);
-    // not sure what it's used for
+    // console.log('onOrderStatus', orderId, permId);
+    const orderStatus = {
+      status,
+      filled,
+      remaining,
+      avgFillPrice: undefined,
+      permId,
+      parentId,
+      lastFillPrice: undefined,
+      clientId,
+      whyHeld,
+      mktCapPrice
+    }
+    if (filled) {
+      orderStatus.avgFillPrice = avgFillPrice;
+      orderStatus.lastFillPrice = lastFillPrice;
+    }
+    subscriptions.forEach((sub) => {
+      const allOrders = sub.lastAllValue ?? [];
+      const changeOrderIndex = allOrders.findIndex(
+        (p) => p.order.permId == permId
+      );
+      if (changeOrderIndex !== -1) {
+        const updatedOrder: OpenOrder = allOrders[changeOrderIndex];
+        updatedOrder.orderStatus = orderStatus;
+        updatedOrder.orderState.status = status;
+        if (parentId !== undefined) updatedOrder.order.parentId = parentId;
+        if (permId !== undefined) updatedOrder.order.permId = permId;
+        if (clientId !== undefined) updatedOrder.order.clientId = clientId;
+        sub.next({
+          all: allOrders,
+          changed: [updatedOrder],
+        });
+      } else {
+        this.logger.warn(LOG_TAG, `onOrderStatus: non existent order ignored. orderId: ${orderId}, permId: ${permId}.`);
+      }
+    });
   };
 
   /**
@@ -2150,14 +2202,15 @@ export class IBApiNext {
             [EventName.orderStatus, this.onOrderStatus],
             [EventName.orderBound, this.onOrderBound],
             [EventName.openOrderEnd, this.onOpenOrderEnd],
-          ]
+          ],
+          'getAllOpenOrders'  // use same instance id each time, to make sure there is only 1 pending request at time
         )
         .pipe(map((v: { all: OpenOrder[] }) => v.all)),
       {
         defaultValue: [],
       }
     );
-  }
+  };
 
   /**
    * Requests all open orders placed by this specific API client (identified by the API client id).
@@ -2174,10 +2227,34 @@ export class IBApiNext {
           [EventName.openOrder, this.onOpenOrder],
           [EventName.orderStatus, this.onOrderStatus],
           [EventName.orderBound, this.onOrderBound],
-          [EventName.openOrderEnd, this.onOpenOrderEndUpdates],
         ],
         'getOpenOrders'  // use same instance id each time, to make sure there is only 1 pending request at time
       )
+  };
+
+  /**
+   * Requests status updates AND (IB documentation not correct on this point) future orders placed from TWS. Can only be used with client ID 0.
+   *
+   * @param autoBind if set to `true`, the newly created orders will be assigned an API order ID and implicitly
+   *   associated with this client. If set to `false, future orders will not be.
+   *
+   * @see [[reqAllOpenOrders]], [[reqOpenOrders]], [[cancelOrder]], [[reqGlobalCancel]]
+   */
+  getAutoOpenOrders(
+    autoBind: boolean
+  ): Observable<OpenOrdersUpdate> {
+    return this.subscriptions.register<OpenOrder[]>(
+      () => {
+        this.api.reqAutoOpenOrders(autoBind);
+      },
+      undefined,
+      [
+        [EventName.openOrder, this.onOpenOrder],
+        [EventName.orderStatus, this.onOrderStatus],
+        [EventName.orderBound, this.onOrderBound],
+      ],
+      'getAutoOpenOrders'  // use same instance id each time, to make sure there is only 1 pending request at time
+    );
   };
 
   /** nextValidId event handler */
