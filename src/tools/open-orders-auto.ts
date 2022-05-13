@@ -17,7 +17,7 @@ const DESCRIPTION_TEXT = "Prints the account open orders.";
 const USAGE_TEXT = "Usage: open-orders-updates.js <options>";
 const OPTION_ARGUMENTS: [string, string][] = [
     ["clientId=<number>", "Client id of current ib connection. Can only be used with client ID 0 (default)."],
-    ['bind', 'auto bind orders'],
+    ["bind", "auto bind orders"],
 ];
 const EXAMPLE_TEXT = "open-orders-updates.js";
 
@@ -56,7 +56,7 @@ class OpenOrdersApp extends IBApiNextApp {
                     );
                 },
                 complete: () => {
-                    console.log('getOpenOrders completed.');
+                    console.log("getOpenOrders completed.");
                 }
             });
     }
@@ -65,7 +65,7 @@ class OpenOrdersApp extends IBApiNextApp {
      * Stop the app with success code.
      */
     stop() {
-        console.log('app stopping.');
+        console.log("app stopping.");
         this.subscription$?.unsubscribe();
         this.exit();
     }
