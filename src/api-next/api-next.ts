@@ -1,4 +1,4 @@
-import OrderStatus from "@stoqey/ib/src/api/order/enum/order-status";
+import OrderStatus from "../api/order/enum/order-status";
 import { lastValueFrom, Observable, Subject } from "rxjs";
 import { map } from "rxjs/operators";
 import {
