@@ -2159,7 +2159,7 @@ export class IBApiNext {
       clientId,
       whyHeld,
       mktCapPrice
-    }
+    };
     if (filled) {
       orderStatus.avgFillPrice = avgFillPrice;
       orderStatus.lastFillPrice = lastFillPrice;
@@ -2203,14 +2203,14 @@ export class IBApiNext {
             [EventName.orderBound, this.onOrderBound],
             [EventName.openOrderEnd, this.onOpenOrderEnd],
           ],
-          'getAllOpenOrders'  // use same instance id each time, to make sure there is only 1 pending request at time
+          "getAllOpenOrders"  // use same instance id each time, to make sure there is only 1 pending request at time
         )
         .pipe(map((v: { all: OpenOrder[] }) => v.all)),
       {
         defaultValue: [],
       }
     );
-  };
+  }
 
   /**
    * Requests all open orders placed by this specific API client (identified by the API client id).
@@ -2228,9 +2228,9 @@ export class IBApiNext {
           [EventName.orderStatus, this.onOrderStatus],
           [EventName.orderBound, this.onOrderBound],
         ],
-        'getOpenOrders'  // use same instance id each time, to make sure there is only 1 pending request at time
-      )
-  };
+        "getOpenOrders"  // use same instance id each time, to make sure there is only 1 pending request at time
+      );
+  }
 
   /**
    * Requests status updates AND (IB documentation not correct on this point) future orders placed from TWS. Can only be used with client ID 0.
@@ -2253,9 +2253,9 @@ export class IBApiNext {
         [EventName.orderStatus, this.onOrderStatus],
         [EventName.orderBound, this.onOrderBound],
       ],
-      'getAutoOpenOrders'  // use same instance id each time, to make sure there is only 1 pending request at time
+      "getAutoOpenOrders"  // use same instance id each time, to make sure there is only 1 pending request at time
     );
-  };
+  }
 
   /** nextValidId event handler */
   private readonly onNextValidId = (
