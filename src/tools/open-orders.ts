@@ -27,7 +27,7 @@ class OpenOrdersApp extends IBApiNextApp {
     super(DESCRIPTION_TEXT, USAGE_TEXT, OPTION_ARGUMENTS, EXAMPLE_TEXT);
   }
 
-  /** The [[Subscription]] on the account summary. */
+  /** The [[Subscription]] on the open orders. */
   private subscription$: Subscription;
 
   /**
