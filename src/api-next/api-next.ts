@@ -2085,7 +2085,6 @@ export class IBApiNext {
   private readonly onOpenOrderEnd = (
     subscriptions: Map<number, IBApiNextSubscription<OpenOrder[]>>
   ): void => {
-    // console.log('onOpenOrderEnd');
     subscriptions.forEach((sub) => {
       sub.complete();
     });
