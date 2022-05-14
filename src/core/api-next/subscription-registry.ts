@@ -68,7 +68,7 @@ export class IBApiNextSubscriptionRegistry {
   constructor(
     private readonly api: IBApiAutoConnection,
     private readonly apiNext: IBApiNext
-  ) {}
+  ) { }
 
   /** A Map containing the subscription registry, with event name as key. */
   private readonly entires = new IBApiNextMap<EventName, RegistryEntry>();
@@ -78,6 +78,7 @@ export class IBApiNextSubscriptionRegistry {
    *
    * @param requestFunction A callback, invoked when the start request shall be send to TWS.
    * @param cancelFunction A callback, invoked when the cancel request shall be send to TWS.
+   * @param eventHandler Array of IB API event, callback function to handle this event.
    * @param instanceId When not undefined, this an id that uniquely identifies
    * the subscription instance. This can be used to avoid creation of multiple subscriptions,
    * that will end up on same TWS request (i.e. request same market data multiple times), but an
