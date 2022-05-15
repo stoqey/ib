@@ -50,6 +50,11 @@ export class IBApiNextApp {
       "IP or hostname of the TWS or IB Gateway. Default is 127.0.0.1.",
     ],
     ["port=<number>", "Post number of the TWS or IB Gateway. Default is 4002."],
+    [
+      "watch",
+      "Watch for changes. If specified, the app will keep running and print positions updates to console as received from TWS. " +
+      "If not specified, the app will print a one-time snapshot and than exit.",
+    ],
   ];
 
   /** The [[IBApiNext]] instance. */

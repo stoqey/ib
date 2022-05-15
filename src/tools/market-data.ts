@@ -46,7 +46,7 @@ class PrintMarketDataApp extends IBApiNextApp {
     super(DESCRIPTION_TEXT, USAGE_TEXT, OPTION_ARGUMENTS, EXAMPLE_TEXT);
   }
 
-  /** The [[Subscription]] on the PnLSingle. */
+  /** The [[Subscription]] on the MarketData. */
   private subscription$: Subscription;
 
   /**
