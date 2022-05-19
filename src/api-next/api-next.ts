@@ -46,7 +46,6 @@ import {
   AccountSummariesUpdate,
   AccountSummaryValue,
   ConnectionState,
-  ContractDetailsUpdate,
   SecurityDefinitionOptionParameterType,
   IBApiNextError,
   IBApiNextTickType,
@@ -59,6 +58,8 @@ import {
   PnL,
   PnLSingle,
   Position,
+  AccountUpdate,
+  AccountUpdatesUpdate,
 } from "./";
 import { Logger } from "./common/logger";
 
@@ -486,6 +487,206 @@ export class IBApiNext {
       },
       [[EventName.accountSummary, this.onAccountSummary]],
       `${group}:${tags}`
+    );
+  }
+
+  /**
+   * Response to API updateAccountValue control message.
+   *
+   * @param subscriptions: listeners
+   * @param account: The IBKR account Id.
+   * @param tag: the tag of the value.
+   * @param value: numetical value associated to the tag.
+   * @param currency: the currency of the value.
+   *
+   * @see [[reqOpenOrders]]
+   */
+  private readonly onUpdateAccountValue = (
+    subscriptions: Map<number, IBApiNextSubscription<AccountUpdate>>,
+    tag: string,
+    value: string,
+    currency: string,
+    account: string): void => {
+    this.logger.debug(LOG_TAG, `onUpdateAccountValue(${tag}, ${value}, ${currency}, ${account})`);
+    subscriptions.forEach((subscription) => {
+      // update latest value on cache
+      const all: AccountUpdate = subscription.lastAllValue ?? {};
+      const cached = all?.value ?? new MutableAccountSummaries();
+
+      const lastValue = cached
+        .getOrAdd(account, () => new MutableAccountSummaryTagValues())
+        .getOrAdd(tag, () => new MutableAccountSummaryValues());
+
+      const hasChanged = lastValue.has(currency);
+
+      const updatedValue: AccountSummaryValue = {
+        value: value,
+        ingressTm: Date.now(),
+      };
+
+      lastValue.set(currency, updatedValue);
+
+      // sent change to subscribers
+
+      const accountSummaryUpdate = new MutableAccountSummaries([
+        [
+          account,
+          new MutableAccountSummaryTagValues([
+            [tag, new MutableAccountSummaryValues([[currency, updatedValue]])],
+          ]),
+        ],
+      ]);
+      all.value = cached;
+      if (hasChanged) {
+        subscription.next({
+          all: all,
+          changed: { value: accountSummaryUpdate },
+        });
+      } else {
+        subscription.next({
+          all: all,
+          changed: { value: accountSummaryUpdate },
+        });
+      }
+    });
+  }
+
+  /**
+   * Response to API updatePortfolio control message.
+   *
+   * @param subscriptions: listeners
+   * @param contract: The position's [[Contract]]
+   * @param pos: The number of units held.
+   * @param marketPrice: the market price of the contract.
+   * @param marketValue: the market value of the position.
+   * @param avgCost: The average cost of the position.
+   * @param unrealizedPNL: The unrealized PNL of the position.
+   * @param realizedPNL: The realized PNL of the position.
+   * @param account: The IBKR account Id.
+   *
+   * @see [[reqOpenOrders]]
+   */
+  private readonly onUpdatePortfolio = (
+    subscriptions: Map<number, IBApiNextSubscription<AccountUpdate>>,
+    contract: Contract, pos: number,
+    marketPrice: number, marketValue: number,
+    avgCost: number, unrealizedPNL: number,
+    realizedPNL: number, account: string): void => {
+    this.logger.debug(LOG_TAG, `onUpdatePortfolio(${contract.symbol}, ${pos}, ${marketPrice}, ${marketValue}, ${avgCost}, ${unrealizedPNL}, ${realizedPNL}, ${account})`);
+    const updatedPosition: Position = { account, contract, pos, avgCost, marketPrice, marketValue, unrealizedPNL, realizedPNL };
+    // notify all subscribers
+    subscriptions.forEach((subscription) => {
+      // update latest value on cache
+
+      let hasAdded = false;
+      let hasRemoved = false;
+      const all: AccountUpdate = subscription.lastAllValue ?? {};
+      const cached = all?.portfolio ?? new MutableAccountPositions();
+      const accountPositions = cached.getOrAdd(account, () => []);
+      const changePositionIndex = accountPositions.findIndex(
+        (p) => p.contract.conId == contract.conId
+      );
+
+      if (changePositionIndex === -1) {
+        // new position - add it
+        accountPositions.push(updatedPosition);
+        hasAdded = true;
+      } else {
+        if (!pos) {
+          // zero size - remove it
+          accountPositions.splice(changePositionIndex);
+          hasRemoved = true;
+        } else {
+          // update
+          accountPositions[changePositionIndex] = updatedPosition;
+        }
+      }
+      all.portfolio = cached;
+      if (hasAdded) {
+        subscription.next({
+          all: all,
+          added: { portfolio: new MutableAccountPositions([[account, [updatedPosition]]]) },
+        });
+      } else if (hasRemoved) {
+        subscription.next({
+          all: all,
+          removed: { portfolio: new MutableAccountPositions([[account, [updatedPosition]]]) },
+        });
+      } else {
+        subscription.next({
+          all: all,
+          changed: { portfolio: new MutableAccountPositions([[account, [updatedPosition]]]) },
+        });
+      }
+    });
+  }
+
+  /**
+   * Response to API updateAccountTime control message.
+   *
+   * @param subscriptions: listeners
+   * @param timeStamp: the current timestamp
+   *
+   * @see [[reqOpenOrders]]
+   */
+  private readonly onUpdateAccountTime = (
+    subscriptions: Map<number, IBApiNextSubscription<AccountUpdate>>,
+    timeStamp: string): void => {
+    this.logger.debug(LOG_TAG, `onUpdateAccountTime(${timeStamp})`);
+    subscriptions.forEach((sub) => {
+      const changed: AccountUpdate = { timestamp: timeStamp };
+      const all: AccountUpdate = sub.lastAllValue ?? {};
+      all.timestamp = changed.timestamp;
+      sub.next({
+        all: all,
+        changed: changed,
+      });
+    });
+  }
+
+  /**
+   * Response to API accountDownloadEnd control message.
+   *
+   * @param subscriptions: listeners
+   * @param accountName: the account name
+   *
+   * @see [[reqOpenOrders]]
+   */
+  private readonly onAccountDownloadEnd = (
+    subscriptions: Map<number, IBApiNextSubscription<AccountUpdate>>,
+    accountName: string): void => {
+    this.logger.debug(LOG_TAG, `onAccountDownloadEnd(${accountName})`);
+    // TODO finish implementation
+  }
+
+  /**
+   * The getAccountUpdates function creates a subscription to the TWS through which account and portfolio information is delivered.
+   * This information is the exact same as the one displayed within the TWS' Account Window.
+   * In a single account structure, the account number is not necessary.
+   * Just as with the TWS' Account Window, unless there is a position change this information is updated at a fixed interval of three minutes.
+   *
+   * @param acctCode the specific account to retrieve.
+   *
+   * @see [[reqAccountUpdates]], [[reqGlobalCancel]]
+   */
+  getAccountUpdates(
+    acctCode?: string
+  ): Observable<AccountUpdatesUpdate> {
+    this.logger.debug(LOG_TAG, `getAccountUpdates(${acctCode})`);
+    return this.subscriptions.register<AccountUpdate>(
+      () => {
+        this.api.reqAccountUpdates(true, acctCode);
+      },
+      () => {
+        this.api.reqAccountUpdates(false, acctCode);
+      },
+      [
+        [EventName.updateAccountValue, this.onUpdateAccountValue],
+        [EventName.updatePortfolio, this.onUpdatePortfolio],
+        [EventName.updateAccountTime, this.onUpdateAccountTime],
+        [EventName.accountDownloadEnd, this.onAccountDownloadEnd],
+      ],
+      (acctCode ? `getAccountUpdates+${acctCode}` : "getAccountUpdates")  // use same instance id each time, to make sure there is only 1 pending request at time
     );
   }
 

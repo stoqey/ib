@@ -15,6 +15,18 @@ export interface Position {
 
   /** The average cost of the position. */
   readonly avgCost?: number;
+
+  /** the market price of the contract. */
+  readonly marketPrice?: number;
+
+  /** the market value of the position. */
+  readonly marketValue?: number;
+
+  /** The unrealized PNL of the position. */
+  readonly unrealizedPNL?: number;
+
+  /** The realized PNL of the position. */
+  readonly realizedPNL?: number;
 }
 
 /** Summary of all linked accounts, with account id as key. */
