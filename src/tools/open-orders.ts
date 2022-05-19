@@ -3,7 +3,6 @@
  */
 
 import path from "path";
-import { Subscription } from "rxjs";
 
 import { IBApiNextError } from "../";
 import logger from "../common/logger";

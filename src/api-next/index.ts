@@ -9,6 +9,11 @@ export {
   AccountSummariesUpdate,
 } from "./account/account-summary";
 
+export {
+  AccountUpdate,
+  AccountUpdatesUpdate,
+} from "./account/account-update";
+
 // common
 
 export { AccountId, ConId, CurrencyCode } from "./common/common-types";
