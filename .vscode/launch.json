@@ -69,7 +69,7 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Tool: curren-time",
+      "name": "Tool: current-time",
       "skipFiles": [
         "<node_internals>/**"
       ],
