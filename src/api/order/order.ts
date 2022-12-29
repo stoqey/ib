@@ -729,6 +729,14 @@ export interface Order {
 
   /** TODO: document */
   usePriceMgmtAlgo?: boolean;
+
+  /** Specifies the duration of the order. Format: yyyymmdd hh:mm:ss TZ. For GTD orders. */
+  duration?: number;
+
+  /** Value must be positive, and it is number of seconds that SMART order would be parked for at IBKRATS before being routed to exchange. */
+  postToAts?: number;
+
+
 }
 
 export default Order;

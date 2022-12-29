@@ -106,15 +106,6 @@ export interface ContractDetails {
   evMultiplier?: number;
 
   /**
-   * MD Size Multiplier.
-   *
-   * Returns the size multiplier for values returned to tickSize from a market data request.
-   *
-   * Generally 100 for US stocks and 1 for other instruments.
-   */
-  mdSizeMultiplier?: number;
-
-  /**
    * Aggregated group Indicates the smart-routing group to which a contract belongs.
    *
    * Contracts which cannot be smart-routed have aggGroup = -1.
@@ -286,6 +277,24 @@ export interface ContractDetails {
    * For Bonds only.
    */
   notes?: string;
+
+  /**
+   * Order's minimal size.
+   */  
+  minSize?: number
+
+  /**
+   * Order's size increment.
+   */  
+  sizeIncrement?: number
+
+  /**
+   * Order's suggested size increment.
+   */  
+  suggestedSizeIncrement?: number
+
+  
+
 }
 
 export default ContractDetails;

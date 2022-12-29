@@ -100,8 +100,12 @@ export enum OUT_MSG_ID {
   REQ_HISTORICAL_TICKS = 96,
   REQ_TICK_BY_TICK_DATA = 97,
   CANCEL_TICK_BY_TICK_DATA = 98,
-
   REQ_COMPLETED_ORDERS = 99,
+  REQ_WSH_META_DATA = 100,
+  CANCEL_WSH_META_DATA = 101,
+  REQ_WSH_EVENT_DATA = 102,
+  CANCEL_WSH_EVENT_DATA = 103
+
 }
 
 /**
@@ -1012,6 +1016,40 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       );
     }
 
+    if (
+      this.serverVersion < MIN_SERVER_VER.DURATION &&
+      order.duration != undefined
+    ) {
+      return this.emitError(
+        "It does not support duration attribute",
+        ErrorCode.UPDATE_TWS,
+        id
+      );
+    }
+
+    if (
+      this.serverVersion < MIN_SERVER_VER.POST_TO_ATS &&
+      order.postToAts != undefined
+    ) {
+      return this.emitError(
+        "It does not support postToAts attribute",
+        ErrorCode.UPDATE_TWS,
+        id
+      );
+    }
+
+    if (
+      this.serverVersion < MIN_SERVER_VER.AUTO_CANCEL_PARENT &&
+      order.autoCancelParent != null
+    ) {
+      return this.emitError(
+        "It does not support autoCancelParent attribute",
+        ErrorCode.UPDATE_TWS,
+        id
+      );
+    }
+
+
     const version = this.serverVersion < MIN_SERVER_VER.NOT_HELD ? 27 : 45;
 
     // send place order msg
@@ -1521,13 +1559,25 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       tokens.push(order.usePriceMgmtAlgo);
     }
 
+    if (this.serverVersion >= MIN_SERVER_VER.DURATION) {
+      tokens.push(order.duration);
+    }
+
+    if (this.serverVersion >= MIN_SERVER_VER.POST_TO_ATS) {
+      tokens.push(order.postToAts);
+    }
+
+    if (this.serverVersion >= MIN_SERVER_VER.AUTO_CANCEL_PARENT ) {
+      tokens.push(order.autoCancelParent);
+    }
+
     this.sendMsg(tokens);
   }
 
   /**
    * Encode a REPLACE_FA message to an array of tokens.
    */
-  replaceFA(faDataType: FADataType, xml: string): void {
+  replaceFA(reqId: number, faDataType: FADataType, xml: string): void {
     if (this.serverVersion < 13) {
       return this.emitError(
         "This feature is only available for versions of TWS >= 13.",
@@ -1537,8 +1587,19 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     const version = 1;
+    
+    const tokens: unknown[] = [
+      OUT_MSG_ID.REPLACE_FA,
+      version,
+      faDataType,
+      xml
+    ];
 
-    this.sendMsg(OUT_MSG_ID.REPLACE_FA, version, faDataType, xml);
+    if(this.serverVersion >= MIN_SERVER_VER.REPLACE_FA_END) {
+      tokens.push(reqId);
+    }
+
+    this.sendMsg(tokens);
   }
 
   /**
@@ -1957,6 +2018,17 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         );
       }
     }
+
+    if (this.serverVersion < MIN_SERVER_VER.HISTORICAL_SCHEDULE) {
+      if ( (typeof whatToShow === 'string') && (whatToShow.toUpperCase() === 'SCHEDULE')) {
+        return this.emitError(
+          "It does not support requesting of historical schedule.",
+          ErrorCode.UPDATE_TWS,
+          tickerId
+        );
+      }
+    }
+
 
     const tokens: unknown[] = [OUT_MSG_ID.REQ_HISTORICAL_DATA];
 
@@ -2983,4 +3055,57 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
 
     this.sendMsg(OUT_MSG_ID.REQ_COMPLETED_ORDERS, apiOnly);
   }
+
+  reqWshMetaData(reqId: number): void {
+    
+    if (this.serverVersion < MIN_SERVER_VER.WSHE_CALENDAR) {
+      return this.emitError("It does not support WSHE Calendar API.",        
+        ErrorCode.UPDATE_TWS,
+        -1
+      );
+      return;
+    }
+
+    this.sendMsg(OUT_MSG_ID.REQ_WSH_META_DATA, reqId);
+  }
+
+  reqCancelWshMetaData(reqId: number): void {
+    
+    if (this.serverVersion < MIN_SERVER_VER.WSHE_CALENDAR) {
+      return this.emitError("It does not support WSHE Calendar API.",        
+        ErrorCode.UPDATE_TWS,
+        -1
+      );
+      return;
+    }
+
+    this.sendMsg(OUT_MSG_ID.CANCEL_WSH_META_DATA, reqId);
+  }
+  
+  reqWshEventData(reqId: number, conId: number): void {
+    
+    if (this.serverVersion < MIN_SERVER_VER.WSHE_CALENDAR) {
+      return this.emitError("It does not support WSHE Calendar API.",        
+        ErrorCode.UPDATE_TWS,
+        -1
+      );
+      return;
+    }
+
+    this.sendMsg(OUT_MSG_ID.REQ_WSH_EVENT_DATA, reqId, conId);
+  }
+
+  reqCancelWshEventData(reqId: number): void {
+    
+    if (this.serverVersion < MIN_SERVER_VER.WSHE_CALENDAR) {
+      return this.emitError("It does not support WSHE Calendar API.",        
+        ErrorCode.UPDATE_TWS,
+        -1
+      );
+      return;
+    }
+
+    this.sendMsg(OUT_MSG_ID.CANCEL_WSH_EVENT_DATA, reqId);
+  }
+
 }

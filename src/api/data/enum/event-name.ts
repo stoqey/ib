@@ -271,4 +271,14 @@ export enum EventName {
 
   /** Returns the requested historical data bars. */
   historicalData = "historicalData",
+
+  /** Returns meta data from the WSH calendar. */
+  wshMetaData = "wshMetaData",
+
+  /** Returns calendar events from the WSH. */
+  wshEventData = "wshEventData",
+
+  /** Returns historical schedule. */
+  historicalSchedule = "historicalSchedule"
+
 }

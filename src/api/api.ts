@@ -72,7 +72,7 @@ export interface IBApiCreationOptions {
 }
 
 /** Maximum supported version. */
-export const MAX_SUPPORTED_SERVER_VERSION = MIN_SERVER_VER.PRICE_MGMT_ALGO;
+export const MAX_SUPPORTED_SERVER_VERSION = MIN_SERVER_VER.HISTORICAL_SCHEDULE;
 
 /** Minimum supported version. */
 export const MIN_SERVER_VER_SUPPORTED = 38;
@@ -540,9 +540,9 @@ export class IBApi extends EventEmitter {
    * @param faDataType The configuration to change.
    * @param xml Zhe xml-formatted configuration string.
    */
-  replaceFA(faDataType: FADataType, xml: string): IBApi {
+  replaceFA(reqId: number, faDataType: FADataType, xml: string): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.replaceFA(faDataType, xml)
+      this.controller.encoder.replaceFA(reqId, faDataType, xml)
     );
     return this;
   }
@@ -700,6 +700,61 @@ export class IBApi extends EventEmitter {
     );
     return this;
   }
+
+  /**
+   * Requests metadata from the WSH calendar.
+   *
+   * @param reqId The unique request identifier.
+   *
+   * @see [[reqCancelWshMetaData]]
+   */
+   reqWshMetaData(reqId: number) {
+    this.controller.schedule(() =>
+      this.controller.encoder.reqWshMetaData(reqId)
+    );
+    return this;
+  }
+
+  /**
+   * Cancels pending request for WSH metadata.
+   *
+   * @param reqId The unique request identifier.
+   */
+  reqCancelWshMetaData(reqId: number) {
+    this.controller.schedule(() =>
+      this.controller.encoder.reqCancelWshMetaData(reqId)
+    );
+    return this;
+  }
+
+  /**
+   * Requests event data from the wSH calendar.
+   *
+   * @param reqId The unique request identifier.
+   * @param conId Contract id of ticker.
+   *
+   * @see [[reqCancelWshEventData]]   
+   */
+  reqWshEventData(reqId: number, conId: number) {
+    this.controller.schedule(() =>
+      this.controller.encoder.reqWshEventData(reqId, conId)
+    );
+    return this;
+  }
+
+  /**
+   * Cancels pending WSH event data request.
+   *
+   * @param reqId The unique request identifier.
+   */
+  reqCancelWshEventData(reqId: number) {
+    this.controller.schedule(() =>
+      this.controller.encoder.reqCancelWshEventData(reqId)
+    );
+    return this;
+  }
+
+
 
   /**
    * Requests contract information.
@@ -1829,6 +1884,40 @@ export declare interface IBApi {
    * @see [[reqCompletedOrders]]
    */
   on(event: EventName.completedOrdersEnd, listener: () => void): this;
+
+  /**
+   * Feeds in completed orders.
+   *
+   * @param listener
+   * contract: The order's [[Contract]].
+   *
+   * order: The completed [[Order]].
+   *
+   * orderState: The order's [[OrderState]].
+   *
+   * @see [[reqWshMetaData]]
+   */
+  on(
+    event: EventName.wshMetaData,
+    listener: (reqId: number, dataJson: string) => void
+  ): this;
+
+  /**
+   * Feeds in completed orders.
+   *
+   * @param listener
+   * contract: The order's [[Contract]].
+   *
+   * order: The completed [[Order]].
+   *
+   * orderState: The order's [[OrderState]].
+   *
+   * @see [[reqWshEventData]]
+   */
+  on(
+    event: EventName.wshEventData,
+    listener: (reqId: number, dataJson: string) => void
+  ): this;
 
   /**
    * Callback to indicate the API connection has closed.

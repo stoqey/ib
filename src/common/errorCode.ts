@@ -238,4 +238,21 @@ export enum ErrorCode {
 
   /** Request Completed Orders Sending Error. */
   FAIL_SEND_REQ_COMPLETED_ORDERS = 572,
+
+  /** Request WSH Meta Data Sending Error. */
+  FAIL_SEND_REQ_WSH_META_DATA = 573,
+
+  /** Cancel WSH Meta Data Sending Error */
+  FAIL_SEND_CAN_WSH_META_DATA = 574,
+
+  /** Request WSH Event Data Sending Error */
+  FAIL_SEND_REQ_WSH_EVENT_DATA = 575,
+
+  /** Cancel WSH Event Data Sending Error */
+  FAIL_SEND_CAN_WSH_EVENT_DATA = 576,
+
+  /* Invalid symbol in string */
+  INVALID_SYMBOL = 579
+
+
 }
