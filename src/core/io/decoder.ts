@@ -414,7 +414,7 @@ export class Decoder {
 
   private decodeUnicodeEscapedString(str: string) {    
     let v = str;
-    
+   
     try {
         while(true) {
             let escapeIndex: number= v.indexOf("\\u");
@@ -427,7 +427,7 @@ export class Decoder {
             let escapeString: string = v.substring(escapeIndex ,  escapeIndex + 6);
             let hexVal: number = parseInt(escapeString.replace("\\u", ""), 16);
 
-            v = v.replace(escapeString, "" + hexVal);
+            v = v.replace(escapeString, String.fromCharCode(hexVal));
         }
     } catch (e) { }
             
