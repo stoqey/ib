@@ -1886,14 +1886,13 @@ export declare interface IBApi {
   on(event: EventName.completedOrdersEnd, listener: () => void): this;
 
   /**
-   * Feeds in completed orders.
+   * Returns meta data from the WSH calendar.
    *
    * @param listener
-   * contract: The order's [[Contract]].
    *
-   * order: The completed [[Order]].
+   * reqId: The unique request identifier.
    *
-   * orderState: The order's [[OrderState]].
+   * dataJson: metadata in json format
    *
    * @see [[reqWshMetaData]]
    */
@@ -1903,14 +1902,13 @@ export declare interface IBApi {
   ): this;
 
   /**
-   * Feeds in completed orders.
+   * Returns calendar events from the WSH.
    *
    * @param listener
-   * contract: The order's [[Contract]].
    *
-   * order: The completed [[Order]].
+   * reqId: The unique request identifier.
    *
-   * orderState: The order's [[OrderState]].
+   * dataJson: event data in json format
    *
    * @see [[reqWshEventData]]
    */
