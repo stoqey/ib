@@ -1478,7 +1478,6 @@ export class IBApiNext {
   /**
    * Get the timestamp of earliest available historical data for a contract and data type.
    *
-   * @param reqId An identifier for the request.
    * @param contract [[Contract]] object for which head timestamp is being requested.
    * @param whatToShow Type of data for head timestamp - "BID", "ASK", "TRADES", etc
    * @param useRTH Use regular trading hours only, `true` for yes or `false` for no.
@@ -2021,6 +2020,15 @@ export class IBApiNext {
     );
   };
 
+  // mutable
+  private readonly insertAtIndex = (index: number, key: OrderBookRowPosition, value: OrderBookRow, map: Map<OrderBookRowPosition, OrderBookRow>): Map<OrderBookRowPosition, OrderBookRow> => {
+    const arr = Array.from(map);
+    arr.splice(index, 0, [key, value]);
+    map.clear();
+    arr.forEach(([k,v]) => map.set(k,v));
+    return map;
+  }
+
   /** marketDepthL2 event handler */
   private readonly onUpdateMktDepthL2 = (
     subscriptions: Map<number, IBApiNextSubscription<OrderBook>>,
@@ -2073,14 +2081,36 @@ export class IBApiNext {
     }
 
     switch (operation) {
+
       case 0:
+        // it's an insert
+
+        this.insertAtIndex(position, position, {
+          marketMaker: marketMaker,
+          price: price,
+          size: size,
+          isSmartDepth: isSmartDepth,
+        }, cachedRows);
+
+        this.insertAtIndex(position, position, {
+          marketMaker: marketMaker,
+          price: price,
+          size: size,
+          isSmartDepth: isSmartDepth,
+        }, changedRows);
+
+        subscription.next({
+          all: cached,
+          added: changed,
+        });
+      break;
+
       case 1:
-        // it's an insert or update
-        const isUpdate = cachedRows.has(position);
+        // it's an update
 
         cachedRows.set(position, {
-          price: price,
           marketMaker: marketMaker,
+          price: price,
           size: size,
           isSmartDepth: isSmartDepth,
         });
@@ -2092,17 +2122,10 @@ export class IBApiNext {
           isSmartDepth: isSmartDepth,
         });
 
-        if (isUpdate) {
-          subscription.next({
-            all: cached,
-            changed: changed,
-          });
-        } else {
-          subscription.next({
-            all: cached,
-            added: changed,
-          });
-        }
+        subscription.next({
+          all: cached,
+          changed: changed,
+        });
 
         break;
 
