@@ -2151,6 +2151,37 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   /**
    * Encode a REQ_TICK_BY_TICK_DATA message.
    */
+  encodeReqTickByTickData(
+    reqId: number,
+    contract: Contract,
+    tickType: TickByTickDataType,
+    numberOfTicks: number,
+    ignoreSize: boolean
+  ): unknown[] {
+    const args: unknown[] = [OUT_MSG_ID.REQ_TICK_BY_TICK_DATA, reqId];
+
+    args.push(contract.conId);
+    args.push(contract.symbol);
+    args.push(contract.secType);
+    args.push(contract.lastTradeDateOrContractMonth);
+    args.push(contract.strike);
+    args.push(contract.right);
+    args.push(contract.multiplier);
+    args.push(contract.exchange);
+    args.push(contract.primaryExch);
+    args.push(contract.currency);
+    args.push(contract.localSymbol);
+    args.push(contract.tradingClass);
+    args.push(tickType);
+
+    if (this.serverVersion >= MIN_SERVER_VER.TICK_BY_TICK_IGNORE_SIZE) {
+      args.push(numberOfTicks);
+      args.push(ignoreSize);
+    }
+    
+    return args;
+  }
+
   reqTickByTickData(
     reqId: number,
     contract: Contract,
@@ -2171,27 +2202,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         reqId
       );
     } else {
-      const args: unknown[] = [OUT_MSG_ID.REQ_TICK_BY_TICK_DATA, reqId];
-
-      args.push(contract.conId);
-      args.push(contract.symbol);
-      args.push(contract.secType);
-      args.push(contract.lastTradeDateOrContractMonth);
-      args.push(contract.strike);
-      args.push(contract.right);
-      args.push(contract.multiplier);
-      args.push(contract.exchange);
-      args.push(contract.primaryExch);
-      args.push(contract.currency);
-      args.push(contract.localSymbol);
-      args.push(contract.tradingClass);
-      args.push(tickType);
-
-      if (this.serverVersion >= MIN_SERVER_VER.TICK_BY_TICK_IGNORE_SIZE) {
-        args.push(numberOfTicks);
-        args.push(ignoreSize);
-      }
-
+      const args: unknown[] = this.encodeReqTickByTickData(reqId, contract, tickType, numberOfTicks, ignoreSize);
       this.sendMsg(args);
     }
   }
