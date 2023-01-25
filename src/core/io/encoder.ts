@@ -2159,45 +2159,41 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     ignoreSize: boolean
   ): void {
     if (this.serverVersion < MIN_SERVER_VER.TICK_BY_TICK) {
-      return this.emitError(
+      this.emitError(
         "It does not support tick-by-tick data requests.",
         ErrorCode.UPDATE_TWS,
         reqId
       );
-    }
+    } else if ((this.serverVersion < MIN_SERVER_VER.TICK_BY_TICK_IGNORE_SIZE) && (numberOfTicks != 0 || ignoreSize)) {
+      this.emitError(
+        "It does not support ignoreSize and numberOfTicks parameters in tick-by-tick data requests.",
+        ErrorCode.UPDATE_TWS,
+        reqId
+      );
+    } else {
+      const args: unknown[] = [OUT_MSG_ID.REQ_TICK_BY_TICK_DATA, reqId];
 
-    if (this.serverVersion < MIN_SERVER_VER.TICK_BY_TICK_IGNORE_SIZE) {
-      if (numberOfTicks != 0 || ignoreSize) {
-        return this.emitError(
-          "It does not support ignoreSize and numberOfTicks parameters in tick-by-tick data requests.",
-          ErrorCode.UPDATE_TWS,
-          reqId
-        );
+      args.push(contract.conId);
+      args.push(contract.symbol);
+      args.push(contract.secType);
+      args.push(contract.lastTradeDateOrContractMonth);
+      args.push(contract.strike);
+      args.push(contract.right);
+      args.push(contract.multiplier);
+      args.push(contract.exchange);
+      args.push(contract.primaryExch);
+      args.push(contract.currency);
+      args.push(contract.localSymbol);
+      args.push(contract.tradingClass);
+      args.push(tickType);
+
+      if (this.serverVersion >= MIN_SERVER_VER.TICK_BY_TICK_IGNORE_SIZE) {
+        args.push(numberOfTicks);
+        args.push(ignoreSize);
       }
+
+      this.sendMsg(args);
     }
-
-    const args: unknown[] = [OUT_MSG_ID.REQ_TICK_BY_TICK_DATA, reqId];
-
-    args.push(contract.conId);
-    args.push(contract.symbol);
-    args.push(contract.secType);
-    args.push(contract.lastTradeDateOrContractMonth);
-    args.push(contract.strike);
-    args.push(contract.right);
-    args.push(contract.multiplier);
-    args.push(contract.exchange);
-    args.push(contract.primaryExch);
-    args.push(contract.currency);
-    args.push(contract.localSymbol);
-    args.push(contract.tradingClass);
-    args.push(tickType);
-
-    if (this.serverVersion >= MIN_SERVER_VER.TICK_BY_TICK_IGNORE_SIZE) {
-      args.push(numberOfTicks);
-      args.push(ignoreSize);
-    }
-
-    this.sendMsg(args);
   }
 
   /**
