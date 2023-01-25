@@ -2020,7 +2020,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     if (this.serverVersion < MIN_SERVER_VER.HISTORICAL_SCHEDULE) {
-      if ( (typeof whatToShow === 'string') && (whatToShow.toUpperCase() === 'SCHEDULE')) {
+      if ((typeof whatToShow === "string") && (whatToShow.toUpperCase() === "SCHEDULE")) {
         return this.emitError(
           "It does not support requesting of historical schedule.",
           ErrorCode.UPDATE_TWS,

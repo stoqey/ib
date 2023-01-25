@@ -17,7 +17,7 @@ import { HistogramEntry } from "../../api/historical/histogramEntry";
 import { HistoricalTick } from "../../api/historical/historicalTick";
 import { HistoricalTickBidAsk } from "../../api/historical/historicalTickBidAsk";
 import { HistoricalTickLast } from "../../api/historical/historicalTickLast";
-import {HistoricalSession} from '../../api/historical/HistoricalSession'
+import { HistoricalSession } from "../../api/historical/HistoricalSession";
 import { TickType } from "../../api/market/tickType";
 import ExecutionCondition from "../../api/order/condition/execution-condition";
 import MarginCondition from "../../api/order/condition/margin-condition";
@@ -417,15 +417,15 @@ export class Decoder {
    
     try {
         while(true) {
-            let escapeIndex: number= v.indexOf("\\u");
+            const escapeIndex: number= v.indexOf("\\u");
 
             if (escapeIndex == -1
              || v.length - escapeIndex < 6) {
                 break;
             }
 
-            let escapeString: string = v.substring(escapeIndex ,  escapeIndex + 6);
-            let hexVal: number = parseInt(escapeString.replace("\\u", ""), 16);
+            const escapeString: string = v.substring(escapeIndex ,  escapeIndex + 6);
+            const hexVal: number = parseInt(escapeString.replace("\\u", ""), 16);
 
             v = v.replace(escapeString, String.fromCharCode(hexVal));
         }
@@ -690,7 +690,7 @@ export class Decoder {
       const code = this.readInt();
       let msg = this.readStr();
       if (this.serverVersion >= MIN_SERVER_VER.ENCODE_MSG_ASCII7){
-        msg = this.decodeUnicodeEscapedString(msg)
+        msg = this.decodeUnicodeEscapedString(msg);
       }
 
       if (id === -1) {
@@ -1503,7 +1503,7 @@ export class Decoder {
    */
   private decodeMsg_TICK_OPTION_COMPUTATION(): void {
     
-    let version 
+    let version; 
     if (this.serverVersion >= MIN_SERVER_VER.PRICE_BASED_VOLATILITY)
       version = Number.MAX_VALUE;
     else
@@ -2919,12 +2919,12 @@ export class Decoder {
     const timeZone = this.readStr();
 
     const sessionsCount = this.readInt();
-    const sessions : HistoricalSession[] = new Array(sessionsCount)
+    const sessions : HistoricalSession[] = new Array(sessionsCount);
 
     for (let i = 0; i < sessionsCount; i++) {
-      let sessionStartDateTime = this.readStr();
-      let sessionEndDateTime = this.readStr();
-      let sessionRefDate = this.readStr();
+      const sessionStartDateTime = this.readStr();
+      const sessionEndDateTime = this.readStr();
+      const sessionRefDate = this.readStr();
       sessions[i] = {
         startDateTime: sessionStartDateTime,
         endDateTime: sessionEndDateTime, 
