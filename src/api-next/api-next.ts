@@ -1,4 +1,3 @@
-import { ItemListUpdate } from "./common/item-list-update";
 import OrderStatus from "../api/order/enum/order-status";
 import { lastValueFrom, Observable, Subject } from "rxjs";
 import { map } from "rxjs/operators";
@@ -64,6 +63,7 @@ import {
   AccountUpdatesUpdate,
 } from "./";
 import { Logger } from "./common/logger";
+import { MarketScannerUpdate } from "./market-scanner/market-scanner";
 
 /**
  * @internal
@@ -2232,10 +2232,21 @@ export class IBApiNext {
 
   private readonly onScannerData = (
     subscriptions: Map<number, IBApiNextSubscription<ScannerSubscription>>,
+    reqId: number,
+    rank: number,
+    contract: ContractDetails,
+    marketName: string,
     ...eventArgs: unknown[]
   ): void => {
-    this.logger.warn(LOG_TAG, "onScannerData not implemented");
-    this.logger.debug(JSON.stringify(subscriptions), eventArgs);
+    subscriptions.forEach((sub) => {
+      console.log("onScannerData", rank, contract, marketName, eventArgs);
+
+      sub.next({
+        rank: rank,
+        contract: contract,
+        marketName: marketName,
+      });
+    });
   };
 
   private readonly onScannerDataEnd = (
@@ -2243,7 +2254,7 @@ export class IBApiNext {
     ...eventArgs: unknown[]
   ): void => {
     this.logger.warn(LOG_TAG, "onScannerDataEnd not implemented");
-    this.logger.debug(JSON.stringify(subscriptions), eventArgs);
+    this.logger.info(JSON.stringify(subscriptions), eventArgs);
   };
 
   private readonly onScannerParameters = (
@@ -2251,14 +2262,21 @@ export class IBApiNext {
     ...eventArgs: unknown[]
   ): void => {
     this.logger.warn(LOG_TAG, "onScannerParameters not implemented");
-    this.logger.debug(JSON.stringify(subscriptions), eventArgs);
+    this.logger.info(JSON.stringify(subscriptions), eventArgs);
   };
 
+  /**
+   * It returns an observable that will emit a list of scanner subscriptions.
+   * @param {ScannerSubscription} scannerSubscription - ScannerSubscription
+   * @param {TagValue[]} [scannerSubscriptionOptions] - An array of TagValue objects.
+   * @param {TagValue[]} [scannerSubscriptionFilterOptions] - An optional array of TagValue objects.
+   * @returns An observable that will emit a list of items.
+   */
   getMarketScanner(
     scannerSubscription: ScannerSubscription,
     scannerSubscriptionOptions?: TagValue[],
     scannerSubscriptionFilterOptions?: TagValue[]
-  ): Observable<ItemListUpdate<ScannerSubscription>> {
+  ): Observable<MarketScannerUpdate> {
     // const scannerSubscription: ScannerSubscription = {
     //   numberOfRows: 10,
     //   instrument: "STK",
@@ -2285,6 +2303,12 @@ export class IBApiNext {
 
     return this.subscriptions.register<ScannerSubscription>(
       (reqId) => {
+        console.log(
+          "reqScannerSubscription",
+          reqId + 10000000, // let order id's not collide with other request id's
+          scannerSubscription
+        );
+
         this.api.reqScannerSubscription(
           reqId,
           scannerSubscription,
@@ -2300,7 +2324,8 @@ export class IBApiNext {
         [EventName.scannerData, this.onScannerData],
         [EventName.scannerDataEnd, this.onScannerDataEnd],
       ],
-      `${JSON.stringify(scannerSubscription)}`
+
+      `test ${JSON.stringify(scannerSubscription)}`
     );
   }
 

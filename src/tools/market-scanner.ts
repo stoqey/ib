@@ -5,7 +5,6 @@ import path from "path";
 import { Subscription } from "rxjs";
 
 import { IBApiNextError } from "../api-next";
-import DurationUnit from "../api/data/enum/duration-unit";
 import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
@@ -48,36 +47,47 @@ class PrintMarketScreenerApp extends IBApiNextApp {
     const scriptName = path.basename(__filename);
     logger.debug(`Starting ${scriptName} script`);
 
-    if (!this.cmdLineArgs.conid) {
-      this.error("-conid argument missing.");
-    }
-    if (!this.cmdLineArgs.exchange) {
-      this.error("-exchange argument missing.");
-    }
-    if (!this.cmdLineArgs.period) {
-      this.error("-period argument missing.");
-    }
-    if (!this.cmdLineArgs.periodUnit) {
-      this.error("-periodUnit argument missing.");
-    }
-    if (!(this.cmdLineArgs.periodUnit in DurationUnit)) {
-      this.error(
-        "Invalid -periodUnit argument value: " + this.cmdLineArgs.periodUnit
-      );
-    }
+    // if (!this.cmdLineArgs.conid) {
+    //   this.error("-conid argument missing.");
+    // }
+    // if (!this.cmdLineArgs.exchange) {
+    //   this.error("-exchange argument missing.");
+    // }
+    // if (!this.cmdLineArgs.period) {
+    //   this.error("-period argument missing.");
+    // }
+    // if (!this.cmdLineArgs.periodUnit) {
+    //   this.error("-periodUnit argument missing.");
+    // }
+    // if (!(this.cmdLineArgs.periodUnit in DurationUnit)) {
+    //   this.error(
+    //     "Invalid -periodUnit argument value: " + this.cmdLineArgs.periodUnit
+    //   );
+    // }
 
     this.connect(this.cmdLineArgs.watch ? 10000 : 0);
 
     this.subscription$ = this.api
       .getMarketScanner({
         abovePrice: 1,
-        scanCode: "MOST_ACTIVE",
+        //scanCode: "MOST_ACTIVE",
+        scanCode: "TOP_PERC_GAIN",
+        instrument: "STK",
       })
-      .subscribe((data) => {
-        this.printObject(`getHistogramData: ${JSON.stringify(data)}`);
-      }, this.error.bind(this));
+      .subscribe(
+        (data) => {
+          logger.info(data);
+        },
+        (error: IBApiNextError) => {
+          logger.error("Error from the subscriber", error);
+          this.stop();
+        },
+        () => {
+          logger.info("Completed");
+          this.stop();
+        }
+      );
   }
-
   /**
    * Stop the app with success code.
    */

@@ -109,6 +109,26 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Tool: market-scanner",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "runtimeArgs": [
+        "--trace-warnings"
+      ],
+      "args": [
+  
+      ],
+      "program": "${workspaceFolder}/dist/tools/market-scanner.js",
+      "outputCapture": "std",
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Tool: pnl-single",
       "skipFiles": [
         "<node_internals>/**"
