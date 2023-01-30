@@ -104,8 +104,7 @@ export enum OUT_MSG_ID {
   REQ_WSH_META_DATA = 100,
   CANCEL_WSH_META_DATA = 101,
   REQ_WSH_EVENT_DATA = 102,
-  CANCEL_WSH_EVENT_DATA = 103
-
+  CANCEL_WSH_EVENT_DATA = 103,
 }
 
 /**
@@ -1049,7 +1048,6 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       );
     }
 
-
     const version = this.serverVersion < MIN_SERVER_VER.NOT_HELD ? 27 : 45;
 
     // send place order msg
@@ -1567,7 +1565,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       tokens.push(order.postToAts);
     }
 
-    if (this.serverVersion >= MIN_SERVER_VER.AUTO_CANCEL_PARENT ) {
+    if (this.serverVersion >= MIN_SERVER_VER.AUTO_CANCEL_PARENT) {
       tokens.push(order.autoCancelParent);
     }
 
@@ -1587,15 +1585,10 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     const version = 1;
-    
-    const tokens: unknown[] = [
-      OUT_MSG_ID.REPLACE_FA,
-      version,
-      faDataType,
-      xml
-    ];
 
-    if(this.serverVersion >= MIN_SERVER_VER.REPLACE_FA_END) {
+    const tokens: unknown[] = [OUT_MSG_ID.REPLACE_FA, version, faDataType, xml];
+
+    if (this.serverVersion >= MIN_SERVER_VER.REPLACE_FA_END) {
       tokens.push(reqId);
     }
 
@@ -2020,7 +2013,10 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     if (this.serverVersion < MIN_SERVER_VER.HISTORICAL_SCHEDULE) {
-      if ((typeof whatToShow === "string") && (whatToShow.toUpperCase() === "SCHEDULE")) {
+      if (
+        typeof whatToShow === "string" &&
+        whatToShow.toUpperCase() === "SCHEDULE"
+      ) {
         return this.emitError(
           "It does not support requesting of historical schedule.",
           ErrorCode.UPDATE_TWS,
@@ -2028,7 +2024,6 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         );
       }
     }
-
 
     const tokens: unknown[] = [OUT_MSG_ID.REQ_HISTORICAL_DATA];
 
@@ -2178,7 +2173,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       args.push(numberOfTicks);
       args.push(ignoreSize);
     }
-    
+
     return args;
   }
 
@@ -2195,14 +2190,23 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         ErrorCode.UPDATE_TWS,
         reqId
       );
-    } else if ((this.serverVersion < MIN_SERVER_VER.TICK_BY_TICK_IGNORE_SIZE) && (numberOfTicks != 0 || ignoreSize)) {
+    } else if (
+      this.serverVersion < MIN_SERVER_VER.TICK_BY_TICK_IGNORE_SIZE &&
+      (numberOfTicks != 0 || ignoreSize)
+    ) {
       this.emitError(
         "It does not support ignoreSize and numberOfTicks parameters in tick-by-tick data requests.",
         ErrorCode.UPDATE_TWS,
         reqId
       );
     } else {
-      const args: unknown[] = this.encodeReqTickByTickData(reqId, contract, tickType, numberOfTicks, ignoreSize);
+      const args: unknown[] = this.encodeReqTickByTickData(
+        reqId,
+        contract,
+        tickType,
+        numberOfTicks,
+        ignoreSize
+      );
       this.sendMsg(args);
     }
   }
@@ -2654,7 +2658,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
    * Encode a REQ_SCANNER_SUBSCRIPTION message.
    */
   reqScannerSubscription(
-    tickerId: number,
+    reqId: number,
     subscription: ScannerSubscription,
     scannerSubscriptionOptions: TagValue[],
     scannerSubscriptionFilterOptions?: TagValue[]
@@ -2663,7 +2667,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support API scanner subscription.",
         ErrorCode.UPDATE_TWS,
-        tickerId
+        reqId
       );
     }
 
@@ -2674,7 +2678,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support API scanner subscription generic filter options.",
         ErrorCode.UPDATE_TWS,
-        tickerId
+        reqId
       );
     }
 
@@ -2686,7 +2690,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       tokens.push(version);
     }
 
-    tokens.push(tickerId);
+    tokens.push(reqId);
     tokens.push(nullifyMax(subscription.numberOfRows));
     tokens.push(subscription.instrument);
     tokens.push(subscription.locationCode);
@@ -3064,9 +3068,9 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   }
 
   reqWshMetaData(reqId: number): void {
-    
     if (this.serverVersion < MIN_SERVER_VER.WSHE_CALENDAR) {
-      return this.emitError("It does not support WSHE Calendar API.",        
+      return this.emitError(
+        "It does not support WSHE Calendar API.",
         ErrorCode.UPDATE_TWS,
         -1
       );
@@ -3077,9 +3081,9 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   }
 
   reqCancelWshMetaData(reqId: number): void {
-    
     if (this.serverVersion < MIN_SERVER_VER.WSHE_CALENDAR) {
-      return this.emitError("It does not support WSHE Calendar API.",        
+      return this.emitError(
+        "It does not support WSHE Calendar API.",
         ErrorCode.UPDATE_TWS,
         -1
       );
@@ -3088,11 +3092,11 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
 
     this.sendMsg(OUT_MSG_ID.CANCEL_WSH_META_DATA, reqId);
   }
-  
+
   reqWshEventData(reqId: number, conId: number): void {
-    
     if (this.serverVersion < MIN_SERVER_VER.WSHE_CALENDAR) {
-      return this.emitError("It does not support WSHE Calendar API.",        
+      return this.emitError(
+        "It does not support WSHE Calendar API.",
         ErrorCode.UPDATE_TWS,
         -1
       );
@@ -3103,9 +3107,9 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   }
 
   reqCancelWshEventData(reqId: number): void {
-    
     if (this.serverVersion < MIN_SERVER_VER.WSHE_CALENDAR) {
-      return this.emitError("It does not support WSHE Calendar API.",        
+      return this.emitError(
+        "It does not support WSHE Calendar API.",
         ErrorCode.UPDATE_TWS,
         -1
       );
@@ -3114,5 +3118,4 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
 
     this.sendMsg(OUT_MSG_ID.CANCEL_WSH_EVENT_DATA, reqId);
   }
-
 }
