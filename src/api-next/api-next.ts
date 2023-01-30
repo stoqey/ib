@@ -1,3 +1,4 @@
+import { ItemListUpdate } from "./common/item-list-update";
 import OrderStatus from "../api/order/enum/order-status";
 import { lastValueFrom, Observable, Subject } from "rxjs";
 import { map } from "rxjs/operators";
@@ -27,6 +28,7 @@ import {
   ExecutionDetail,
   ContractDescription,
   SecType,
+  ScannerSubscription,
 } from "../";
 import LogLevel from "../api/data/enum/log-level";
 import {
@@ -2228,11 +2230,79 @@ export class IBApiNext {
     );
   }
 
-  // getMarketScanner(
+  private readonly onScannerData = (
+    subscriptions: Map<number, IBApiNextSubscription<ScannerSubscription>>,
+    ...eventArgs: unknown[]
+  ): void => {
+    this.logger.warn(LOG_TAG, "onScannerData not implemented");
+    this.logger.debug(JSON.stringify(subscriptions), eventArgs);
+  };
 
-  // ): Observable<MarketScannerData> {
+  private readonly onScannerDataEnd = (
+    subscriptions: Map<number, IBApiNextSubscription<ScannerSubscription>>,
+    ...eventArgs: unknown[]
+  ): void => {
+    this.logger.warn(LOG_TAG, "onScannerDataEnd not implemented");
+    this.logger.debug(JSON.stringify(subscriptions), eventArgs);
+  };
 
-  // }
+  private readonly onScannerParameters = (
+    subscriptions: Map<number, IBApiNextSubscription<ScannerSubscription>>,
+    ...eventArgs: unknown[]
+  ): void => {
+    this.logger.warn(LOG_TAG, "onScannerParameters not implemented");
+    this.logger.debug(JSON.stringify(subscriptions), eventArgs);
+  };
+
+  getMarketScanner(
+    scannerSubscription: ScannerSubscription,
+    scannerSubscriptionOptions?: TagValue[],
+    scannerSubscriptionFilterOptions?: TagValue[]
+  ): Observable<ItemListUpdate<ScannerSubscription>> {
+    // const scannerSubscription: ScannerSubscription = {
+    //   numberOfRows: 10,
+    //   instrument: "STK",
+    //   locationCode: "STK.US.MAJOR",
+    //   scanCode: "TOP_PERC_GAIN",
+    //   abovePrice: 0,
+    //   belowPrice: 0,
+    //   aboveVolume: 0,
+    //   averageOptionVolumeAbove: 0,
+    //   marketCapAbove: 0,
+    //   marketCapBelow: 0,
+    //   moodyRatingAbove: "",
+    //   moodyRatingBelow: "",
+    //   spRatingAbove: "",
+    //   spRatingBelow: "",
+    //   maturityDateAbove: "",
+    //   maturityDateBelow: "",
+    //   couponRateAbove: 0,
+    //   couponRateBelow: 0,
+    //   excludeConvertible: false,
+    //   scannerSettingPairs: [],
+    //   stockTypeFilter: "",
+    // };
+
+    return this.subscriptions.register<ScannerSubscription>(
+      (reqId) => {
+        this.api.reqScannerSubscription(
+          reqId,
+          scannerSubscription,
+          scannerSubscriptionOptions,
+          scannerSubscriptionFilterOptions
+        );
+      },
+      (reqId) => {
+        this.api.cancelScannerSubscription(reqId);
+      },
+      [
+        [EventName.scannerParameters, this.onScannerParameters],
+        [EventName.scannerData, this.onScannerData],
+        [EventName.scannerDataEnd, this.onScannerDataEnd],
+      ],
+      `${JSON.stringify(scannerSubscription)}`
+    );
+  }
 
   /** histogramData event handler */
   private readonly onHistogramData = (
