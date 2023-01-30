@@ -5,6 +5,11 @@ import path from "path";
 import { Subscription } from "rxjs";
 
 import { IBApiNextError } from "../api-next";
+import {
+  Instrument,
+  LocationCode,
+  ScanCode,
+} from "../api-next/market-scanner/market-scanner";
 import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
@@ -70,9 +75,9 @@ class PrintMarketScreenerApp extends IBApiNextApp {
     this.subscription$ = this.api
       .getMarketScanner({
         abovePrice: 1,
-        //scanCode: "MOST_ACTIVE",
-        scanCode: "TOP_PERC_GAIN",
-        instrument: "STK",
+        scanCode: ScanCode.MOST_ACTIVE,
+        locationCode: LocationCode.STK_US,
+        instrument: Instrument.STK,
       })
       .subscribe(
         (data) => {

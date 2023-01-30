@@ -2240,12 +2240,6 @@ export class IBApiNext {
   ): void => {
     subscriptions.forEach((sub) => {
       console.log("onScannerData", rank, contract, marketName, eventArgs);
-
-      sub.next({
-        rank: rank,
-        contract: contract,
-        marketName: marketName,
-      });
     });
   };
 
@@ -2277,30 +2271,6 @@ export class IBApiNext {
     scannerSubscriptionOptions?: TagValue[],
     scannerSubscriptionFilterOptions?: TagValue[]
   ): Observable<MarketScannerUpdate> {
-    // const scannerSubscription: ScannerSubscription = {
-    //   numberOfRows: 10,
-    //   instrument: "STK",
-    //   locationCode: "STK.US.MAJOR",
-    //   scanCode: "TOP_PERC_GAIN",
-    //   abovePrice: 0,
-    //   belowPrice: 0,
-    //   aboveVolume: 0,
-    //   averageOptionVolumeAbove: 0,
-    //   marketCapAbove: 0,
-    //   marketCapBelow: 0,
-    //   moodyRatingAbove: "",
-    //   moodyRatingBelow: "",
-    //   spRatingAbove: "",
-    //   spRatingBelow: "",
-    //   maturityDateAbove: "",
-    //   maturityDateBelow: "",
-    //   couponRateAbove: 0,
-    //   couponRateBelow: 0,
-    //   excludeConvertible: false,
-    //   scannerSettingPairs: [],
-    //   stockTypeFilter: "",
-    // };
-
     return this.subscriptions.register<ScannerSubscription>(
       (reqId) => {
         console.log(
