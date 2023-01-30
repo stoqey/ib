@@ -506,8 +506,12 @@ export class IBApiNext {
     tag: string,
     value: string,
     currency: string,
-    account: string): void => {
-    this.logger.debug(LOG_TAG, `onUpdateAccountValue(${tag}, ${value}, ${currency}, ${account})`);
+    account: string
+  ): void => {
+    this.logger.debug(
+      LOG_TAG,
+      `onUpdateAccountValue(${tag}, ${value}, ${currency}, ${account})`
+    );
     subscriptions.forEach((subscription) => {
       // update latest value on cache
       const all: AccountUpdate = subscription.lastAllValue ?? {};
@@ -549,7 +553,7 @@ export class IBApiNext {
         });
       }
     });
-  }
+  };
 
   /**
    * Response to API updatePortfolio control message.
@@ -568,12 +572,29 @@ export class IBApiNext {
    */
   private readonly onUpdatePortfolio = (
     subscriptions: Map<number, IBApiNextSubscription<AccountUpdate>>,
-    contract: Contract, pos: number,
-    marketPrice: number, marketValue: number,
-    avgCost: number, unrealizedPNL: number,
-    realizedPNL: number, account: string): void => {
-    this.logger.debug(LOG_TAG, `onUpdatePortfolio(${contract.symbol}, ${pos}, ${marketPrice}, ${marketValue}, ${avgCost}, ${unrealizedPNL}, ${realizedPNL}, ${account})`);
-    const updatedPosition: Position = { account, contract, pos, avgCost, marketPrice, marketValue, unrealizedPNL, realizedPNL };
+    contract: Contract,
+    pos: number,
+    marketPrice: number,
+    marketValue: number,
+    avgCost: number,
+    unrealizedPNL: number,
+    realizedPNL: number,
+    account: string
+  ): void => {
+    this.logger.debug(
+      LOG_TAG,
+      `onUpdatePortfolio(${contract.symbol}, ${pos}, ${marketPrice}, ${marketValue}, ${avgCost}, ${unrealizedPNL}, ${realizedPNL}, ${account})`
+    );
+    const updatedPosition: Position = {
+      account,
+      contract,
+      pos,
+      avgCost,
+      marketPrice,
+      marketValue,
+      unrealizedPNL,
+      realizedPNL,
+    };
     // notify all subscribers
     subscriptions.forEach((subscription) => {
       // update latest value on cache
@@ -605,21 +626,33 @@ export class IBApiNext {
       if (hasAdded) {
         subscription.next({
           all: all,
-          added: { portfolio: new MutableAccountPositions([[account, [updatedPosition]]]) },
+          added: {
+            portfolio: new MutableAccountPositions([
+              [account, [updatedPosition]],
+            ]),
+          },
         });
       } else if (hasRemoved) {
         subscription.next({
           all: all,
-          removed: { portfolio: new MutableAccountPositions([[account, [updatedPosition]]]) },
+          removed: {
+            portfolio: new MutableAccountPositions([
+              [account, [updatedPosition]],
+            ]),
+          },
         });
       } else {
         subscription.next({
           all: all,
-          changed: { portfolio: new MutableAccountPositions([[account, [updatedPosition]]]) },
+          changed: {
+            portfolio: new MutableAccountPositions([
+              [account, [updatedPosition]],
+            ]),
+          },
         });
       }
     });
-  }
+  };
 
   /**
    * Response to API updateAccountTime control message.
@@ -631,7 +664,8 @@ export class IBApiNext {
    */
   private readonly onUpdateAccountTime = (
     subscriptions: Map<number, IBApiNextSubscription<AccountUpdate>>,
-    timeStamp: string): void => {
+    timeStamp: string
+  ): void => {
     this.logger.debug(LOG_TAG, `onUpdateAccountTime(${timeStamp})`);
     subscriptions.forEach((sub) => {
       const changed: AccountUpdate = { timestamp: timeStamp };
@@ -642,7 +676,7 @@ export class IBApiNext {
         changed: changed,
       });
     });
-  }
+  };
 
   /**
    * Response to API accountDownloadEnd control message.
@@ -654,10 +688,11 @@ export class IBApiNext {
    */
   private readonly onAccountDownloadEnd = (
     subscriptions: Map<number, IBApiNextSubscription<AccountUpdate>>,
-    accountName: string): void => {
+    accountName: string
+  ): void => {
     this.logger.debug(LOG_TAG, `onAccountDownloadEnd(${accountName})`);
     // TODO finish implementation
-  }
+  };
 
   /**
    * The getAccountUpdates function creates a subscription to the TWS through which account and portfolio information is delivered.
@@ -669,9 +704,7 @@ export class IBApiNext {
    *
    * @see [[reqAccountUpdates]], [[reqGlobalCancel]]
    */
-  getAccountUpdates(
-    acctCode?: string
-  ): Observable<AccountUpdatesUpdate> {
+  getAccountUpdates(acctCode?: string): Observable<AccountUpdatesUpdate> {
     this.logger.debug(LOG_TAG, `getAccountUpdates(${acctCode})`);
     return this.subscriptions.register<AccountUpdate>(
       () => {
@@ -686,7 +719,7 @@ export class IBApiNext {
         [EventName.updateAccountTime, this.onUpdateAccountTime],
         [EventName.accountDownloadEnd, this.onAccountDownloadEnd],
       ],
-      (acctCode ? `getAccountUpdates+${acctCode}` : "getAccountUpdates")  // use same instance id each time, to make sure there is only 1 pending request at time
+      acctCode ? `getAccountUpdates+${acctCode}` : "getAccountUpdates" // use same instance id each time, to make sure there is only 1 pending request at time
     );
   }
 
@@ -830,7 +863,10 @@ export class IBApiNext {
 
   /** securityDefinitionOptionParameter event handler */
   private readonly onSecurityDefinitionOptionParameter = (
-    subscriptions: Map<number, IBApiNextSubscription<SecurityDefinitionOptionParameterType[]>>,
+    subscriptions: Map<
+      number,
+      IBApiNextSubscription<SecurityDefinitionOptionParameterType[]>
+    >,
     reqId: number,
     exchange: string,
     underlyingConId: number,
@@ -855,7 +891,7 @@ export class IBApiNext {
       tradingClass: tradingClass as string,
       multiplier: parseInt(multiplier) as number,
       expirations: expirations as string[],
-      strikes: strikes as number[]
+      strikes: strikes as number[],
     });
 
     // sent change to subscribers
@@ -867,7 +903,10 @@ export class IBApiNext {
 
   /** securityDefinitionOptionParameterEnd event handler */
   private readonly onSecurityDefinitionOptionParameterEnd = (
-    subscriptions: Map<number, IBApiNextSubscription<SecurityDefinitionOptionParameterType[]>>,
+    subscriptions: Map<
+      number,
+      IBApiNextSubscription<SecurityDefinitionOptionParameterType[]>
+    >,
     reqId: number
   ) => {
     subscriptions.get(reqId)?.complete();
@@ -875,29 +914,47 @@ export class IBApiNext {
 
   /**
    * Requests security definition option parameters for viewing a contract's option chain.
-   * 
+   *
    * This information will be emitted as securityDefinitionOptionParameter event.
    *
-   * @param underlyingSymbol The underlying symbol to query the available contracts. 
+   * @param underlyingSymbol The underlying symbol to query the available contracts.
    * @param futFopExchange The exchange on which the returned options are trading. Can be set to the empty string "" for all exchanges.
-   * @param underlyingSecType The type of the underlying security, i.e. STK. 
+   * @param underlyingSecType The type of the underlying security, i.e. STK.
    * @param underlyingConId the contract ID of the underlying security.
    */
   getSecDefOptParams(
-    underlyingSymbol: string, futFopExchange: string, underlyingSecType: SecType, underlyingConId: number): Promise<SecurityDefinitionOptionParameterType[]> {
+    underlyingSymbol: string,
+    futFopExchange: string,
+    underlyingSecType: SecType,
+    underlyingConId: number
+  ): Promise<SecurityDefinitionOptionParameterType[]> {
     return lastValueFrom(
       this.subscriptions
         .register<SecurityDefinitionOptionParameterType[]>(
           (reqId) => {
-            this.api.reqSecDefOptParams(reqId, underlyingSymbol, futFopExchange, underlyingSecType, underlyingConId);
+            this.api.reqSecDefOptParams(
+              reqId,
+              underlyingSymbol,
+              futFopExchange,
+              underlyingSecType,
+              underlyingConId
+            );
           },
           undefined,
           [
-            [EventName.securityDefinitionOptionParameter, this.onSecurityDefinitionOptionParameter],
-            [EventName.securityDefinitionOptionParameterEnd, this.onSecurityDefinitionOptionParameterEnd],
+            [
+              EventName.securityDefinitionOptionParameter,
+              this.onSecurityDefinitionOptionParameter,
+            ],
+            [
+              EventName.securityDefinitionOptionParameterEnd,
+              this.onSecurityDefinitionOptionParameterEnd,
+            ],
           ]
         )
-        .pipe(map((v: { all: SecurityDefinitionOptionParameterType[] }) => v.all)),
+        .pipe(
+          map((v: { all: SecurityDefinitionOptionParameterType[] }) => v.all)
+        ),
       {
         defaultValue: [],
       }
@@ -2171,6 +2228,12 @@ export class IBApiNext {
     );
   }
 
+  // getMarketScanner(
+
+  // ): Observable<MarketScannerData> {
+
+  // }
+
   /** histogramData event handler */
   private readonly onHistogramData = (
     subscriptions: Map<number, IBApiNextSubscription<HistogramEntry[]>>,
@@ -2253,7 +2316,13 @@ export class IBApiNext {
       );
       if (changeOrderIndex === -1) {
         // new open order - add it
-        const addedOrder: OpenOrder = { orderId, contract, order, orderState, orderStatus: undefined };
+        const addedOrder: OpenOrder = {
+          orderId,
+          contract,
+          order,
+          orderState,
+          orderStatus: undefined,
+        };
         allOrders.push(addedOrder);
         sub.next({
           all: allOrders,
@@ -2312,8 +2381,11 @@ export class IBApiNext {
      * This is probably unused now.
      * Neither reqAllOpenOrders, reqAutoOpenOrders nor reqOpenOrders documentation reference this event.
      * Even getAutoOpenOrders(true) doesn't call it!
-    */
-    this.logger.warn(LOG_TAG, `Unexpected onOrderBound(${orderId}, ${apiClientId}, ${apiOrderId}) called.`);
+     */
+    this.logger.warn(
+      LOG_TAG,
+      `Unexpected onOrderBound(${orderId}, ${apiClientId}, ${apiOrderId}) called.`
+    );
   };
 
   /**
@@ -2358,7 +2430,7 @@ export class IBApiNext {
       lastFillPrice: undefined,
       clientId,
       whyHeld,
-      mktCapPrice
+      mktCapPrice,
     };
     if (filled) {
       orderStatus.avgFillPrice = avgFillPrice;
@@ -2381,7 +2453,10 @@ export class IBApiNext {
           changed: [updatedOrder],
         });
       } else {
-        this.logger.warn(LOG_TAG, `onOrderStatus: non existent order ignored. orderId: ${orderId}, permId: ${permId}.`);
+        this.logger.warn(
+          LOG_TAG,
+          `onOrderStatus: non existent order ignored. orderId: ${orderId}, permId: ${permId}.`
+        );
       }
     });
   };
@@ -2403,7 +2478,7 @@ export class IBApiNext {
             [EventName.orderBound, this.onOrderBound],
             [EventName.openOrderEnd, this.onOpenOrderEnd],
           ],
-          "getAllOpenOrders"  // use same instance id each time, to make sure there is only 1 pending request at time
+          "getAllOpenOrders" // use same instance id each time, to make sure there is only 1 pending request at time
         )
         .pipe(map((v: { all: OpenOrder[] }) => v.all)),
       {
@@ -2417,19 +2492,18 @@ export class IBApiNext {
    * For client ID 0, this will bind previous manual TWS orders.
    */
   getOpenOrders(): Observable<OpenOrdersUpdate> {
-    return this.subscriptions
-      .register<OpenOrder[]>(
-        () => {
-          this.api.reqOpenOrders();
-        },
-        undefined,
-        [
-          [EventName.openOrder, this.onOpenOrder],
-          [EventName.orderStatus, this.onOrderStatus],
-          [EventName.orderBound, this.onOrderBound],
-        ],
-        "getOpenOrders"  // use same instance id each time, to make sure there is only 1 pending request at time
-      );
+    return this.subscriptions.register<OpenOrder[]>(
+      () => {
+        this.api.reqOpenOrders();
+      },
+      undefined,
+      [
+        [EventName.openOrder, this.onOpenOrder],
+        [EventName.orderStatus, this.onOrderStatus],
+        [EventName.orderBound, this.onOrderBound],
+      ],
+      "getOpenOrders" // use same instance id each time, to make sure there is only 1 pending request at time
+    );
   }
 
   /**
@@ -2440,9 +2514,7 @@ export class IBApiNext {
    *
    * @see [[reqAllOpenOrders]], [[reqOpenOrders]], [[cancelOrder]], [[reqGlobalCancel]]
    */
-  getAutoOpenOrders(
-    autoBind: boolean
-  ): Observable<OpenOrdersUpdate> {
+  getAutoOpenOrders(autoBind: boolean): Observable<OpenOrdersUpdate> {
     return this.subscriptions.register<OpenOrder[]>(
       () => {
         this.api.reqAutoOpenOrders(autoBind);
@@ -2453,7 +2525,7 @@ export class IBApiNext {
         [EventName.orderStatus, this.onOrderStatus],
         [EventName.orderBound, this.onOrderBound],
       ],
-      "getAutoOpenOrders"  // use same instance id each time, to make sure there is only 1 pending request at time
+      "getAutoOpenOrders" // use same instance id each time, to make sure there is only 1 pending request at time
     );
   }
 
