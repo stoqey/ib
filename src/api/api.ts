@@ -435,13 +435,13 @@ export class IBApi extends EventEmitter {
   /**
    * Cancels Scanner Subscription.
    *
-   * @param tickerId The subscription's unique identifier.
+   * @param reqId The subscription's unique identifier.
    *
    * @see [[reqScannerSubscription]], [[reqScannerParameters]]
    */
-  cancelScannerSubscription(tickerId: number): IBApi {
+  cancelScannerSubscription(reqId: number): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.cancelScannerSubscription(tickerId)
+      this.controller.encoder.cancelScannerSubscription(reqId)
     );
     return this;
   }
@@ -708,7 +708,7 @@ export class IBApi extends EventEmitter {
    *
    * @see [[reqCancelWshMetaData]]
    */
-   reqWshMetaData(reqId: number) {
+  reqWshMetaData(reqId: number) {
     this.controller.schedule(() =>
       this.controller.encoder.reqWshMetaData(reqId)
     );
@@ -733,7 +733,7 @@ export class IBApi extends EventEmitter {
    * @param reqId The unique request identifier.
    * @param conId Contract id of ticker.
    *
-   * @see [[reqCancelWshEventData]]   
+   * @see [[reqCancelWshEventData]]
    */
   reqWshEventData(reqId: number, conId: number) {
     this.controller.schedule(() =>
@@ -753,8 +753,6 @@ export class IBApi extends EventEmitter {
     );
     return this;
   }
-
-
 
   /**
    * Requests contract information.
@@ -1404,7 +1402,7 @@ export class IBApi extends EventEmitter {
   /**
    * Starts a subscription to market scan results based on the provided parameters.
    *
-   * @param tickerId The request's identifier.
+   * @param reqId The request's identifier.
    * @param subscription Summary of the scanner subscription including its filters.
    * @param scannerSubscriptionOptions TODO document
    * @param scannerSubscriptionFilterOptions TODO document
@@ -1412,14 +1410,14 @@ export class IBApi extends EventEmitter {
    * @see [[reqScannerParameters]]
    */
   reqScannerSubscription(
-    tickerId: number,
+    reqId: number,
     subscription: ScannerSubscription,
     scannerSubscriptionOptions: TagValue[] = [],
     scannerSubscriptionFilterOptions: TagValue[] = []
   ): IBApi {
     this.controller.schedule(() =>
       this.controller.encoder.reqScannerSubscription(
-        tickerId,
+        reqId,
         subscription,
         scannerSubscriptionOptions,
         scannerSubscriptionFilterOptions
