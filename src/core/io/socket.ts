@@ -159,6 +159,7 @@ export class Socket {
     // disconnect TCP socket.
 
     this.client?.end();
+    // delete this.client;
   }
 
   /**
@@ -411,7 +412,7 @@ export class Socket {
       this.controller.emitEvent(EventName.disconnected);
     }
 
-    this.controller.resume();
+    this.controller.pause();
   }
 
   /**
