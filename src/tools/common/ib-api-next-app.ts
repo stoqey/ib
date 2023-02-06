@@ -110,7 +110,7 @@ export class IBApiNextApp {
         if (error.reqId === -1) {
           this.error(`${error.error.message}`);
           logger.error(
-            `Encountered error, IB host: ${configuration.ib_host} Port: ${configuration.ib_port}`
+            `Encountered error, IB host: ${host} Port: ${port}`
           );
         }
       });
