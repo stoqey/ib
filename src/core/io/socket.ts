@@ -159,7 +159,6 @@ export class Socket {
     // disconnect TCP socket.
 
     this.client?.end();
-    // delete this.client;
   }
 
   /**
