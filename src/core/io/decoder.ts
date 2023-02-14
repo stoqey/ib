@@ -695,7 +695,6 @@ export class Decoder {
       let advancedOrderReject: unknown;
       if (this.serverVersion >= MIN_SERVER_VER.ADVANCED_ORDER_REJECT) {
         const advancedOrderRejectJson: string = this.readStr();
-        console.log('advancedOrderRejectJson', advancedOrderRejectJson);
         if (advancedOrderRejectJson) advancedOrderReject = JSON.parse(this.decodeUnicodeEscapedString(advancedOrderRejectJson));
       }
 

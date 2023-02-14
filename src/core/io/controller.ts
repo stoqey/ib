@@ -206,7 +206,7 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
    * @param advancedOrderReject Additional error data (optional).
    */
   emitError(errMsg: string, code: number, reqId: number, advancedOrderReject?: unknown): void {
-    if (advancedOrderReject) errMsg += ' advancedOrderReject: ' + JSON.stringify(advancedOrderReject);
+    if (advancedOrderReject) errMsg += ", advancedOrderReject: " + JSON.stringify(advancedOrderReject);
     this.emitEvent(EventName.error, new Error(errMsg), code, reqId);
   }
 
