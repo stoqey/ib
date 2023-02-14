@@ -104,8 +104,8 @@ export enum OUT_MSG_ID {
   REQ_WSH_META_DATA = 100,
   CANCEL_WSH_META_DATA = 101,
   REQ_WSH_EVENT_DATA = 102,
-  CANCEL_WSH_EVENT_DATA = 103
-
+  CANCEL_WSH_EVENT_DATA = 103,
+  REQ_USER_INFO                 = 104
 }
 
 /**
@@ -1049,6 +1049,16 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       );
     }
 
+    if (
+      this.serverVersion < MIN_SERVER_VER.ADVANCED_ORDER_REJECT &&
+      order.advancedErrorOverride != null
+    ) {
+      return this.emitError(
+        "It does not support advanced error override attribute",
+        ErrorCode.UPDATE_TWS,
+        id
+      );
+    }
 
     const version = this.serverVersion < MIN_SERVER_VER.NOT_HELD ? 27 : 45;
 
@@ -1570,6 +1580,9 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     if (this.serverVersion >= MIN_SERVER_VER.AUTO_CANCEL_PARENT ) {
       tokens.push(order.autoCancelParent);
     }
+
+    if (this.serverVersion >= MIN_SERVER_VER.ADVANCED_ORDER_REJECT)
+      tokens.push(order.advancedErrorOverride);
 
     this.sendMsg(tokens);
   }
@@ -3064,7 +3077,6 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   }
 
   reqWshMetaData(reqId: number): void {
-    
     if (this.serverVersion < MIN_SERVER_VER.WSHE_CALENDAR) {
       return this.emitError("It does not support WSHE Calendar API.",        
         ErrorCode.UPDATE_TWS,
@@ -3077,7 +3089,6 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   }
 
   reqCancelWshMetaData(reqId: number): void {
-    
     if (this.serverVersion < MIN_SERVER_VER.WSHE_CALENDAR) {
       return this.emitError("It does not support WSHE Calendar API.",        
         ErrorCode.UPDATE_TWS,
@@ -3090,7 +3101,6 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   }
   
   reqWshEventData(reqId: number, conId: number): void {
-    
     if (this.serverVersion < MIN_SERVER_VER.WSHE_CALENDAR) {
       return this.emitError("It does not support WSHE Calendar API.",        
         ErrorCode.UPDATE_TWS,
@@ -3103,7 +3113,6 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   }
 
   reqCancelWshEventData(reqId: number): void {
-    
     if (this.serverVersion < MIN_SERVER_VER.WSHE_CALENDAR) {
       return this.emitError("It does not support WSHE Calendar API.",        
         ErrorCode.UPDATE_TWS,

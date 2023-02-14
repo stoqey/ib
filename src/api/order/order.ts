@@ -736,7 +736,7 @@ export interface Order {
   /** Value must be positive, and it is number of seconds that SMART order would be parked for at IBKRATS before being routed to exchange. */
   postToAts?: number;
 
-
+  advancedErrorOverride?: string;
 }
 
 export default Order;
