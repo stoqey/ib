@@ -43,7 +43,7 @@ export class Forex implements Contract {
   }
 
   public exchange = "IDEALPRO";
-  public secType = SecType.FOP;
+  public secType = SecType.CASH;
 }
 
 export default Forex;
