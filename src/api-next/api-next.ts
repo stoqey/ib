@@ -2240,15 +2240,27 @@ export class IBApiNext {
   ): void => {
     subscriptions.forEach((sub) => {
       console.log("onScannerData", rank, contract, marketName, eventArgs);
+
     });
   };
 
   private readonly onScannerDataEnd = (
     subscriptions: Map<number, IBApiNextSubscription<ScannerSubscription>>,
+    reqId: number,
     ...eventArgs: unknown[]
   ): void => {
     this.logger.warn(LOG_TAG, "onScannerDataEnd not implemented");
     this.logger.info(JSON.stringify(subscriptions), eventArgs);
+
+    const sub = subscriptions.get(reqId);
+    if (!sub) {
+      return;
+    }
+    // if (!sub.lastAllValue) {
+    //   sub.next({ all: [] });
+    // }
+    sub.complete();
+  };
   };
 
   private readonly onScannerParameters = (
