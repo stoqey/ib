@@ -411,7 +411,7 @@ export class Socket {
       this.controller.emitEvent(EventName.disconnected);
     }
 
-    this.controller.resume();
+    this.controller.pause();
   }
 
   /**
