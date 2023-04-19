@@ -374,8 +374,8 @@ export class Socket {
     }
 
     // resume controller
-
-    this.controller.resume();
+    setTimeout(()=> { this.controller.resume(); }, 500);
+    // this.controller.resume();
   }
 
   /**
