@@ -98,8 +98,9 @@ export interface DecoderCallbacks {
    * @param errMsg The error test message.
    * @param code The code identifying the error.
    * @param reqId The request identifier which generated the error.
+   * @param advancedOrderReject 
    */
-  emitError(errMsg: string, code: number, reqId: number): void;
+  emitError(errMsg: string, code: number, reqId: number, advancedOrderReject?: unknown): void;
 
   /**
    * Emit an information message event to public API interface.
@@ -313,7 +314,6 @@ export class Decoder {
         return this.decodeMsg_COMPLETED_ORDER();
       case IN_MSG_ID.COMPLETED_ORDERS_END:
         return this.decodeMsg_COMPLETED_ORDERS_END();
-
       case IN_MSG_ID.REPLACE_FA_END :
         return this.decodeMsg_REPLACE_FA_END();
       case IN_MSG_ID.WSH_META_DATA :
@@ -689,14 +689,19 @@ export class Decoder {
       const id = this.readInt();
       const code = this.readInt();
       let msg = this.readStr();
-      if (this.serverVersion >= MIN_SERVER_VER.ENCODE_MSG_ASCII7){
+      if (this.serverVersion >= MIN_SERVER_VER.ENCODE_MSG_ASCII7) {
         msg = this.decodeUnicodeEscapedString(msg);
+      }
+      let advancedOrderReject: unknown;
+      if (this.serverVersion >= MIN_SERVER_VER.ADVANCED_ORDER_REJECT) {
+        const advancedOrderRejectJson: string = this.readStr();
+        if (advancedOrderRejectJson) advancedOrderReject = JSON.parse(this.decodeUnicodeEscapedString(advancedOrderRejectJson));
       }
 
       if (id === -1) {
         this.callback.emitInfo(msg);
       } else {
-        this.callback.emitError(msg, code, id);
+        this.callback.emitError(msg, code, id, advancedOrderReject);
       }
     }
   }
