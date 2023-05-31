@@ -379,7 +379,7 @@ export class Socket {
       }
     }
 
-    // resume controller after CONNECT_DELAY
+    // resume controller after CONNECT_DELAY, fix connect issue
     setTimeout(()=> { this.controller.resume(); }, CONNECT_DELAY);
   }
 
