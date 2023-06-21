@@ -1633,8 +1633,9 @@ export declare interface IBApi {
    * Provides status information messages for development / logging purpose.
    *
    * message: Message text.
+   * code: Message code.
    */
-  on(event: EventName.info, listener: (message: string) => void): this;
+  on(event: EventName.info, listener: (message: string, code: number) => void): this;
 
   /**
    * Notifies about an error and TCP socket connection to the TWS/IB Gateway.
