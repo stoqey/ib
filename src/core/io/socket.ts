@@ -29,6 +29,12 @@ const MAX_V100_MESSAGE_LENGTH = 0xffffff;
 const EOL = "\0";
 
 /**
+ * @hidden
+ * add a delay after connect before sending commands
+ */
+const CONNECT_DELAY = 600;
+
+/**
  * @internal
  *
  * This class implements low-level details on the communication protocol of the
@@ -373,9 +379,8 @@ export class Socket {
       }
     }
 
-    // resume controller
-
-    this.controller.resume();
+    // resume controller after CONNECT_DELAY, fix connect issue
+    setTimeout(()=> { this.controller.resume(); }, CONNECT_DELAY);
   }
 
   /**
