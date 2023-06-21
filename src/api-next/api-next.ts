@@ -214,8 +214,8 @@ export class IBApiNext {
 
     // setup TWS info message event handler  (bound to lifetime of IBApiAutoConnection so we never unregister)
 
-    this.api.on(EventName.info, (message: string) => {
-      this.logger.info(TWS_LOG_TAG, message);
+    this.api.on(EventName.info, (message: string, code: number) => {
+      this.logger.info(TWS_LOG_TAG, `${message} - Code: ${code}`);
     });
   }
 
