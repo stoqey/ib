@@ -4,6 +4,7 @@
  * Incoming message IDs.
  */
 export enum IN_MSG_ID {
+  UNDEFINED = -1,
   TICK_PRICE = 1,
   TICK_SIZE = 2,
   ORDER_STATUS = 3,
