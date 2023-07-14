@@ -105,9 +105,10 @@ export interface DecoderCallbacks {
   /**
    * Emit an information message event to public API interface.
    *
-   * @param errMsg The message text.
+   * @param message The message text.
+   * @param code The message code.
    */
-  emitInfo(message: string): void;
+  emitInfo(message: string, code: number): void;
 }
 
 /**
@@ -699,7 +700,7 @@ export class Decoder {
       }
 
       if (id === -1) {
-        this.callback.emitInfo(msg);
+        this.callback.emitInfo(msg, code);
       } else {
         this.callback.emitError(msg, code, id, advancedOrderReject);
       }

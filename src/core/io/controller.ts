@@ -188,10 +188,11 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
    *
    * This function is called from the [[Decoder]] (via [DecoderCallbacks.emitInfo]).
    *
-   * @param errMsg The message text.
+   * @param message The message text.
+   * @param code The message code.
    */
-  emitInfo(message: string): void {
-    this.emitEvent(EventName.info, message);
+  emitInfo(message: string, code: number): void {
+    this.emitEvent(EventName.info, message, code);
   }
 
   /**
