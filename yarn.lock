@@ -169,14 +169,14 @@
     chalk "^2.0.0"
     js-tokens "^4.0.0"
 
-"@babel/parser@^7.1.0", "@babel/parser@^7.12.13", "@babel/parser@^7.14.2", "@babel/parser@^7.14.3":
+"@babel/parser@^7.1.0", "@babel/parser@^7.10.5", "@babel/parser@^7.12.13", "@babel/parser@^7.14.2", "@babel/parser@^7.14.3":
   version "7.14.4"
   resolved "https://registry.npmjs.org/@babel/parser/-/parser-7.14.4.tgz"
   integrity sha512-ArliyUsWDUqEGfWcmzpGUzNfLxTdTp6WU4IuP6QFSp9gGfWS6boxFCkJSJ/L4+RG8z/FnIU3WxCk6hPL9SSWeA==
 
-"@babel/parser@^7.10.5", "@babel/parser@~7.10.3":
+"@babel/parser@~7.10.3":
   version "7.10.5"
-  resolved "https://registry.npmjs.org/@babel/parser/-/parser-7.10.5.tgz"
+  resolved "https://registry.yarnpkg.com/@babel/parser/-/parser-7.10.5.tgz#e7c6bf5a7deff957cec9f04b551e2762909d826b"
   integrity sha512-wfryxy4bE1UivvQKSQDU4/X6dr+i8bctjUjj8Zyt3DQy7NtPizJXT8M52nqpNKL+nq2PW8lxk4ZqLj0fD4B4hQ==
 
 "@babel/plugin-syntax-async-generators@^7.8.4":
@@ -301,7 +301,7 @@
     globals "^11.1.0"
     lodash "^4.17.19"
 
-"@babel/types@^7.0.0", "@babel/types@^7.12.13", "@babel/types@^7.13.12", "@babel/types@^7.14.0", "@babel/types@^7.14.2", "@babel/types@^7.14.4", "@babel/types@^7.3.0", "@babel/types@^7.3.3":
+"@babel/types@^7.0.0", "@babel/types@^7.10.5", "@babel/types@^7.12.13", "@babel/types@^7.13.12", "@babel/types@^7.14.0", "@babel/types@^7.14.2", "@babel/types@^7.14.4", "@babel/types@^7.3.0", "@babel/types@^7.3.3":
   version "7.14.4"
   resolved "https://registry.npmjs.org/@babel/types/-/types-7.14.4.tgz"
   integrity sha512-lCj4aIs0xUefJFQnwwQv2Bxg7Omd6bgquZ6LGC+gGMh6/s5qDVfjuCMlDmYQ15SLsWHd9n+X3E75lKIhl5Lkiw==
@@ -309,9 +309,9 @@
     "@babel/helper-validator-identifier" "^7.14.0"
     to-fast-properties "^2.0.0"
 
-"@babel/types@^7.10.5", "@babel/types@~7.10.3":
+"@babel/types@~7.10.3":
   version "7.10.5"
-  resolved "https://registry.npmjs.org/@babel/types/-/types-7.10.5.tgz"
+  resolved "https://registry.yarnpkg.com/@babel/types/-/types-7.10.5.tgz#d88ae7e2fde86bfbfe851d4d81afa70a997b5d15"
   integrity sha512-ixV66KWfCI6GKoA/2H9v6bQdbfXEwwpOdQ8cRvb4F+eyvhlaHxWFMQB4+3d9QFJXZsiiiqVrewNV0DFEQpyT4Q==
   dependencies:
     "@babel/helper-validator-identifier" "^7.10.4"
@@ -876,17 +876,7 @@ ajv@^6.10.0, ajv@^6.12.4:
     json-schema-traverse "^0.4.1"
     uri-js "^4.2.2"
 
-ajv@^8.0.1:
-  version "8.5.0"
-  resolved "https://registry.npmjs.org/ajv/-/ajv-8.5.0.tgz"
-  integrity sha512-Y2l399Tt1AguU3BPRP9Fn4eN+Or+StUGWCUpbnFyXSo8NZ9S4uj+AG2pjs5apK+ZMOwYOz1+a+VKvKH7CudXgQ==
-  dependencies:
-    fast-deep-equal "^3.1.1"
-    json-schema-traverse "^1.0.0"
-    require-from-string "^2.0.2"
-    uri-js "^4.2.2"
-
-ajv@^8.12.0:
+ajv@^8.0.1, ajv@^8.12.0:
   version "8.12.0"
   resolved "https://registry.yarnpkg.com/ajv/-/ajv-8.12.0.tgz#d1a0527323e22f53562c567c00991577dfbe19d1"
   integrity sha512-sRu1kpcO9yLtYxBKvqfTeh9KzZEwO3STyX1HT+4CaDzC6HpTGYhIhPIzj9XuKU7KYDwnaeh5hcOwjy1QuJzBPA==
