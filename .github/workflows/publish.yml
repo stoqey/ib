@@ -18,9 +18,9 @@ jobs:
 
       # Setup Node.js
       - name: "Setup Node.js"
-        uses: "actions/setup-node@v1"
+        uses: "actions/setup-node@v3"
         with:
-          node-version: 14
+          node-version: 18.16.1
 
       # Automated Version Bump
       - name: "Automated Version Bump"
@@ -32,7 +32,7 @@ jobs:
 
       # Install packages with yarn
       - name: "Install"
-        run: npm install
+        run: yarn install --frozen-lockfile
 
       # Publish the package
       - name: npm publish
