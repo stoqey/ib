@@ -21,7 +21,8 @@
     "release": "yarn lint && yarn test && yarn doc && yarn build",
     "doc": "typedoc --excludeInternal",
     "doc:dev": "typedoc --out ./doc-dev",
-    "tsc": "./node_modules/.bin/tsc"
+    "tsc": "./node_modules/.bin/tsc",
+    "type-check": "yarn lint && tsc --noEmit"
   },
   "engines": {
     "node": ">=4.2.0"
@@ -92,6 +93,6 @@
     "dotenv": "^8.2.0",
     "eventemitter3": "^4.0.7",
     "function-rate-limit": "^1.1.0",
-    "rxjs": "^7.1.0"
+    "rxjs": "^7.8.1"
   }
 }
