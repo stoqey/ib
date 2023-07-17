@@ -21,7 +21,14 @@
         "ignoreParameters": true
       }
     ],
-    "@typescript-eslint/no-unused-vars": "warn",
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
     "rxjs/no-async-subscribe": "error",
     "rxjs/no-ignored-observable": "error",
     "rxjs/no-ignored-subscription": "error",

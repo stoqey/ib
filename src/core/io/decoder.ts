@@ -356,7 +356,7 @@ export class Decoder {
         this.dataQueue.shift();
       }
 
-      let msgId: IN_MSG_ID = -1;
+      let msgId: IN_MSG_ID = IN_MSG_ID.UNDEFINED;
 
       try {
         // process message (invoke decoder function)
@@ -3089,7 +3089,7 @@ export class Decoder {
     return {
       conId: this.readInt(),
       ratio: this.readInt(),
-      action: this.readStr(),
+      action: this.readStr() as OrderAction,
       exchange: this.readStr(),
       openClose: this.readInt(),
       shortSaleSlot: this.readInt(),
@@ -3496,7 +3496,7 @@ class OrderDecoder {
         for (let i = 0; i < comboLegsCount; ++i) {
           const conId = this.decoder.readInt();
           const ratio = this.decoder.readInt();
-          const action = this.decoder.readStr();
+          const action = this.decoder.readStr() as OrderAction;
           const exchange = this.decoder.readStr();
           const openClose = this.decoder.readInt();
           const shortSaleSlot = this.decoder.readInt();

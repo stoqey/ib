@@ -21,10 +21,11 @@
     "release": "yarn lint && yarn test && yarn doc && yarn build",
     "doc": "typedoc --excludeInternal",
     "doc:dev": "typedoc --out ./doc-dev",
-    "tsc": "./node_modules/.bin/tsc"
+    "tsc": "./node_modules/.bin/tsc",
+    "type-check": "yarn lint && tsc --noEmit"
   },
   "engines": {
-    "node": ">=4.2.0"
+    "node": ">=14.0.0"
   },
   "repository": {
     "type": "git",
@@ -69,27 +70,27 @@
   },
   "homepage": "https://github.com/stoqey/ib",
   "devDependencies": {
-    "@types/jest": "^26.0.20",
-    "@types/lodash": "^4.14.150",
-    "@types/node": "^10.0.3",
+    "@types/jest": "^26.0.24",
+    "@types/lodash": "^4.14.195",
+    "@types/node": "^18.16.19",
     "@types/source-map-support": "^0.4.0",
-    "@typescript-eslint/eslint-plugin": "^4.22.0",
-    "@typescript-eslint/parser": "^4.22.0",
-    "ajv": "^8.1.0",
-    "eslint": "^7.24.0",
-    "eslint-plugin-jest": "^24.3.5",
-    "eslint-plugin-rxjs": "^3.1.5",
+    "@typescript-eslint/eslint-plugin": "^4.33.0",
+    "@typescript-eslint/parser": "^4.33.0",
+    "ajv": "^8.12.0",
+    "eslint": "^7.32.0",
+    "eslint-plugin-jest": "^24.7.0",
+    "eslint-plugin-rxjs": "^3.3.7",
     "jest": "^26.6.3",
     "jest-environment-node": "^26.6.2",
-    "jest-junit": "^12.0.0",
+    "jest-junit": "^12.3.0",
     "ts-jest": "^26.5.5",
-    "typedoc": "^0.21.0-beta.2",
+    "typedoc": "^0.21.10",
     "typescript": "^4.2.4"
   },
   "dependencies": {
     "colors": "^1.4.0",
     "command-buffer": "^0.1.0",
-    "dotenv": "^8.2.0",
+    "dotenv": "^8.6.0",
     "eventemitter3": "^4.0.7",
     "function-rate-limit": "^1.1.0",
     "rxjs": "^7.8.1"
