@@ -72,7 +72,7 @@ export interface IBApiCreationOptions {
 }
 
 /** Maximum supported version. */
-export const MAX_SUPPORTED_SERVER_VERSION = MIN_SERVER_VER.ADVANCED_ORDER_REJECT;
+export const MAX_SUPPORTED_SERVER_VERSION = MIN_SERVER_VER.USER_INFO;
 
 /** Minimum supported version. */
 export const MIN_SERVER_VER_SUPPORTED = 38;
@@ -708,7 +708,7 @@ export class IBApi extends EventEmitter {
    *
    * @see [[reqCancelWshMetaData]]
    */
-   reqWshMetaData(reqId: number) {
+  reqWshMetaData(reqId: number) {
     this.controller.schedule(() =>
       this.controller.encoder.reqWshMetaData(reqId)
     );
@@ -733,7 +733,7 @@ export class IBApi extends EventEmitter {
    * @param reqId The unique request identifier.
    * @param conId Contract id of ticker.
    *
-   * @see [[reqCancelWshEventData]]   
+   * @see [[reqCancelWshEventData]]
    */
   reqWshEventData(reqId: number, conId: number) {
     this.controller.schedule(() =>
@@ -753,8 +753,6 @@ export class IBApi extends EventEmitter {
     );
     return this;
   }
-
-
 
   /**
    * Requests contract information.
@@ -1594,6 +1592,14 @@ export class IBApi extends EventEmitter {
     );
     return this;
   }
+
+  /**
+   * Requests the user info of the logged user.
+   */
+  reqUserInfo(reqId: number): IBApi {
+    this.controller.schedule(() => this.controller.encoder.reqUserInfo(reqId));
+    return this;
+  }
 }
 
 // Event emitter interface
@@ -1635,7 +1641,10 @@ export declare interface IBApi {
    * message: Message text.
    * code: Message code.
    */
-  on(event: EventName.info, listener: (message: string, code: number) => void): this;
+  on(
+    event: EventName.info,
+    listener: (message: string, code: number) => void
+  ): this;
 
   /**
    * Notifies about an error and TCP socket connection to the TWS/IB Gateway.
@@ -3526,5 +3535,18 @@ export declare interface IBApi {
       message: string,
       origExchange: string
     ) => void
+  ): this;
+
+  /**
+   * Notifies when new user info has arrived.
+   *
+   * @param listener
+   * whiteBrandingId: The user's info
+   *
+   * @see [[reqUserInfo]]
+   */
+  on(
+    event: EventName.userInfo,
+    listener: (whiteBrandingId: string) => void
   ): this;
 }
