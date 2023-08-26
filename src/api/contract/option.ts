@@ -8,7 +8,7 @@ import { Contract } from "./contract";
 export class Option implements Contract {
   constructor(
     public symbol: string,
-    public expiry: string,
+    public lastTradeDateOrContractMonth: string,
     public strike: number,
     public right: OptionType,
     public exchange?: string,
