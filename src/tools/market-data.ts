@@ -56,7 +56,7 @@ class PrintMarketDataApp extends IBApiNextApp {
     const scriptName = path.basename(__filename);
     logger.debug(`Starting ${scriptName} script`);
     this.connect(this.cmdLineArgs.watch ? 10000 : 0);
-    this.api.setMarketDataType(MarketDataType.FROZEN);
+    this.api.setMarketDataType(MarketDataType.DELAYED);
     this.subscription$ = this.api
       .getMarketData(
         {
@@ -105,8 +105,8 @@ class PrintMarketDataApp extends IBApiNextApp {
           this.printObject(changedOrAddedDataWithTickNames);
         },
         error: (err: IBApiNextError) => {
-          this.subscription$?.unsubscribe();
-          this.error(`getMarketData failed with '${err.error.message}'`);
+          // this.subscription$?.unsubscribe();
+          this.error(`getMarketData failed with '${err.error.message}' (${err.code})`);
         },
       });
   }

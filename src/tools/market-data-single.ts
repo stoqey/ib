@@ -56,7 +56,7 @@ class PrintMarketDataSingleApp extends IBApiNextApp {
         const scriptName = path.basename(__filename);
         logger.debug(`Starting ${scriptName} script`);
         this.connect(this.cmdLineArgs.watch ? 10000 : 0);
-        this.api.setMarketDataType(MarketDataType.FROZEN);
+        this.api.setMarketDataType(MarketDataType.DELAYED);
         this.api
             .getMarketDataSingle(
                 {
@@ -92,7 +92,8 @@ class PrintMarketDataSingleApp extends IBApiNextApp {
                 this.stop();
             })
             .catch((err: IBApiNextError) => {
-                this.error(`getMarketDataSingle failed with '${err.error.message}'`);
+                this.error(`getMarketDataSingle failed with '${err.error.message}' (${err.code})`);
+                this.stop();
             });
     }
 
