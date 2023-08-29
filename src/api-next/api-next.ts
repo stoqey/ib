@@ -184,10 +184,13 @@ export class IBApiNext {
     this.api.on(
       EventName.error,
       (error: Error, code: ErrorCode, reqId: number) => {
+        // console.log(reqId,'generic error ---',code, error,'---')
         const apiError: IBApiNextError = { error, code, reqId };
         // handle warnings - they are also reported on TWS error callback, but we DO NOT want to emit
         // it as error into the subject (and cancel the subscription).
-        if (code >= 2100 && code < 3000) {
+        if ((code >= 2100 && code < 3000)
+        || code === ErrorCode.PART_OF_REQUESTED_DATA_NOT_SUBSCRIBED
+        || code === ErrorCode.DISPLAYING_DELAYED_DATA) {
           this.logger.warn(
             TWS_LOG_TAG,
             `${error.message} - Code: ${code} - ReqId: ${reqId}`
@@ -1472,6 +1475,7 @@ export class IBApiNext {
         [EventName.tickGeneric, this.onTick],
         [EventName.tickOptionComputation, this.onTickOptionComputation],
         [EventName.tickSnapshotEnd, this.onTickSnapshotEnd],
+        // [EventName.error, this.onMarketDataError]
       ],
       snapshot || regulatorySnapshot
         ? undefined
@@ -2339,7 +2343,6 @@ export class IBApiNext {
     order: Order,
     orderState: OrderState
   ): void => {
-    // console.log('onOpenOrder', orderId, order.permId);
     subscriptions.forEach((sub) => {
       const allOrders = sub.lastAllValue ?? [];
       const changeOrderIndex = allOrders.findIndex(
@@ -2450,7 +2453,6 @@ export class IBApiNext {
     whyHeld?: string,
     mktCapPrice?: number
   ): void => {
-    // console.log('onOrderStatus', orderId, permId);
     const orderStatus = {
       status,
       filled,

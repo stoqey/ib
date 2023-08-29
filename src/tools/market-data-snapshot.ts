@@ -6,12 +6,7 @@ import path from "path";
 import { Subscription } from "rxjs";
 
 import { OptionType, SecType } from "..";
-import {
-  IBApiNextError,
-  IBApiNextTickType,
-  IBApiTickType,
-  MarketDataType,
-} from "../api-next";
+import { IBApiNextError, IBApiNextTickType, IBApiTickType, MarketDataType } from "../api-next";
 import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
@@ -19,7 +14,7 @@ import { IBApiNextApp } from "./common/ib-api-next-app";
 // The help text                                                               //
 /////////////////////////////////////////////////////////////////////////////////
 
-const DESCRIPTION_TEXT = "Print real time market data of a given contract id.";
+const DESCRIPTION_TEXT = "Print snapshot of real time market data of a given contract id.";
 const USAGE_TEXT = "Usage: market-data-snapshot.js <options>";
 const OPTION_ARGUMENTS: [string, string][] = [
   ["conid=<number>", "Contract ID (conId) of the contract."],
@@ -39,8 +34,7 @@ const OPTION_ARGUMENTS: [string, string][] = [
   ["right=<P|C>", " The option type. Valid values are P, PUT, C, CALL."],
   ["ticks=<ticks>", "Comma separated list of generic ticks to fetch."],
 ];
-const EXAMPLE_TEXT =
-  "market-data-snapshot.js -symbol=AAPL -conid=265598 -sectype=STK -exchange=SMART";
+const EXAMPLE_TEXT = "market-data-snapshot.js -symbol=AAPL -conid=265598 -sectype=STK -exchange=SMART";
 
 //////////////////////////////////////////////////////////////////////////////
 // The App code                                                             //
@@ -61,7 +55,7 @@ class PrintMarketDataSingleApp extends IBApiNextApp {
     const scriptName = path.basename(__filename);
     logger.debug(`Starting ${scriptName} script`);
     this.connect(this.cmdLineArgs.watch ? 10000 : 0);
-    this.api.setMarketDataType(MarketDataType.FROZEN);
+    this.api.setMarketDataType(MarketDataType.DELAYED_FROZEN);
     this.api
       .getMarketDataSnapshot(
         {
@@ -75,7 +69,7 @@ class PrintMarketDataSingleApp extends IBApiNextApp {
           right: this.cmdLineArgs.right as OptionType,
         },
         this.cmdLineArgs.ticks as string,
-        false
+        false,
       )
       .then((marketData) => {
         // this.printObject(marketData);
