@@ -36,7 +36,7 @@ class App extends IBApiNextApp {
     this.api
       .getUserInfo()
       .then((whiteBrandingId) => {
-        console.log(`User Info. WhiteBrandingId: '${whiteBrandingId}'`);
+        this.printText(`User Info. WhiteBrandingId: '${whiteBrandingId}'`);
         this.stop();
       })
       .catch((err: IBApiNextError) => {
