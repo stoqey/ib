@@ -5,7 +5,7 @@
 import path from "path";
 import { Subscription } from "rxjs";
 
-import { SecType, OptionType } from "../";
+import { SecType, OptionType ,Option, Contract} from "../";
 import { IBApiNextError, IBApiNextTickType, IBApiTickType, MarketDataType } from "../api-next";
 import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
@@ -17,7 +17,7 @@ import { IBApiNextApp } from "./common/ib-api-next-app";
 const DESCRIPTION_TEXT = "Print real time market data of a given contract id.";
 const USAGE_TEXT = "Usage: market-data.js <options>";
 const OPTION_ARGUMENTS: [string, string][] = [
-  ["conid=<number>", "Contract ID (conId) of the contract."],
+  // ["conid=<number>", "Contract ID (conId) of the contract."],
   ["symbol=<name>", "The symbol name."],
   [
     "sectype=<type>",
@@ -53,22 +53,25 @@ class PrintMarketDataApp extends IBApiNextApp {
    * Start the app.
    */
   start(): void {
+    let contract: Contract | Option;
     const scriptName = path.basename(__filename);
     logger.debug(`Starting ${scriptName} script`);
     this.connect(this.cmdLineArgs.watch ? 10000 : 0);
     this.api.setMarketDataType(MarketDataType.DELAYED);
+    if (this.cmdLineArgs.sectype as SecType == SecType.OPT) {
+     contract = new Option( this.cmdLineArgs.symbol as string, this.cmdLineArgs.expiry as string,+this.cmdLineArgs.strike,this.cmdLineArgs.right as OptionType,this.cmdLineArgs.exchange as string,this.cmdLineArgs.currency as string);
+    } else contract= {
+      conId: this.cmdLineArgs.conid as number ?? undefined,
+      symbol: this.cmdLineArgs.symbol as string,
+      secType: this.cmdLineArgs.sectype as SecType,
+      exchange: this.cmdLineArgs.exchange as string,
+      currency: this.cmdLineArgs.currency as string,
+      lastTradeDateOrContractMonth: this.cmdLineArgs.expiry as string,
+      strike: (this.cmdLineArgs.strike as number) ?? undefined,
+      right: this.cmdLineArgs.right as OptionType,
+    }
     this.subscription$ = this.api
-      .getMarketData(
-        {
-          conId: this.cmdLineArgs.conid as number ?? undefined,
-          symbol: this.cmdLineArgs.symbol as string,
-          secType: this.cmdLineArgs.sectype as SecType,
-          exchange: this.cmdLineArgs.exchange as string,
-          currency: this.cmdLineArgs.currency as string,
-          lastTradeDateOrContractMonth: this.cmdLineArgs.expiry as string,
-          strike: (this.cmdLineArgs.strike as number) ?? undefined,
-          right: this.cmdLineArgs.right as OptionType,
-        },
+      .getMarketData(contract,
         this.cmdLineArgs.ticks as string,
         false,
         false
