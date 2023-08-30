@@ -53,13 +53,14 @@ class PrintMarketDataApp extends IBApiNextApp {
    * Start the app.
    */
   start(): void {
-    let contract: Contract | Option;
     const scriptName = path.basename(__filename);
     logger.debug(`Starting ${scriptName} script`);
     this.connect(this.cmdLineArgs.watch ? 10000 : 0);
     this.api.setMarketDataType(MarketDataType.DELAYED);
+
+    let contract: Contract | Option;
     if (this.cmdLineArgs.sectype as SecType == SecType.OPT) {
-     contract = new Option( this.cmdLineArgs.symbol as string, this.cmdLineArgs.expiry as string,+this.cmdLineArgs.strike,this.cmdLineArgs.right as OptionType,this.cmdLineArgs.exchange as string,this.cmdLineArgs.currency as string);
+      contract = new Option( this.cmdLineArgs.symbol as string, this.cmdLineArgs.expiry as string,+this.cmdLineArgs.strike,this.cmdLineArgs.right as OptionType,this.cmdLineArgs.exchange as string,this.cmdLineArgs.currency as string);
     } else contract= {
       conId: this.cmdLineArgs.conid as number ?? undefined,
       symbol: this.cmdLineArgs.symbol as string,
@@ -69,7 +70,8 @@ class PrintMarketDataApp extends IBApiNextApp {
       lastTradeDateOrContractMonth: this.cmdLineArgs.expiry as string,
       strike: (this.cmdLineArgs.strike as number) ?? undefined,
       right: this.cmdLineArgs.right as OptionType,
-    }
+    };
+    
     this.subscription$ = this.api
       .getMarketData(contract,
         this.cmdLineArgs.ticks as string,
