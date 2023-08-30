@@ -5,7 +5,7 @@
 import path from "path";
 import { Subscription } from "rxjs";
 
-import { SecType, OptionType } from "../";
+import { SecType, OptionType ,Option, Contract} from "../";
 import { IBApiNextError, IBApiNextTickType, IBApiTickType, MarketDataType } from "../api-next";
 import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
@@ -57,18 +57,23 @@ class PrintMarketDataApp extends IBApiNextApp {
     logger.debug(`Starting ${scriptName} script`);
     this.connect(this.cmdLineArgs.watch ? 10000 : 0);
     this.api.setMarketDataType(MarketDataType.DELAYED);
+
+    let contract: Contract | Option;
+    if (this.cmdLineArgs.sectype as SecType == SecType.OPT) {
+      contract = new Option( this.cmdLineArgs.symbol as string, this.cmdLineArgs.expiry as string,+this.cmdLineArgs.strike,this.cmdLineArgs.right as OptionType,this.cmdLineArgs.exchange as string,this.cmdLineArgs.currency as string);
+    } else contract= {
+      conId: this.cmdLineArgs.conid as number ?? undefined,
+      symbol: this.cmdLineArgs.symbol as string,
+      secType: this.cmdLineArgs.sectype as SecType,
+      exchange: this.cmdLineArgs.exchange as string,
+      currency: this.cmdLineArgs.currency as string,
+      lastTradeDateOrContractMonth: this.cmdLineArgs.expiry as string,
+      strike: (this.cmdLineArgs.strike as number) ?? undefined,
+      right: this.cmdLineArgs.right as OptionType,
+    };
+    
     this.subscription$ = this.api
-      .getMarketData(
-        {
-          conId: this.cmdLineArgs.conid as number ?? undefined,
-          symbol: this.cmdLineArgs.symbol as string,
-          secType: this.cmdLineArgs.sectype as SecType,
-          exchange: this.cmdLineArgs.exchange as string,
-          currency: this.cmdLineArgs.currency as string,
-          lastTradeDateOrContractMonth: this.cmdLineArgs.expiry as string,
-          strike: (this.cmdLineArgs.strike as number) ?? undefined,
-          right: this.cmdLineArgs.right as OptionType,
-        },
+      .getMarketData(contract,
         this.cmdLineArgs.ticks as string,
         false,
         false
