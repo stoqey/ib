@@ -1,28 +1,34 @@
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import * as util from "util";
 import colors from "colors";
+import * as util from "util";
+
+const timeStamp = () => `[${new Date().toLocaleTimeString()}]`;
 
 const debug = (...args: any[]) => {
   if (process.env.NODE_ENV === "development") {
-    console.debug(...args);
+    const newArgs = [timeStamp(), "Debug:", ...args].map((x) => colors.grey(x));
+    console.debug(...newArgs);
   }
 };
 
 // We can't do "exports.info = console.log" because that prevents
 // this module from being tested properly with mock logging functions.
-const info = (...args: any[]) => console.log(...args);
+const info = (...args: any[]) => {
+  const newArgs = [timeStamp(), "Info:", ...args].map((x) => colors.green(x));
+  console.log(...newArgs);
+};
 
 const warn = (...args: any[]) => {
-  const newArgs = args.map(colors.yellow);
+  const newArgs = [timeStamp(), "Warn:", ...args].map((x) => colors.yellow(x));
   console.warn(...newArgs);
 };
 
 const error = (...args: any[]) => {
   // Prevent hiding of any stack traces
-  const newArgs = args.map((x) =>
-    colors.bold.red(util.inspect(x, { showHidden: false, depth: null }))
+  const newArgs = [timeStamp(), "Error:", ...args].map((x) =>
+    colors.bold.red(typeof x == "string" ? x : util.inspect(x, { showHidden: false, depth: null })),
   );
 
   console.error(...newArgs);
@@ -30,9 +36,7 @@ const error = (...args: any[]) => {
 
 const testError = (...args: any[]) => {
   // Prevent hiding of any stack traces
-  const newArgs = args.map((x) =>
-    colors.bold.red(util.inspect(x, { showHidden: false, depth: 3 }))
-  );
+  const newArgs = args.map((x) => colors.bold.red(util.inspect(x, { showHidden: false, depth: 3 })));
 
   console.error(...newArgs);
 };
