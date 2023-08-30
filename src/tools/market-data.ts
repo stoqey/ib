@@ -17,7 +17,7 @@ import { IBApiNextApp } from "./common/ib-api-next-app";
 const DESCRIPTION_TEXT = "Print real time market data of a given contract id.";
 const USAGE_TEXT = "Usage: market-data.js <options>";
 const OPTION_ARGUMENTS: [string, string][] = [
-  // ["conid=<number>", "Contract ID (conId) of the contract."],
+  ["conid=<number>", "Contract ID (conId) of the contract."],
   ["symbol=<name>", "The symbol name."],
   [
     "sectype=<type>",
