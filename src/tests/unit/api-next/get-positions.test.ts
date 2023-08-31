@@ -2,18 +2,12 @@
  * This file implements tests for the [[IBApiNext.getPositions]] function.
  */
 
-import {
-  IBApi,
-  IBApiNext,
-  IBApiNextError,
-  EventName,
-  Contract,
-} from "../../..";
+import { Contract, EventName, IBApi, IBApiNext, IBApiNextError } from "../../..";
 
 describe("RxJS Wrapper: getPositions()", () => {
   test("Update multicast", (done) => {
     const apiNext = new IBApiNext();
-    const api = ((apiNext as unknown) as Record<string, unknown>).api as IBApi;
+    const api = (apiNext as unknown as Record<string, unknown>).api as IBApi;
 
     // testing values
 
@@ -37,7 +31,7 @@ describe("RxJS Wrapper: getPositions()", () => {
           }
         },
         error: (error: IBApiNextError) => {
-          fail(error.error.message);
+          done(error.error.message);
         },
       });
 
@@ -52,7 +46,7 @@ describe("RxJS Wrapper: getPositions()", () => {
           }
         },
         error: (error: IBApiNextError) => {
-          fail(error.error.message);
+          done(error.error.message);
         },
       });
 
@@ -61,7 +55,7 @@ describe("RxJS Wrapper: getPositions()", () => {
 
   test("Detected added / changed / removed", (done) => {
     const apiNext = new IBApiNext();
-    const api = ((apiNext as unknown) as Record<string, unknown>).api as IBApi;
+    const api = (apiNext as unknown as Record<string, unknown>).api as IBApi;
 
     // testing values
 
@@ -78,48 +72,32 @@ describe("RxJS Wrapper: getPositions()", () => {
       next: (update) => {
         if (update.added?.size) {
           expect(update.all.size).toEqual(1);
-          expect(update.added.get(accountId)[0].contract.conId).toEqual(
-            positionContract.conId
-          );
+          expect(update.added.get(accountId)[0].contract.conId).toEqual(positionContract.conId);
           expect(update.added.get(accountId)[0].pos).toEqual(posSize1);
           expect(update.added.get(accountId)[0].avgCost).toEqual(avgCost);
         } else if (update.changed?.size) {
           expect(update.all.size).toEqual(1);
-          expect(update.changed.get(accountId)[0].contract.conId).toEqual(
-            positionContract.conId
-          );
+          expect(update.changed.get(accountId)[0].contract.conId).toEqual(positionContract.conId);
           expect(update.changed.get(accountId)[0].pos).toEqual(posSize2);
           expect(update.changed.get(accountId)[0].avgCost).toEqual(avgCost);
           done();
         } else {
-          fail();
+          done("Didn't get result");
         }
       },
       error: (error: IBApiNextError) => {
-        fail(error.error.message);
+        done(error.error.message);
       },
     });
 
-    api.emit(
-      EventName.position,
-      accountId,
-      positionContract,
-      posSize1,
-      avgCost
-    );
+    api.emit(EventName.position, accountId, positionContract, posSize1, avgCost);
 
-    api.emit(
-      EventName.position,
-      accountId,
-      positionContract,
-      posSize2,
-      avgCost
-    );
+    api.emit(EventName.position, accountId, positionContract, posSize2, avgCost);
   });
 
   test("Initial value replay to late observers", (done) => {
     const apiNext = new IBApiNext();
-    const api = ((apiNext as unknown) as Record<string, unknown>).api as IBApi;
+    const api = (apiNext as unknown as Record<string, unknown>).api as IBApi;
 
     // testing values
 
@@ -138,25 +116,21 @@ describe("RxJS Wrapper: getPositions()", () => {
           next: (update) => {
             expect(update.all.size).toEqual(1);
             expect(update.all.size).toEqual(update.added.size);
-            expect(update.all.get(accountId)[0].contract.conId).toEqual(
-              positionContract.conId
-            );
+            expect(update.all.get(accountId)[0].contract.conId).toEqual(positionContract.conId);
             expect(update.all.get(accountId)[0].pos).toEqual(posSize);
             expect(update.all.get(accountId)[0].avgCost).toEqual(avgCost);
-            expect(update.added.get(accountId)[0].contract.conId).toEqual(
-              positionContract.conId
-            );
+            expect(update.added.get(accountId)[0].contract.conId).toEqual(positionContract.conId);
             expect(update.added.get(accountId)[0].pos).toEqual(posSize);
             expect(update.added.get(accountId)[0].avgCost).toEqual(avgCost);
             done();
           },
           error: (error: IBApiNextError) => {
-            fail(error.error.message);
+            done(error.error.message);
           },
         });
       },
       error: (error: IBApiNextError) => {
-        fail(error.error.message);
+        done(error.error.message);
       },
     });
 

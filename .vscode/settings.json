@@ -8,15 +8,16 @@
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
   "files.exclude": {
-      "**/.git": true,
-      "**/.svn": true,
-      "**/.hg": true,
-      "**/CVS": true,
-      "**/.DS_Store": true,
-      "node_modules": true,
-      "dist/**": true,
-      "pages/**": true
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "node_modules": true,
+    "dist/**": true,
+    "pages/**": true
   },
+  "js/ts.implicitProjectConfig.target": "ES2021",
   "cSpell.words": [
     "ALGO",
     "ARCA",
@@ -82,5 +83,5 @@
     "volatilities",
     "yyyymmss"
   ],
-  "god.tsconfig": "./tsconfig.json",
+  "god.tsconfig": "./tsconfig.json"
 }

@@ -5,7 +5,7 @@
 import path from "path";
 import { Subscription } from "rxjs";
 
-import { SecType, OptionType } from "../";
+import { OptionType, SecType } from "../";
 import { IBApiNextError, IBApiNextTickType, IBApiTickType, MarketDataType } from "../api-next";
 import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
@@ -28,14 +28,13 @@ const OPTION_ARGUMENTS: [string, string][] = [
   [
     "expiry=<YYYYMM>",
     "The contract's last trading day or contract month (for Options and Futures)." +
-    "Strings with format YYYYMM will be interpreted as the Contract Month whereas YYYYMMDD will be interpreted as Last Trading Day.",
+      "Strings with format YYYYMM will be interpreted as the Contract Month whereas YYYYMMDD will be interpreted as Last Trading Day.",
   ],
   ["strike=<number>", "The option's strike price."],
   ["right=<P|C>", " The option type. Valid values are P, PUT, C, CALL."],
   ["ticks=<ticks>", "Comma separated list of generic ticks to fetch."],
 ];
-const EXAMPLE_TEXT =
-  "market-data.js -symbol=AMZN -sectype=STK -exchange=SMART -conid=3691937";
+const EXAMPLE_TEXT = "market-data.js -symbol=AMZN -sectype=STK -exchange=SMART -conid=3691937";
 
 //////////////////////////////////////////////////////////////////////////////
 // The App code                                                             //
@@ -56,11 +55,11 @@ class PrintMarketDataApp extends IBApiNextApp {
     const scriptName = path.basename(__filename);
     logger.debug(`Starting ${scriptName} script`);
     this.connect(this.cmdLineArgs.watch ? 10000 : 0);
-    this.api.setMarketDataType(MarketDataType.DELAYED);
+    this.api.setMarketDataType(MarketDataType.DELAYED_FROZEN);
     this.subscription$ = this.api
       .getMarketData(
         {
-          conId: this.cmdLineArgs.conid as number ?? undefined,
+          conId: (this.cmdLineArgs.conid as number) ?? undefined,
           symbol: this.cmdLineArgs.symbol as string,
           secType: this.cmdLineArgs.sectype as SecType,
           exchange: this.cmdLineArgs.exchange as string,
@@ -71,41 +70,29 @@ class PrintMarketDataApp extends IBApiNextApp {
         },
         this.cmdLineArgs.ticks as string,
         false,
-        false
+        false,
       )
       .subscribe({
         next: (marketData) => {
           const changedOrAddedDataWithTickNames = new Map<string, number>();
           marketData.added?.forEach((tick, type) => {
             if (type > IBApiNextTickType.API_NEXT_FIRST_TICK_ID) {
-              changedOrAddedDataWithTickNames.set(
-                IBApiNextTickType[type],
-                tick.value
-              );
+              changedOrAddedDataWithTickNames.set(IBApiNextTickType[type], tick.value);
             } else {
-              changedOrAddedDataWithTickNames.set(
-                IBApiTickType[type],
-                tick.value
-              );
+              changedOrAddedDataWithTickNames.set(IBApiTickType[type], tick.value);
             }
           });
           marketData.changed?.forEach((tick, type) => {
             if (type > IBApiNextTickType.API_NEXT_FIRST_TICK_ID) {
-              changedOrAddedDataWithTickNames.set(
-                IBApiNextTickType[type],
-                tick.value
-              );
+              changedOrAddedDataWithTickNames.set(IBApiNextTickType[type], tick.value);
             } else {
-              changedOrAddedDataWithTickNames.set(
-                IBApiTickType[type],
-                tick.value
-              );
+              changedOrAddedDataWithTickNames.set(IBApiTickType[type], tick.value);
             }
           });
           this.printObject(changedOrAddedDataWithTickNames);
         },
         error: (err: IBApiNextError) => {
-          // this.subscription$?.unsubscribe();
+          this.subscription$?.unsubscribe();
           this.error(`getMarketData failed with '${err.error.message}' (${err.code})`);
         },
       });

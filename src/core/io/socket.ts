@@ -1,11 +1,7 @@
 import net from "net";
 import { TextEncoder } from "util";
 
-import {
-  IBApiCreationOptions,
-  MAX_SUPPORTED_SERVER_VERSION,
-  MIN_SERVER_VER_SUPPORTED,
-} from "../../api/api";
+import { IBApiCreationOptions, MAX_SUPPORTED_SERVER_VERSION, MIN_SERVER_VER_SUPPORTED } from "../../api/api";
 import { EventName } from "../../api/data/enum/event-name";
 import MIN_SERVER_VER from "../../api/data/enum/min-server-version";
 import configuration from "../../common/configuration";
@@ -47,11 +43,9 @@ export class Socket {
    * @param controller The parent [[Controller]] object.
    * @param options The API creation options.
    */
-  constructor(
-    private controller: Controller,
-    private options: IBApiCreationOptions = {}
-  ) {
-    this._clientId = this.options.clientId ?? configuration.default_client_id;
+  constructor(private controller: Controller, private options: IBApiCreationOptions = {}) {
+    this._clientId =
+      this.options.clientId !== undefined ? Math.floor(this.options.clientId) : configuration.default_client_id;
     this.options.host = this.options.host;
     this.options.port = this.options.port;
   }
@@ -124,7 +118,7 @@ export class Socket {
     // update client id
 
     if (clientId !== undefined) {
-      this._clientId = clientId;
+      this._clientId = Math.floor(clientId);
     }
 
     // pause controller while API startup sequence
@@ -146,7 +140,7 @@ export class Socket {
           host: this.options.host ?? configuration.ib_host,
           port: this.options.port ?? configuration.ib_port,
         },
-        () => this.onConnect()
+        () => this.onConnect(),
       )
       .on("data", (data) => this.onData(data))
       .on("close", () => this.onEnd())
@@ -203,11 +197,7 @@ export class Socket {
 
       // add length prefix only if not a string (strings use pre-V100 style)
       if (typeof tokens[0] !== "string") {
-        utf8Data = [
-          ...this.numberTo32BitBigEndian(utf8Data.length + 1),
-          ...utf8Data,
-          0,
-        ];
+        utf8Data = [...this.numberTo32BitBigEndian(utf8Data.length + 1), ...utf8Data, 0];
       }
 
       this.client?.write(Buffer.from(new Uint8Array(utf8Data)));
@@ -233,9 +223,7 @@ export class Socket {
         // and disconnect the socket
         this._v100MessageBuffer = Buffer.alloc(0);
         this.onError(
-          new Error(
-            `Message of size ${dataToParse.length} exceeded max message length ${MAX_V100_MESSAGE_LENGTH}`
-          )
+          new Error(`Message of size ${dataToParse.length} exceeded max message length ${MAX_V100_MESSAGE_LENGTH}`),
         );
         this.disconnect();
         return;
@@ -246,10 +234,7 @@ export class Socket {
         const msgSize = dataToParse.readInt32BE(currentMessageOffset);
         currentMessageOffset += 4;
         if (currentMessageOffset + msgSize <= dataToParse.length) {
-          const segment = dataToParse.slice(
-            currentMessageOffset,
-            currentMessageOffset + msgSize
-          );
+          const segment = dataToParse.slice(currentMessageOffset, currentMessageOffset + msgSize);
           currentMessageOffset += msgSize;
           this.onMessage(segment.toString("utf8"));
           messageBufferOffset = currentMessageOffset;
@@ -328,36 +313,23 @@ export class Socket {
 
     if (
       this.useV100Plus &&
-      (this._serverVersion < MIN_VERSION_V100 ||
-        this._serverVersion > MAX_SUPPORTED_SERVER_VERSION)
+      (this._serverVersion < MIN_VERSION_V100 || this._serverVersion > MAX_SUPPORTED_SERVER_VERSION)
     ) {
       this.disconnect();
-      this.controller.emitError(
-        "Unsupported Version",
-        ErrorCode.UNSUPPORTED_VERSION,
-        -1
-      );
+      this.controller.emitError("Unsupported Version", ErrorCode.UNSUPPORTED_VERSION, -1);
       return;
     }
 
     if (this._serverVersion < MIN_SERVER_VER_SUPPORTED) {
       this.disconnect();
-      this.controller.emitError(
-        "The TWS is out of date and must be upgraded.",
-        ErrorCode.UPDATE_TWS,
-        -1
-      );
+      this.controller.emitError("The TWS is out of date and must be upgraded.", ErrorCode.UPDATE_TWS, -1);
       return;
     }
 
     this.startAPI();
 
     this.controller.emitEvent(EventName.connected);
-    this.controller.emitEvent(
-      EventName.server,
-      this.serverVersion,
-      this.serverConnectionTime
-    );
+    this.controller.emitEvent(EventName.server, this.serverVersion, this.serverConnectionTime);
   }
 
   /**
@@ -380,7 +352,9 @@ export class Socket {
     }
 
     // resume controller after CONNECT_DELAY, fix connect issue
-    setTimeout(()=> { this.controller.resume(); }, CONNECT_DELAY);
+    setTimeout(() => {
+      this.controller.resume();
+    }, CONNECT_DELAY);
   }
 
   /**
@@ -393,16 +367,9 @@ export class Socket {
       this.send([this._clientId]);
     } else {
       // Switch to GW API (Version 100+ requires length prefix)
-      const config = this.buildVersionString(
-        MIN_VERSION_V100,
-        MAX_SUPPORTED_SERVER_VERSION
-      );
+      const config = this.buildVersionString(MIN_VERSION_V100, MAX_SUPPORTED_SERVER_VERSION);
       // config = config + connectOptions --- connectOptions are for IB internal use only: not supported
-      this.send([
-        "API\0",
-        ...this.numberTo32BitBigEndian(config.length),
-        config,
-      ]);
+      this.send(["API\0", ...this.numberTo32BitBigEndian(config.length), config]);
     }
   }
 
@@ -410,9 +377,8 @@ export class Socket {
    * Called when TCP socket connection has been closed.
    */
   private onEnd(): void {
-    const wasConnected = this._connected;
-    this._connected = false;
-    if (wasConnected) {
+    if (this._connected) {
+      this._connected = false;
       this.controller.emitEvent(EventName.disconnected);
     }
 
@@ -430,10 +396,7 @@ export class Socket {
    * Build a V100Plus API version string.
    */
   private buildVersionString(minVersion: number, maxVersion: number): string {
-    return (
-      "v" +
-      (minVersion < maxVersion ? minVersion + ".." + maxVersion : minVersion)
-    );
+    return "v" + (minVersion < maxVersion ? minVersion + ".." + maxVersion : minVersion);
   }
 
   /**

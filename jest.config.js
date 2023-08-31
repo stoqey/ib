@@ -65,11 +65,11 @@ module.exports = {
   // globalTeardown: "<rootDir>/src/tests/global-teardown.ts",
 
   // A set of global variables that need to be available in all test environments
-  globals: {
-    "ts-jest": {
-      tsconfig: "tsconfig.json"
-    }
-  },
+  // globals: {
+  //   "ts-jest": {
+  //     tsconfig: "tsconfig.json"
+  //   }
+  // },
 
   // An array of directory names to be searched recursively up from the requiring module's location
   // moduleDirectories: [
@@ -147,7 +147,7 @@ module.exports = {
     // "**/__tests__/**/*.js?(x)",
     // "**/?(*.)+(spec|test).ts?(x)",
     // "**/__tests__/**/*.+(ts|tsx|js|jsx)"
-    "**/tests/**/?(*.)+(spec|test).(ts|tsx|js|jsx)"
+    "**/tests/**/?(*.)+(spec|test).(ts|tsx|js|jsx)",
   ],
 
   // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
@@ -172,8 +172,8 @@ module.exports = {
 
   // A map from regular expressions to paths to transformers
   transform: {
-    "^.+\\.(js|jsx|ts|tsx)$": "ts-jest"
-  }
+    "^.+\\.(js|jsx|ts|tsx)$": ["ts-jest", { tsconfig: "tsconfig.json" }],
+  },
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
   // transformIgnorePatterns: [

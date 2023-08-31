@@ -2,13 +2,7 @@
  * This file implements tests for the [[IBApiNext.getContractDetails]] function.
  */
 
-import {
-  IBApi,
-  IBApiNext,
-  IBApiNextError,
-  EventName,
-  ContractDetails,
-} from "../../..";
+import { ContractDetails, EventName, IBApi, IBApiNext, IBApiNextError } from "../../..";
 
 describe("RxJS Wrapper: getContractDetails()", () => {
   test("Error Event", (done) => {
@@ -21,7 +15,7 @@ describe("RxJS Wrapper: getContractDetails()", () => {
 
     apiNext
       .getContractDetails({})
-      .then(fail)
+      .then(() => done("failed, then should not be called!"))
       .catch((error: IBApiNextError) => {
         expect(error.error.message).toEqual(testValue);
         done();
