@@ -4,7 +4,7 @@
 import colors from "colors";
 import * as util from "util";
 
-const timeStamp = () => `[${new Date().toLocaleTimeString()}]`;
+const timeStamp = () => `[${new Date().toISOString().substring(11, 19)}]`;
 
 const debug = (...args: any[]) => {
   if (process.env.NODE_ENV === "development") {
@@ -13,15 +13,13 @@ const debug = (...args: any[]) => {
   }
 };
 
-// We can't do "exports.info = console.log" because that prevents
-// this module from being tested properly with mock logging functions.
 const info = (...args: any[]) => {
-  const newArgs = [timeStamp(), "Info:", ...args].map((x) => colors.green(x));
+  const newArgs = [timeStamp(), " Info:", ...args].map((x) => colors.green(x));
   console.log(...newArgs);
 };
 
 const warn = (...args: any[]) => {
-  const newArgs = [timeStamp(), "Warn:", ...args].map((x) => colors.yellow(x));
+  const newArgs = [timeStamp(), " Warn:", ...args].map((x) => colors.yellow(x));
   console.warn(...newArgs);
 };
 
