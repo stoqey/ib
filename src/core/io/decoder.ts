@@ -97,7 +97,7 @@ export interface DecoderCallbacks {
    * @param errMsg The error test message.
    * @param code The code identifying the error.
    * @param reqId The request identifier which generated the error.
-   * @param advancedOrderReject
+   * @param advancedOrderReject An object providing more information in case of an order rejection
    */
   emitError(errMsg: string, code: number, reqId: number, advancedOrderReject?: unknown): void;
 
@@ -689,8 +689,9 @@ export class Decoder {
       let advancedOrderReject: unknown;
       if (this.serverVersion >= MIN_SERVER_VER.ADVANCED_ORDER_REJECT) {
         const advancedOrderRejectJson: string = this.readStr();
-        if (advancedOrderRejectJson)
+        if (advancedOrderRejectJson?.length > 0) {
           advancedOrderReject = JSON.parse(this.decodeUnicodeEscapedString(advancedOrderRejectJson));
+        }
       }
 
       if (id === -1) {
