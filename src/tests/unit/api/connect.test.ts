@@ -7,7 +7,7 @@ describe("IBApi connection Tests", () => {
   jest.setTimeout(10000);
 
   let ib: IBApi;
-  let clientId = Math.floor(Math.random() * 32766) + 1; // ensure unique client
+  const clientId = Math.floor(Math.random() * 32766) + 1; // ensure unique client
 
   beforeEach(() => {
     ib = new IBApi({

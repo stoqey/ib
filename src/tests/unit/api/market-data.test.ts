@@ -8,7 +8,7 @@ describe("IBApi Market data Tests", () => {
   jest.setTimeout(20000);
 
   let ib: IBApi;
-  let clientId = Math.floor(Math.random() * 32766) + 1; // ensure unique client
+  const clientId = Math.floor(Math.random() * 32766) + 1; // ensure unique client
 
   beforeEach(() => {
     ib = new IBApi({
@@ -28,8 +28,8 @@ describe("IBApi Market data Tests", () => {
   });
 
   it("Stock market data", (done) => {
+    const refId = 46;
     let received = false;
-    let refId = 46;
 
     ib.on(EventName.connected, () => {
       const contract: Contract = { symbol: "SPY", currency: "USD", secType: SecType.STK, exchange: "SMART" };
@@ -55,8 +55,8 @@ describe("IBApi Market data Tests", () => {
   });
 
   test("Option market data", (done) => {
+    const refId = 47;
     let received = false;
-    let refId = 47;
 
     ib.on(EventName.connected, () => {
       const contract: Option = new Option("AAPL", "20251219", 200, OptionType.Put);
