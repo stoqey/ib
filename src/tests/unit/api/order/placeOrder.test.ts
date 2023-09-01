@@ -35,12 +35,13 @@ describe("PlaceOrder", () => {
       port: TEST_SERVER_PORT,
     });
 
-    ib.on(EventName.error, (error: Error, _code: ErrorCode, reqId: number, _advancedOrderReject?: unknown) => {
+    ib.on(EventName.error, (error: Error, code: ErrorCode, reqId: number, _advancedOrderReject?: unknown) => {
       if (reqId === -1) {
         logger.info(error.message);
       } else {
         ib.disconnect();
-        done(error.message, _advancedOrderReject);
+        logger.error(error.message, _advancedOrderReject);
+        done(`${error.message} (Error #${code})`);
       }
     }).once(EventName.nextValidId, (orderId: number) => {
       // buy an Apple call, with a PriceCondition on underlying
@@ -76,7 +77,7 @@ describe("PlaceOrder", () => {
         else done(`Order ${orderId} not placed`);
       });
 
-      // Give a few secs to get order placed
+      // Give a few secs delay to get order placed
       awaitTimeout(2).then(() => ib.reqOpenOrders());
     });
 
@@ -95,7 +96,8 @@ describe("PlaceOrder", () => {
         logger.info(error.message);
       } else {
         ib.disconnect();
-        done(`${error.message} (Error #${code})`, _advancedOrderReject);
+        logger.error(error.message, _advancedOrderReject);
+        done(`${error.message} (Error #${code})`);
       }
     }).once(EventName.nextValidId, (orderId: number) => {
       // buy an Apple call, with a PriceCondition on underlying
@@ -146,7 +148,7 @@ describe("PlaceOrder", () => {
         else done(`Order ${orderId} not placed`);
       });
 
-      // Give a 2 secs chance to get order placed
+      // Give a few secs delay to get order placed
       awaitTimeout(2).then(() => ib.reqOpenOrders());
     });
 

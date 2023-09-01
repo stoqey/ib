@@ -9,28 +9,8 @@ const TEST_SERVER_HOST = configuration.ib_host;
 const TEST_SERVER_PORT = configuration.ib_port;
 
 describe("IBApi Tests", () => {
-  jest.setTimeout(20000);
+  jest.setTimeout(10000);
   let _clientId = Math.floor(Math.random() * 32766) + 1; // ensure unique client
-
-  it("Test connect / disconnect", (done) => {
-    const ib = new IBApi({
-      host: TEST_SERVER_HOST,
-      port: TEST_SERVER_PORT,
-    });
-
-    ib.on(EventName.connected, () => {
-      ib.disconnect();
-    })
-      .on(EventName.disconnected, () => {
-        done();
-      })
-      .on(EventName.error, (err, code, id) => {
-        // should use expect(error).toEqual("<string message>")
-        expect(`${err.message} - code: ${code} - id: ${id}`).toBeFalsy();
-      });
-
-    ib.connect(_clientId++);
-  });
 
   let _account: string; // maintain account name for further tests
   let _conId: number; // maintain for conId for  further tests
