@@ -5,9 +5,6 @@ import { Contract, ErrorCode, EventName, IBApi, SecType } from "../../..";
 import configuration from "../../../common/configuration";
 import logger from "../../../common/logger";
 
-const TEST_SERVER_HOST = configuration.ib_host;
-const TEST_SERVER_PORT = configuration.ib_port;
-
 describe("IBApi Tests", () => {
   jest.setTimeout(10000);
 

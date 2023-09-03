@@ -1,6 +1,8 @@
 /**
  * [[IBApi]] error event codes.
  */
+/* eslint-disable @typescript-eslint/no-duplicate-enum-values */
+
 export enum ErrorCode {
   /** Already connected. */
   ALREADY_CONNECTED = 501,

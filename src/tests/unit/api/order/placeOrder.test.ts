@@ -40,7 +40,7 @@ describe("PlaceOrder", () => {
         logger.info(error.message);
       } else {
         ib.disconnect();
-        logger.error(error.message, _advancedOrderReject);
+        // logger.error(error.message, _advancedOrderReject);
         done(`${error.message} (Error #${code})`);
       }
     }).once(EventName.nextValidId, (orderId: number) => {
@@ -96,7 +96,7 @@ describe("PlaceOrder", () => {
         logger.info(error.message);
       } else {
         ib.disconnect();
-        logger.error(error.message, _advancedOrderReject);
+        // logger.error(error.message, _advancedOrderReject);
         done(`${error.message} (Error #${code})`);
       }
     }).once(EventName.nextValidId, (orderId: number) => {
