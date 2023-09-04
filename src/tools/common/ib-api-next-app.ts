@@ -68,7 +68,10 @@ export class IBApiNextApp {
   private readonly COMMON_OPTION_ARGUMENTS: [string, string][] = [
     ["h", "(or -help) Print the help text."],
     ["log=<log_level>", "Log level. Valid values: error, warn, info, debug."],
-    ["host=<hostname>", "IP or hostname of the TWS or IB Gateway. Default is 127.0.0.1."],
+    [
+      "host=<hostname>",
+      "IP or hostname of the TWS or IB Gateway. Default is 127.0.0.1.",
+    ],
     ["port=<number>", "Post number of the TWS or IB Gateway. Default is 4002."],
     [
       "watch",
@@ -115,7 +118,9 @@ export class IBApiNextApp {
             this.api.logLevel = LogLevel.DETAIL;
             break;
           default:
-            this.error(`Unknown value '${this.cmdLineArgs.log}' on -log argument.`);
+            this.error(
+              `Unknown value '${this.cmdLineArgs.log}' on -log argument.`,
+            );
             break;
         }
       }
@@ -197,13 +202,20 @@ export class IBApiNextApp {
     });
 
     if (this.cmdLineArgs.h || this.cmdLineArgs.help) {
-      console.info(this.formatHelpText(description, usage, optionArguments, example));
+      console.info(
+        this.formatHelpText(description, usage, optionArguments, example),
+      );
       process.exit(0);
     }
   }
 
   /** Format the help text. */
-  private formatHelpText(description: string, usage: string, options: [string, string][], example: string): string {
+  private formatHelpText(
+    description: string,
+    usage: string,
+    options: [string, string][],
+    example: string,
+  ): string {
     let result = description + "\n" + usage + "\n" + "Options:\n";
     options.forEach((argument) => {
       result += "  -" + argument[0] + ": " + argument[1] + "\n";

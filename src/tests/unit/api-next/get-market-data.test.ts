@@ -83,10 +83,14 @@ describe("RxJS Wrapper: getMarketData()", () => {
         next: (data) => {
           switch (data.all.size) {
             case 2:
-              expect(data.all.get(TickType.ASK_SIZE).value).toEqual(testValueAsk);
+              expect(data.all.get(TickType.ASK_SIZE).value).toEqual(
+                testValueAsk,
+              );
             // not break my intention
             case 1:
-              expect(data.all.get(TickType.BID_SIZE).value).toEqual(testValueBid);
+              expect(data.all.get(TickType.BID_SIZE).value).toEqual(
+                testValueBid,
+              );
               break;
           }
           if (data.all.size == 2) {
@@ -125,7 +129,9 @@ describe("RxJS Wrapper: getMarketData()", () => {
             expect(data.added).toBeUndefined();
             expect(data.changed).toBeDefined();
           }
-          expect(data.all.get(TickType.NEWS_TICK).value).toEqual(received ? testValue1 : testValue0);
+          expect(data.all.get(TickType.NEWS_TICK).value).toEqual(
+            received ? testValue1 : testValue0,
+          );
           received++;
           if (received == 2) {
             done();
@@ -160,18 +166,42 @@ describe("RxJS Wrapper: getMarketData()", () => {
       // eslint-disable-next-line rxjs/no-ignored-subscription
       .subscribe({
         next: (data) => {
-          expect(data.added.get(IBApiNextTickType.BID_OPTION_IV).value).toEqual(impliedVolatility);
-          expect(data.added.get(IBApiNextTickType.BID_OPTION_DELTA).value).toEqual(delta);
-          expect(data.added.get(IBApiNextTickType.BID_OPTION_PRICE).value).toEqual(optPrice);
-          expect(data.added.get(IBApiNextTickType.BID_OPTION_GAMMA).value).toEqual(gamma);
-          expect(data.added.get(IBApiNextTickType.BID_OPTION_VEGA).value).toEqual(vega);
-          expect(data.added.get(IBApiNextTickType.BID_OPTION_THETA).value).toEqual(theta);
-          expect(data.all.get(IBApiNextTickType.BID_OPTION_IV).value).toEqual(impliedVolatility);
-          expect(data.all.get(IBApiNextTickType.BID_OPTION_DELTA).value).toEqual(delta);
-          expect(data.all.get(IBApiNextTickType.BID_OPTION_PRICE).value).toEqual(optPrice);
-          expect(data.all.get(IBApiNextTickType.BID_OPTION_GAMMA).value).toEqual(gamma);
-          expect(data.all.get(IBApiNextTickType.BID_OPTION_VEGA).value).toEqual(vega);
-          expect(data.all.get(IBApiNextTickType.BID_OPTION_THETA).value).toEqual(theta);
+          expect(data.added.get(IBApiNextTickType.BID_OPTION_IV).value).toEqual(
+            impliedVolatility,
+          );
+          expect(
+            data.added.get(IBApiNextTickType.BID_OPTION_DELTA).value,
+          ).toEqual(delta);
+          expect(
+            data.added.get(IBApiNextTickType.BID_OPTION_PRICE).value,
+          ).toEqual(optPrice);
+          expect(
+            data.added.get(IBApiNextTickType.BID_OPTION_GAMMA).value,
+          ).toEqual(gamma);
+          expect(
+            data.added.get(IBApiNextTickType.BID_OPTION_VEGA).value,
+          ).toEqual(vega);
+          expect(
+            data.added.get(IBApiNextTickType.BID_OPTION_THETA).value,
+          ).toEqual(theta);
+          expect(data.all.get(IBApiNextTickType.BID_OPTION_IV).value).toEqual(
+            impliedVolatility,
+          );
+          expect(
+            data.all.get(IBApiNextTickType.BID_OPTION_DELTA).value,
+          ).toEqual(delta);
+          expect(
+            data.all.get(IBApiNextTickType.BID_OPTION_PRICE).value,
+          ).toEqual(optPrice);
+          expect(
+            data.all.get(IBApiNextTickType.BID_OPTION_GAMMA).value,
+          ).toEqual(gamma);
+          expect(data.all.get(IBApiNextTickType.BID_OPTION_VEGA).value).toEqual(
+            vega,
+          );
+          expect(
+            data.all.get(IBApiNextTickType.BID_OPTION_THETA).value,
+          ).toEqual(theta);
           done();
         },
         error: (error: IBApiNextError) => {
@@ -221,7 +251,9 @@ describe("RxJS Wrapper: getMarketData()", () => {
                   expect(data.changed).toBeUndefined();
                 } else if (testValue == 2) {
                   expect(data.added).toBeUndefined();
-                  expect(data.changed.get(TickType.BID).value).toEqual(testValue);
+                  expect(data.changed.get(TickType.BID).value).toEqual(
+                    testValue,
+                  );
                   done();
                   return;
                 } else {

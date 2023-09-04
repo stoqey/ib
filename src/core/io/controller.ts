@@ -24,7 +24,8 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
   constructor(private ib: IBApi, private options?: IBApiCreationOptions) {
     this.socket = new Socket(this, this.options);
     this.commands.pause();
-    const rate = options?.maxReqPerSec ?? configuration.max_req_per_second ?? 40;
+    const rate =
+      options?.maxReqPerSec ?? configuration.max_req_per_second ?? 40;
     this.rateLimiter = rateLimit(rate / 10, 1000 / 10, (tokens: unknown[]) => {
       this.socket.send(tokens);
     });
@@ -205,9 +206,20 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
    * @param reqId RequestId associated to this error.
    * @param advancedOrderReject Additional error data (optional).
    */
-  emitError(errMsg: string, code: number, reqId: number, advancedOrderReject?: unknown): void {
+  emitError(
+    errMsg: string,
+    code: number,
+    reqId: number,
+    advancedOrderReject?: unknown,
+  ): void {
     // if (advancedOrderReject) errMsg += ", advancedOrderReject: " + JSON.stringify(advancedOrderReject);
-    this.emitEvent(EventName.error, new Error(errMsg), code, reqId, advancedOrderReject);
+    this.emitEvent(
+      EventName.error,
+      new Error(errMsg),
+      code,
+      reqId,
+      advancedOrderReject,
+    );
   }
 
   /**
@@ -216,7 +228,10 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
    * @param callback Callback function to invoke.
    * @param data Command data.
    */
-  private static execute(callback: (data: unknown) => void, data: unknown): void {
+  private static execute(
+    callback: (data: unknown) => void,
+    data: unknown,
+  ): void {
     callback(data);
   }
 
@@ -229,7 +244,11 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
     if (!this.socket.connected) {
       this.socket.connect(clientId);
     } else {
-      this.emitError("Cannot connect if already connected.", ErrorCode.CONNECT_FAIL, -1);
+      this.emitError(
+        "Cannot connect if already connected.",
+        ErrorCode.CONNECT_FAIL,
+        -1,
+      );
     }
   }
 
@@ -242,7 +261,10 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
     if (this.socket.connected) {
       this.socket.disconnect();
     } else {
-      this.emitInfo("Cannot disconnect if already disconnected.", ErrorCode.NOT_CONNECTED);
+      this.emitInfo(
+        "Cannot disconnect if already disconnected.",
+        ErrorCode.NOT_CONNECTED,
+      );
     }
   }
 
@@ -257,7 +279,11 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
     if (this.socket.connected) {
       this.socket.send(tokens);
     } else {
-      this.emitError("Cannot send data when disconnected.", ErrorCode.NOT_CONNECTED, -1);
+      this.emitError(
+        "Cannot send data when disconnected.",
+        ErrorCode.NOT_CONNECTED,
+        -1,
+      );
     }
   }
 }

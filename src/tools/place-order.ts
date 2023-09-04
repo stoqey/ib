@@ -4,7 +4,14 @@
 
 import path from "path";
 
-import { Contract, IBApiNextError, Order, OrderAction, OrderType, SecType } from "../";
+import {
+  Contract,
+  IBApiNextError,
+  Order,
+  OrderAction,
+  OrderType,
+  SecType,
+} from "../";
 import configuration from "../common/configuration";
 import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";

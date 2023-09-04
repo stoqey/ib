@@ -37,19 +37,22 @@ describe("IBApi Tests", () => {
     ib.on(EventName.error, (err: Error, code: ErrorCode, id: number) => {
       expect(`${err.message} - code: ${code} - id: ${id}`).toBeFalsy();
     })
-      .on(EventName.position, (account: string, contract: Contract, pos: number, avgCost: number) => {
-        if (_account === undefined) {
-          _account = account;
-        }
-        if (_conId === undefined && pos) {
-          _conId = contract.conId;
-        }
-        expect(account).toBeTruthy();
-        expect(contract).toBeTruthy();
-        // expect(pos).toBeTruthy();  pos can be 0 when it has been closed today
-        if (pos) expect(avgCost).toBeTruthy();
-        positionsCount++;
-      })
+      .on(
+        EventName.position,
+        (account: string, contract: Contract, pos: number, avgCost: number) => {
+          if (_account === undefined) {
+            _account = account;
+          }
+          if (_conId === undefined && pos) {
+            _conId = contract.conId;
+          }
+          expect(account).toBeTruthy();
+          expect(contract).toBeTruthy();
+          // expect(pos).toBeTruthy();  pos can be 0 when it has been closed today
+          if (pos) expect(avgCost).toBeTruthy();
+          positionsCount++;
+        },
+      )
       .on(EventName.positionEnd, () => {
         if (positionsCount) {
           ib.disconnect();
@@ -89,7 +92,14 @@ describe("IBApi Tests", () => {
       done(`${err.message} - code: ${code} - id: ${id}`);
     }).on(
       EventName.pnlSingle,
-      (reqId: number, pos: number, dailyPnL: number, unrealizedPnL: number, realizedPnL: number, value: number) => {
+      (
+        reqId: number,
+        pos: number,
+        dailyPnL: number,
+        unrealizedPnL: number,
+        realizedPnL: number,
+        value: number,
+      ) => {
         expect(reqId).toEqual(44);
         expect(pos).toBeTruthy();
         expect(dailyPnL).toBeTruthy();
@@ -120,13 +130,16 @@ describe("IBApi Tests", () => {
         }
         throw err;
       })
-      .on(EventName.historicalTicksLast, function onData(reqId: number, ticks: []) {
-        expect(ticks.length).toBeGreaterThan(0);
-        if (isConnected) {
-          ib.disconnect();
-        }
-        done();
-      });
+      .on(
+        EventName.historicalTicksLast,
+        function onData(reqId: number, ticks: []) {
+          expect(ticks.length).toBeGreaterThan(0);
+          if (isConnected) {
+            ib.disconnect();
+          }
+          done();
+        },
+      );
 
     const contract: Contract = {
       symbol: "SPY",
@@ -135,6 +148,15 @@ describe("IBApi Tests", () => {
       secType: SecType.STK,
     };
 
-    ib.connect().reqHistoricalTicks(45, contract, "20210101-16:00:00", null, 1000, "TRADES", 0, true);
+    ib.connect().reqHistoricalTicks(
+      45,
+      contract,
+      "20210101-16:00:00",
+      null,
+      1000,
+      "TRADES",
+      0,
+      true,
+    );
   });
 });

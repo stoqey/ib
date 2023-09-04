@@ -64,7 +64,7 @@
     "test": "jest --maxWorkers=8 --reporters=default --useStderr --detectOpenHandles",
     "test-next": "jest ./src/tests/unit/api-next/ --maxWorkers=8 --reporters=default --useStderr --detectOpenHandles",
     "tsc": "./node_modules/.bin/tsc",
-    "type-check": "yarn lint && tsc --noEmit"
+    "type-check": "tsc --noEmit && yarn lint"
   },
   "dependencies": {
     "colors": "^1.4.0",
