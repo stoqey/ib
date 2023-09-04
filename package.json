@@ -63,8 +63,7 @@
     "release": "yarn lint && yarn test && yarn doc && yarn build",
     "test": "jest --maxWorkers=8 --reporters=default --useStderr --detectOpenHandles",
     "test-next": "jest ./src/tests/unit/api-next/ --maxWorkers=8 --reporters=default --useStderr --detectOpenHandles",
-    "tsc": "./node_modules/.bin/tsc",
-    "type-check": "tsc --noEmit && yarn lint"
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "colors": "^1.4.0",

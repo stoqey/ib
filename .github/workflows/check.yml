@@ -20,5 +20,7 @@ jobs:
           node-version: 18.17.1
       - name: Prepare
         run: yarn install --frozen-lockfile
-      - name: Quality Check
+      - name: Type Check
         run: yarn type-check
+      - name: Lint Check
+        run: yarn lint
