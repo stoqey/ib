@@ -29,6 +29,8 @@
         "varsIgnorePattern": "^_"
       }
     ],
+    "@typescript-eslint/no-duplicate-enum-values": "error",
+    "@typescript-eslint/no-unsafe-declaration-merging": "error",
     "rxjs/no-async-subscribe": "error",
     "rxjs/no-ignored-observable": "error",
     "rxjs/no-ignored-subscription": "error",

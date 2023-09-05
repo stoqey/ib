@@ -3124,4 +3124,16 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     this.sendMsg(OUT_MSG_ID.CANCEL_WSH_EVENT_DATA, reqId);
   }
 
+  reqUserInfo(reqId: number): void {
+    if (this.serverVersion < MIN_SERVER_VER.USER_INFO) {
+      return this.emitError("It does not support user info requests.",        
+        ErrorCode.UPDATE_TWS,
+        -1
+      );
+      return;
+    }
+
+    this.sendMsg(OUT_MSG_ID.REQ_USER_INFO, reqId);
+  }
+
 }

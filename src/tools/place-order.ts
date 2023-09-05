@@ -1,5 +1,5 @@
 /**
- * This App will print IBKR account place orders to console.
+ * This App will place orders to IBKR.
  */
 
 import path from "path";
@@ -16,45 +16,47 @@ import configuration from "../common/configuration";
 import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
-/////////////////////////////////////////////////////////////////////////////////
-// The help text.                                                              //
-/////////////////////////////////////////////////////////////////////////////////
+const scriptName = path.basename(__filename);
+
+// The help text.
 const DESCRIPTION_TEXT = "Place order.";
-const USAGE_TEXT = "Usage: place-orders.js <options>";
+const USAGE_TEXT = `Usage: ${scriptName} <options>`;
 const OPTION_ARGUMENTS: [string, string][] = [
+  ...IBApiNextApp.DEFAULT_CONTRACT_OPTIONS,
   ["price=<number>", "price of an order."],
-  ["symbol=<name>", "The symbol name."],
   ["quantity=<number>", "Quantity of an order."],
 ];
-const EXAMPLE_TEXT = "place-orders.js -price=120 -symbol=AMZN -quantity=10";
+const EXAMPLE_TEXT = `${scriptName} -price=120 -symbol=AMZN -quantity=10`;
 
-//////////////////////////////////////////////////////////////////////////////
-// The App code                                                             //
-//////////////////////////////////////////////////////////////////////////////
+const awaitTimeout = (delay: number): Promise<unknown> =>
+  new Promise((resolve): NodeJS.Timeout => setTimeout(resolve, delay * 1000));
 
-class PlaceOrdersApp extends IBApiNextApp {
+class App extends IBApiNextApp {
+  /**
+   * Initialise the app.
+   */
   constructor() {
     super(DESCRIPTION_TEXT, USAGE_TEXT, OPTION_ARGUMENTS, EXAMPLE_TEXT);
   }
+
   /**
    * Start the app.
    */
   start(): void {
-    const scriptName = path.basename(__filename);
-    logger.debug(`Starting ${scriptName} script`);
+    logger.info(`Starting ${scriptName} script...`);
 
     this.connect(this.cmdLineArgs.watch ? 10000 : 0);
 
     this.api
       .getNextValidOrderId()
       .then((id) => {
-        this.printText(`${id}`);
         const contract: Contract = {
           symbol: this.cmdLineArgs.symbol as string,
-          exchange: "SMART",
-          currency: "USD",
-          secType: SecType.STK,
+          exchange: this.cmdLineArgs.exchange as string,
+          currency: this.cmdLineArgs.currency as string,
+          secType: this.cmdLineArgs.sectype as SecType,
         };
+        // this.printObject(contract);
 
         const order: Order = {
           orderType: OrderType.LMT,
@@ -66,6 +68,7 @@ class PlaceOrdersApp extends IBApiNextApp {
           transmit: true,
         };
         this.api.placeOrder(id, contract, order);
+        this.printText(`Order Id ${id} sent`);
         this.stop();
       })
       .catch((err: IBApiNextError) => {
@@ -77,10 +80,13 @@ class PlaceOrdersApp extends IBApiNextApp {
    * Stop the app with success code.
    */
   stop() {
-    this.exit();
+    // Give a 2 secs chance to get any server feedback before exiting
+    awaitTimeout(2).then(() => {
+      logger.info(`${scriptName} script done.`);
+      this.exit();
+    });
   }
 }
 
 // run the app
-
-new PlaceOrdersApp().start();
+new App().start();

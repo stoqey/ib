@@ -1,8 +1,10 @@
-import colors from "colors";
 import { Subscription } from "rxjs";
 
 import { IBApiNext } from "../../api-next";
+import Contract from "../../api/contract/contract";
 import LogLevel from "../../api/data/enum/log-level";
+import OptionType from "../../api/data/enum/option-type";
+import SecType from "../../api/data/enum/sec-type";
 import configuration from "../../common/configuration";
 import logger from "../../common/logger";
 
@@ -27,17 +29,41 @@ function jsonReplacer(key, value) {
  * Base-class for the [[IBApiNext]] apps.
  */
 export class IBApiNextApp {
+  // private compat_mode: boolean = false;
+
+  public static readonly DEFAULT_CONTRACT_OPTIONS: [string, string][] = [
+    ["conid=<number>", "Contract ID (conId) of the contract."],
+    [
+      "sectype=<type>",
+      "The security type. Valid values: STK, OPT, FUT, IND, FOP, CFD, CASH, BAG, BOND, CMDTY, NEWS and FUND",
+    ],
+    ["symbol=<name>", "The symbol name."],
+    ["currency=<currency>", "The contract currency."],
+    ["exchange=<name>", "The destination exchange name."],
+  ];
+
+  public static readonly DEFAULT_OPT_CONTRACT_OPTIONS: [string, string][] = [
+    ...IBApiNextApp.DEFAULT_CONTRACT_OPTIONS,
+    [
+      "expiry=<YYYYMM>",
+      "The contract's last trading day or contract month (for Options and Futures)." +
+        "Strings with format YYYYMM will be interpreted as the Contract Month whereas YYYYMMDD will be interpreted as Last Trading Day.",
+    ],
+    ["strike=<number>", "The option's strike price."],
+    ["right=<P|C>", " The option type. Valid values are P, PUT, C, CALL."],
+  ];
+
   constructor(
     appDescription: string,
     usageDescription: string,
     optionArgumentDescriptions: [string, string][],
-    usageExample: string
+    usageExample: string,
   ) {
     this.parseCommandLine(
       appDescription,
       usageDescription,
       [...this.COMMON_OPTION_ARGUMENTS, ...optionArgumentDescriptions],
-      usageExample
+      usageExample,
     );
   }
 
@@ -53,7 +79,7 @@ export class IBApiNextApp {
     [
       "watch",
       "Watch for changes. If specified, the app will keep running and print positions updates to console as received from TWS. " +
-      "If not specified, the app will print a one-time snapshot and than exit.",
+        "If not specified, the app will print a one-time snapshot and than exit.",
     ],
   ];
 
@@ -96,7 +122,7 @@ export class IBApiNextApp {
             break;
           default:
             this.error(
-              `Unknown value '${this.cmdLineArgs.log}' on -log argument.`
+              `Unknown value '${this.cmdLineArgs.log}' on -log argument.`,
             );
             break;
         }
@@ -108,9 +134,12 @@ export class IBApiNextApp {
     if (!this.error$) {
       this.error$ = this.api.errorSubject.subscribe((error) => {
         if (error.reqId === -1) {
-          this.error(`${error.error.message}`);
-          logger.error(
-            `Encountered error, IB host: ${host} Port: ${port}`
+          logger.warn(error.error.message, `(Error #${error.code})`);
+        } else {
+          this.error(
+            `${error.error.message} (Error #${error.code}) ${
+              error.advancedOrderReject ? error.advancedOrderReject : ""
+            }`,
           );
         }
       });
@@ -142,9 +171,7 @@ export class IBApiNextApp {
    * Print and error to console and exit the app with error code, unless -watch argument is present.
    */
   error(text: string): void {
-    console.error(
-      colors.bold.red(`[${new Date().toLocaleTimeString()}] ERROR: ${text}`)
-    );
+    logger.error(text);
     if (!this.cmdLineArgs.watch) {
       this.exit(1);
     }
@@ -163,7 +190,7 @@ export class IBApiNextApp {
     description: string,
     usage: string,
     optionArguments: [string, string][],
-    example: string
+    example: string,
   ): void {
     this.cmdLineArgs = {};
 
@@ -172,14 +199,14 @@ export class IBApiNextApp {
       const name = pair[0].substr(1);
       if (!optionArguments.find((v) => v[0].split("=")[0] == name)) {
         console.error("ERROR: Unknown argument -" + pair[0]);
-        process.exit(1);
+        this.exit(1);
       }
       this.cmdLineArgs[name] = pair.length > 1 ? pair[1] ?? "1" : "1";
     });
 
     if (this.cmdLineArgs.h || this.cmdLineArgs.help) {
       console.info(
-        this.formatHelpText(description, usage, optionArguments, example)
+        this.formatHelpText(description, usage, optionArguments, example),
       );
       process.exit(0);
     }
@@ -190,12 +217,25 @@ export class IBApiNextApp {
     description: string,
     usage: string,
     options: [string, string][],
-    example: string
+    example: string,
   ): string {
     let result = description + "\n" + usage + "\n" + "Options:\n";
     options.forEach((argument) => {
       result += "  -" + argument[0] + ": " + argument[1] + "\n";
     });
     return result + "Example: " + example;
+  }
+
+  getContractParameter(): Contract {
+    return {
+      conId: (this.cmdLineArgs.conid as number) ?? undefined,
+      secType: this.cmdLineArgs.sectype as SecType,
+      symbol: this.cmdLineArgs.symbol as string,
+      currency: (this.cmdLineArgs.currency as string) ?? "USD",
+      exchange: (this.cmdLineArgs.exchange as string) ?? "SMART",
+      lastTradeDateOrContractMonth: this.cmdLineArgs.expiry as string,
+      strike: (this.cmdLineArgs.strike as number) ?? undefined,
+      right: this.cmdLineArgs.right as OptionType,
+    };
   }
 }

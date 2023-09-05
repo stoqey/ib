@@ -206,9 +206,20 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
    * @param reqId RequestId associated to this error.
    * @param advancedOrderReject Additional error data (optional).
    */
-  emitError(errMsg: string, code: number, reqId: number, advancedOrderReject?: unknown): void {
-    if (advancedOrderReject) errMsg += ", advancedOrderReject: " + JSON.stringify(advancedOrderReject);
-    this.emitEvent(EventName.error, new Error(errMsg), code, reqId);
+  emitError(
+    errMsg: string,
+    code: number,
+    reqId: number,
+    advancedOrderReject?: unknown,
+  ): void {
+    // if (advancedOrderReject) errMsg += ", advancedOrderReject: " + JSON.stringify(advancedOrderReject);
+    this.emitEvent(
+      EventName.error,
+      new Error(errMsg),
+      code,
+      reqId,
+      advancedOrderReject,
+    );
   }
 
   /**
@@ -219,7 +230,7 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
    */
   private static execute(
     callback: (data: unknown) => void,
-    data: unknown
+    data: unknown,
   ): void {
     callback(data);
   }
@@ -236,7 +247,7 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
       this.emitError(
         "Cannot connect if already connected.",
         ErrorCode.CONNECT_FAIL,
-        -1
+        -1,
       );
     }
   }
@@ -250,10 +261,9 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
     if (this.socket.connected) {
       this.socket.disconnect();
     } else {
-      this.emitError(
+      this.emitInfo(
         "Cannot disconnect if already disconnected.",
         ErrorCode.NOT_CONNECTED,
-        -1
       );
     }
   }
@@ -272,7 +282,7 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
       this.emitError(
         "Cannot send data when disconnected.",
         ErrorCode.NOT_CONNECTED,
-        -1
+        -1,
       );
     }
   }

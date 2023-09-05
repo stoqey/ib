@@ -1,5 +1,5 @@
 /**
- * This App will print the timestamp of earliest available historical data for a contract.
+ * This App will print the user info of the logged user.
  */
 
 import path from "path";
@@ -9,23 +9,19 @@ import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
 /////////////////////////////////////////////////////////////////////////////////
-// Help text and command line parsing                                          //
+// The help text.                                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-const DESCRIPTION_TEXT =
-  "Prints the timestamp of earliest available historical data for a contract.";
-const USAGE_TEXT = "Usage: get-head-timestamp.js <options>";
-const OPTION_ARGUMENTS: [string, string][] = [
-  ...IBApiNextApp.DEFAULT_CONTRACT_OPTIONS,
-];
-const EXAMPLE_TEXT =
-  "get-head-timestamp.js -symbol=AMZN -sectype=STK -currency=USD -exchange=SMART -conid=3691937 -port=4002";
+const DESCRIPTION_TEXT = "Prints the user info of the logged user.";
+const USAGE_TEXT = "Usage: user-info.js <options>";
+const OPTION_ARGUMENTS: [string, string][] = [];
+const EXAMPLE_TEXT = "user-info.js -port=4002";
 
 //////////////////////////////////////////////////////////////////////////////
 // The App code                                                             //
 //////////////////////////////////////////////////////////////////////////////
 
-class PrintHeadTimestampApp extends IBApiNextApp {
+class App extends IBApiNextApp {
   constructor() {
     super(DESCRIPTION_TEXT, USAGE_TEXT, OPTION_ARGUMENTS, EXAMPLE_TEXT);
   }
@@ -37,19 +33,25 @@ class PrintHeadTimestampApp extends IBApiNextApp {
     const scriptName = path.basename(__filename);
     logger.debug(`Starting ${scriptName} script`);
     this.connect(0);
-
-    // print next unused order id
     this.api
-      .getHeadTimestamp(this.getContractParameter(), "TRADES", true, 1)
-      .then((timestamp) => {
-        this.printText(timestamp);
-        this.exit();
+      .getUserInfo()
+      .then((whiteBrandingId) => {
+        this.printText(`User Info. WhiteBrandingId: '${whiteBrandingId}'`);
+        this.stop();
       })
       .catch((err: IBApiNextError) => {
-        this.error(`getHeadTimestamp failed with '${err.error.message}'`);
+        this.error(`getUserInfo failed with '${err.error.message}'`);
       });
+  }
+
+  /**
+   * Stop the app with success code.
+   */
+  stop() {
+    this.exit();
   }
 }
 
 // run the app
-new PrintHeadTimestampApp().start();
+
+new App().start();

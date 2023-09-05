@@ -5,8 +5,12 @@
 import path from "path";
 import { Subscription } from "rxjs";
 
-import { SecType, OptionType ,Option, Contract} from "../";
-import { IBApiNextError, IBApiNextTickType, IBApiTickType, MarketDataType } from "../api-next";
+import {
+  IBApiNextError,
+  IBApiNextTickType,
+  IBApiTickType,
+  MarketDataType,
+} from "../api-next";
 import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
@@ -17,21 +21,7 @@ import { IBApiNextApp } from "./common/ib-api-next-app";
 const DESCRIPTION_TEXT = "Print real time market data of a given contract id.";
 const USAGE_TEXT = "Usage: market-data.js <options>";
 const OPTION_ARGUMENTS: [string, string][] = [
-  ["conid=<number>", "Contract ID (conId) of the contract."],
-  ["symbol=<name>", "The symbol name."],
-  [
-    "sectype=<type>",
-    "The security type. Valid values: STK, OPT, FUT, IND, FOP, CFD, CASH, BAG, BOND, CMDTY, NEWS and FUND",
-  ],
-  ["exchange=<name>", "The destination exchange name."],
-  ["currency=<currency>", "The contract currency."],
-  [
-    "expiry=<YYYYMM>",
-    "The contract's last trading day or contract month (for Options and Futures)." +
-    "Strings with format YYYYMM will be interpreted as the Contract Month whereas YYYYMMDD will be interpreted as Last Trading Day.",
-  ],
-  ["strike=<number>", "The option's strike price."],
-  ["right=<P|C>", " The option type. Valid values are P, PUT, C, CALL."],
+  ...IBApiNextApp.DEFAULT_CONTRACT_OPTIONS,
   ["ticks=<ticks>", "Comma separated list of generic ticks to fetch."],
 ];
 const EXAMPLE_TEXT =
@@ -56,27 +46,13 @@ class PrintMarketDataApp extends IBApiNextApp {
     const scriptName = path.basename(__filename);
     logger.debug(`Starting ${scriptName} script`);
     this.connect(this.cmdLineArgs.watch ? 10000 : 0);
-    this.api.setMarketDataType(MarketDataType.DELAYED);
-
-    let contract: Contract | Option;
-    if (this.cmdLineArgs.sectype as SecType == SecType.OPT) {
-      contract = new Option( this.cmdLineArgs.symbol as string, this.cmdLineArgs.expiry as string,+this.cmdLineArgs.strike,this.cmdLineArgs.right as OptionType,this.cmdLineArgs.exchange as string,this.cmdLineArgs.currency as string);
-    } else contract= {
-      conId: this.cmdLineArgs.conid as number ?? undefined,
-      symbol: this.cmdLineArgs.symbol as string,
-      secType: this.cmdLineArgs.sectype as SecType,
-      exchange: this.cmdLineArgs.exchange as string,
-      currency: this.cmdLineArgs.currency as string,
-      lastTradeDateOrContractMonth: this.cmdLineArgs.expiry as string,
-      strike: (this.cmdLineArgs.strike as number) ?? undefined,
-      right: this.cmdLineArgs.right as OptionType,
-    };
-    
+    this.api.setMarketDataType(MarketDataType.DELAYED_FROZEN);
     this.subscription$ = this.api
-      .getMarketData(contract,
+      .getMarketData(
+        this.getContractParameter(),
         this.cmdLineArgs.ticks as string,
         false,
-        false
+        false,
       )
       .subscribe({
         next: (marketData) => {
@@ -85,12 +61,12 @@ class PrintMarketDataApp extends IBApiNextApp {
             if (type > IBApiNextTickType.API_NEXT_FIRST_TICK_ID) {
               changedOrAddedDataWithTickNames.set(
                 IBApiNextTickType[type],
-                tick.value
+                tick.value,
               );
             } else {
               changedOrAddedDataWithTickNames.set(
                 IBApiTickType[type],
-                tick.value
+                tick.value,
               );
             }
           });
@@ -98,20 +74,22 @@ class PrintMarketDataApp extends IBApiNextApp {
             if (type > IBApiNextTickType.API_NEXT_FIRST_TICK_ID) {
               changedOrAddedDataWithTickNames.set(
                 IBApiNextTickType[type],
-                tick.value
+                tick.value,
               );
             } else {
               changedOrAddedDataWithTickNames.set(
                 IBApiTickType[type],
-                tick.value
+                tick.value,
               );
             }
           });
           this.printObject(changedOrAddedDataWithTickNames);
         },
         error: (err: IBApiNextError) => {
-          // this.subscription$?.unsubscribe();
-          this.error(`getMarketData failed with '${err.error.message}' (${err.code})`);
+          this.subscription$?.unsubscribe();
+          this.error(
+            `getMarketData failed with '${err.error.message}' (${err.code})`,
+          );
         },
       });
   }

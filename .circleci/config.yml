@@ -8,7 +8,7 @@ jobs:
     environment:
       NODE_ENV: development
     docker:
-      - image: circleci/node:14.17.0
+      - image: node:18.17.1
     working_directory: ~/repo
     steps:
       - restore_cache:
@@ -46,6 +46,7 @@ jobs:
             - node_modules
             - dist
           key: v2-dependencies-{{ checksum "package.json" }}
+
       - save_cache:
           key: source-v1-{{ .Branch }}-{{ .Revision }}
           paths:
@@ -65,7 +66,7 @@ jobs:
       - JAVA_PATH=/opt/i4j_jres/1.8.0_152/bin # JRE is bundled starting with TWS 952
       - APP=GATEWAY
     docker:
-      - image: circleci/node:14.17.0
+      - image: node:18.17.1
     working_directory: ~/repo
     steps:
       - restore_cache:
@@ -98,7 +99,7 @@ jobs:
       # CC_TEST_REPORTER_ID: <insert id>
       NODE_ENV: development
     docker:
-      - image: circleci/node:14.17.0
+      - image: node:18.17.1
       - image: industrialninja/ib_gateway:latest
         environment:
           - TZ=America/NewYork
@@ -115,7 +116,7 @@ jobs:
             - source-v1-
       - run:
           name: install dockerize
-          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
           environment:
             DOCKERIZE_VERSION: v0.3.0
       - run:

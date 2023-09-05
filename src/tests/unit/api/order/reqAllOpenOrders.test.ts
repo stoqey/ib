@@ -4,55 +4,50 @@
  */
 import { ErrorCode, EventName, IBApi } from "../../../..";
 import configuration from "../../../../common/configuration";
-import logger from "../../../../common/logger";
 
 const TEST_SERVER_HOST = configuration.ib_host;
 const TEST_SERVER_POST = configuration.ib_port;
 
 describe("RequestAllOpenOrders", () => {
-  jest.setTimeout(20000);
+  jest.setTimeout(10000);
+  let _clientId = Math.floor(Math.random() * 32766) + 1; // ensure unique client
+
   it("Test reqAllOpenOrders", (done) => {
-    logger.info(
-      `Using host: ${TEST_SERVER_HOST} and port: ${TEST_SERVER_POST} for test `
-    );
     const ib = new IBApi({
       host: TEST_SERVER_HOST,
       port: TEST_SERVER_POST,
     });
 
-    let openOrderReceived = false;
-    let orderStatusReceived = false;
+    let received = false;
 
     ib.on(EventName.openOrder, (orderId, contract, order, orderState) => {
+      // logger.info("openOrder message received");
       // todo add proper verification code here
-      expect(contract.symbol === "GOOGL").toBeTruthy();
-
-      openOrderReceived = true;
-      if (openOrderReceived && orderStatusReceived) {
+      // expect(orderId).toBeTruthy(); We sometimes get zeros
+    })
+      .on(EventName.openOrderEnd, () => {
+        // logger.info("openOrderEnd message received");
+        received = true;
         // done
         ib.disconnect();
-      }
-    })
-      .on(EventName.orderStatus, (orderId) => {
-        // todo add proper verification code here
-
-        expect(typeof orderId).toEqual("number");
-        orderStatusReceived = true;
-        if (openOrderReceived && orderStatusReceived) {
-          // done
-          ib.disconnect();
-        }
       })
       .on(EventName.connected, () => {
-        ib.reqAllOpenOrders();
+        // logger.info("connected");
+        ib.reqIds();
       })
       .on(EventName.disconnected, () => {
-        done();
+        if (received) done();
+        else done("We didn't received acknowledge");
       })
       .on(EventName.error, (err: Error, code: ErrorCode, id: number) => {
-        expect(`${err.message} - code: ${code} - id: ${id}`).toBeTruthy();
+        done(`${err.message} - code: ${code} - id: ${id}`);
+      })
+      .once(EventName.nextValidId, (orderId: number) => {
+        // logger.info(`nextValidId: ${orderId}, requesting orders`);
+
+        ib.reqAllOpenOrders();
       });
 
-    ib.connect();
+    ib.connect(_clientId++);
   });
 });

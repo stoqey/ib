@@ -12,12 +12,11 @@ import { EventName } from "../../api/data/enum/event-name";
 import MIN_SERVER_VER from "../../api/data/enum/min-server-version";
 import OptionType from "../../api/data/enum/option-type";
 import SecType from "../../api/data/enum/sec-type";
-import { ErrorCode } from "../../common/errorCode";
+import { HistoricalSession } from "../../api/historical/HistoricalSession";
 import { HistogramEntry } from "../../api/historical/histogramEntry";
 import { HistoricalTick } from "../../api/historical/historicalTick";
 import { HistoricalTickBidAsk } from "../../api/historical/historicalTickBidAsk";
 import { HistoricalTickLast } from "../../api/historical/historicalTickLast";
-import { HistoricalSession } from "../../api/historical/HistoricalSession";
 import { TickType } from "../../api/market/tickType";
 import ExecutionCondition from "../../api/order/condition/execution-condition";
 import MarginCondition from "../../api/order/condition/margin-condition";
@@ -28,15 +27,15 @@ import VolumeCondition from "../../api/order/condition/volume-condition";
 import { ConjunctionConnection } from "../../api/order/enum/conjunction-connection";
 import OrderAction from "../../api/order/enum/order-action";
 import { OrderConditionType } from "../../api/order/enum/order-condition-type";
+import { OrderStatus } from "../../api/order/enum/order-status";
 import { OrderType } from "../../api/order/enum/orderType";
 import { TriggerMethod } from "../../api/order/enum/trigger-method";
 import { Execution } from "../../api/order/execution";
 import { Order } from "../../api/order/order";
 import { OrderState } from "../../api/order/orderState";
 import { CommissionReport } from "../../api/report/commissionReport";
+import { ErrorCode } from "../../common/errorCode";
 import { IN_MSG_ID } from "./enum/in-msg-id";
-import { OrderStatus } from "../../api/order/enum/order-status";
-
 
 /**
  * @internal
@@ -98,9 +97,14 @@ export interface DecoderCallbacks {
    * @param errMsg The error test message.
    * @param code The code identifying the error.
    * @param reqId The request identifier which generated the error.
-   * @param advancedOrderReject 
+   * @param advancedOrderReject An object providing more information in case of an order rejection
    */
-  emitError(errMsg: string, code: number, reqId: number, advancedOrderReject?: unknown): void;
+  emitError(
+    errMsg: string,
+    code: number,
+    reqId: number,
+    advancedOrderReject?: unknown,
+  ): void;
 
   /**
    * Emit an information message event to public API interface.
@@ -123,7 +127,7 @@ export class Decoder {
    *
    * @param callback A [[DecoderCallbacks]] implementation.
    */
-  constructor(private callback: DecoderCallbacks) { }
+  constructor(private callback: DecoderCallbacks) {}
 
   /**
    * Input data queue.
@@ -315,20 +319,22 @@ export class Decoder {
         return this.decodeMsg_COMPLETED_ORDER();
       case IN_MSG_ID.COMPLETED_ORDERS_END:
         return this.decodeMsg_COMPLETED_ORDERS_END();
-      case IN_MSG_ID.REPLACE_FA_END :
+      case IN_MSG_ID.REPLACE_FA_END:
         return this.decodeMsg_REPLACE_FA_END();
-      case IN_MSG_ID.WSH_META_DATA :
+      case IN_MSG_ID.WSH_META_DATA:
         return this.decodeMsg_WSH_META_DATA();
-      case IN_MSG_ID.WSH_EVENT_DATA :
+      case IN_MSG_ID.WSH_EVENT_DATA:
         return this.decodeMsg_WSH_EVENT_DATA();
-      case IN_MSG_ID.HISTORICAL_SCHEDULE :
-        return this.decodeMsg_HISTORICAL_SCHEDULE();   
+      case IN_MSG_ID.HISTORICAL_SCHEDULE:
+        return this.decodeMsg_HISTORICAL_SCHEDULE();
+      case IN_MSG_ID.USER_INFO:
+        return this.decodeMsg_USER_INFO();
 
       default:
         this.callback.emitError(
           `No parser implementation found for token: ${IN_MSG_ID[msgId]} (${msgId}).`,
           ErrorCode.UNKNOWN_ID,
-          -1
+          -1,
         );
     }
   }
@@ -369,12 +375,13 @@ export class Decoder {
         if (verifyMessageBoundary) {
           if (this.dataQueue[0] !== undefined) {
             this.callback.emitError(
-              `Decoding error on ${IN_MSG_ID[msgId]
+              `Decoding error on ${
+                IN_MSG_ID[msgId]
               }: unprocessed data left on queue (${JSON.stringify(
-                this.dataQueue
+                this.dataQueue,
               )}). Please report to https://github.com/stoqey/ib`,
               ErrorCode.UNKNOWN_ID,
-              -1
+              -1,
             );
           }
 
@@ -389,7 +396,7 @@ export class Decoder {
           this.callback.emitError(
             `Underrun error on ${IN_MSG_ID[msgId]}: ${e.message} Please report to https://github.com/stoqey/ib`,
             ErrorCode.UNKNOWN_ID,
-            -1
+            -1,
           );
         }
 
@@ -401,7 +408,7 @@ export class Decoder {
       const toEmit = this.emitQueue;
       this.emitQueue = [];
       toEmit.forEach((item) =>
-        this.callback.emitEvent(item.name, ...item.args)
+        this.callback.emitEvent(item.name, ...item.args),
       );
     }
   }
@@ -413,28 +420,26 @@ export class Decoder {
     return this.callback.serverVersion;
   }
 
-  private decodeUnicodeEscapedString(str: string) {    
+  private decodeUnicodeEscapedString(str: string) {
     let v = str;
-   
+
     try {
-        while(true) {
-            const escapeIndex: number= v.indexOf("\\u");
+      while (true) {
+        const escapeIndex: number = v.indexOf("\\u");
 
-            if (escapeIndex == -1
-             || v.length - escapeIndex < 6) {
-                break;
-            }
-
-            const escapeString: string = v.substring(escapeIndex ,  escapeIndex + 6);
-            const hexVal: number = parseInt(escapeString.replace("\\u", ""), 16);
-
-            v = v.replace(escapeString, String.fromCharCode(hexVal));
+        if (escapeIndex == -1 || v.length - escapeIndex < 6) {
+          break;
         }
-    } catch (e) { }
-            
+
+        const escapeString: string = v.substring(escapeIndex, escapeIndex + 6);
+        const hexVal: number = parseInt(escapeString.replace("\\u", ""), 16);
+
+        v = v.replace(escapeString, String.fromCharCode(hexVal));
+      }
+    } catch (e) {}
+
     return v;
   }
-
 
   /**
    * Read a string token from queue.
@@ -501,7 +506,7 @@ export class Decoder {
     return val === Number.MAX_VALUE ? undefined : val;
   }
 
-    /**
+  /**
    * Read a token from queue and return it as integer value.
    *
    * Returns Number.MAX_VALUE if the token is empty.
@@ -674,7 +679,7 @@ export class Decoder {
       lastFillPrice,
       clientId,
       whyHeld,
-      mktCapPrice
+      mktCapPrice,
     );
   }
 
@@ -696,7 +701,11 @@ export class Decoder {
       let advancedOrderReject: unknown;
       if (this.serverVersion >= MIN_SERVER_VER.ADVANCED_ORDER_REJECT) {
         const advancedOrderRejectJson: string = this.readStr();
-        if (advancedOrderRejectJson) advancedOrderReject = JSON.parse(this.decodeUnicodeEscapedString(advancedOrderRejectJson));
+        if (advancedOrderRejectJson?.length > 0) {
+          advancedOrderReject = JSON.parse(
+            this.decodeUnicodeEscapedString(advancedOrderRejectJson),
+          );
+        }
       }
 
       if (id === -1) {
@@ -726,7 +735,7 @@ export class Decoder {
       order,
       orderState,
       version,
-      this.serverVersion
+      this.serverVersion,
     );
 
     // read order id
@@ -800,7 +809,7 @@ export class Decoder {
     orderDecoder.readIsOmsContainer();
     orderDecoder.readDiscretionaryUpToLimitPrice();
     orderDecoder.readUsePriceMgmtAlgo();
-    
+
     orderDecoder.readDuration();
     orderDecoder.readPostToAts();
     orderDecoder.readAutoCancelParent(MIN_SERVER_VER.AUTO_CANCEL_PARENT);
@@ -888,7 +897,7 @@ export class Decoder {
       averageCost,
       unrealizedPNL,
       realizedPNL,
-      accountName
+      accountName,
     );
   }
 
@@ -916,8 +925,8 @@ export class Decoder {
    * Decode a CONTRACT_DATA message from data queue and emit a contractDetails event.
    */
   private decodeMsg_CONTRACT_DATA(): void {
-     let version = 8;
-    if (this.serverVersion < MIN_SERVER_VER.SIZE_RULES){
+    let version = 8;
+    if (this.serverVersion < MIN_SERVER_VER.SIZE_RULES) {
       version = this.readInt();
     }
 
@@ -942,7 +951,10 @@ export class Decoder {
     contract.contract.tradingClass = this.readStr();
     contract.contract.conId = this.readInt();
     contract.minTick = this.readDouble();
-    if ((this.serverVersion >= MIN_SERVER_VER.MD_SIZE_MULTIPLIER) && (this.serverVersion < MIN_SERVER_VER.SIZE_RULES)) {
+    if (
+      this.serverVersion >= MIN_SERVER_VER.MD_SIZE_MULTIPLIER &&
+      this.serverVersion < MIN_SERVER_VER.SIZE_RULES
+    ) {
       this.readInt(); // mdSizeMultiplier - not used anymore
     }
     contract.contract.multiplier = this.readInt();
@@ -958,13 +970,12 @@ export class Decoder {
     }
 
     if (version >= 5) {
-        
-        contract.longName = this.readStr();
-        contract.contract.primaryExch = this.readStr();
+      contract.longName = this.readStr();
+      contract.contract.primaryExch = this.readStr();
 
-        if (this.serverVersion >= MIN_SERVER_VER.ENCODE_MSG_ASCII7){
-          contract.longName = this.decodeUnicodeEscapedString(contract.longName);
-        } 
+      if (this.serverVersion >= MIN_SERVER_VER.ENCODE_MSG_ASCII7) {
+        contract.longName = this.decodeUnicodeEscapedString(contract.longName);
+      }
     }
 
     if (version >= 6) {
@@ -1015,8 +1026,11 @@ export class Decoder {
       if (this.serverVersion >= MIN_SERVER_VER.STOCK_TYPE) {
         contract.stockType = this.readStr();
       }
-      
-      if (this.serverVersion >= MIN_SERVER_VER.FRACTIONAL_SIZE_SUPPORT && this.serverVersion < MIN_SERVER_VER.SIZE_RULES) {
+
+      if (
+        this.serverVersion >= MIN_SERVER_VER.FRACTIONAL_SIZE_SUPPORT &&
+        this.serverVersion < MIN_SERVER_VER.SIZE_RULES
+      ) {
         this.readDouble(); // sizeMinTick - not used anymore
       }
 
@@ -1025,7 +1039,6 @@ export class Decoder {
         contract.sizeIncrement = this.readDouble();
         contract.suggestedSizeIncrement = this.readDouble();
       }
-
     }
 
     this.emit(EventName.contractDetails, reqId, contract);
@@ -1139,7 +1152,7 @@ export class Decoder {
       operation,
       side,
       price,
-      size
+      size,
     );
   }
 
@@ -1170,7 +1183,7 @@ export class Decoder {
       side,
       price,
       size,
-      isSmartDepth
+      isSmartDepth,
     );
   }
 
@@ -1189,7 +1202,7 @@ export class Decoder {
       newsMsgId,
       newsMsgType,
       newsMessage,
-      originatingExch
+      originatingExch,
     );
   }
 
@@ -1265,7 +1278,7 @@ export class Decoder {
         volume,
         barCount,
         WAP,
-        hasGaps
+        hasGaps,
       );
     }
 
@@ -1281,7 +1294,7 @@ export class Decoder {
       -1,
       -1,
       -1,
-      false
+      false,
     );
   }
 
@@ -1308,7 +1321,7 @@ export class Decoder {
       close,
       volume,
       barCount,
-      WAP
+      WAP,
     );
   }
 
@@ -1355,7 +1368,7 @@ export class Decoder {
    */
   private decodeMsg_BOND_CONTRACT_DATA(): void {
     let version = 6;
-    if (this.serverVersion < MIN_SERVER_VER.SIZE_RULES){
+    if (this.serverVersion < MIN_SERVER_VER.SIZE_RULES) {
       version = this.readInt();
     }
 
@@ -1387,7 +1400,10 @@ export class Decoder {
     contract.contract.tradingClass = this.readStr();
     contract.contract.conId = this.readInt();
     contract.minTick = this.readDouble();
-    if ((this.serverVersion >= MIN_SERVER_VER.MD_SIZE_MULTIPLIER) && (this.serverVersion < MIN_SERVER_VER.SIZE_RULES)) {
+    if (
+      this.serverVersion >= MIN_SERVER_VER.MD_SIZE_MULTIPLIER &&
+      this.serverVersion < MIN_SERVER_VER.SIZE_RULES
+    ) {
       this.readInt(); // mdSizeMultiplier - not used anymore
     }
     contract.orderTypes = this.readStr();
@@ -1431,9 +1447,9 @@ export class Decoder {
       contract.marketRuleIds = this.readStr();
     }
     if (this.serverVersion >= MIN_SERVER_VER.SIZE_RULES) {
-        contract.minSize = this.readDouble();
-        contract.sizeIncrement = this.readDouble();
-        contract.suggestedSizeIncrement = this.readDouble();
+      contract.minSize = this.readDouble();
+      contract.sizeIncrement = this.readDouble();
+      contract.suggestedSizeIncrement = this.readDouble();
     }
 
     this.emit(EventName.bondContractDetails, reqId, contract);
@@ -1472,7 +1488,7 @@ export class Decoder {
       this.readLastTradeDate(contract, false);
       contract.contract.strike = this.readDouble();
       contract.contract.right = validateOptionType(
-        this.readStr() as OptionType
+        this.readStr() as OptionType,
       );
       contract.contract.exchange = this.readStr();
       contract.contract.currency = this.readStr();
@@ -1497,7 +1513,7 @@ export class Decoder {
         distance,
         benchmark,
         projection,
-        legsStr
+        legsStr,
       );
     }
 
@@ -1508,16 +1524,14 @@ export class Decoder {
    * Decode a TICK_OPTION_COMPUTATION message from data queue and emit a tickOptionComputation event.
    */
   private decodeMsg_TICK_OPTION_COMPUTATION(): void {
-    
-    let version; 
+    let version;
     if (this.serverVersion >= MIN_SERVER_VER.PRICE_BASED_VOLATILITY)
       version = Number.MAX_VALUE;
-    else
-      version = this.readInt();
+    else version = this.readInt();
 
     const tickerId = this.readInt();
     const tickType = this.readInt();
-    
+
     let tickAttrib = Number.MAX_VALUE;
     if (this.serverVersion >= MIN_SERVER_VER.PRICE_BASED_VOLATILITY) {
       tickAttrib = this.readInt();
@@ -1598,7 +1612,7 @@ export class Decoder {
       gamma,
       vega,
       theta,
-      undPrice
+      undPrice,
     );
   }
 
@@ -1651,7 +1665,7 @@ export class Decoder {
       holdDays,
       futureExpiry,
       dividendImpact,
-      dividendsToExpiry
+      dividendsToExpiry,
     );
   }
 
@@ -1690,7 +1704,7 @@ export class Decoder {
       close,
       volume,
       wap,
-      count
+      count,
     );
   }
 
@@ -1918,7 +1932,7 @@ export class Decoder {
       modelCode,
       contract,
       pos,
-      avgCost
+      avgCost,
     );
   }
 
@@ -1951,7 +1965,7 @@ export class Decoder {
       modelCode,
       key,
       value,
-      currency
+      currency,
     );
   }
 
@@ -1995,7 +2009,7 @@ export class Decoder {
       tradingClass,
       multiplier,
       expirations,
-      strikes
+      strikes,
     );
   }
 
@@ -2052,7 +2066,7 @@ export class Decoder {
 
     const nContractDescriptions = this.readInt();
     const contractDescriptions: ContractDescription[] = new Array(
-      nContractDescriptions
+      nContractDescriptions,
     );
     for (let i = 0; i < nContractDescriptions; i++) {
       const contract: Contract = {
@@ -2084,7 +2098,7 @@ export class Decoder {
   private decodeMsg_MKT_DEPTH_EXCHANGES(): void {
     const nDepthMktDataDescriptions = this.readInt();
     const depthMktDataDescriptions: DepthMktDataDescription[] = new Array(
-      nDepthMktDataDescriptions
+      nDepthMktDataDescriptions,
     );
     for (let i = 0; i < nDepthMktDataDescriptions; i++) {
       if (this.serverVersion >= MIN_SERVER_VER.SERVICE_DATA_TYPE) {
@@ -2123,7 +2137,7 @@ export class Decoder {
       tickerId,
       minTick,
       bboExchange,
-      snapshotPermissions
+      snapshotPermissions,
     );
   }
 
@@ -2174,7 +2188,7 @@ export class Decoder {
       providerCode,
       articleId,
       headline,
-      extraData
+      extraData,
     );
   }
 
@@ -2210,7 +2224,7 @@ export class Decoder {
       time,
       providerCode,
       articleId,
-      headline
+      headline,
     );
   }
 
@@ -2299,7 +2313,7 @@ export class Decoder {
       dailyPnL,
       unrealizedPnL,
       realizedPnL,
-      value
+      value,
     );
   }
 
@@ -2419,7 +2433,7 @@ export class Decoder {
           size,
           { pastLimit, unreported },
           exchange,
-          specialConditions
+          specialConditions,
         );
         break;
       }
@@ -2441,7 +2455,10 @@ export class Decoder {
           askPrice,
           bidSize,
           askSize,
-          { bidPastLow, askPastHigh }
+          {
+            bidPastLow,
+            askPastHigh,
+          },
         );
         break;
       }
@@ -2755,7 +2772,7 @@ export class Decoder {
               exchange,
               secType,
               symbol,
-              conjunctionConnection as ConjunctionConnection
+              conjunctionConnection as ConjunctionConnection,
             );
             break;
           }
@@ -2768,7 +2785,7 @@ export class Decoder {
             order.conditions[i] = new MarginCondition(
               value,
               isMore,
-              conjunctionConnection as ConjunctionConnection
+              conjunctionConnection as ConjunctionConnection,
             );
             break;
           }
@@ -2786,7 +2803,7 @@ export class Decoder {
               condId,
               exchange,
               isMore,
-              conjunctionConnection as ConjunctionConnection
+              conjunctionConnection as ConjunctionConnection,
             );
             break;
           }
@@ -2807,7 +2824,7 @@ export class Decoder {
               condId,
               exchange,
               isMore,
-              conjunctionConnection as ConjunctionConnection
+              conjunctionConnection as ConjunctionConnection,
             );
             break;
           }
@@ -2820,7 +2837,7 @@ export class Decoder {
             order.conditions[i] = new TimeCondition(
               value,
               isMore,
-              conjunctionConnection as ConjunctionConnection
+              conjunctionConnection as ConjunctionConnection,
             );
             break;
           }
@@ -2838,7 +2855,7 @@ export class Decoder {
               condId,
               exchange,
               isMore,
-              conjunctionConnection as ConjunctionConnection
+              conjunctionConnection as ConjunctionConnection,
             );
             break;
           }
@@ -2918,14 +2935,13 @@ export class Decoder {
    * Decode a HISTORICAL_SCHEDULE message from data queue and a emit historicalSchedule event.
    */
   private decodeMsg_HISTORICAL_SCHEDULE(): void {
-
     const reqId = this.readInt();
     const startDateTime = this.readStr();
     const endDateTime = this.readStr();
     const timeZone = this.readStr();
 
     const sessionsCount = this.readInt();
-    const sessions : HistoricalSession[] = new Array(sessionsCount);
+    const sessions: HistoricalSession[] = new Array(sessionsCount);
 
     for (let i = 0; i < sessionsCount; i++) {
       const sessionStartDateTime = this.readStr();
@@ -2933,15 +2949,30 @@ export class Decoder {
       const sessionRefDate = this.readStr();
       sessions[i] = {
         startDateTime: sessionStartDateTime,
-        endDateTime: sessionEndDateTime, 
-        refDate: sessionRefDate
+        endDateTime: sessionEndDateTime,
+        refDate: sessionRefDate,
       };
     }
 
-    this.emit(EventName.historicalSchedule, reqId, startDateTime, endDateTime, timeZone, sessions);
+    this.emit(
+      EventName.historicalSchedule,
+      reqId,
+      startDateTime,
+      endDateTime,
+      timeZone,
+      sessions,
+    );
   }
 
-  
+  /**
+   * Decode a USER_INFO message from data queue and a emit userInfo event.
+   */
+  private decodeMsg_USER_INFO(): void {
+    const reqId = this.readInt();
+    const whiteBrandingId = this.readStr();
+
+    this.emit(EventName.userInfo, reqId, whiteBrandingId);
+  }
 
   /**
    * Decode a [[Contract]] object from data queue.
@@ -3139,8 +3170,8 @@ class OrderDecoder {
     private order: Order,
     private orderState: OrderState,
     private version: number,
-    private serverVersion: number
-  ) { }
+    private serverVersion: number,
+  ) {}
 
   readOrderId(): void {
     this.order.orderId = this.decoder.readInt();
@@ -3155,7 +3186,7 @@ class OrderDecoder {
     this.contract.lastTradeDateOrContractMonth = this.decoder.readStr();
     this.contract.strike = this.decoder.readDouble();
     this.contract.right = validateOptionType(
-      this.decoder.readStr() as OptionType
+      this.decoder.readStr() as OptionType,
     );
     if (this.version >= 32) {
       this.contract.multiplier = +this.decoder.readStr();
@@ -3717,7 +3748,7 @@ class OrderDecoder {
                 exchange,
                 secType,
                 symbol,
-                conjunctionConnection as ConjunctionConnection
+                conjunctionConnection as ConjunctionConnection,
               );
               break;
             }
@@ -3730,7 +3761,7 @@ class OrderDecoder {
               this.order.conditions[i] = new MarginCondition(
                 value,
                 isMore,
-                conjunctionConnection as ConjunctionConnection
+                conjunctionConnection as ConjunctionConnection,
               );
               break;
             }
@@ -3748,7 +3779,7 @@ class OrderDecoder {
                 condId,
                 exchange,
                 isMore,
-                conjunctionConnection as ConjunctionConnection
+                conjunctionConnection as ConjunctionConnection,
               );
               break;
             }
@@ -3769,7 +3800,7 @@ class OrderDecoder {
                 condId,
                 exchange,
                 isMore,
-                conjunctionConnection as ConjunctionConnection
+                conjunctionConnection as ConjunctionConnection,
               );
               break;
             }
@@ -3782,7 +3813,7 @@ class OrderDecoder {
               this.order.conditions[i] = new TimeCondition(
                 value,
                 isMore,
-                conjunctionConnection as ConjunctionConnection
+                conjunctionConnection as ConjunctionConnection,
               );
               break;
             }
@@ -3800,7 +3831,7 @@ class OrderDecoder {
                 condId,
                 exchange,
                 isMore,
-                conjunctionConnection as ConjunctionConnection
+                conjunctionConnection as ConjunctionConnection,
               );
               break;
             }
@@ -3880,10 +3911,12 @@ class OrderDecoder {
   }
 
   readAutoCancelParent(minVersionAutoCancelParent?: number): void {
-    
-    if ( (minVersionAutoCancelParent === undefined) || (this.serverVersion >= minVersionAutoCancelParent)) {
+    if (
+      minVersionAutoCancelParent === undefined ||
+      this.serverVersion >= minVersionAutoCancelParent
+    ) {
       this.order.autoCancelParent = this.decoder.readBool();
-    }    
+    }
   }
 
   readShareholder(): void {
@@ -3916,16 +3949,15 @@ class OrderDecoder {
     }
   }
 
-  readDuration(): void  {
+  readDuration(): void {
     if (this.serverVersion >= MIN_SERVER_VER.DURATION) {
       this.order.duration = this.decoder.readInt();
     }
   }
 
-  readPostToAts(): void  {
+  readPostToAts(): void {
     if (this.serverVersion >= MIN_SERVER_VER.POST_TO_ATS) {
       this.order.postToAts = this.decoder.readIntMax();
     }
   }
 }
-

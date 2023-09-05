@@ -1,6 +1,8 @@
 /**
  * Minimum required server version for supporting the given request.
  */
+/* eslint-disable @typescript-eslint/no-duplicate-enum-values */
+
 export enum MIN_SERVER_VER {
   REAL_TIME_BARS = 34,
   SCALE_ORDERS = 35,
@@ -110,17 +112,17 @@ export enum MIN_SERVER_VER {
   FRACTIONAL_SIZE_SUPPORT = 163,
   SIZE_RULES = 164,
   HISTORICAL_SCHEDULE = 165,
-  ADVANCED_ORDER_REJECT    = 166,
-  USER_INFO                = 167,
+  ADVANCED_ORDER_REJECT = 166,
+  USER_INFO = 167,
   CRYPTO_AGGREGATED_TRADES = 168,
-  MANUAL_ORDER_TIME        = 169,
-  PEGBEST_PEGMID_OFFSETS   = 170,
-  WSH_EVENT_DATA_FILTERS   = 171,
-  IPO_PRICES               = 172,
+  MANUAL_ORDER_TIME = 169,
+  PEGBEST_PEGMID_OFFSETS = 170,
+  WSH_EVENT_DATA_FILTERS = 171,
+  IPO_PRICES = 172,
   WSH_EVENT_DATA_FILTERS_DATE = 173,
-  INSTRUMENT_TIMEZONE         = 174,
-  HMDS_MARKET_DATA_IN_SHARES  = 175,
-  BOND_ISSUERID               = 176
+  INSTRUMENT_TIMEZONE = 174,
+  HMDS_MARKET_DATA_IN_SHARES = 175,
+  BOND_ISSUERID = 176,
 }
 
 export default MIN_SERVER_VER;

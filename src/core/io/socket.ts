@@ -49,9 +49,12 @@ export class Socket {
    */
   constructor(
     private controller: Controller,
-    private options: IBApiCreationOptions = {}
+    private options: IBApiCreationOptions = {},
   ) {
-    this._clientId = this.options.clientId ?? configuration.default_client_id;
+    this._clientId =
+      this.options.clientId !== undefined
+        ? Math.floor(this.options.clientId)
+        : configuration.default_client_id;
     this.options.host = this.options.host;
     this.options.port = this.options.port;
   }
@@ -124,7 +127,7 @@ export class Socket {
     // update client id
 
     if (clientId !== undefined) {
-      this._clientId = clientId;
+      this._clientId = Math.floor(clientId);
     }
 
     // pause controller while API startup sequence
@@ -146,7 +149,7 @@ export class Socket {
           host: this.options.host ?? configuration.ib_host,
           port: this.options.port ?? configuration.ib_port,
         },
-        () => this.onConnect()
+        () => this.onConnect(),
       )
       .on("data", (data) => this.onData(data))
       .on("close", () => this.onEnd())
@@ -234,8 +237,8 @@ export class Socket {
         this._v100MessageBuffer = Buffer.alloc(0);
         this.onError(
           new Error(
-            `Message of size ${dataToParse.length} exceeded max message length ${MAX_V100_MESSAGE_LENGTH}`
-          )
+            `Message of size ${dataToParse.length} exceeded max message length ${MAX_V100_MESSAGE_LENGTH}`,
+          ),
         );
         this.disconnect();
         return;
@@ -248,7 +251,7 @@ export class Socket {
         if (currentMessageOffset + msgSize <= dataToParse.length) {
           const segment = dataToParse.slice(
             currentMessageOffset,
-            currentMessageOffset + msgSize
+            currentMessageOffset + msgSize,
           );
           currentMessageOffset += msgSize;
           this.onMessage(segment.toString("utf8"));
@@ -335,7 +338,7 @@ export class Socket {
       this.controller.emitError(
         "Unsupported Version",
         ErrorCode.UNSUPPORTED_VERSION,
-        -1
+        -1,
       );
       return;
     }
@@ -345,7 +348,7 @@ export class Socket {
       this.controller.emitError(
         "The TWS is out of date and must be upgraded.",
         ErrorCode.UPDATE_TWS,
-        -1
+        -1,
       );
       return;
     }
@@ -356,7 +359,7 @@ export class Socket {
     this.controller.emitEvent(
       EventName.server,
       this.serverVersion,
-      this.serverConnectionTime
+      this.serverConnectionTime,
     );
   }
 
@@ -380,7 +383,9 @@ export class Socket {
     }
 
     // resume controller after CONNECT_DELAY, fix connect issue
-    setTimeout(()=> { this.controller.resume(); }, CONNECT_DELAY);
+    setTimeout(() => {
+      this.controller.resume();
+    }, CONNECT_DELAY);
   }
 
   /**
@@ -395,7 +400,7 @@ export class Socket {
       // Switch to GW API (Version 100+ requires length prefix)
       const config = this.buildVersionString(
         MIN_VERSION_V100,
-        MAX_SUPPORTED_SERVER_VERSION
+        MAX_SUPPORTED_SERVER_VERSION,
       );
       // config = config + connectOptions --- connectOptions are for IB internal use only: not supported
       this.send([
@@ -410,9 +415,8 @@ export class Socket {
    * Called when TCP socket connection has been closed.
    */
   private onEnd(): void {
-    const wasConnected = this._connected;
-    this._connected = false;
-    if (wasConnected) {
+    if (this._connected) {
+      this._connected = false;
       this.controller.emitEvent(EventName.disconnected);
     }
 
