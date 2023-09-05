@@ -1,7 +1,10 @@
 import { Subscription } from "rxjs";
 
 import { IBApiNext } from "../../api-next";
+import Contract from "../../api/contract/contract";
 import LogLevel from "../../api/data/enum/log-level";
+import OptionType from "../../api/data/enum/option-type";
+import SecType from "../../api/data/enum/sec-type";
 import configuration from "../../common/configuration";
 import logger from "../../common/logger";
 
@@ -30,13 +33,13 @@ export class IBApiNextApp {
 
   public static readonly DEFAULT_CONTRACT_OPTIONS: [string, string][] = [
     ["conid=<number>", "Contract ID (conId) of the contract."],
-    ["symbol=<name>", "The symbol name."],
     [
       "sectype=<type>",
       "The security type. Valid values: STK, OPT, FUT, IND, FOP, CFD, CASH, BAG, BOND, CMDTY, NEWS and FUND",
     ],
-    ["exchange=<name>", "The destination exchange name."],
+    ["symbol=<name>", "The symbol name."],
     ["currency=<currency>", "The contract currency."],
+    ["exchange=<name>", "The destination exchange name."],
   ];
 
   public static readonly DEFAULT_OPT_CONTRACT_OPTIONS: [string, string][] = [
@@ -221,5 +224,18 @@ export class IBApiNextApp {
       result += "  -" + argument[0] + ": " + argument[1] + "\n";
     });
     return result + "Example: " + example;
+  }
+
+  getContractParameter(): Contract {
+    return {
+      conId: (this.cmdLineArgs.conid as number) ?? undefined,
+      secType: this.cmdLineArgs.sectype as SecType,
+      symbol: this.cmdLineArgs.symbol as string,
+      currency: (this.cmdLineArgs.currency as string) ?? "USD",
+      exchange: (this.cmdLineArgs.exchange as string) ?? "SMART",
+      lastTradeDateOrContractMonth: this.cmdLineArgs.expiry as string,
+      strike: (this.cmdLineArgs.strike as number) ?? undefined,
+      right: this.cmdLineArgs.right as OptionType,
+    };
   }
 }

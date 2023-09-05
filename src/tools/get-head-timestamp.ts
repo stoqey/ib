@@ -4,7 +4,6 @@
 
 import path from "path";
 
-import { OptionType, SecType } from "../";
 import { IBApiNextError } from "../api-next";
 import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
@@ -17,21 +16,7 @@ const DESCRIPTION_TEXT =
   "Prints the timestamp of earliest available historical data for a contract.";
 const USAGE_TEXT = "Usage: get-head-timestamp.js <options>";
 const OPTION_ARGUMENTS: [string, string][] = [
-  ["conid=<number>", "Contract ID (conId) of the contract."],
-  ["symbol=<name>", "The symbol name."],
-  [
-    "sectype=<type>",
-    "The security type. Valid values: STK, OPT, FUT, IND, FOP, CFD, CASH, BAG, BOND, CMDTY, NEWS and FUND",
-  ],
-  ["exchange=<name>", "The destination exchange name."],
-  ["currency=<currency>", "The contract currency."],
-  [
-    "expiry=<YYYYMM>",
-    "The contract's last trading day or contract month (for Options and Futures)." +
-    "Strings with format YYYYMM will be interpreted as the Contract Month whereas YYYYMMDD will be interpreted as Last Trading Day.",
-  ],
-  ["strike=<number>", "The option's strike price."],
-  ["right=<P|C>", " The option type. Valid values are P, PUT, C, CALL."],
+  ...IBApiNextApp.DEFAULT_CONTRACT_OPTIONS,
 ];
 const EXAMPLE_TEXT =
   "get-head-timestamp.js -symbol=AMZN -sectype=STK -currency=USD -exchange=SMART -conid=3691937 -port=4002";
@@ -55,21 +40,7 @@ class PrintHeadTimestampApp extends IBApiNextApp {
 
     // print next unused order id
     this.api
-      .getHeadTimestamp(
-        {
-          symbol: this.cmdLineArgs.symbol as string,
-          conId: (this.cmdLineArgs.conid as number) ?? undefined,
-          secType: this.cmdLineArgs.sectype as SecType,
-          exchange: this.cmdLineArgs.exchange as string,
-          currency: this.cmdLineArgs.currency as string,
-          lastTradeDateOrContractMonth: this.cmdLineArgs.expiry as string,
-          strike: (this.cmdLineArgs.strike as number) ?? undefined,
-          right: this.cmdLineArgs.right as OptionType,
-        },
-        "TRADES",
-        true,
-        1
-      )
+      .getHeadTimestamp(this.getContractParameter(), "TRADES", true, 1)
       .then((timestamp) => {
         this.printText(timestamp);
         this.exit();

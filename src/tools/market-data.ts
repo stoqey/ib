@@ -5,7 +5,6 @@
 import path from "path";
 import { Subscription } from "rxjs";
 
-import { OptionType, SecType } from "../";
 import {
   IBApiNextError,
   IBApiNextTickType,
@@ -22,21 +21,7 @@ import { IBApiNextApp } from "./common/ib-api-next-app";
 const DESCRIPTION_TEXT = "Print real time market data of a given contract id.";
 const USAGE_TEXT = "Usage: market-data.js <options>";
 const OPTION_ARGUMENTS: [string, string][] = [
-  ["conid=<number>", "Contract ID (conId) of the contract."],
-  ["symbol=<name>", "The symbol name."],
-  [
-    "sectype=<type>",
-    "The security type. Valid values: STK, OPT, FUT, IND, FOP, CFD, CASH, BAG, BOND, CMDTY, NEWS and FUND",
-  ],
-  ["exchange=<name>", "The destination exchange name."],
-  ["currency=<currency>", "The contract currency."],
-  [
-    "expiry=<YYYYMM>",
-    "The contract's last trading day or contract month (for Options and Futures)." +
-      "Strings with format YYYYMM will be interpreted as the Contract Month whereas YYYYMMDD will be interpreted as Last Trading Day.",
-  ],
-  ["strike=<number>", "The option's strike price."],
-  ["right=<P|C>", " The option type. Valid values are P, PUT, C, CALL."],
+  ...IBApiNextApp.DEFAULT_CONTRACT_OPTIONS,
   ["ticks=<ticks>", "Comma separated list of generic ticks to fetch."],
 ];
 const EXAMPLE_TEXT =
@@ -64,16 +49,7 @@ class PrintMarketDataApp extends IBApiNextApp {
     this.api.setMarketDataType(MarketDataType.DELAYED_FROZEN);
     this.subscription$ = this.api
       .getMarketData(
-        {
-          conId: (this.cmdLineArgs.conid as number) ?? undefined,
-          symbol: this.cmdLineArgs.symbol as string,
-          secType: this.cmdLineArgs.sectype as SecType,
-          exchange: this.cmdLineArgs.exchange as string,
-          currency: this.cmdLineArgs.currency as string,
-          lastTradeDateOrContractMonth: this.cmdLineArgs.expiry as string,
-          strike: (this.cmdLineArgs.strike as number) ?? undefined,
-          right: this.cmdLineArgs.right as OptionType,
-        },
+        this.getContractParameter(),
         this.cmdLineArgs.ticks as string,
         false,
         false,
