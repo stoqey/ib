@@ -1,3 +1,4 @@
+import { ScanCode } from "../../api-next/market-scanner/market-scanner";
 import { Contract } from "../../api/contract/contract";
 import TagValue from "../../api/data/container/tag-value";
 import FADataType from "../../api/data/enum/fad-data-type";
@@ -2709,7 +2710,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     tokens.push(nullifyMax(subscription.numberOfRows));
     tokens.push(subscription.instrument);
     tokens.push(subscription.locationCode);
-    tokens.push(subscription.scanCode);
+    tokens.push(ScanCode[subscription.scanCode]);
     tokens.push(nullifyMax(subscription.abovePrice));
     tokens.push(nullifyMax(subscription.belowPrice));
     tokens.push(nullifyMax(subscription.aboveVolume));
