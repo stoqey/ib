@@ -27,23 +27,45 @@ const awaitTimeout = (delay: number): Promise<unknown> =>
 
 describe("PlaceOrder", () => {
   jest.setTimeout(20000);
-  let _clientId = Math.floor(Math.random() * 32766) + 1; // ensure unique client
+
+  let ib: IBApi;
+  let clientId = Math.floor(Math.random() * 32766) + 1; // ensure unique client
+
+  beforeEach(() => {
+    ib = new IBApi({
+      host: configuration.ib_host,
+      port: configuration.ib_port,
+      clientId: clientId++, // increment clientId for each test so they don't interfere on each other
+    });
+    // logger.info("IBApi created");
+  });
+
+  afterEach(() => {
+    if (ib) {
+      ib.disconnect();
+      ib = undefined;
+    }
+    // logger.info("IBApi disconnected");
+  });
 
   test("Simple placeOrder", (done) => {
-    const ib = new IBApi({
-      host: TEST_SERVER_HOST,
-      port: TEST_SERVER_PORT,
-    });
-
-    ib.on(EventName.error, (error: Error, code: ErrorCode, reqId: number, _advancedOrderReject?: unknown) => {
-      if (reqId === -1) {
-        logger.info(error.message);
-      } else {
-        ib.disconnect();
-        // logger.error(error.message, _advancedOrderReject);
-        done(`${error.message} (Error #${code})`);
-      }
-    }).once(EventName.nextValidId, (orderId: number) => {
+    ib.on(
+      EventName.error,
+      (
+        error: Error,
+        code: ErrorCode,
+        reqId: number,
+        _advancedOrderReject?: unknown,
+      ) => {
+        if (reqId === -1) {
+          logger.info(error.message);
+        } else {
+          ib.disconnect();
+          // logger.error(error.message, _advancedOrderReject);
+          done(`${error.message} (Error #${code})`);
+        }
+      },
+    ).once(EventName.nextValidId, (orderId: number) => {
       // buy an Apple call, with a PriceCondition on underlying
 
       const contract: Contract = {
@@ -81,25 +103,27 @@ describe("PlaceOrder", () => {
       awaitTimeout(2).then(() => ib.reqOpenOrders());
     });
 
-    ib.connect(_clientId++);
-    ib.reqIds();
+    ib.connect().reqIds();
   });
 
   test("placeOrder with PriceCondition", (done) => {
-    const ib = new IBApi({
-      host: TEST_SERVER_HOST,
-      port: TEST_SERVER_PORT,
-    });
-
-    ib.on(EventName.error, (error: Error, code: ErrorCode, reqId: number, _advancedOrderReject?: unknown) => {
-      if (reqId === -1) {
-        logger.info(error.message);
-      } else {
-        ib.disconnect();
-        // logger.error(error.message, _advancedOrderReject);
-        done(`${error.message} (Error #${code})`);
-      }
-    }).once(EventName.nextValidId, (orderId: number) => {
+    ib.on(
+      EventName.error,
+      (
+        error: Error,
+        code: ErrorCode,
+        reqId: number,
+        _advancedOrderReject?: unknown,
+      ) => {
+        if (reqId === -1) {
+          logger.info(error.message);
+        } else {
+          ib.disconnect();
+          // logger.error(error.message, _advancedOrderReject);
+          done(`${error.message} (Error #${code})`);
+        }
+      },
+    ).once(EventName.nextValidId, (orderId: number) => {
       // buy an Apple call, with a PriceCondition on underlying
 
       const contract: Contract = {
@@ -149,10 +173,9 @@ describe("PlaceOrder", () => {
       });
 
       // Give a few secs delay to get order placed
-      awaitTimeout(2).then(() => ib.reqOpenOrders());
+      awaitTimeout(3).then(() => ib.reqOpenOrders());
     });
 
-    ib.connect(_clientId++);
-    ib.reqIds();
+    ib.connect().reqIds();
   });
 });
