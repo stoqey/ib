@@ -1,3 +1,7 @@
+/*
+ * Typescript implementation of the Interactive Brokers TWS (or IB Gateway) API.
+ */
+/* eslint @typescript-eslint/no-unsafe-declaration-merging:warn */
 import { EventEmitter } from "eventemitter3";
 import { DurationUnit } from "..";
 
@@ -72,7 +76,7 @@ export interface IBApiCreationOptions {
 }
 
 /** Maximum supported version. */
-export const MAX_SUPPORTED_SERVER_VERSION = MIN_SERVER_VER.HISTORICAL_SCHEDULE;
+export const MAX_SUPPORTED_SERVER_VERSION = MIN_SERVER_VER.USER_INFO;
 
 /** Minimum supported version. */
 export const MIN_SERVER_VER_SUPPORTED = 38;
@@ -158,15 +162,15 @@ export class IBApi extends EventEmitter {
     reqId: number,
     contract: Contract,
     optionPrice: number,
-    underPrice: number
+    underPrice: number,
   ): IBApi {
     this.controller.schedule(() =>
       this.controller.encoder.calculateImpliedVolatility(
         reqId,
         contract,
         optionPrice,
-        underPrice
-      )
+        underPrice,
+      ),
     );
     return this;
   }
@@ -186,15 +190,15 @@ export class IBApi extends EventEmitter {
     reqId: number,
     contract: Contract,
     volatility: number,
-    underPrice: number
+    underPrice: number,
   ): IBApi {
     this.controller.schedule(() =>
       this.controller.encoder.calculateOptionPrice(
         reqId,
         contract,
         volatility,
-        underPrice
-      )
+        underPrice,
+      ),
     );
     return this;
   }
@@ -209,7 +213,7 @@ export class IBApi extends EventEmitter {
    */
   cancelAccountSummary(reqId: number): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.cancelAccountSummary(reqId)
+      this.controller.encoder.cancelAccountSummary(reqId),
     );
     return this;
   }
@@ -223,7 +227,7 @@ export class IBApi extends EventEmitter {
    */
   cancelAccountUpdatesMulti(reqId: number): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.cancelAccountUpdatesMulti(reqId)
+      this.controller.encoder.cancelAccountUpdatesMulti(reqId),
     );
     return this;
   }
@@ -237,7 +241,7 @@ export class IBApi extends EventEmitter {
    */
   cancelCalculateImpliedVolatility(reqId: number): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.cancelCalculateImpliedVolatility(reqId)
+      this.controller.encoder.cancelCalculateImpliedVolatility(reqId),
     );
     return this;
   }
@@ -251,7 +255,7 @@ export class IBApi extends EventEmitter {
    */
   cancelCalculateOptionPrice(reqId: number): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.cancelCalculateOptionPrice(reqId)
+      this.controller.encoder.cancelCalculateOptionPrice(reqId),
     );
     return this;
   }
@@ -265,7 +269,7 @@ export class IBApi extends EventEmitter {
    */
   cancelFundamentalData(reqId: number): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.cancelFundamentalData(reqId)
+      this.controller.encoder.cancelFundamentalData(reqId),
     );
     return this;
   }
@@ -279,7 +283,7 @@ export class IBApi extends EventEmitter {
    */
   cancelHeadTimestamp(tickerId: number): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.cancelHeadTimestamp(tickerId)
+      this.controller.encoder.cancelHeadTimestamp(tickerId),
     );
     return this;
   }
@@ -293,7 +297,7 @@ export class IBApi extends EventEmitter {
    */
   cancelHistogramData(tickerId: number): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.cancelHistogramData(tickerId)
+      this.controller.encoder.cancelHistogramData(tickerId),
     );
     return this;
   }
@@ -307,7 +311,7 @@ export class IBApi extends EventEmitter {
    */
   cancelHistoricalData(tickerId: number): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.cancelHistoricalData(tickerId)
+      this.controller.encoder.cancelHistoricalData(tickerId),
     );
     return this;
   }
@@ -321,7 +325,7 @@ export class IBApi extends EventEmitter {
    */
   cancelMktData(tickerId: number): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.cancelMktData(tickerId)
+      this.controller.encoder.cancelMktData(tickerId),
     );
     return this;
   }
@@ -336,7 +340,7 @@ export class IBApi extends EventEmitter {
    */
   cancelMktDepth(tickerId: number, isSmartDepth: boolean): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.cancelMktDepth(tickerId, isSmartDepth)
+      this.controller.encoder.cancelMktDepth(tickerId, isSmartDepth),
     );
     return this;
   }
@@ -348,7 +352,7 @@ export class IBApi extends EventEmitter {
    */
   cancelNewsBulletins(): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.cancelNewsBulletins()
+      this.controller.encoder.cancelNewsBulletins(),
     );
     return this;
   }
@@ -365,7 +369,7 @@ export class IBApi extends EventEmitter {
    */
   cancelOrder(orderId: number): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.cancelOrder(orderId)
+      this.controller.encoder.cancelOrder(orderId),
     );
     return this;
   }
@@ -391,7 +395,7 @@ export class IBApi extends EventEmitter {
    */
   cancelPnLSingle(reqId: number): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.cancelPnLSingle(reqId)
+      this.controller.encoder.cancelPnLSingle(reqId),
     );
     return this;
   }
@@ -415,7 +419,7 @@ export class IBApi extends EventEmitter {
    */
   cancelPositionsMulti(reqId: number): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.cancelPositionsMulti(reqId)
+      this.controller.encoder.cancelPositionsMulti(reqId),
     );
     return this;
   }
@@ -427,7 +431,7 @@ export class IBApi extends EventEmitter {
    */
   cancelRealTimeBars(tickerId: number): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.cancelRealTimeBars(tickerId)
+      this.controller.encoder.cancelRealTimeBars(tickerId),
     );
     return this;
   }
@@ -441,7 +445,7 @@ export class IBApi extends EventEmitter {
    */
   cancelScannerSubscription(reqId: number): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.cancelScannerSubscription(reqId)
+      this.controller.encoder.cancelScannerSubscription(reqId),
     );
     return this;
   }
@@ -455,7 +459,7 @@ export class IBApi extends EventEmitter {
    */
   cancelTickByTickData(tickerId: number): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.cancelTickByTickData(tickerId)
+      this.controller.encoder.cancelTickByTickData(tickerId),
     );
     return this;
   }
@@ -482,7 +486,7 @@ export class IBApi extends EventEmitter {
     exerciseAction: OptionExerciseAction,
     exerciseQuantity: number,
     account: string,
-    override: number
+    override: number,
   ): IBApi {
     this.controller.schedule(() =>
       this.controller.encoder.exerciseOptions(
@@ -491,8 +495,8 @@ export class IBApi extends EventEmitter {
         exerciseAction as number,
         exerciseQuantity,
         account,
-        override
-      )
+        override,
+      ),
     );
     return this;
   }
@@ -510,7 +514,7 @@ export class IBApi extends EventEmitter {
    */
   placeOrder(id: number, contract: Contract, order: Order): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.placeOrder(id, contract, order)
+      this.controller.encoder.placeOrder(id, contract, order),
     );
     return this;
   }
@@ -522,7 +526,7 @@ export class IBApi extends EventEmitter {
    */
   queryDisplayGroups(reqId: number): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.queryDisplayGroups(reqId)
+      this.controller.encoder.queryDisplayGroups(reqId),
     );
     return this;
   }
@@ -542,7 +546,7 @@ export class IBApi extends EventEmitter {
    */
   replaceFA(reqId: number, faDataType: FADataType, xml: string): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.replaceFA(reqId, faDataType, xml)
+      this.controller.encoder.replaceFA(reqId, faDataType, xml),
     );
     return this;
   }
@@ -601,7 +605,7 @@ export class IBApi extends EventEmitter {
    */
   reqAccountSummary(reqId: number, group: string, tags: string): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.reqAccountSummary(reqId, group, tags)
+      this.controller.encoder.reqAccountSummary(reqId, group, tags),
     );
     return this;
   }
@@ -628,7 +632,7 @@ export class IBApi extends EventEmitter {
    */
   reqAccountUpdates(subscribe: boolean, acctCode: string): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.reqAccountUpdates(subscribe, acctCode)
+      this.controller.encoder.reqAccountUpdates(subscribe, acctCode),
     );
     return this;
   }
@@ -648,15 +652,15 @@ export class IBApi extends EventEmitter {
     reqId: number,
     acctCode: string,
     modelCode: string,
-    ledgerAndNLV: boolean
+    ledgerAndNLV: boolean,
   ): IBApi {
     this.controller.schedule(() =>
       this.controller.encoder.reqAccountUpdatesMulti(
         reqId,
         acctCode,
         modelCode,
-        ledgerAndNLV
-      )
+        ledgerAndNLV,
+      ),
     );
     return this;
   }
@@ -684,7 +688,7 @@ export class IBApi extends EventEmitter {
    */
   reqAutoOpenOrders(bAutoBind: boolean): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.reqAutoOpenOrders(bAutoBind)
+      this.controller.encoder.reqAutoOpenOrders(bAutoBind),
     );
     return this;
   }
@@ -696,7 +700,7 @@ export class IBApi extends EventEmitter {
    */
   reqCompletedOrders(apiOnly: boolean): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.reqCompletedOrders(apiOnly)
+      this.controller.encoder.reqCompletedOrders(apiOnly),
     );
     return this;
   }
@@ -710,7 +714,7 @@ export class IBApi extends EventEmitter {
    */
   reqWshMetaData(reqId: number) {
     this.controller.schedule(() =>
-      this.controller.encoder.reqWshMetaData(reqId)
+      this.controller.encoder.reqWshMetaData(reqId),
     );
     return this;
   }
@@ -722,7 +726,7 @@ export class IBApi extends EventEmitter {
    */
   reqCancelWshMetaData(reqId: number) {
     this.controller.schedule(() =>
-      this.controller.encoder.reqCancelWshMetaData(reqId)
+      this.controller.encoder.reqCancelWshMetaData(reqId),
     );
     return this;
   }
@@ -737,7 +741,7 @@ export class IBApi extends EventEmitter {
    */
   reqWshEventData(reqId: number, conId: number) {
     this.controller.schedule(() =>
-      this.controller.encoder.reqWshEventData(reqId, conId)
+      this.controller.encoder.reqWshEventData(reqId, conId),
     );
     return this;
   }
@@ -749,7 +753,7 @@ export class IBApi extends EventEmitter {
    */
   reqCancelWshEventData(reqId: number) {
     this.controller.schedule(() =>
-      this.controller.encoder.reqCancelWshEventData(reqId)
+      this.controller.encoder.reqCancelWshEventData(reqId),
     );
     return this;
   }
@@ -768,7 +772,7 @@ export class IBApi extends EventEmitter {
    */
   reqContractDetails(reqId: number, contract: Contract): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.reqContractDetails(reqId, contract)
+      this.controller.encoder.reqContractDetails(reqId, contract),
     );
     return this;
   }
@@ -793,7 +797,7 @@ export class IBApi extends EventEmitter {
    */
   reqExecutions(reqId: number, filter: ExecutionFilter): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.reqExecutions(reqId, filter)
+      this.controller.encoder.reqExecutions(reqId, filter),
     );
     return this;
   }
@@ -822,15 +826,15 @@ export class IBApi extends EventEmitter {
     reqId: number,
     contract: Contract,
     reportType: string,
-    fundamentalDataOptions: TagValue[] = []
+    fundamentalDataOptions: TagValue[] = [],
   ): IBApi {
     this.controller.schedule(() =>
       this.controller.encoder.reqFundamentalData(
         reqId,
         contract,
         reportType,
-        fundamentalDataOptions
-      )
+        fundamentalDataOptions,
+      ),
     );
     return this;
   }
@@ -861,7 +865,7 @@ export class IBApi extends EventEmitter {
     contract: Contract,
     whatToShow: string,
     useRTH: boolean,
-    formatDate: number
+    formatDate: number,
   ): IBApi {
     this.controller.schedule(() =>
       this.controller.encoder.reqHeadTimestamp(
@@ -869,8 +873,8 @@ export class IBApi extends EventEmitter {
         contract,
         whatToShow,
         useRTH,
-        formatDate
-      )
+        formatDate,
+      ),
     );
     return this;
   }
@@ -889,7 +893,7 @@ export class IBApi extends EventEmitter {
     contract: Contract,
     useRTH: boolean,
     period: number,
-    periodUnit: DurationUnit
+    periodUnit: DurationUnit,
   ): IBApi {
     const periodStr = period + " " + periodUnit.toString().toLowerCase() + "s";
     this.controller.schedule(() =>
@@ -897,8 +901,8 @@ export class IBApi extends EventEmitter {
         tickerId,
         contract,
         useRTH,
-        periodStr
-      )
+        periodStr,
+      ),
     );
     return this;
   }
@@ -961,7 +965,7 @@ export class IBApi extends EventEmitter {
     whatToShow: string,
     useRTH: number,
     formatDate: number,
-    keepUpToDate: boolean
+    keepUpToDate: boolean,
   ): IBApi {
     this.controller.schedule(() =>
       this.controller.encoder.reqHistoricalData(
@@ -973,8 +977,8 @@ export class IBApi extends EventEmitter {
         whatToShow,
         useRTH,
         formatDate,
-        keepUpToDate
-      )
+        keepUpToDate,
+      ),
     );
     return this;
   }
@@ -996,7 +1000,7 @@ export class IBApi extends EventEmitter {
     startDateTime: string,
     endDateTime: string,
     totalResults: number,
-    historicalNewsOptions: TagValue[] = []
+    historicalNewsOptions: TagValue[] = [],
   ): IBApi {
     this.controller.schedule(() =>
       this.controller.encoder.reqHistoricalNews(
@@ -1006,8 +1010,8 @@ export class IBApi extends EventEmitter {
         startDateTime,
         endDateTime,
         totalResults,
-        historicalNewsOptions
-      )
+        historicalNewsOptions,
+      ),
     );
     return this;
   }
@@ -1032,7 +1036,7 @@ export class IBApi extends EventEmitter {
     numberOfTicks: number,
     whatToShow: string,
     useRTH: number,
-    ignoreSize: boolean
+    ignoreSize: boolean,
   ): IBApi {
     this.controller.schedule(() =>
       this.controller.encoder.reqHistoricalTicks(
@@ -1043,8 +1047,8 @@ export class IBApi extends EventEmitter {
         numberOfTicks,
         whatToShow,
         useRTH,
-        ignoreSize
-      )
+        ignoreSize,
+      ),
     );
     return this;
   }
@@ -1085,7 +1089,7 @@ export class IBApi extends EventEmitter {
    */
   reqMarketDataType(marketDataType: number): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.reqMarketDataType(marketDataType)
+      this.controller.encoder.reqMarketDataType(marketDataType),
     );
     return this;
   }
@@ -1111,7 +1115,7 @@ export class IBApi extends EventEmitter {
     contract: Contract,
     numRows: number,
     isSmartDepth: boolean,
-    mktDepthOptions?: TagValue[]
+    mktDepthOptions?: TagValue[],
   ): IBApi {
     this.controller.schedule(() =>
       this.controller.encoder.reqMktDepth(
@@ -1119,8 +1123,8 @@ export class IBApi extends EventEmitter {
         contract,
         numRows,
         isSmartDepth,
-        mktDepthOptions
-      )
+        mktDepthOptions,
+      ),
     );
     return this;
   }
@@ -1136,7 +1140,7 @@ export class IBApi extends EventEmitter {
    */
   reqMarketRule(marketRuleId: number): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.reqMarketRule(marketRuleId)
+      this.controller.encoder.reqMarketRule(marketRuleId),
     );
     return this;
   }
@@ -1151,7 +1155,7 @@ export class IBApi extends EventEmitter {
    */
   reqMatchingSymbols(reqId: number, pattern: string): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.reqMatchingSymbols(reqId, pattern)
+      this.controller.encoder.reqMatchingSymbols(reqId, pattern),
     );
     return this;
   }
@@ -1194,7 +1198,7 @@ export class IBApi extends EventEmitter {
     contract: Contract,
     genericTickList: string,
     snapshot: boolean,
-    regulatorySnapshot: boolean
+    regulatorySnapshot: boolean,
   ): IBApi {
     this.controller.schedule(() =>
       this.controller.encoder.reqMktData(
@@ -1202,8 +1206,8 @@ export class IBApi extends EventEmitter {
         contract,
         genericTickList,
         snapshot,
-        regulatorySnapshot
-      )
+        regulatorySnapshot,
+      ),
     );
     return this;
   }
@@ -1213,7 +1217,7 @@ export class IBApi extends EventEmitter {
    */
   reqMktDepthExchanges(): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.reqMktDepthExchanges()
+      this.controller.encoder.reqMktDepthExchanges(),
     );
     return this;
   }
@@ -1229,15 +1233,15 @@ export class IBApi extends EventEmitter {
     requestId: number,
     providerCode: string,
     articleId: string,
-    newsArticleOptions: TagValue[] = []
+    newsArticleOptions: TagValue[] = [],
   ): IBApi {
     this.controller.schedule(() =>
       this.controller.encoder.reqNewsArticle(
         requestId,
         providerCode,
         articleId,
-        newsArticleOptions
-      )
+        newsArticleOptions,
+      ),
     );
     return this;
   }
@@ -1252,7 +1256,7 @@ export class IBApi extends EventEmitter {
    */
   reqNewsBulletins(allMsgs: boolean): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.reqNewsBulletins(allMsgs)
+      this.controller.encoder.reqNewsBulletins(allMsgs),
     );
     return this;
   }
@@ -1283,7 +1287,7 @@ export class IBApi extends EventEmitter {
    */
   reqPnL(reqId: number, account: string, modelCode?: string | null): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.reqPnL(reqId, account, modelCode ?? null)
+      this.controller.encoder.reqPnL(reqId, account, modelCode ?? null),
     );
     return this;
   }
@@ -1301,10 +1305,10 @@ export class IBApi extends EventEmitter {
     reqId: number,
     account: string,
     modelCode: string | null,
-    conId: number
+    conId: number,
   ): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.reqPnLSingle(reqId, account, modelCode, conId)
+      this.controller.encoder.reqPnLSingle(reqId, account, modelCode, conId),
     );
     return this;
   }
@@ -1334,10 +1338,10 @@ export class IBApi extends EventEmitter {
   reqPositionsMulti(
     reqId: number,
     account: string,
-    modelCode: string | null
+    modelCode: string | null,
   ): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.reqPositionsMulti(reqId, account, modelCode)
+      this.controller.encoder.reqPositionsMulti(reqId, account, modelCode),
     );
     return this;
   }
@@ -1370,7 +1374,7 @@ export class IBApi extends EventEmitter {
     barSize: number,
     whatToShow: string,
     useRTH: boolean,
-    realTimeBarsOptions: TagValue[] = []
+    realTimeBarsOptions: TagValue[] = [],
   ): IBApi {
     this.controller.schedule(() =>
       this.controller.encoder.reqRealTimeBars(
@@ -1379,8 +1383,8 @@ export class IBApi extends EventEmitter {
         barSize,
         whatToShow,
         useRTH,
-        realTimeBarsOptions
-      )
+        realTimeBarsOptions,
+      ),
     );
     return this;
   }
@@ -1394,7 +1398,7 @@ export class IBApi extends EventEmitter {
    */
   reqScannerParameters(): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.reqScannerParameters()
+      this.controller.encoder.reqScannerParameters(),
     );
     return this;
   }
@@ -1413,15 +1417,15 @@ export class IBApi extends EventEmitter {
     reqId: number,
     subscription: ScannerSubscription,
     scannerSubscriptionOptions: TagValue[] = [],
-    scannerSubscriptionFilterOptions: TagValue[] = []
+    scannerSubscriptionFilterOptions: TagValue[] = [],
   ): IBApi {
     this.controller.schedule(() =>
       this.controller.encoder.reqScannerSubscription(
         reqId,
         subscription,
         scannerSubscriptionOptions,
-        scannerSubscriptionFilterOptions
-      )
+        scannerSubscriptionFilterOptions,
+      ),
     );
     return this;
   }
@@ -1441,7 +1445,7 @@ export class IBApi extends EventEmitter {
     underlyingSymbol: string,
     futFopExchange: string,
     underlyingSecType: string,
-    underlyingConId: number
+    underlyingConId: number,
   ): IBApi {
     this.controller.schedule(() =>
       this.controller.encoder.reqSecDefOptParams(
@@ -1449,8 +1453,8 @@ export class IBApi extends EventEmitter {
         underlyingSymbol,
         futFopExchange,
         underlyingSecType,
-        underlyingConId
-      )
+        underlyingConId,
+      ),
     );
     return this;
   }
@@ -1463,7 +1467,7 @@ export class IBApi extends EventEmitter {
    */
   reqSmartComponents(reqId: number, bboExchange: string): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.reqSmartComponents(reqId, bboExchange)
+      this.controller.encoder.reqSmartComponents(reqId, bboExchange),
     );
     return this;
   }
@@ -1481,7 +1485,7 @@ export class IBApi extends EventEmitter {
    */
   reqSoftDollarTiers(reqId: number): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.reqSoftDollarTiers(reqId)
+      this.controller.encoder.reqSoftDollarTiers(reqId),
     );
     return this;
   }
@@ -1500,7 +1504,7 @@ export class IBApi extends EventEmitter {
     contract: Contract,
     tickType: TickByTickDataType,
     numberOfTicks: number,
-    ignoreSize: boolean
+    ignoreSize: boolean,
   ): IBApi {
     this.controller.schedule(() =>
       this.controller.encoder.reqTickByTickData(
@@ -1508,8 +1512,8 @@ export class IBApi extends EventEmitter {
         contract,
         tickType,
         numberOfTicks,
-        ignoreSize
-      )
+        ignoreSize,
+      ),
     );
     return this;
   }
@@ -1529,7 +1533,7 @@ export class IBApi extends EventEmitter {
    */
   requestFA(faDataType: number): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.requestFA(faDataType)
+      this.controller.encoder.requestFA(faDataType),
     );
     return this;
   }
@@ -1542,7 +1546,7 @@ export class IBApi extends EventEmitter {
    */
   subscribeToGroupEvents(reqId: number, groupId: number): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.subscribeToGroupEvents(reqId, groupId)
+      this.controller.encoder.subscribeToGroupEvents(reqId, groupId),
     );
     return this;
   }
@@ -1560,7 +1564,7 @@ export class IBApi extends EventEmitter {
    */
   updateDisplayGroup(reqId: number, contractInfo: string): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.updateDisplayGroup(reqId, contractInfo)
+      this.controller.encoder.updateDisplayGroup(reqId, contractInfo),
     );
     return this;
   }
@@ -1574,7 +1578,7 @@ export class IBApi extends EventEmitter {
    */
   unsubscribeFromGroupEvents(reqId: number): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.unsubscribeToGroupEvents(reqId)
+      this.controller.encoder.unsubscribeToGroupEvents(reqId),
     );
     return this;
   }
@@ -1588,8 +1592,16 @@ export class IBApi extends EventEmitter {
    */
   setServerLogLevel(logLevel: LogLevel): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.setServerLogLevel(logLevel)
+      this.controller.encoder.setServerLogLevel(logLevel),
     );
+    return this;
+  }
+
+  /**
+   * Requests the user info of the logged user.
+   */
+  reqUserInfo(reqId: number): IBApi {
+    this.controller.schedule(() => this.controller.encoder.reqUserInfo(reqId));
     return this;
   }
 }
@@ -1606,7 +1618,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.all,
-    listener: (event: string, arguments: string[]) => void
+    listener: (event: string, arguments: string[]) => void,
   ): this;
 
   /**
@@ -1631,8 +1643,12 @@ export declare interface IBApi {
    * Provides status information messages for development / logging purpose.
    *
    * message: Message text.
+   * code: Message code.
    */
-  on(event: EventName.info, listener: (message: string) => void): this;
+  on(
+    event: EventName.info,
+    listener: (message: string, code: number) => void,
+  ): this;
 
   /**
    * Notifies about an error and TCP socket connection to the TWS/IB Gateway.
@@ -1648,7 +1664,12 @@ export declare interface IBApi {
    */
   on(
     event: EventName.error,
-    listener: (error: Error, code: ErrorCode, reqId: number) => void
+    listener: (
+      error: Error,
+      code: ErrorCode,
+      reqId: number,
+      advancedOrderReject?: unknown,
+    ) => void,
   ): this;
 
   /**
@@ -1665,7 +1686,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.server,
-    listener: (serverVersion: number, serverConnectionTime: string) => void
+    listener: (serverVersion: number, serverConnectionTime: string) => void,
   ): this;
 
   /**
@@ -1694,7 +1715,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.result,
-    listener: (event: string, arguments: string[]) => void
+    listener: (event: string, arguments: string[]) => void,
   ): this;
 
   /**
@@ -1707,7 +1728,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.accountDownloadEnd,
-    listener: (account: string) => void
+    listener: (account: string) => void,
   ): this;
 
   /**
@@ -1767,8 +1788,8 @@ export declare interface IBApi {
       account: string,
       tag: string,
       value: string,
-      currency: string
-    ) => void
+      currency: string,
+    ) => void,
   ): this;
 
   /**
@@ -1783,7 +1804,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.accountSummaryEnd,
-    listener: (reqId: number) => void
+    listener: (reqId: number) => void,
   ): this;
 
   /**
@@ -1812,8 +1833,8 @@ export declare interface IBApi {
       modelCode: string,
       key: string,
       value: string,
-      currency: string
-    ) => void
+      currency: string,
+    ) => void,
   ): this;
 
   /**
@@ -1826,7 +1847,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.accountUpdateMultiEnd,
-    listener: (reqId: number) => void
+    listener: (reqId: number) => void,
   ): this;
 
   /**
@@ -1841,7 +1862,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.bondContractDetails,
-    listener: (reqId: number, contract: Contract) => void
+    listener: (reqId: number, contract: Contract) => void,
   ): this;
 
   /**
@@ -1854,7 +1875,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.commissionReport,
-    listener: (commissionReport: CommissionReport) => void
+    listener: (commissionReport: CommissionReport) => void,
   ): this;
 
   /**
@@ -1871,7 +1892,11 @@ export declare interface IBApi {
    */
   on(
     event: EventName.completedOrder,
-    listener: (contract: Contract, order: Order, orderState: OrderState) => void
+    listener: (
+      contract: Contract,
+      order: Order,
+      orderState: OrderState,
+    ) => void,
   ): this;
 
   /**
@@ -1896,7 +1921,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.wshMetaData,
-    listener: (reqId: number, dataJson: string) => void
+    listener: (reqId: number, dataJson: string) => void,
   ): this;
 
   /**
@@ -1912,7 +1937,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.wshEventData,
-    listener: (reqId: number, dataJson: string) => void
+    listener: (reqId: number, dataJson: string) => void,
   ): this;
 
   /**
@@ -1940,7 +1965,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.contractDetails,
-    listener: (reqId: number, contractDetails: ContractDetails) => void
+    listener: (reqId: number, contractDetails: ContractDetails) => void,
   ): this;
 
   /**
@@ -1953,7 +1978,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.contractDetailsEnd,
-    listener: (reqId: number) => void
+    listener: (reqId: number) => void,
   ): this;
 
   /**
@@ -1984,8 +2009,8 @@ export declare interface IBApi {
     event: EventName.deltaNeutralValidation,
     listener: (
       reqId: number,
-      deltaNeutralContract: DeltaNeutralContract
-    ) => void
+      deltaNeutralContract: DeltaNeutralContract,
+    ) => void,
   ): this;
 
   /**
@@ -2014,7 +2039,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.marketDataType,
-    listener: (reqId: number, marketDataType: number) => void
+    listener: (reqId: number, marketDataType: number) => void,
   ): this;
 
   /**
@@ -2030,7 +2055,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.displayGroupList,
-    listener: (reqId: number, groups: string) => void
+    listener: (reqId: number, groups: string) => void,
   ): this;
 
   /**
@@ -2046,7 +2071,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.displayGroupUpdated,
-    listener: (reqId: number, contractInfo: string) => void
+    listener: (reqId: number, contractInfo: string) => void,
   ): this;
 
   /**
@@ -2080,7 +2105,12 @@ export declare interface IBApi {
    */
   on(
     event: EventName.error,
-    listener: (id: number, errorCode: number, errorMsg: string) => void
+    listener: (
+      id: number,
+      errorCode: number,
+      errorMsg: string,
+      advancedOrderReject?: unknown,
+    ) => void,
   ): this;
 
   /**
@@ -2097,7 +2127,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.execDetails,
-    listener: (reqId: number, contract: Contract, execution: Execution) => void
+    listener: (reqId: number, contract: Contract, execution: Execution) => void,
   ): this;
 
   /**
@@ -2120,7 +2150,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.familyCodes,
-    listener: (familyCodes: FamilyCode[]) => void
+    listener: (familyCodes: FamilyCode[]) => void,
   ): this;
 
   /**
@@ -2135,8 +2165,8 @@ export declare interface IBApi {
     event: EventName.contractDescriptions,
     listener: (
       reqId: number,
-      contractDescriptions: ContractDescription[]
-    ) => void
+      contractDescriptions: ContractDescription[],
+    ) => void,
   ): this;
 
   /**
@@ -2151,7 +2181,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.fundamentalData,
-    listener: (reqId: number, data: string) => void
+    listener: (reqId: number, data: string) => void,
   ): this;
 
   /**
@@ -2166,7 +2196,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.headTimestamp,
-    listener: (reqId: number, headTimestamp: string) => void
+    listener: (reqId: number, headTimestamp: string) => void,
   ): this;
 
   /**
@@ -2181,7 +2211,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.histogramData,
-    listener: (reqId: number, data: HistogramEntry[]) => void
+    listener: (reqId: number, data: HistogramEntry[]) => void,
   ): this;
 
   /**
@@ -2217,8 +2247,8 @@ export declare interface IBApi {
       volume: number,
       count: number | undefined,
       WAP: number,
-      hasGaps: boolean | undefined
-    ) => void
+      hasGaps: boolean | undefined,
+    ) => void,
   ): this;
 
   /**
@@ -2255,8 +2285,8 @@ export declare interface IBApi {
       close: number,
       volume: number,
       count: number,
-      WAP: number
-    ) => void
+      WAP: number,
+    ) => void,
   ): this;
 
   on(
@@ -2266,8 +2296,8 @@ export declare interface IBApi {
       time: string,
       providerCode: string,
       articleId: string,
-      headline: string
-    ) => void
+      headline: string,
+    ) => void,
   ): this;
 
   /**
@@ -2282,7 +2312,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.historicalNewsEnd,
-    listener: (reqId: number, hasMore: boolean) => void
+    listener: (reqId: number, hasMore: boolean) => void,
   ): this;
 
   /**
@@ -2299,7 +2329,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.historicalTicks,
-    listener: (reqId: number, ticks: HistoricalTick[], done: boolean) => void
+    listener: (reqId: number, ticks: HistoricalTick[], done: boolean) => void,
   ): this;
 
   /**
@@ -2319,8 +2349,8 @@ export declare interface IBApi {
     listener: (
       reqId: number,
       ticks: HistoricalTickBidAsk[],
-      done: boolean
-    ) => void
+      done: boolean,
+    ) => void,
   ): this;
 
   /**
@@ -2340,8 +2370,8 @@ export declare interface IBApi {
     listener: (
       reqId: number,
       ticks: HistoricalTickLast[],
-      done: boolean
-    ) => void
+      done: boolean,
+    ) => void,
   ): this;
 
   /**
@@ -2355,7 +2385,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.managedAccounts,
-    listener: (accountsList: string) => void
+    listener: (accountsList: string) => void,
   ): this;
 
   /**
@@ -2374,8 +2404,8 @@ export declare interface IBApi {
     event: EventName.marketRule,
     listener: (
       marketRuleId: number,
-      priceIncrements: unknown[] /* TODO: replace with PriceIncrement type as soon as available. */
-    ) => void
+      priceIncrements: unknown[] /* TODO: replace with PriceIncrement type as soon as available. */,
+    ) => void,
   ): this;
 
   /**
@@ -2388,7 +2418,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.mktDepthExchanges,
-    listener: (depthMktDataDescriptions: DepthMktDataDescription[]) => void
+    listener: (depthMktDataDescriptions: DepthMktDataDescription[]) => void,
   ): this;
 
   /**
@@ -2405,7 +2435,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.newsArticle,
-    listener: (reqId: number, articleType: number, articleText: string) => void
+    listener: (reqId: number, articleType: number, articleText: string) => void,
   ): this;
 
   /**
@@ -2418,7 +2448,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.newsProviders,
-    listener: (newsProviders: NewsProvider[]) => void
+    listener: (newsProviders: NewsProvider[]) => void,
   ): this;
 
   /**
@@ -2454,8 +2484,8 @@ export declare interface IBApi {
       orderId: number,
       contract: Contract,
       order: Order,
-      orderState: OrderState
-    ) => void
+      orderState: OrderState,
+    ) => void,
   ): this;
 
   /**
@@ -2481,7 +2511,11 @@ export declare interface IBApi {
    */
   on(
     event: EventName.orderBound,
-    listener: (orderId: number, apiClientId: number, apiOrderId: number) => void
+    listener: (
+      orderId: number,
+      apiClientId: number,
+      apiOrderId: number,
+    ) => void,
   ): this;
 
   /**
@@ -2546,8 +2580,8 @@ export declare interface IBApi {
       lastFillPrice?: number,
       clientId?: number,
       whyHeld?: string,
-      mktCapPrice?: number
-    ) => void
+      mktCapPrice?: number,
+    ) => void,
   ): this;
 
   /**
@@ -2570,8 +2604,8 @@ export declare interface IBApi {
       reqId: number,
       dailyPnL: number,
       unrealizedPnL?: number,
-      realizedPnL?: number
-    ) => void
+      realizedPnL?: number,
+    ) => void,
   ): this;
 
   /**
@@ -2598,8 +2632,8 @@ export declare interface IBApi {
       dailyPnL: number,
       unrealizedPnL: number | undefined,
       realizedPnL: number | undefined,
-      value: number
-    ) => void
+      value: number,
+    ) => void,
   ): this;
 
   /**
@@ -2622,8 +2656,8 @@ export declare interface IBApi {
       account: string,
       contract: Contract,
       pos: number,
-      avgCost?: number
-    ) => void
+      avgCost?: number,
+    ) => void,
   ): this;
 
   /**
@@ -2661,8 +2695,8 @@ export declare interface IBApi {
       modelCode: string,
       contract: Contract,
       pos: number,
-      avgCost: number
-    ) => void
+      avgCost: number,
+    ) => void,
   ): this;
 
   /**
@@ -2675,7 +2709,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.positionMultiEnd,
-    listener: (reqId: number) => void
+    listener: (reqId: number) => void,
   ): this;
 
   /**
@@ -2705,8 +2739,8 @@ export declare interface IBApi {
       close: number,
       volume: number,
       WAP: number,
-      count: number
-    ) => void
+      count: number,
+    ) => void,
   ): this;
 
   /**
@@ -2725,7 +2759,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.receiveFA,
-    listener: (faDataType: number, faXmlData: string) => void
+    listener: (faDataType: number, faXmlData: string) => void,
   ): this;
 
   /**
@@ -2740,7 +2774,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.replaceFAEnd,
-    listener: (reqId: number, text: string) => void
+    listener: (reqId: number, text: string) => void,
   ): this;
 
   /**
@@ -2755,7 +2789,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.rerouteMktDataReq,
-    listener: (reqId: number, conId: number, exchange: string) => void
+    listener: (reqId: number, conId: number, exchange: string) => void,
   ): this;
 
   /**
@@ -2771,7 +2805,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.rerouteMktDepthReq,
-    listener: (reqId: number, conId: number, exchange: string) => void
+    listener: (reqId: number, conId: number, exchange: string) => void,
   ): this;
 
   /**
@@ -2803,8 +2837,8 @@ export declare interface IBApi {
       distance: string,
       benchmark: string,
       projection: string,
-      legsStr?: string
-    ) => void
+      legsStr?: string,
+    ) => void,
   ): this;
 
   /**
@@ -2856,8 +2890,8 @@ export declare interface IBApi {
       tradingClass: string,
       multiplier: string,
       expirations: string[],
-      strikes: number[]
-    ) => void
+      strikes: number[],
+    ) => void,
   ): this;
 
   /**
@@ -2870,7 +2904,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.securityDefinitionOptionParameterEnd,
-    listener: (reqId: number) => void
+    listener: (reqId: number) => void,
   ): this;
 
   /**
@@ -2883,7 +2917,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.smartComponents,
-    listener: (reqId: number, theMap: Map<number, [string, string]>) => void
+    listener: (reqId: number, theMap: Map<number, [string, string]>) => void,
   ): this;
 
   /**
@@ -2898,7 +2932,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.softDollarTiers,
-    listener: (reqId: number, tiers: SoftDollarTier[]) => void
+    listener: (reqId: number, tiers: SoftDollarTier[]) => void,
   ): this;
 
   /**
@@ -2915,8 +2949,8 @@ export declare interface IBApi {
     event: EventName.symbolSamples,
     listener: (
       reqId: number,
-      contractDescriptions: ContractDescription[]
-    ) => void
+      contractDescriptions: ContractDescription[],
+    ) => void,
   ): this;
 
   /**
@@ -2949,8 +2983,8 @@ export declare interface IBApi {
       time: number,
       price: number,
       size: number,
-      tickAttribLast: unknown /* TODO: replace with TickAttribLast type as soon as available. */
-    ) => void
+      tickAttribLast: unknown /* TODO: replace with TickAttribLast type as soon as available. */,
+    ) => void,
   ): this;
 
   /**
@@ -2982,8 +3016,8 @@ export declare interface IBApi {
       askPrice: number,
       bidSize: number,
       askSize: number,
-      tickAttribBidAsk: unknown /* TODO: replace with TickAttribBidAsk type as soon as available. */
-    ) => void
+      tickAttribBidAsk: unknown /* TODO: replace with TickAttribBidAsk type as soon as available. */,
+    ) => void,
   ): this;
 
   /**
@@ -3000,7 +3034,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.tickByTickMidPoint,
-    listener: (reqId: number, time: number, midPoint: number) => void
+    listener: (reqId: number, time: number, midPoint: number) => void,
   ): this;
 
   /**
@@ -3037,8 +3071,8 @@ export declare interface IBApi {
       holdDays: number,
       futureLastTradeDate: string,
       dividendImpact: number,
-      dividendsToLastTradeDate: number
-    ) => void
+      dividendsToLastTradeDate: number,
+    ) => void,
   ): this;
 
   /**
@@ -3055,7 +3089,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.tickGeneric,
-    listener: (tickerId: number, field: TickType, value: number) => void
+    listener: (tickerId: number, field: TickType, value: number) => void,
   ): this;
 
   /**
@@ -3078,8 +3112,8 @@ export declare interface IBApi {
       providerCode: string,
       articleId: string,
       headline: string,
-      extraData: string
-    ) => void
+      extraData: string,
+    ) => void,
   ): this;
 
   /**
@@ -3128,8 +3162,8 @@ export declare interface IBApi {
       gamma?: number,
       vega?: number,
       theta?: number,
-      undPrice?: number
-    ) => void
+      undPrice?: number,
+    ) => void,
   ): this;
 
   /**
@@ -3158,8 +3192,8 @@ export declare interface IBApi {
       tickerId: number,
       field: TickType,
       value: number,
-      attribs?: unknown /* TODO: replace with TickAttrib type as soon as available. */
-    ) => void
+      attribs?: unknown /* TODO: replace with TickAttrib type as soon as available. */,
+    ) => void,
   ): this;
 
   /**
@@ -3176,8 +3210,8 @@ export declare interface IBApi {
       tickerId: number,
       minTick: number,
       bboExchange: string,
-      snapshotPermissions: number
-    ) => void
+      snapshotPermissions: number,
+    ) => void,
   ): this;
 
   /**
@@ -3194,7 +3228,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.tickSize,
-    listener: (tickerId: number, field?: TickType, value?: number) => void
+    listener: (tickerId: number, field?: TickType, value?: number) => void,
   ): this;
 
   /**
@@ -3213,7 +3247,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.tickString,
-    listener: (tickerId: number, field: TickType, value: string) => void
+    listener: (tickerId: number, field: TickType, value: string) => void,
   ): this;
 
   /**
@@ -3226,7 +3260,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.updateAccountTime,
-    listener: (timestamp: string) => void
+    listener: (timestamp: string) => void,
   ): this;
 
   /**
@@ -3384,8 +3418,8 @@ export declare interface IBApi {
       key: string,
       value: string,
       currency: string,
-      accountName: string
-    ) => void
+      accountName: string,
+    ) => void,
   ): this;
 
   /**
@@ -3424,8 +3458,8 @@ export declare interface IBApi {
       averageCost?: number,
       unrealizedPNL?: number,
       realizedPNL?: number,
-      accountName?: string
-    ) => void
+      accountName?: string,
+    ) => void,
   ): this;
 
   /**
@@ -3457,8 +3491,8 @@ export declare interface IBApi {
       operation: number,
       side: number,
       price: number,
-      size: number
-    ) => void
+      size: number,
+    ) => void,
   ): this;
 
   /**
@@ -3496,8 +3530,8 @@ export declare interface IBApi {
       side: number,
       price: number,
       size: number,
-      isSmartDepth?: boolean
-    ) => void
+      isSmartDepth?: boolean,
+    ) => void,
   ): this;
 
   /**
@@ -3521,7 +3555,20 @@ export declare interface IBApi {
       msgId: number,
       msgType: number,
       message: string,
-      origExchange: string
-    ) => void
+      origExchange: string,
+    ) => void,
+  ): this;
+
+  /**
+   * Notifies when new user info has arrived.
+   *
+   * @param listener
+   * whiteBrandingId: The user's info
+   *
+   * @see [[reqUserInfo]]
+   */
+  on(
+    event: EventName.userInfo,
+    listener: (whiteBrandingId: string) => void,
   ): this;
 }

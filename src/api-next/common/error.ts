@@ -12,4 +12,7 @@ export interface IBApiNextError {
 
   /**  The request id that caused the error, or -1. */
   reqId: number;
+
+  /** Additional information in case of order rejection */
+  advancedOrderReject?: unknown;
 }

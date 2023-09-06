@@ -4,6 +4,7 @@
  * Incoming message IDs.
  */
 export enum IN_MSG_ID {
+  UNDEFINED = -1,
   TICK_PRICE = 1,
   TICK_SIZE = 2,
   ORDER_STATUS = 3,
@@ -84,5 +85,6 @@ export enum IN_MSG_ID {
   REPLACE_FA_END = 103,
   WSH_META_DATA = 104,
   WSH_EVENT_DATA = 105,
-  HISTORICAL_SCHEDULE = 106  
+  HISTORICAL_SCHEDULE = 106,
+  USER_INFO                 = 107,
 }

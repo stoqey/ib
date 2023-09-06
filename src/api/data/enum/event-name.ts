@@ -279,6 +279,8 @@ export enum EventName {
   wshEventData = "wshEventData",
 
   /** Returns historical schedule. */
-  historicalSchedule = "historicalSchedule"
+  historicalSchedule = "historicalSchedule",
 
+  /** Returns user info. */
+  userInfo = "userInfo",
 }

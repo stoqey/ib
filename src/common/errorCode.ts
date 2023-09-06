@@ -1,6 +1,8 @@
 /**
  * [[IBApi]] error event codes.
  */
+/* eslint-disable @typescript-eslint/no-duplicate-enum-values */
+
 export enum ErrorCode {
   /** Already connected. */
   ALREADY_CONNECTED = 501,
@@ -252,7 +254,11 @@ export enum ErrorCode {
   FAIL_SEND_CAN_WSH_EVENT_DATA = 576,
 
   /* Invalid symbol in string */
-  INVALID_SYMBOL = 579
+  INVALID_SYMBOL = 579,
 
+  /* Part of requested market data is not subscribed. */
+  PART_OF_REQUESTED_DATA_NOT_SUBSCRIBED = 10090,
 
+  /* Requested market data is not subscribed. Displaying delayed market data. */
+  DISPLAYING_DELAYED_DATA = 10167,
 }

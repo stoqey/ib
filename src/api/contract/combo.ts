@@ -1,4 +1,5 @@
 import SecType from "../data/enum/sec-type";
+import ComboLeg from "./comboLeg";
 import { Contract } from "./contract";
 
 /**
@@ -7,6 +8,7 @@ import { Contract } from "./contract";
 export class Combo implements Contract {
   constructor(
     public symbol: string,
+    public comboLegs: ComboLeg[],
     public currency?: string,
     public exchange?: string
   ) {

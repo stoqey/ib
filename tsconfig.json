@@ -12,7 +12,7 @@
     "sourceMap": true,
     "resolveJsonModule": false,
     "noImplicitAny": false, //TODO set to true once all data has types
-    "target": "es2017",
+    "target": "ES2021",
     "typeRoots": ["node_modules/@types", "node_modules/types", "src/ts-types"]
   },
   "include": ["./src"]

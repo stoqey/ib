@@ -20,6 +20,10 @@ export class Option implements Contract {
 
   public secType = SecType.OPT;
   public multiplier = 100;
+
+  public get lastTradeDateOrContractMonth(): string {
+    return this.expiry;
+  }
 }
 
 export default Option;

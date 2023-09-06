@@ -5,7 +5,7 @@ import LogLevel from "../../api/data/enum/log-level";
 import MIN_SERVER_VER from "../../api/data/enum/min-server-version";
 import OptionExerciseAction from "../../api/data/enum/option-exercise-action";
 import SecType from "../../api/data/enum/sec-type";
-import { ErrorCode } from "../../common/errorCode";
+import { BarSizeSetting } from "../../api/historical/bar-size-setting";
 import { ScannerSubscription } from "../../api/market/scannerSubscription";
 import { TickByTickDataType } from "../../api/market/tickByTickDataType";
 import ExecutionCondition from "../../api/order/condition/execution-condition";
@@ -18,7 +18,7 @@ import { OrderConditionType } from "../../api/order/enum/order-condition-type";
 import { OrderType } from "../../api/order/enum/orderType";
 import { Order } from "../../api/order/order";
 import { ExecutionFilter } from "../../api/report/executionFilter";
-import { BarSizeSetting } from "../../api/historical/bar-size-setting";
+import { ErrorCode } from "../../common/errorCode";
 
 /**
  * @internal
@@ -105,6 +105,7 @@ export enum OUT_MSG_ID {
   CANCEL_WSH_META_DATA = 101,
   REQ_WSH_EVENT_DATA = 102,
   CANCEL_WSH_EVENT_DATA = 103,
+  REQ_USER_INFO = 104,
 }
 
 /**
@@ -188,7 +189,7 @@ export class Encoder {
     this.callback.emitError(
       `Server Version ${this.serverVersion}: ${errMsg}`,
       code,
-      reqId
+      reqId,
     );
   }
 
@@ -250,13 +251,13 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     optionPrice: number,
     underPrice: number,
     //reserved for future use, must be blank
-    impliedVolatilityOptions?: TagValue[]
+    impliedVolatilityOptions?: TagValue[],
   ): void {
     if (this.serverVersion < MIN_SERVER_VER.REQ_CALC_IMPLIED_VOLAT) {
       return this.emitError(
         "It does not support calculate implied volatility requests.",
         ErrorCode.UPDATE_TWS,
-        reqId
+        reqId,
       );
     }
 
@@ -265,7 +266,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support tradingClass parameter in calculateImpliedVolatility.",
           ErrorCode.UPDATE_TWS,
-          reqId
+          reqId,
         );
       }
     }
@@ -314,13 +315,13 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     volatility: number,
     underPrice: number,
     //reserved for future use, must be blank
-    optionPriceOptions?: TagValue[]
+    optionPriceOptions?: TagValue[],
   ): void {
     if (this.serverVersion < MIN_SERVER_VER.REQ_CALC_OPTION_PRICE) {
       return this.emitError(
         "It does not support calculate option price requests.",
         ErrorCode.UPDATE_TWS,
-        reqId
+        reqId,
       );
     }
 
@@ -329,7 +330,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support tradingClass parameter in calculateOptionPrice.",
           ErrorCode.UPDATE_TWS,
-          reqId
+          reqId,
         );
       }
     }
@@ -377,7 +378,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It not support account summary cancellation.",
         ErrorCode.UPDATE_TWS,
-        reqId
+        reqId,
       );
     }
 
@@ -403,7 +404,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support calculate implied volatility cancellation.",
         ErrorCode.UPDATE_TWS,
-        reqId
+        reqId,
       );
     }
 
@@ -420,7 +421,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support calculate option price cancellation.",
         ErrorCode.UPDATE_TWS,
-        reqId
+        reqId,
       );
     }
 
@@ -437,7 +438,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support fundamental data requests.",
         ErrorCode.UPDATE_TWS,
-        reqId
+        reqId,
       );
     }
 
@@ -454,7 +455,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support historical data query cancellation.",
         ErrorCode.UPDATE_TWS,
-        tickerId
+        tickerId,
       );
     }
 
@@ -480,7 +481,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "This feature is only available for versions of TWS >=6.",
         ErrorCode.UPDATE_TWS,
-        tickerId
+        tickerId,
       );
     }
 
@@ -488,7 +489,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support SMART depth cancel.",
         ErrorCode.UPDATE_TWS,
-        tickerId
+        tickerId,
       );
     }
 
@@ -529,7 +530,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support position cancellation.",
         ErrorCode.UPDATE_TWS,
-        -1
+        -1,
       );
     }
 
@@ -546,7 +547,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support realtime bar data query cancellation.",
         ErrorCode.UPDATE_TWS,
-        tickerId
+        tickerId,
       );
     }
 
@@ -563,7 +564,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support API scanner subscription.",
         ErrorCode.UPDATE_TWS,
-        tickerId
+        tickerId,
       );
     }
 
@@ -581,7 +582,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     exerciseAction: OptionExerciseAction,
     exerciseQuantity: number,
     account: string,
-    override: number
+    override: number,
   ): void {
     const version = 2;
 
@@ -589,7 +590,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support options exercise from the API.",
         ErrorCode.UPDATE_TWS,
-        tickerId
+        tickerId,
       );
     }
 
@@ -598,7 +599,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support conId and tradingClass parameters in exerciseOptions.",
           ErrorCode.UPDATE_TWS,
-          tickerId
+          tickerId,
         );
       }
     }
@@ -644,7 +645,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support Scale orders.",
           ErrorCode.UPDATE_TWS,
-          id
+          id,
         );
       }
     }
@@ -655,7 +656,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
           return this.emitError(
             "It does not support SSHORT flag for combo legs.",
             ErrorCode.UPDATE_TWS,
-            id
+            id,
           );
         }
       });
@@ -666,7 +667,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support what-if orders.",
           ErrorCode.UPDATE_TWS,
-          id
+          id,
         );
       }
     }
@@ -676,7 +677,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support delta-neutral orders.",
           ErrorCode.UPDATE_TWS,
-          id
+          id,
         );
       }
     }
@@ -686,7 +687,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support Subsequent Level Size for Scale orders.",
           ErrorCode.UPDATE_TWS,
-          id
+          id,
         );
       }
     }
@@ -696,7 +697,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support algo orders.",
           ErrorCode.UPDATE_TWS,
-          id
+          id,
         );
       }
     }
@@ -706,7 +707,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support notHeld parameter.",
           ErrorCode.UPDATE_TWS,
-          id
+          id,
         );
       }
     }
@@ -716,7 +717,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support secIdType and secId parameters.",
           ErrorCode.UPDATE_TWS,
-          id
+          id,
         );
       }
     }
@@ -726,7 +727,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support conId parameter.",
           ErrorCode.UPDATE_TWS,
-          id
+          id,
         );
       }
     }
@@ -736,7 +737,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support exemptCode parameter.",
           ErrorCode.UPDATE_TWS,
-          id
+          id,
         );
       }
     }
@@ -747,7 +748,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
           return this.emitError(
             "It does not support exemptCode parameter.",
             ErrorCode.UPDATE_TWS,
-            id
+            id,
           );
         }
       });
@@ -758,7 +759,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support hedge orders.",
           ErrorCode.UPDATE_TWS,
-          id
+          id,
         );
       }
     }
@@ -768,7 +769,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support optOutSmartRouting parameter.",
           ErrorCode.UPDATE_TWS,
-          id
+          id,
         );
       }
     }
@@ -783,7 +784,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support deltaNeutral parameters: ConId, SettlingFirm, ClearingAccount, ClearingIntent.",
           ErrorCode.UPDATE_TWS,
-          id
+          id,
         );
       }
     }
@@ -798,7 +799,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support deltaNeutral parameters: OpenClose, ShortSale, ShortSaleSlot, DesignatedLocation.",
           ErrorCode.UPDATE_TWS,
-          id
+          id,
         );
       }
     }
@@ -820,7 +821,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
           return this.emitError(
             "It does not support Scale order parameters: PriceAdjustValue, PriceAdjustInterval, ProfitOffset, AutoReset, InitPosition, InitFillQty and RandomPercent",
             ErrorCode.UPDATE_TWS,
-            id
+            id,
           );
         }
       }
@@ -835,7 +836,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
           return this.emitError(
             "It does not support per-leg prices for order combo legs.",
             ErrorCode.UPDATE_TWS,
-            id
+            id,
           );
         }
       });
@@ -846,7 +847,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support trailing percent parameter.",
           ErrorCode.UPDATE_TWS,
-          id
+          id,
         );
       }
     }
@@ -856,7 +857,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support tradingClass parameters in placeOrder.",
           ErrorCode.UPDATE_TWS,
-          id
+          id,
         );
       }
     }
@@ -870,7 +871,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support scaleTable, activeStartTime and activeStopTime parameters.",
           ErrorCode.UPDATE_TWS,
-          id
+          id,
         );
       }
     }
@@ -879,7 +880,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support algoId parameter",
         ErrorCode.UPDATE_TWS,
-        id
+        id,
       );
     }
 
@@ -892,7 +893,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support scaleTable, activeStartTime and activeStopTime parameters.",
           ErrorCode.UPDATE_TWS,
-          id
+          id,
         );
       }
     }
@@ -902,7 +903,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support order solicited parameter.",
           ErrorCode.UPDATE_TWS,
-          id
+          id,
         );
       }
     }
@@ -912,7 +913,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support model code parameter.",
           ErrorCode.UPDATE_TWS,
-          id
+          id,
         );
       }
     }
@@ -924,7 +925,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support ext operator",
         ErrorCode.UPDATE_TWS,
-        id
+        id,
       );
     }
 
@@ -935,7 +936,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support soft dollar tier",
         ErrorCode.UPDATE_TWS,
-        id
+        id,
       );
     }
 
@@ -944,7 +945,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support cash quantity parameter",
           ErrorCode.UPDATE_TWS,
-          id
+          id,
         );
       }
     }
@@ -956,7 +957,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support MIFID II decision maker parameters",
         ErrorCode.UPDATE_TWS,
-        id
+        id,
       );
     }
 
@@ -967,7 +968,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support MIFID II execution parameters",
         ErrorCode.UPDATE_TWS,
-        id
+        id,
       );
     }
 
@@ -978,7 +979,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support don't use auto price for hedge parameter.",
         ErrorCode.UPDATE_TWS,
-        id
+        id,
       );
     }
 
@@ -989,7 +990,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support oms container parameter.",
         ErrorCode.UPDATE_TWS,
-        id
+        id,
       );
     }
 
@@ -1000,7 +1001,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support D-Peg orders.",
         ErrorCode.UPDATE_TWS,
-        id
+        id,
       );
     }
 
@@ -1011,7 +1012,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support price management algo parameter",
         ErrorCode.UPDATE_TWS,
-        id
+        id,
       );
     }
 
@@ -1022,7 +1023,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support duration attribute",
         ErrorCode.UPDATE_TWS,
-        id
+        id,
       );
     }
 
@@ -1033,7 +1034,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support postToAts attribute",
         ErrorCode.UPDATE_TWS,
-        id
+        id,
       );
     }
 
@@ -1044,7 +1045,18 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support autoCancelParent attribute",
         ErrorCode.UPDATE_TWS,
-        id
+        id,
+      );
+    }
+
+    if (
+      this.serverVersion < MIN_SERVER_VER.ADVANCED_ORDER_REJECT &&
+      order.advancedErrorOverride != null
+    ) {
+      return this.emitError(
+        "It does not support advanced error override attribute",
+        ErrorCode.UPDATE_TWS,
+        id,
       );
     }
 
@@ -1092,7 +1104,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       tokens.push(order.totalQuantity);
     } else {
       tokens.push(
-        order.totalQuantity ? Math.round(order.totalQuantity) : undefined
+        order.totalQuantity ? Math.round(order.totalQuantity) : undefined,
       );
     }
 
@@ -1523,7 +1535,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     if (this.serverVersion >= MIN_SERVER_VER.SOFT_DOLLAR_TIER) {
       tokens.push(order.softDollarTier?.name ? order.softDollarTier.name : "");
       tokens.push(
-        order.softDollarTier?.value ? order.softDollarTier.value : ""
+        order.softDollarTier?.value ? order.softDollarTier.value : "",
       );
     }
 
@@ -1569,6 +1581,9 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       tokens.push(order.autoCancelParent);
     }
 
+    if (this.serverVersion >= MIN_SERVER_VER.ADVANCED_ORDER_REJECT)
+      tokens.push(order.advancedErrorOverride);
+
     this.sendMsg(tokens);
   }
 
@@ -1580,7 +1595,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "This feature is only available for versions of TWS >= 13.",
         ErrorCode.UPDATE_TWS,
-        -1
+        -1,
       );
     }
 
@@ -1603,7 +1618,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support account summary requests.",
         ErrorCode.UPDATE_TWS,
-        reqId
+        reqId,
       );
     }
 
@@ -1620,7 +1635,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support pnl requests.",
         ErrorCode.UPDATE_TWS,
-        reqId
+        reqId,
       );
     }
 
@@ -1635,7 +1650,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support pnl requests.",
         ErrorCode.UPDATE_TWS,
-        reqId
+        reqId,
       );
     }
 
@@ -1649,13 +1664,13 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     reqId: number,
     account: string,
     modelCode: string | null,
-    conId: number
+    conId: number,
   ): void {
     if (this.serverVersion < MIN_SERVER_VER.PNL) {
       return this.emitError(
         "It does not support pnl requests.",
         ErrorCode.UPDATE_TWS,
-        reqId
+        reqId,
       );
     }
 
@@ -1670,7 +1685,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support pnl requests.",
         ErrorCode.UPDATE_TWS,
-        reqId
+        reqId,
       );
     }
 
@@ -1700,7 +1715,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     reqId: number,
     acctCode: string,
     modelCode: string,
-    ledgerAndNLV: boolean
+    ledgerAndNLV: boolean,
   ): void {
     const version = 2;
 
@@ -1710,7 +1725,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       reqId,
       acctCode,
       modelCode,
-      ledgerAndNLV
+      ledgerAndNLV,
     );
   }
 
@@ -1740,13 +1755,13 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     contract: Contract,
     whatToShow: string,
     useRTH: boolean,
-    formatDate: number
+    formatDate: number,
   ): void {
     if (this.serverVersion < MIN_SERVER_VER.REQ_HEAD_TIMESTAMP) {
       return this.emitError(
         "It does not support reqHeadTimeStamp",
         ErrorCode.UPDATE_TWS,
-        reqId
+        reqId,
       );
     }
 
@@ -1756,7 +1771,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       this.encodeContract(contract),
       whatToShow,
       useRTH ? 1 : 0,
-      formatDate
+      formatDate,
     );
   }
 
@@ -1768,7 +1783,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "This feature is only available for versions of TWS >=4",
         ErrorCode.UPDATE_TWS,
-        reqId
+        reqId,
       );
     }
 
@@ -1777,7 +1792,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support secIdType and secId parameters.",
           ErrorCode.UPDATE_TWS,
-          reqId
+          reqId,
         );
       }
     }
@@ -1787,7 +1802,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support tradingClass parameter in reqContractDetails.",
           ErrorCode.UPDATE_TWS,
-          reqId
+          reqId,
         );
       }
     }
@@ -1797,7 +1812,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support primaryExchange parameter in reqContractDetails.",
           ErrorCode.UPDATE_TWS,
-          reqId
+          reqId,
         );
       }
     }
@@ -1867,7 +1882,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support current time requests.",
         ErrorCode.UPDATE_TWS,
-        -1
+        -1,
       );
     }
 
@@ -1914,13 +1929,13 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     reqId: number,
     contract: Contract,
     reportType: string,
-    fundamentalDataOptions: TagValue[]
+    fundamentalDataOptions: TagValue[],
   ): void {
     if (this.serverVersion < MIN_SERVER_VER.FUNDAMENTAL_DATA) {
       return this.emitError(
         "It does not support fundamental data requests.",
         ErrorCode.UPDATE_TWS,
-        reqId
+        reqId,
       );
     }
 
@@ -1929,7 +1944,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support conId parameter in reqFundamentalData.",
           ErrorCode.UPDATE_TWS,
-          reqId
+          reqId,
         );
       }
     }
@@ -1968,7 +1983,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support globalCancel requests.",
         ErrorCode.UPDATE_TWS,
-        -1
+        -1,
       );
     }
 
@@ -1990,7 +2005,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     useRTH: number,
     formatDate: number,
     keepUpToDate: boolean,
-    chartOptions?: TagValue[]
+    chartOptions?: TagValue[],
   ): void {
     const version = 6;
 
@@ -1998,7 +2013,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support historical data backfill.",
         ErrorCode.UPDATE_TWS,
-        tickerId
+        tickerId,
       );
     }
 
@@ -2007,7 +2022,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support conId and tradingClass parameters in reqHistoricalData.",
           ErrorCode.UPDATE_TWS,
-          tickerId
+          tickerId,
         );
       }
     }
@@ -2020,7 +2035,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support requesting of historical schedule.",
           ErrorCode.UPDATE_TWS,
-          tickerId
+          tickerId,
         );
       }
     }
@@ -2107,13 +2122,13 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     whatToShow: string,
     useRth: number,
     ignoreSize: boolean,
-    miscOptions?: TagValue[]
+    miscOptions?: TagValue[],
   ): void {
     if (this.serverVersion < MIN_SERVER_VER.HISTORICAL_TICKS) {
       return this.emitError(
         "It does not support historical ticks request.",
         ErrorCode.UPDATE_TWS,
-        tickerId
+        tickerId,
       );
     }
 
@@ -2151,7 +2166,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     contract: Contract,
     tickType: TickByTickDataType,
     numberOfTicks: number,
-    ignoreSize: boolean
+    ignoreSize: boolean,
   ): unknown[] {
     const args: unknown[] = [OUT_MSG_ID.REQ_TICK_BY_TICK_DATA, reqId];
 
@@ -2182,13 +2197,13 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     contract: Contract,
     tickType: TickByTickDataType,
     numberOfTicks: number,
-    ignoreSize: boolean
+    ignoreSize: boolean,
   ): void {
     if (this.serverVersion < MIN_SERVER_VER.TICK_BY_TICK) {
       this.emitError(
         "It does not support tick-by-tick data requests.",
         ErrorCode.UPDATE_TWS,
-        reqId
+        reqId,
       );
     } else if (
       this.serverVersion < MIN_SERVER_VER.TICK_BY_TICK_IGNORE_SIZE &&
@@ -2197,7 +2212,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       this.emitError(
         "It does not support ignoreSize and numberOfTicks parameters in tick-by-tick data requests.",
         ErrorCode.UPDATE_TWS,
-        reqId
+        reqId,
       );
     } else {
       const args: unknown[] = this.encodeReqTickByTickData(
@@ -2205,7 +2220,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         contract,
         tickType,
         numberOfTicks,
-        ignoreSize
+        ignoreSize,
       );
       this.sendMsg(args);
     }
@@ -2219,7 +2234,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support tick-by-tick data cancels.",
         ErrorCode.UPDATE_TWS,
-        reqId
+        reqId,
       );
     }
 
@@ -2252,7 +2267,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support marketDataType requests.",
         ErrorCode.UPDATE_TWS,
-        -1
+        -1,
       );
     }
 
@@ -2269,13 +2284,13 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     contract: Contract,
     genericTickList: string,
     snapshot: boolean,
-    regulatorySnapshot: boolean
+    regulatorySnapshot: boolean,
   ): void {
     if (this.serverVersion < MIN_SERVER_VER.SNAPSHOT_MKT_DATA && snapshot) {
       return this.emitError(
         "It does not support snapshot market data requests.",
         ErrorCode.UPDATE_TWS,
-        tickerId
+        tickerId,
       );
     }
 
@@ -2283,7 +2298,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support delta-neutral orders.",
         ErrorCode.UPDATE_TWS,
-        tickerId
+        tickerId,
       );
     }
 
@@ -2291,7 +2306,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support conId parameter.",
         ErrorCode.UPDATE_TWS,
-        tickerId
+        tickerId,
       );
     }
 
@@ -2300,7 +2315,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support tradingClass parameter in reqMarketData.",
           ErrorCode.UPDATE_TWS,
-          tickerId
+          tickerId,
         );
       }
     }
@@ -2401,13 +2416,13 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     contract: Contract,
     numRows: number,
     isSmartDepth: boolean,
-    mktDepthOptions?: TagValue[]
+    mktDepthOptions?: TagValue[],
   ): void {
     if (this.serverVersion < 6) {
       return this.emitError(
         "This feature is only available for versions of TWS >=6",
         ErrorCode.UPDATE_TWS,
-        tickerId
+        tickerId,
       );
     }
 
@@ -2416,7 +2431,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support conId and tradingClass parameters in reqMktDepth.",
           ErrorCode.UPDATE_TWS,
-          tickerId
+          tickerId,
         );
       }
     }
@@ -2425,7 +2440,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support SMART depth request.",
         ErrorCode.UPDATE_TWS,
-        tickerId
+        tickerId,
       );
     }
 
@@ -2436,7 +2451,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support primaryExch parameter in reqMktDepth.",
         ErrorCode.UPDATE_TWS,
-        tickerId
+        tickerId,
       );
     }
 
@@ -2514,7 +2529,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support position requests.",
         ErrorCode.UPDATE_TWS,
-        -1
+        -1,
       );
     }
 
@@ -2529,13 +2544,13 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   reqPositionsMulti(
     reqId: number,
     account: string,
-    modelCode: string | null
+    modelCode: string | null,
   ): void {
     if (this.serverVersion < MIN_SERVER_VER.MODELS_SUPPORT) {
       return this.emitError(
         "It does not support position requests.",
         ErrorCode.UPDATE_TWS,
-        reqId
+        reqId,
       );
     }
 
@@ -2546,7 +2561,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       version,
       reqId,
       account,
-      modelCode
+      modelCode,
     );
   }
 
@@ -2558,7 +2573,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support positions multi cancellation.",
         ErrorCode.UPDATE_TWS,
-        reqId
+        reqId,
       );
     }
 
@@ -2576,13 +2591,13 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     barSize: number,
     whatToShow: string,
     useRTH: boolean,
-    realTimeBarsOptions: TagValue[]
+    realTimeBarsOptions: TagValue[],
   ): void {
     if (this.serverVersion < MIN_SERVER_VER.REAL_TIME_BARS) {
       return this.emitError(
         "It does not support real time bars.",
         ErrorCode.UPDATE_TWS,
-        tickerId
+        tickerId,
       );
     }
 
@@ -2591,7 +2606,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support conId and tradingClass parameters in reqRealTimeBars.",
           ErrorCode.UPDATE_TWS,
-          tickerId
+          tickerId,
         );
       }
     }
@@ -2645,7 +2660,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support API scanner subscription.",
         ErrorCode.UPDATE_TWS,
-        -1
+        -1,
       );
     }
 
@@ -2661,13 +2676,13 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     reqId: number,
     subscription: ScannerSubscription,
     scannerSubscriptionOptions: TagValue[],
-    scannerSubscriptionFilterOptions?: TagValue[]
+    scannerSubscriptionFilterOptions?: TagValue[],
   ): void {
     if (this.serverVersion < 24) {
       return this.emitError(
         "It does not support API scanner subscription.",
         ErrorCode.UPDATE_TWS,
-        reqId
+        reqId,
       );
     }
 
@@ -2678,7 +2693,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support API scanner subscription generic filter options.",
         ErrorCode.UPDATE_TWS,
-        reqId
+        reqId,
       );
     }
 
@@ -2739,7 +2754,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "This feature is only available for versions of TWS >= 13.",
         ErrorCode.UPDATE_TWS,
-        -1
+        -1,
       );
     }
 
@@ -2801,13 +2816,13 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     underlyingSymbol: string,
     futFopExchange: string,
     underlyingSecType: string,
-    underlyingConId: number
+    underlyingConId: number,
   ): void {
     if (this.serverVersion < MIN_SERVER_VER.SEC_DEF_OPT_PARAMS_REQ) {
       return this.emitError(
         "It does not support reqSecDefOptParams.",
         ErrorCode.UPDATE_TWS,
-        reqId
+        reqId,
       );
     }
 
@@ -2817,7 +2832,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       underlyingSymbol,
       futFopExchange,
       underlyingSecType,
-      underlyingConId
+      underlyingConId,
     );
   }
 
@@ -2829,7 +2844,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support soft dollar tier requests.",
         ErrorCode.UPDATE_TWS,
-        reqId
+        reqId,
       );
     }
 
@@ -2844,7 +2859,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support family codes request.",
         ErrorCode.UPDATE_TWS,
-        -1
+        -1,
       );
     }
 
@@ -2859,7 +2874,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support matching symbols request.",
         ErrorCode.UPDATE_TWS,
-        reqId
+        reqId,
       );
     }
 
@@ -2874,7 +2889,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support market depth exchanges request.",
         ErrorCode.UPDATE_TWS,
-        -1
+        -1,
       );
     }
 
@@ -2889,7 +2904,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support smart components request.",
         ErrorCode.UPDATE_TWS,
-        reqId
+        reqId,
       );
     }
 
@@ -2903,13 +2918,13 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     reqId: number,
     providerCode: string,
     articleId: string,
-    newsArticleOptions: TagValue[]
+    newsArticleOptions: TagValue[],
   ): void {
     if (this.serverVersion < MIN_SERVER_VER.REQ_NEWS_ARTICLE) {
       return this.emitError(
         "It does not support news article request.",
         ErrorCode.UPDATE_TWS,
-        reqId
+        reqId,
       );
     }
 
@@ -2935,7 +2950,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support smart components request.",
         ErrorCode.UPDATE_TWS,
-        -1
+        -1,
       );
     }
 
@@ -2952,13 +2967,13 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     startDateTime: string,
     endDateTime: string,
     totalResults: number,
-    historicalNewsOptions: TagValue[]
+    historicalNewsOptions: TagValue[],
   ): void {
     if (this.serverVersion < MIN_SERVER_VER.REQ_HISTORICAL_NEWS) {
       return this.emitError(
         "It does not support historical news request.",
         ErrorCode.UPDATE_TWS,
-        reqId
+        reqId,
       );
     }
 
@@ -2988,13 +3003,13 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     tickerId: number,
     contract: Contract,
     useRTH: boolean,
-    timePeriod: string
+    timePeriod: string,
   ): void {
     if (this.serverVersion < MIN_SERVER_VER.REQ_HISTOGRAM) {
       return this.emitError(
         "It does not support histogram requests.",
         ErrorCode.UPDATE_TWS,
-        tickerId
+        tickerId,
       );
     }
 
@@ -3003,7 +3018,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       tickerId,
       this.encodeContract(contract),
       timePeriod,
-      useRTH ? 1 : 0
+      useRTH ? 1 : 0,
     );
   }
 
@@ -3015,7 +3030,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support head time stamp requests.",
         ErrorCode.UPDATE_TWS,
-        tickerId
+        tickerId,
       );
     }
 
@@ -3030,7 +3045,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support head time stamp requests canceling.",
         ErrorCode.UPDATE_TWS,
-        tickerId
+        tickerId,
       );
     }
 
@@ -3045,7 +3060,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support market rule requests.",
         ErrorCode.UPDATE_TWS,
-        marketRuleId
+        marketRuleId,
       );
     }
 
@@ -3060,7 +3075,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support completed orders requests.",
         ErrorCode.UPDATE_TWS,
-        -1
+        -1,
       );
     }
 
@@ -3072,7 +3087,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support WSHE Calendar API.",
         ErrorCode.UPDATE_TWS,
-        -1
+        -1,
       );
       return;
     }
@@ -3085,7 +3100,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support WSHE Calendar API.",
         ErrorCode.UPDATE_TWS,
-        -1
+        -1,
       );
       return;
     }
@@ -3098,7 +3113,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support WSHE Calendar API.",
         ErrorCode.UPDATE_TWS,
-        -1
+        -1,
       );
       return;
     }
@@ -3111,11 +3126,24 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support WSHE Calendar API.",
         ErrorCode.UPDATE_TWS,
-        -1
+        -1,
       );
       return;
     }
 
     this.sendMsg(OUT_MSG_ID.CANCEL_WSH_EVENT_DATA, reqId);
+  }
+
+  reqUserInfo(reqId: number): void {
+    if (this.serverVersion < MIN_SERVER_VER.USER_INFO) {
+      return this.emitError(
+        "It does not support user info requests.",
+        ErrorCode.UPDATE_TWS,
+        -1,
+      );
+      return;
+    }
+
+    this.sendMsg(OUT_MSG_ID.REQ_USER_INFO, reqId);
   }
 }

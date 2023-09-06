@@ -1,3 +1,5 @@
+import OrderAction from "../order/enum/order-action";
+
 /**
  * A leg within combo orders.
  */
@@ -16,7 +18,7 @@ export interface ComboLeg {
    *
    * - For individual accounts, only BUY and SELL are available. SSHORT is for institutions.
    */
-  action?: string;
+  action?: OrderAction;
 
   /** The destination exchange to which the order will be routed. */
   exchange?: string;

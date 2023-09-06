@@ -41,7 +41,7 @@ class PlaceNewOrdersApp extends IBApiNextApp {
 
     this.connect(
       this.cmdLineArgs.watch ? 10000 : 0,
-      this.cmdLineArgs.clientId ? +this.cmdLineArgs.clientId : 0
+      this.cmdLineArgs.clientId ? +this.cmdLineArgs.clientId : 0,
     );
 
     const contract: Contract = {

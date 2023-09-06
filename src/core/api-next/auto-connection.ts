@@ -229,7 +229,7 @@ export class IBApiAutoConnection extends IBApi {
 
     this.logger.debug(
       LOG_TAG,
-      `Starting connection watchdog with ${!this.watchdogInterval}ms interval.`
+      `Starting connection watchdog with ${this.watchdogInterval}ms interval.`
     );
 
     this.connectionWatchdogTimeout = setInterval(() => {

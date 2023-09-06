@@ -12,12 +12,11 @@ import { EventName } from "../../api/data/enum/event-name";
 import MIN_SERVER_VER from "../../api/data/enum/min-server-version";
 import OptionType from "../../api/data/enum/option-type";
 import SecType from "../../api/data/enum/sec-type";
-import { ErrorCode } from "../../common/errorCode";
+import { HistoricalSession } from "../../api/historical/HistoricalSession";
 import { HistogramEntry } from "../../api/historical/histogramEntry";
 import { HistoricalTick } from "../../api/historical/historicalTick";
 import { HistoricalTickBidAsk } from "../../api/historical/historicalTickBidAsk";
 import { HistoricalTickLast } from "../../api/historical/historicalTickLast";
-import { HistoricalSession } from "../../api/historical/HistoricalSession";
 import { TickType } from "../../api/market/tickType";
 import ExecutionCondition from "../../api/order/condition/execution-condition";
 import MarginCondition from "../../api/order/condition/margin-condition";
@@ -28,14 +27,15 @@ import VolumeCondition from "../../api/order/condition/volume-condition";
 import { ConjunctionConnection } from "../../api/order/enum/conjunction-connection";
 import OrderAction from "../../api/order/enum/order-action";
 import { OrderConditionType } from "../../api/order/enum/order-condition-type";
+import { OrderStatus } from "../../api/order/enum/order-status";
 import { OrderType } from "../../api/order/enum/orderType";
 import { TriggerMethod } from "../../api/order/enum/trigger-method";
 import { Execution } from "../../api/order/execution";
 import { Order } from "../../api/order/order";
 import { OrderState } from "../../api/order/orderState";
 import { CommissionReport } from "../../api/report/commissionReport";
+import { ErrorCode } from "../../common/errorCode";
 import { IN_MSG_ID } from "./enum/in-msg-id";
-import { OrderStatus } from "../../api/order/enum/order-status";
 
 /**
  * @internal
@@ -97,15 +97,22 @@ export interface DecoderCallbacks {
    * @param errMsg The error test message.
    * @param code The code identifying the error.
    * @param reqId The request identifier which generated the error.
+   * @param advancedOrderReject An object providing more information in case of an order rejection
    */
-  emitError(errMsg: string, code: number, reqId: number): void;
+  emitError(
+    errMsg: string,
+    code: number,
+    reqId: number,
+    advancedOrderReject?: unknown,
+  ): void;
 
   /**
    * Emit an information message event to public API interface.
    *
-   * @param errMsg The message text.
+   * @param message The message text.
+   * @param code The message code.
    */
-  emitInfo(message: string): void;
+  emitInfo(message: string, code: number): void;
 }
 
 /**
@@ -312,7 +319,6 @@ export class Decoder {
         return this.decodeMsg_COMPLETED_ORDER();
       case IN_MSG_ID.COMPLETED_ORDERS_END:
         return this.decodeMsg_COMPLETED_ORDERS_END();
-
       case IN_MSG_ID.REPLACE_FA_END:
         return this.decodeMsg_REPLACE_FA_END();
       case IN_MSG_ID.WSH_META_DATA:
@@ -321,12 +327,14 @@ export class Decoder {
         return this.decodeMsg_WSH_EVENT_DATA();
       case IN_MSG_ID.HISTORICAL_SCHEDULE:
         return this.decodeMsg_HISTORICAL_SCHEDULE();
+      case IN_MSG_ID.USER_INFO:
+        return this.decodeMsg_USER_INFO();
 
       default:
         this.callback.emitError(
           `No parser implementation found for token: ${IN_MSG_ID[msgId]} (${msgId}).`,
           ErrorCode.UNKNOWN_ID,
-          -1
+          -1,
         );
     }
   }
@@ -354,7 +362,7 @@ export class Decoder {
         this.dataQueue.shift();
       }
 
-      let msgId: IN_MSG_ID = -1;
+      let msgId: IN_MSG_ID = IN_MSG_ID.UNDEFINED;
 
       try {
         // process message (invoke decoder function)
@@ -370,10 +378,10 @@ export class Decoder {
               `Decoding error on ${
                 IN_MSG_ID[msgId]
               }: unprocessed data left on queue (${JSON.stringify(
-                this.dataQueue
+                this.dataQueue,
               )}). Please report to https://github.com/stoqey/ib`,
               ErrorCode.UNKNOWN_ID,
-              -1
+              -1,
             );
           }
 
@@ -388,7 +396,7 @@ export class Decoder {
           this.callback.emitError(
             `Underrun error on ${IN_MSG_ID[msgId]}: ${e.message} Please report to https://github.com/stoqey/ib`,
             ErrorCode.UNKNOWN_ID,
-            -1
+            -1,
           );
         }
 
@@ -400,7 +408,7 @@ export class Decoder {
       const toEmit = this.emitQueue;
       this.emitQueue = [];
       toEmit.forEach((item) =>
-        this.callback.emitEvent(item.name, ...item.args)
+        this.callback.emitEvent(item.name, ...item.args),
       );
     }
   }
@@ -671,7 +679,7 @@ export class Decoder {
       lastFillPrice,
       clientId,
       whyHeld,
-      mktCapPrice
+      mktCapPrice,
     );
   }
 
@@ -690,11 +698,20 @@ export class Decoder {
       if (this.serverVersion >= MIN_SERVER_VER.ENCODE_MSG_ASCII7) {
         msg = this.decodeUnicodeEscapedString(msg);
       }
+      let advancedOrderReject: unknown;
+      if (this.serverVersion >= MIN_SERVER_VER.ADVANCED_ORDER_REJECT) {
+        const advancedOrderRejectJson: string = this.readStr();
+        if (advancedOrderRejectJson?.length > 0) {
+          advancedOrderReject = JSON.parse(
+            this.decodeUnicodeEscapedString(advancedOrderRejectJson),
+          );
+        }
+      }
 
       if (id === -1) {
-        this.callback.emitInfo(msg);
+        this.callback.emitInfo(msg, code);
       } else {
-        this.callback.emitError(msg, code, id);
+        this.callback.emitError(msg, code, id, advancedOrderReject);
       }
     }
   }
@@ -718,7 +735,7 @@ export class Decoder {
       order,
       orderState,
       version,
-      this.serverVersion
+      this.serverVersion,
     );
 
     // read order id
@@ -880,7 +897,7 @@ export class Decoder {
       averageCost,
       unrealizedPNL,
       realizedPNL,
-      accountName
+      accountName,
     );
   }
 
@@ -1135,7 +1152,7 @@ export class Decoder {
       operation,
       side,
       price,
-      size
+      size,
     );
   }
 
@@ -1166,7 +1183,7 @@ export class Decoder {
       side,
       price,
       size,
-      isSmartDepth
+      isSmartDepth,
     );
   }
 
@@ -1185,7 +1202,7 @@ export class Decoder {
       newsMsgId,
       newsMsgType,
       newsMessage,
-      originatingExch
+      originatingExch,
     );
   }
 
@@ -1261,7 +1278,7 @@ export class Decoder {
         volume,
         barCount,
         WAP,
-        hasGaps
+        hasGaps,
       );
     }
 
@@ -1277,7 +1294,7 @@ export class Decoder {
       -1,
       -1,
       -1,
-      false
+      false,
     );
   }
 
@@ -1304,7 +1321,7 @@ export class Decoder {
       close,
       volume,
       barCount,
-      WAP
+      WAP,
     );
   }
 
@@ -1471,7 +1488,7 @@ export class Decoder {
       this.readLastTradeDate(contract, false);
       contract.contract.strike = this.readDouble();
       contract.contract.right = validateOptionType(
-        this.readStr() as OptionType
+        this.readStr() as OptionType,
       );
       contract.contract.exchange = this.readStr();
       contract.contract.currency = this.readStr();
@@ -1496,7 +1513,7 @@ export class Decoder {
         distance,
         benchmark,
         projection,
-        legsStr
+        legsStr,
       );
     }
 
@@ -1595,7 +1612,7 @@ export class Decoder {
       gamma,
       vega,
       theta,
-      undPrice
+      undPrice,
     );
   }
 
@@ -1648,7 +1665,7 @@ export class Decoder {
       holdDays,
       futureExpiry,
       dividendImpact,
-      dividendsToExpiry
+      dividendsToExpiry,
     );
   }
 
@@ -1687,7 +1704,7 @@ export class Decoder {
       close,
       volume,
       wap,
-      count
+      count,
     );
   }
 
@@ -1915,7 +1932,7 @@ export class Decoder {
       modelCode,
       contract,
       pos,
-      avgCost
+      avgCost,
     );
   }
 
@@ -1948,7 +1965,7 @@ export class Decoder {
       modelCode,
       key,
       value,
-      currency
+      currency,
     );
   }
 
@@ -1992,7 +2009,7 @@ export class Decoder {
       tradingClass,
       multiplier,
       expirations,
-      strikes
+      strikes,
     );
   }
 
@@ -2049,7 +2066,7 @@ export class Decoder {
 
     const nContractDescriptions = this.readInt();
     const contractDescriptions: ContractDescription[] = new Array(
-      nContractDescriptions
+      nContractDescriptions,
     );
     for (let i = 0; i < nContractDescriptions; i++) {
       const contract: Contract = {
@@ -2081,7 +2098,7 @@ export class Decoder {
   private decodeMsg_MKT_DEPTH_EXCHANGES(): void {
     const nDepthMktDataDescriptions = this.readInt();
     const depthMktDataDescriptions: DepthMktDataDescription[] = new Array(
-      nDepthMktDataDescriptions
+      nDepthMktDataDescriptions,
     );
     for (let i = 0; i < nDepthMktDataDescriptions; i++) {
       if (this.serverVersion >= MIN_SERVER_VER.SERVICE_DATA_TYPE) {
@@ -2120,7 +2137,7 @@ export class Decoder {
       tickerId,
       minTick,
       bboExchange,
-      snapshotPermissions
+      snapshotPermissions,
     );
   }
 
@@ -2171,7 +2188,7 @@ export class Decoder {
       providerCode,
       articleId,
       headline,
-      extraData
+      extraData,
     );
   }
 
@@ -2207,7 +2224,7 @@ export class Decoder {
       time,
       providerCode,
       articleId,
-      headline
+      headline,
     );
   }
 
@@ -2296,7 +2313,7 @@ export class Decoder {
       dailyPnL,
       unrealizedPnL,
       realizedPnL,
-      value
+      value,
     );
   }
 
@@ -2416,7 +2433,7 @@ export class Decoder {
           size,
           { pastLimit, unreported },
           exchange,
-          specialConditions
+          specialConditions,
         );
         break;
       }
@@ -2438,7 +2455,10 @@ export class Decoder {
           askPrice,
           bidSize,
           askSize,
-          { bidPastLow, askPastHigh }
+          {
+            bidPastLow,
+            askPastHigh,
+          },
         );
         break;
       }
@@ -2752,7 +2772,7 @@ export class Decoder {
               exchange,
               secType,
               symbol,
-              conjunctionConnection as ConjunctionConnection
+              conjunctionConnection as ConjunctionConnection,
             );
             break;
           }
@@ -2765,7 +2785,7 @@ export class Decoder {
             order.conditions[i] = new MarginCondition(
               value,
               isMore,
-              conjunctionConnection as ConjunctionConnection
+              conjunctionConnection as ConjunctionConnection,
             );
             break;
           }
@@ -2783,7 +2803,7 @@ export class Decoder {
               condId,
               exchange,
               isMore,
-              conjunctionConnection as ConjunctionConnection
+              conjunctionConnection as ConjunctionConnection,
             );
             break;
           }
@@ -2804,7 +2824,7 @@ export class Decoder {
               condId,
               exchange,
               isMore,
-              conjunctionConnection as ConjunctionConnection
+              conjunctionConnection as ConjunctionConnection,
             );
             break;
           }
@@ -2817,7 +2837,7 @@ export class Decoder {
             order.conditions[i] = new TimeCondition(
               value,
               isMore,
-              conjunctionConnection as ConjunctionConnection
+              conjunctionConnection as ConjunctionConnection,
             );
             break;
           }
@@ -2835,7 +2855,7 @@ export class Decoder {
               condId,
               exchange,
               isMore,
-              conjunctionConnection as ConjunctionConnection
+              conjunctionConnection as ConjunctionConnection,
             );
             break;
           }
@@ -2940,8 +2960,18 @@ export class Decoder {
       startDateTime,
       endDateTime,
       timeZone,
-      sessions
+      sessions,
     );
+  }
+
+  /**
+   * Decode a USER_INFO message from data queue and a emit userInfo event.
+   */
+  private decodeMsg_USER_INFO(): void {
+    const reqId = this.readInt();
+    const whiteBrandingId = this.readStr();
+
+    this.emit(EventName.userInfo, reqId, whiteBrandingId);
   }
 
   /**
@@ -3090,7 +3120,7 @@ export class Decoder {
     return {
       conId: this.readInt(),
       ratio: this.readInt(),
-      action: this.readStr(),
+      action: this.readStr() as OrderAction,
       exchange: this.readStr(),
       openClose: this.readInt(),
       shortSaleSlot: this.readInt(),
@@ -3140,7 +3170,7 @@ class OrderDecoder {
     private order: Order,
     private orderState: OrderState,
     private version: number,
-    private serverVersion: number
+    private serverVersion: number,
   ) {}
 
   readOrderId(): void {
@@ -3156,7 +3186,7 @@ class OrderDecoder {
     this.contract.lastTradeDateOrContractMonth = this.decoder.readStr();
     this.contract.strike = this.decoder.readDouble();
     this.contract.right = validateOptionType(
-      this.decoder.readStr() as OptionType
+      this.decoder.readStr() as OptionType,
     );
     if (this.version >= 32) {
       this.contract.multiplier = +this.decoder.readStr();
@@ -3497,7 +3527,7 @@ class OrderDecoder {
         for (let i = 0; i < comboLegsCount; ++i) {
           const conId = this.decoder.readInt();
           const ratio = this.decoder.readInt();
-          const action = this.decoder.readStr();
+          const action = this.decoder.readStr() as OrderAction;
           const exchange = this.decoder.readStr();
           const openClose = this.decoder.readInt();
           const shortSaleSlot = this.decoder.readInt();
@@ -3718,7 +3748,7 @@ class OrderDecoder {
                 exchange,
                 secType,
                 symbol,
-                conjunctionConnection as ConjunctionConnection
+                conjunctionConnection as ConjunctionConnection,
               );
               break;
             }
@@ -3731,7 +3761,7 @@ class OrderDecoder {
               this.order.conditions[i] = new MarginCondition(
                 value,
                 isMore,
-                conjunctionConnection as ConjunctionConnection
+                conjunctionConnection as ConjunctionConnection,
               );
               break;
             }
@@ -3749,7 +3779,7 @@ class OrderDecoder {
                 condId,
                 exchange,
                 isMore,
-                conjunctionConnection as ConjunctionConnection
+                conjunctionConnection as ConjunctionConnection,
               );
               break;
             }
@@ -3770,7 +3800,7 @@ class OrderDecoder {
                 condId,
                 exchange,
                 isMore,
-                conjunctionConnection as ConjunctionConnection
+                conjunctionConnection as ConjunctionConnection,
               );
               break;
             }
@@ -3783,7 +3813,7 @@ class OrderDecoder {
               this.order.conditions[i] = new TimeCondition(
                 value,
                 isMore,
-                conjunctionConnection as ConjunctionConnection
+                conjunctionConnection as ConjunctionConnection,
               );
               break;
             }
@@ -3801,7 +3831,7 @@ class OrderDecoder {
                 condId,
                 exchange,
                 isMore,
-                conjunctionConnection as ConjunctionConnection
+                conjunctionConnection as ConjunctionConnection,
               );
               break;
             }
