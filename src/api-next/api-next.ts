@@ -323,7 +323,7 @@ export class IBApiNext {
   }
 
   /** currentTime event handler.  */
-  private onCurrentTime = (
+  private readonly onCurrentTime = (
     subscriptions: Map<number, IBApiNextSubscription<number>>,
     time: number,
   ): void => {
@@ -2116,7 +2116,7 @@ export class IBApiNext {
   /** marketDepthL2 event handler */
   private readonly onUpdateMktDepthL2 = (
     subscriptions: Map<number, IBApiNextSubscription<OrderBook>>,
-    tickerId: number,
+    reqId: number,
     position: number,
     marketMaker: string,
     operation: number,
@@ -2126,7 +2126,7 @@ export class IBApiNext {
     isSmartDepth: boolean,
   ): void => {
     // get subscription
-    const subscription = subscriptions.get(tickerId);
+    const subscription = subscriptions.get(reqId);
     if (!subscription) {
       return;
     }
@@ -2287,43 +2287,92 @@ export class IBApiNext {
     );
   }
 
+  private readonly onScannerParameters = (
+    subscriptions: Map<number, IBApiNextSubscription<string>>,
+    xml: string,
+  ): void => {
+    subscriptions.forEach((sub) => {
+      sub.next({ all: xml });
+      sub.complete();
+    });
+  };
+
+  /**
+   * Requests an XML string that describes all possible scanner queries.
+   */
+  getScannerParameters(): Promise<string> {
+    return lastValueFrom(
+      this.subscriptions
+        .register<string>(
+          () => {
+            this.api.reqScannerParameters();
+          },
+          undefined,
+          [[EventName.scannerParameters, this.onScannerParameters]],
+          "getScannerParameters", // use same instance id each time, to make sure there is only 1 pending request at time
+        )
+        .pipe(map((v: { all: string }) => v.all)),
+      {
+        defaultValue: "",
+      },
+    );
+  }
+
+  /**
+   * Provides the data resulting from the market scanner request.
+   * @param subscriptions
+   * @param reqId the request's identifier
+   * @param rank the ranking within the response of this bar.
+   * @param contract the data's ContractDetails
+   * @param distance according to query
+   * @param benchmark according to query
+   * @param projection according to query
+   * @param legStr describes the combo legs when the scanner is returning EFP
+   * @returns void
+   */
   private readonly onScannerData = (
     subscriptions: Map<number, IBApiNextSubscription<ScannerSubscription>>,
     reqId: number,
     rank: number,
     contract: ContractDetails,
-    marketName: string,
-    ...eventArgs: unknown[]
+    distance: string,
+    benchmark: string,
+    projection: string,
+    legStr: string,
   ): void => {
-    subscriptions.forEach((sub) => {
-      console.log("onScannerData", rank, contract, marketName, eventArgs);
-    });
+    // get subscription
+    const subscription = subscriptions.get(reqId);
+    if (!subscription) {
+      return;
+    }
+
+    console.log(
+      "onScannerData",
+      rank,
+      contract,
+      distance,
+      benchmark,
+      projection,
+      legStr,
+    );
   };
 
+  /**
+   * Indicates the scanner data reception has terminated.
+   * @param subscriptions
+   * @param reqId the request's identifier
+   * @returns
+   */
   private readonly onScannerDataEnd = (
     subscriptions: Map<number, IBApiNextSubscription<ScannerSubscription>>,
     reqId: number,
-    ...eventArgs: unknown[]
   ): void => {
-    this.logger.warn(LOG_TAG, "onScannerDataEnd not implemented");
-    this.logger.info(JSON.stringify(subscriptions), eventArgs);
-
     const sub = subscriptions.get(reqId);
     if (!sub) {
       return;
     }
-    // if (!sub.lastAllValue) {
-    //   sub.next({ all: [] });
-    // }
-    sub.complete();
-  };
 
-  private readonly onScannerParameters = (
-    subscriptions: Map<number, IBApiNextSubscription<ScannerSubscription>>,
-    ...eventArgs: unknown[]
-  ): void => {
-    this.logger.warn(LOG_TAG, "onScannerParameters not implemented");
-    this.logger.info(JSON.stringify(subscriptions), eventArgs);
+    sub.complete();
   };
 
   /**
@@ -2340,12 +2389,6 @@ export class IBApiNext {
   ): Observable<MarketScannerUpdate> {
     return this.subscriptions.register<ScannerSubscription>(
       (reqId) => {
-        console.log(
-          "reqScannerSubscription",
-          reqId + 10000000, // let order id's not collide with other request id's
-          scannerSubscription,
-        );
-
         this.api.reqScannerSubscription(
           reqId,
           scannerSubscription,
@@ -2357,12 +2400,10 @@ export class IBApiNext {
         this.api.cancelScannerSubscription(reqId);
       },
       [
-        [EventName.scannerParameters, this.onScannerParameters],
         [EventName.scannerData, this.onScannerData],
         [EventName.scannerDataEnd, this.onScannerDataEnd],
       ],
-
-      `test ${JSON.stringify(scannerSubscription)}`,
+      `getMarketScanner-${JSON.stringify(scannerSubscription)}`,
     );
   }
 
