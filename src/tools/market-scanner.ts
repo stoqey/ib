@@ -1,5 +1,5 @@
 /**
- * This App will print histogram data of a contract.
+ * This App will print Most active stocks.
  */
 import path from "path";
 import { Subscription } from "rxjs";
@@ -17,20 +17,9 @@ import { IBApiNextApp } from "./common/ib-api-next-app";
 // The help text                                                               //
 /////////////////////////////////////////////////////////////////////////////////
 
-const DESCRIPTION_TEXT = "Print Most active stocks scan.";
+const DESCRIPTION_TEXT = "Print most active stocks scan.";
 const USAGE_TEXT = "Usage: market-scanner.js <options>";
-const OPTION_ARGUMENTS: [string, string][] = [
-  [
-    "conid=<number>",
-    "(required) Contract ID (conId) of contract to receive histogram data for.",
-  ],
-  ["exchange=<name>", "The destination exchange name."],
-  ["period=<seconds>", "(required) Period of which data is being requested"],
-  [
-    "periodUnit=<SECOND|DAY|WEEK|MONTH|YEAR>",
-    "(required) Unit of the period argument",
-  ],
-];
+const OPTION_ARGUMENTS: [string, string][] = [];
 const EXAMPLE_TEXT =
   "market-scanner.js -conid=3691937 -exchange=SMART -period=3 -periodUnit=DAY";
 
@@ -52,25 +41,9 @@ class PrintMarketScreenerApp extends IBApiNextApp {
     const scriptName = path.basename(__filename);
     logger.debug(`Starting ${scriptName} script`);
 
-    // if (!this.cmdLineArgs.conid) {
-    //   this.error("-conid argument missing.");
-    // }
-    // if (!this.cmdLineArgs.exchange) {
-    //   this.error("-exchange argument missing.");
-    // }
-    // if (!this.cmdLineArgs.period) {
-    //   this.error("-period argument missing.");
-    // }
-    // if (!this.cmdLineArgs.periodUnit) {
-    //   this.error("-periodUnit argument missing.");
-    // }
-    // if (!(this.cmdLineArgs.periodUnit in DurationUnit)) {
-    //   this.error(
-    //     "Invalid -periodUnit argument value: " + this.cmdLineArgs.periodUnit
-    //   );
-    // }
-
     this.connect(this.cmdLineArgs.watch ? 10000 : 0);
+
+    // this.api.getScannerParameters().then((result) => console.log(result));
 
     this.subscription$ = this.api
       .getMarketScanner({
@@ -79,19 +52,17 @@ class PrintMarketScreenerApp extends IBApiNextApp {
         locationCode: LocationCode.STK_US,
         instrument: Instrument.STK,
       })
-      .subscribe(
-        (data) => {
-          logger.info(data);
-        },
-        (error: IBApiNextError) => {
+      .subscribe({
+        next: (data) => logger.info(data),
+        error: (error: IBApiNextError) => {
           logger.error("Error from the subscriber", error);
           this.stop();
         },
-        () => {
+        complete: () => {
           logger.info("Completed");
           this.stop();
-        }
-      );
+        },
+      });
   }
   /**
    * Stop the app with success code.
