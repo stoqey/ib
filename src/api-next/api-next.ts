@@ -2369,7 +2369,7 @@ export class IBApiNext {
     const existing = lastAllValue.rows.get(rank) != undefined;
     lastAllValue.rows.set(rank, item);
     if (lastAllValue.allset) {
-      let updated: MarketScannerRows = {
+      const updated: MarketScannerRows = {
         allset: lastAllValue.allset,
         rows: new Map<MarketScannerItemRank, MarketScannerItem>(),
       };

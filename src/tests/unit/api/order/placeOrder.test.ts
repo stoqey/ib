@@ -18,10 +18,6 @@ import {
 import configuration from "../../../../common/configuration";
 import logger from "../../../../common/logger";
 
-const TEST_SERVER_HOST = configuration.ib_host;
-const TEST_SERVER_PORT = configuration.ib_port;
-// const TEST_SERVER_PORT = 4002; // use paper account
-
 const awaitTimeout = (delay: number): Promise<unknown> =>
   new Promise((resolve): NodeJS.Timeout => setTimeout(resolve, delay * 1000));
 
