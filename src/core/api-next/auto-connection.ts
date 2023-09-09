@@ -35,7 +35,7 @@ export class IBApiAutoConnection extends IBApi {
     public readonly reconnectInterval: number,
     private readonly watchdogInterval: number,
     private readonly logger: Logger,
-    public readonly options?: IBApiCreationOptions
+    public readonly options?: IBApiCreationOptions,
   ) {
     super(options);
     this.on(EventName.connected, () => this.onConnected());
@@ -73,7 +73,7 @@ export class IBApiAutoConnection extends IBApi {
 
   /** The connection-state [[BehaviorSubject]]. */
   private readonly _connectionState = new BehaviorSubject<ConnectionState>(
-    ConnectionState.Disconnected
+    ConnectionState.Disconnected,
   );
 
   /** Get the connection-state as an [[Observable]]. */
@@ -96,12 +96,12 @@ export class IBApiAutoConnection extends IBApi {
     this.fixedClientId = clientId;
     this.currentClientId =
       (clientId === undefined ? this.options?.clientId : clientId) ??
-      Math.floor(Math.random() * 100) + 1;
+      Math.floor(Math.random() * 32766) + 1;
     if (this._connectionState.getValue() === ConnectionState.Disconnected) {
       this._connectionState.next(ConnectionState.Connecting);
       this.logger.info(
         LOG_TAG,
-        `Connecting to TWS with client id ${this.currentClientId}`
+        `Connecting to TWS with client id ${this.currentClientId}`,
       );
       super.connect(this.currentClientId);
     }
@@ -118,7 +118,7 @@ export class IBApiAutoConnection extends IBApi {
     if (this._connectionState.getValue() !== ConnectionState.Disconnected) {
       this.logger.info(
         LOG_TAG,
-        `Disconnecting client id ${this.currentClientId} from TWS.`
+        `Disconnecting client id ${this.currentClientId} from TWS.`,
       );
       this._connectionState.next(ConnectionState.Disconnected);
       if (this.isConnected) {
@@ -138,7 +138,7 @@ export class IBApiAutoConnection extends IBApi {
       this._connectionState.next(ConnectionState.Connected);
       this.logger.info(
         LOG_TAG,
-        `Successfully connected to TWS with client id ${this.currentClientId}.`
+        `Successfully connected to TWS with client id ${this.currentClientId}.`,
       );
 
       // cancel reconnect timer and run the connection watchdog
@@ -171,7 +171,7 @@ export class IBApiAutoConnection extends IBApi {
 
     this.logger.info(
       LOG_TAG,
-      `Re-Connecting to TWS with client id ${this.currentClientId}`
+      `Re-Connecting to TWS with client id ${this.currentClientId}`,
     );
 
     super.disconnect();
@@ -189,7 +189,7 @@ export class IBApiAutoConnection extends IBApi {
 
     this.logger.info(
       LOG_TAG,
-      `Re-Connecting to TWS in ${this.reconnectInterval / 1000}s...`
+      `Re-Connecting to TWS in ${this.reconnectInterval / 1000}s...`,
     );
 
     if (this.reconnectionTimeout) {
@@ -229,7 +229,7 @@ export class IBApiAutoConnection extends IBApi {
 
     this.logger.debug(
       LOG_TAG,
-      `Starting connection watchdog with ${this.watchdogInterval}ms interval.`
+      `Starting connection watchdog with ${this.watchdogInterval}ms interval.`,
     );
 
     this.connectionWatchdogTimeout = setInterval(() => {
@@ -245,7 +245,7 @@ export class IBApiAutoConnection extends IBApi {
       if (triggerReconnect) {
         this.logger.debug(
           LOG_TAG,
-          "Connection watchdog timeout. Dropping connection."
+          "Connection watchdog timeout. Dropping connection.",
         );
         this.onDisconnected();
       }
@@ -280,7 +280,7 @@ export class IBApiAutoConnection extends IBApi {
     if (this.isConnected) {
       this.logger.debug(
         LOG_TAG,
-        `Disconnecting client id ${this.currentClientId} from TWS (state-sync).`
+        `Disconnecting client id ${this.currentClientId} from TWS (state-sync).`,
       );
       this.disconnect();
       this.autoReconnectEnabled = true;

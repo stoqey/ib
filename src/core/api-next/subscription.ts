@@ -1,8 +1,8 @@
-import { IBApiNextError, IBApiNext, ItemListUpdate } from "../../api-next";
 import { Observable, ReplaySubject, Subscription } from "rxjs";
+import { map } from "rxjs/operators";
+import { IBApiNext, IBApiNextError, ItemListUpdate } from "../../api-next";
 import { ConnectionState } from "../../api-next/common/connection-state";
 import { IBApiNextItemListUpdate } from "./item-list-update";
-import { map } from "rxjs/operators";
 
 /**
  * @internal
@@ -28,7 +28,7 @@ export class IBApiNextSubscription<T> {
     private requestFunction: () => void,
     private cancelFunction: () => void,
     private cleanupFunction: () => void,
-    public readonly instanceId?: string
+    public readonly instanceId?: string,
   ) {
     this.reqId = api.nextReqId;
   }
@@ -49,11 +49,16 @@ export class IBApiNextSubscription<T> {
   private connectionState$?: Subscription;
 
   /** true when the end-event on an enumeration request has been received, false otherwise. */
-  public endEventReceived = false;
+  public endEventReceived = false; // TODO: unused?
 
   /** Get the last 'all' value as send to subscribers. */
   get lastAllValue(): T | undefined {
     return this._lastAllValue;
+  }
+
+  /** Set the last 'all' value without publishing it to subscribers. For internal use only. */
+  set lastAllValue(value: T) {
+    this._lastAllValue = value;
   }
 
   /**
@@ -107,7 +112,7 @@ export class IBApiNextSubscription<T> {
                   added: val.all,
                 } as ItemListUpdate<T>)
               : val;
-          })
+          }),
         )
         .subscribe(subscriber);
 

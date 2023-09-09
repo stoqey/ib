@@ -53,7 +53,12 @@ class PrintMarketScreenerApp extends IBApiNextApp {
         instrument: Instrument.STK,
       })
       .subscribe({
-        next: (data) => logger.info(data),
+        next: (data) => {
+          if (data.all.allset) {
+            this.printObject(data.all.rows);
+            this.stop();
+          }
+        },
         error: (error: IBApiNextError) => {
           logger.error("Error from the subscriber", error);
           this.stop();

@@ -1,7 +1,23 @@
-import ScannerSubscription from "../../api/market/scannerSubscription";
+import ContractDetails from "../../api/contract/contractDetails";
 import { ItemListUpdate } from "../common/item-list-update";
 
-export type MarketScannerUpdate = ItemListUpdate<ScannerSubscription>;
+export type MarketScannerItemRank = number;
+
+export type MarketScannerItem = {
+  rank: MarketScannerItemRank;
+  contract: ContractDetails;
+  distance: string;
+  benchmark: string;
+  projection: string;
+  legStr: string;
+};
+
+export type MarketScannerRows = {
+  allset?: boolean;
+  rows: Map<MarketScannerItemRank, MarketScannerItem>;
+};
+
+export type MarketScannerUpdate = ItemListUpdate<MarketScannerRows>;
 
 export enum LocationCode {
   BOND_US = "BOND.US",

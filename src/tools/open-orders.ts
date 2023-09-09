@@ -35,7 +35,10 @@ class OpenOrdersApp extends IBApiNextApp {
     const scriptName = path.basename(__filename);
     logger.debug(`Starting ${scriptName} script`);
 
-    this.connect(this.cmdLineArgs.watch ? 10000 : 0, +this.cmdLineArgs.clientId ?? 0);
+    this.connect(
+      this.cmdLineArgs.watch ? 10000 : 0,
+      this.cmdLineArgs.clientId ? +this.cmdLineArgs.clientId : undefined,
+    );
     this.api
       .getAllOpenOrders()
       .then((orders) => {

@@ -63,7 +63,12 @@ import {
   SecurityDefinitionOptionParameterType,
 } from "./";
 import { Logger } from "./common/logger";
-import { MarketScannerUpdate } from "./market-scanner/market-scanner";
+import {
+  MarketScannerItem,
+  MarketScannerItemRank,
+  MarketScannerRows,
+  MarketScannerUpdate,
+} from "./market-scanner/market-scanner";
 
 /**
  * @internal
@@ -2078,7 +2083,7 @@ export class IBApiNext {
   /** updateMktDepth event handler */
   private readonly onUpdateMktDepth = (
     subscriptions: Map<number, IBApiNextSubscription<OrderBook>>,
-    tickerId: number,
+    reqId: number,
     position: number,
     operation: number,
     side: number,
@@ -2088,7 +2093,7 @@ export class IBApiNext {
     // forward to L2 handler, but w/o market maker and smart depth set to false
     this.onUpdateMktDepthL2(
       subscriptions,
-      tickerId,
+      reqId,
       position,
       undefined,
       operation,
@@ -2100,18 +2105,18 @@ export class IBApiNext {
   };
 
   // mutable
-  private readonly insertAtIndex = (
+  private insertAtMapIndex<T extends number, R>(
     index: number,
-    key: OrderBookRowPosition,
-    value: OrderBookRow,
-    map: Map<OrderBookRowPosition, OrderBookRow>,
-  ): Map<OrderBookRowPosition, OrderBookRow> => {
+    key: T,
+    value: R,
+    map: Map<T, R>,
+  ): Map<T, R> {
     const arr = Array.from(map);
     arr.splice(index, 0, [key, value]);
     map.clear();
     arr.forEach(([k, v]) => map.set(k, v));
     return map;
-  };
+  }
 
   /** marketDepthL2 event handler */
   private readonly onUpdateMktDepthL2 = (
@@ -2168,7 +2173,7 @@ export class IBApiNext {
       case 0:
         // it's an insert
 
-        this.insertAtIndex(
+        this.insertAtMapIndex(
           position,
           position,
           {
@@ -2180,7 +2185,7 @@ export class IBApiNext {
           cachedRows,
         );
 
-        this.insertAtIndex(
+        this.insertAtMapIndex(
           position,
           position,
           {
@@ -2331,7 +2336,7 @@ export class IBApiNext {
    * @returns void
    */
   private readonly onScannerData = (
-    subscriptions: Map<number, IBApiNextSubscription<ScannerSubscription>>,
+    subscriptions: Map<number, IBApiNextSubscription<MarketScannerRows>>,
     reqId: number,
     rank: number,
     contract: ContractDetails,
@@ -2346,15 +2351,38 @@ export class IBApiNext {
       return;
     }
 
-    console.log(
-      "onScannerData",
+    const item: MarketScannerItem = {
       rank,
       contract,
       distance,
       benchmark,
       projection,
       legStr,
-    );
+    };
+
+    // console.log("onScannerData", item);
+
+    const lastAllValue: MarketScannerRows = subscription.lastAllValue ?? {
+      allset: false,
+      rows: new Map<MarketScannerItemRank, MarketScannerItem>(),
+    };
+    const existing = lastAllValue.rows.get(rank) != undefined;
+    lastAllValue.rows.set(rank, item);
+    if (lastAllValue.allset) {
+      let updated: MarketScannerRows = {
+        allset: lastAllValue.allset,
+        rows: new Map<MarketScannerItemRank, MarketScannerItem>(),
+      };
+      updated.rows.set(rank, item);
+      subscription.next({
+        all: subscription.lastAllValue,
+        changed: existing ? updated : undefined,
+        added: existing ? undefined : updated,
+      });
+    } else {
+      // console.log("saving for future use", lastAllValue);
+      subscription.lastAllValue = lastAllValue;
+    }
   };
 
   /**
@@ -2364,15 +2392,26 @@ export class IBApiNext {
    * @returns
    */
   private readonly onScannerDataEnd = (
-    subscriptions: Map<number, IBApiNextSubscription<ScannerSubscription>>,
+    subscriptions: Map<number, IBApiNextSubscription<MarketScannerRows>>,
     reqId: number,
   ): void => {
-    const sub = subscriptions.get(reqId);
-    if (!sub) {
+    const subscription = subscriptions.get(reqId);
+    if (!subscription) {
       return;
     }
 
-    sub.complete();
+    const lastAllValue: MarketScannerRows = subscription.lastAllValue ?? {
+      allset: false,
+      rows: new Map<MarketScannerItemRank, MarketScannerItem>(),
+    };
+    lastAllValue.allset = true;
+
+    // console.log("onScannerDataEnd", lastAllValue);
+
+    subscription.next({
+      all: subscription.lastAllValue,
+      added: subscription.lastAllValue,
+    });
   };
 
   /**
@@ -2387,7 +2426,7 @@ export class IBApiNext {
     scannerSubscriptionOptions?: TagValue[],
     scannerSubscriptionFilterOptions?: TagValue[],
   ): Observable<MarketScannerUpdate> {
-    return this.subscriptions.register<ScannerSubscription>(
+    return this.subscriptions.register<MarketScannerRows>(
       (reqId) => {
         this.api.reqScannerSubscription(
           reqId,

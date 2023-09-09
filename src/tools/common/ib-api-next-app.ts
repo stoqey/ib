@@ -105,6 +105,7 @@ export class IBApiNextApp {
         reconnectInterval,
         host,
         port,
+        logger,
       });
       if (this.cmdLineArgs.log) {
         switch (this.cmdLineArgs.log) {
