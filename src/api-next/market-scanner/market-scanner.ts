@@ -12,10 +12,7 @@ export type MarketScannerItem = {
   legStr: string;
 };
 
-export type MarketScannerRows = {
-  allset?: boolean;
-  rows: Map<MarketScannerItemRank, MarketScannerItem>;
-};
+export type MarketScannerRows = Map<MarketScannerItemRank, MarketScannerItem>;
 
 export type MarketScannerUpdate = ItemListUpdate<MarketScannerRows>;
 

@@ -43,20 +43,22 @@ class PrintMarketScreenerApp extends IBApiNextApp {
 
     this.connect(this.cmdLineArgs.watch ? 10000 : 0);
 
-    // this.api.getScannerParameters().then((result) => console.log(result));
-
     this.subscription$ = this.api
       .getMarketScanner({
         abovePrice: 1,
         scanCode: ScanCode.MOST_ACTIVE,
         locationCode: LocationCode.STK_US,
         instrument: Instrument.STK,
+        numberOfRows: 20,
       })
       .subscribe({
         next: (data) => {
-          if (data.all.allset) {
-            this.printObject(data.all.rows);
+          // console.log("app received", data);
+          if (data.allset) {
+            this.printObject(data.all);
             this.stop();
+          } else {
+            logger.debug("waiting for a complete list");
           }
         },
         error: (error: IBApiNextError) => {

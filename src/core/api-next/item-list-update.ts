@@ -11,6 +11,7 @@ export class IBApiNextItemListUpdate<T> implements ItemListUpdate<T> {
     public readonly all: T,
     public readonly added?: T,
     public readonly changed?: T,
-    public readonly removed?: T
-  ) { }
+    public readonly removed?: T,
+    public readonly allset?: boolean,
+  ) {}
 }

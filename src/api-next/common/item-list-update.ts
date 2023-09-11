@@ -5,6 +5,9 @@ export interface ItemListUpdate<T> {
   /** All items with its latest values, as received by TWS. */
   readonly all: T;
 
+  /** all value is set with all items (ie not still being built = End message received from TWS) */
+  readonly allset?: boolean;
+
   /** Items that have been added since last [[IBApiNextUpdate]]. */
   readonly added?: T;
 

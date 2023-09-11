@@ -39,6 +39,7 @@ import { MutableMarketData } from "../core/api-next/api/market/mutable-market-da
 import { MutableAccountPositions } from "../core/api-next/api/position/mutable-account-positions-update";
 import { IBApiAutoConnection } from "../core/api-next/auto-connection";
 import { ConsoleLogger } from "../core/api-next/console-logger";
+import { IBApiNextItemListUpdate } from "../core/api-next/item-list-update";
 import { IBApiNextLogger } from "../core/api-next/logger";
 import { IBApiNextSubscription } from "../core/api-next/subscription";
 import { IBApiNextSubscriptionRegistry } from "../core/api-next/subscription-registry";
@@ -2362,26 +2363,28 @@ export class IBApiNext {
 
     // console.log("onScannerData", item);
 
-    const lastAllValue: MarketScannerRows = subscription.lastAllValue ?? {
+    const lastValue = subscription.lastValue ?? {
+      all: new Map<MarketScannerItemRank, MarketScannerItem>(),
       allset: false,
-      rows: new Map<MarketScannerItemRank, MarketScannerItem>(),
     };
-    const existing = lastAllValue.rows.get(rank) != undefined;
-    lastAllValue.rows.set(rank, item);
-    if (lastAllValue.allset) {
-      const updated: MarketScannerRows = {
-        allset: lastAllValue.allset,
-        rows: new Map<MarketScannerItemRank, MarketScannerItem>(),
-      };
-      updated.rows.set(rank, item);
+
+    const existing = lastValue.all.get(rank) != undefined;
+    lastValue.all.set(rank, item);
+    if (lastValue.allset) {
+      const updated: MarketScannerRows = new Map<
+        MarketScannerItemRank,
+        MarketScannerItem
+      >();
+      updated.set(rank, item);
       subscription.next({
-        all: subscription.lastAllValue,
+        all: lastValue.all,
+        allset: lastValue.allset,
         changed: existing ? updated : undefined,
         added: existing ? undefined : updated,
       });
     } else {
-      // console.log("saving for future use", lastAllValue);
-      subscription.lastAllValue = lastAllValue;
+      // console.log("saving for future use", lastValue);
+      subscription.lastValue = lastValue;
     }
   };
 
@@ -2400,18 +2403,19 @@ export class IBApiNext {
       return;
     }
 
-    const lastAllValue: MarketScannerRows = subscription.lastAllValue ?? {
-      allset: false,
-      rows: new Map<MarketScannerItemRank, MarketScannerItem>(),
+    const lastValue = subscription.lastValue ?? {
+      all: new Map<MarketScannerItemRank, MarketScannerItem>(),
     };
-    lastAllValue.allset = true;
+    const updated: IBApiNextItemListUpdate<MarketScannerRows> = {
+      all: lastValue.all,
+      allset: true,
+      added: lastValue.all,
+    };
 
-    // console.log("onScannerDataEnd", lastAllValue);
+    // console.log("onScannerDataEnd", updated);
 
-    subscription.next({
-      all: subscription.lastAllValue,
-      added: subscription.lastAllValue,
-    });
+    // subscription.next(updated);
+    subscription.next(updated);
   };
 
   /**
