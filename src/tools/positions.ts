@@ -6,7 +6,6 @@ import path from "path";
 import { Subscription } from "rxjs";
 
 import { IBApiNextError } from "../api-next";
-import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -16,13 +15,7 @@ import { IBApiNextApp } from "./common/ib-api-next-app";
 const DESCRIPTION_TEXT =
   "Prints all positions on your IBKR accounts to console.";
 const USAGE_TEXT = "Usage: positions.js <options>";
-const OPTION_ARGUMENTS: [string, string][] = [
-  [
-    "watch",
-    "Watch for changes. If specified, the app will keep running and print positions updates to console as received from TWS. " +
-    "If not specified, the app will print a one-time snapshot and than exit.",
-  ],
-];
+const OPTION_ARGUMENTS: [string, string][] = [];
 const EXAMPLE_TEXT = "positions.js -watch";
 
 //////////////////////////////////////////////////////////////////////////////
@@ -42,8 +35,9 @@ class PrintPositionsApp extends IBApiNextApp {
    */
   start(): void {
     const scriptName = path.basename(__filename);
-    logger.debug(`Starting ${scriptName} script`);
-    this.connect(this.cmdLineArgs.watch ? 10000 : 0);
+    this.info(`Starting ${scriptName} script`);
+    this.connect();
+
     this.subscription$ = this.api.getPositions().subscribe({
       next: (positions) => {
         this.printObject(positions);

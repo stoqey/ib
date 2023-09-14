@@ -5,9 +5,8 @@ import path from "path";
 import { Subscription } from "rxjs";
 
 import { IBApiNextError } from "../api-next";
-import logger from "../common/logger";
-import { IBApiNextApp } from "./common/ib-api-next-app";
 import { BarSizeSetting } from "../api/historical/bar-size-setting";
+import { IBApiNextApp } from "./common/ib-api-next-app";
 
 /////////////////////////////////////////////////////////////////////////////////
 // The help text                                                               //
@@ -43,7 +42,8 @@ class PrintPositionsApp extends IBApiNextApp {
    */
   start(): void {
     const scriptName = path.basename(__filename);
-    logger.debug(`Starting ${scriptName} script`);
+    this.info(`Starting ${scriptName} script`);
+    this.connect();
 
     if (!this.cmdLineArgs.conid) {
       this.error("-conid argument missing.");
@@ -55,8 +55,6 @@ class PrintPositionsApp extends IBApiNextApp {
       this.error("-barSize argument missing.");
     }
 
-    this.connect(10000);
-
     this.subscription$ = this.api
       .getHistoricalDataUpdates(
         {
@@ -65,7 +63,7 @@ class PrintPositionsApp extends IBApiNextApp {
         },
         this.cmdLineArgs.barSize as BarSizeSetting,
         "MIDPOINT",
-        1
+        1,
       )
       .subscribe({
         next: (bar) => {
@@ -73,7 +71,7 @@ class PrintPositionsApp extends IBApiNextApp {
         },
         error: (err: IBApiNextError) => {
           this.error(
-            `getHistoricalDataUpdates failed with '${err.error.message}'`
+            `getHistoricalDataUpdates failed with '${err.error.message}'`,
           );
         },
       });

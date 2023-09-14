@@ -4,7 +4,6 @@
 import path from "path";
 
 import { ExecutionFilter } from "..";
-import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -13,9 +12,7 @@ import { IBApiNextApp } from "./common/ib-api-next-app";
 
 const DESCRIPTION_TEXT = "Get close orders.";
 const USAGE_TEXT = "Usage: close-order.js <options>";
-const OPTION_ARGUMENTS: [string, string][] = [
-  ["clientId=<number>", "Client id of current ib connection. Default is 0"],
-];
+const OPTION_ARGUMENTS: [string, string][] = [];
 const EXAMPLE_TEXT = "close-order.js -clientId=0";
 
 //////////////////////////////////////////////////////////////////////////////
@@ -31,9 +28,8 @@ class CloseOrdersApp extends IBApiNextApp {
    */
   start(): void {
     const scriptName = path.basename(__filename);
-    logger.debug(`Starting ${scriptName} script`);
-
-    this.connect(this.cmdLineArgs.watch ? 10000 : 0);
+    this.info(`Starting ${scriptName} script`);
+    this.connect();
 
     const executionFilter: ExecutionFilter = {
       clientId: "0",
@@ -45,7 +41,7 @@ class CloseOrdersApp extends IBApiNextApp {
       },
       (error) => {
         this.printObject(error);
-      }
+      },
     );
   }
 

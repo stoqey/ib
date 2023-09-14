@@ -5,7 +5,6 @@
 import path from "path";
 
 import { IBApiNextError } from "../";
-import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -14,9 +13,7 @@ import { IBApiNextApp } from "./common/ib-api-next-app";
 
 const DESCRIPTION_TEXT = "Prints the account open orders.";
 const USAGE_TEXT = "Usage: open-orders.js <options>";
-const OPTION_ARGUMENTS: [string, string][] = [
-  ["clientId=<number>", "Client id of current ib connection. Default is 0"],
-];
+const OPTION_ARGUMENTS: [string, string][] = [];
 const EXAMPLE_TEXT = "open-orders.js";
 
 //////////////////////////////////////////////////////////////////////////////
@@ -33,9 +30,9 @@ class OpenOrdersApp extends IBApiNextApp {
    */
   start(): void {
     const scriptName = path.basename(__filename);
-    logger.debug(`Starting ${scriptName} script`);
+    this.info(`Starting ${scriptName} script`);
+    this.connect();
 
-    this.connect(this.cmdLineArgs.watch ? 10000 : 0, +this.cmdLineArgs.clientId ?? 0);
     this.api
       .getAllOpenOrders()
       .then((orders) => {

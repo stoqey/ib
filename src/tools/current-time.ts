@@ -5,7 +5,6 @@
 import path from "path";
 
 import { IBApiNextError } from "../api-next";
-import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -31,8 +30,8 @@ class PrintCurrentTimeApp extends IBApiNextApp {
    */
   start(): void {
     const scriptName = path.basename(__filename);
-    logger.debug(`Starting ${scriptName} script`);
-    this.connect(0);
+    this.info(`Starting ${scriptName} script`);
+    this.connect();
 
     // print current time
 

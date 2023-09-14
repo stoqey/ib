@@ -6,7 +6,6 @@ import path from "path";
 
 import { Contract, Order, OrderAction, OrderType, SecType } from "../";
 import configuration from "../common/configuration";
-import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -18,7 +17,6 @@ const USAGE_TEXT = "Usage: modify-orders.js <options>";
 const OPTION_ARGUMENTS: [string, string][] = [
   ["price=<number>", "price of an order."],
   ["quantity=<number>", "Quantity of an order."],
-  ["clientId=<number>", "Client id of current ib connection. Default is 0"],
 ];
 const EXAMPLE_TEXT =
   "modify-orders.js -price=120 -quantity=10 -clientId=0 -orderId=2";
@@ -36,12 +34,8 @@ class ModifyOrdersApp extends IBApiNextApp {
    */
   start(): void {
     const scriptName = path.basename(__filename);
-    logger.debug(`Starting ${scriptName} script`);
-
-    this.connect(
-      this.cmdLineArgs.watch ? 10000 : 0,
-      +this.cmdLineArgs.clientId ?? 0
-    );
+    this.info(`Starting ${scriptName} script`);
+    this.connect();
 
     const id: number = +this.cmdLineArgs.orderId;
 

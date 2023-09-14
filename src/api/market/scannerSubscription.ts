@@ -1,3 +1,9 @@
+import {
+  Instrument,
+  LocationCode,
+  ScanCode,
+} from "../../api-next/market-scanner/market-scanner";
+
 /**
  * Defines a market scanner request.
  */
@@ -6,13 +12,13 @@ export interface ScannerSubscription {
   numberOfRows?: number;
 
   /** The instrument's type for the scan. I.e. STK, FUT.HK, etc. */
-  instrument?: string;
+  instrument?: Instrument;
 
   /** The request's location (STK.US, STK.US.MAJOR, etc). */
-  locationCode?: string;
+  locationCode?: LocationCode;
 
   /** Same as TWS Market Scanner's "parameters" field, for example: TOP_PERC_GAIN. */
-  scanCode?: string;
+  scanCode?: ScanCode;
 
   /** Filters out Contracts which price is below this value. */
   abovePrice?: number;

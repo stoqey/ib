@@ -6,7 +6,6 @@ import path from "path";
 import { Subscription } from "rxjs";
 
 import { IBApiNextError } from "../api-next";
-import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -37,7 +36,7 @@ const OPTION_ARGUMENTS: [string, string][] = [
   [
     "watch",
     "Watch for changes. If specified, the app will keep running and print account summary updates to console as received from TWS. " +
-    "If not specified, the app will print a one-time snapshot and than exit.",
+      "If not specified, the app will print a one-time snapshot and than exit.",
   ],
 ];
 const EXAMPLE_TEXT =
@@ -60,13 +59,13 @@ class PrintAccountSummaryApp extends IBApiNextApp {
    */
   start(): void {
     const scriptName = path.basename(__filename);
-    logger.debug(`Starting ${scriptName} script`);
+    this.info(`Starting ${scriptName} script`);
+    this.connect();
 
-    this.connect(this.cmdLineArgs.watch ? 10000 : 0);
     this.subscription$ = this.api
       .getAccountSummary(
         (this.cmdLineArgs.group as string) ?? DEFAULT_GROUP,
-        (this.cmdLineArgs.tags as string) ?? DEFAULT_TAGS
+        (this.cmdLineArgs.tags as string) ?? DEFAULT_TAGS,
       )
       .subscribe({
         next: (summaries) => {

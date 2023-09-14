@@ -6,7 +6,6 @@ import path from "path";
 import { Subscription } from "rxjs";
 
 import { IBApiNextError } from "../api-next";
-import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -44,8 +43,8 @@ class PrintMarketDepthExchangesApp extends IBApiNextApp {
    */
   start(): void {
     const scriptName = path.basename(__filename);
-    logger.debug(`Starting ${scriptName} script`);
-    this.connect(0);
+    this.info(`Starting ${scriptName} script`);
+    this.connect();
 
     if (!this.cmdLineArgs.conid) {
       this.error("-conid argument missing.");
@@ -67,7 +66,7 @@ class PrintMarketDepthExchangesApp extends IBApiNextApp {
           : 100,
         this.cmdLineArgs.smart !== undefined
           ? this.cmdLineArgs.smart === "1"
-          : true
+          : true,
       )
       .subscribe({
         next: (orderBookUpdate) => {

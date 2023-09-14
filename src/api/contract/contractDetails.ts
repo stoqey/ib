@@ -280,21 +280,18 @@ export interface ContractDetails {
 
   /**
    * Order's minimal size.
-   */  
-  minSize?: number
+   */
+  minSize?: number;
 
   /**
    * Order's size increment.
-   */  
-  sizeIncrement?: number
+   */
+  sizeIncrement?: number;
 
   /**
    * Order's suggested size increment.
-   */  
-  suggestedSizeIncrement?: number
-
-  
-
+   */
+  suggestedSizeIncrement?: number;
 }
 
 export default ContractDetails;

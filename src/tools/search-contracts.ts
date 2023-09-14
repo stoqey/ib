@@ -5,7 +5,6 @@
 
 import path from "path";
 import { IBApiNextError } from "../api-next";
-import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -33,12 +32,12 @@ class PrintContractSearchApp extends IBApiNextApp {
    */
   start(): void {
     const scriptName = path.basename(__filename);
-    logger.debug(`Starting ${scriptName} script`);
+    this.info(`Starting ${scriptName} script`);
+    this.connect();
+
     if (!this.cmdLineArgs.pattern) {
       this.error("-pattern argument missing.");
     }
-
-    this.connect();
 
     this.api
       .searchContracts(this.cmdLineArgs.pattern as string)

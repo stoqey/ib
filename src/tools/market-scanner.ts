@@ -1,34 +1,37 @@
 /**
- * This App will print daily PnL and unrealized PnL for a given account id.
+ * This App will print Most active stocks.
  */
 import path from "path";
 import { Subscription } from "rxjs";
 
 import { IBApiNextError } from "../api-next";
+import {
+  Instrument,
+  LocationCode,
+  ScanCode,
+} from "../api-next/market-scanner/market-scanner";
+import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
 /////////////////////////////////////////////////////////////////////////////////
 // The help text                                                               //
 /////////////////////////////////////////////////////////////////////////////////
 
-const DESCRIPTION_TEXT =
-  "Print daily PnL and unrealized PnL for a given account id.";
-const USAGE_TEXT = "Usage: pnl.js <options>";
-const OPTION_ARGUMENTS: [string, string][] = [
-  ["account", "(required) The IBKR account id."],
-];
-const EXAMPLE_TEXT = "pnl.js -account=DU1234567 -watch";
+const DESCRIPTION_TEXT = "Print most active stocks scan.";
+const USAGE_TEXT = "Usage: market-scanner.js <options>";
+const OPTION_ARGUMENTS: [string, string][] = [];
+const EXAMPLE_TEXT =
+  "market-scanner.js -conid=3691937 -exchange=SMART -period=3 -periodUnit=DAY";
 
 //////////////////////////////////////////////////////////////////////////////
 // The App code                                                             //
 //////////////////////////////////////////////////////////////////////////////
 
-class PrintPositionsApp extends IBApiNextApp {
+class PrintMarketScreenerApp extends IBApiNextApp {
   constructor() {
     super(DESCRIPTION_TEXT, USAGE_TEXT, OPTION_ARGUMENTS, EXAMPLE_TEXT);
   }
 
-  /** The [[Subscription]] on the PnL. */
   private subscription$: Subscription;
 
   /**
@@ -39,28 +42,25 @@ class PrintPositionsApp extends IBApiNextApp {
     this.info(`Starting ${scriptName} script`);
     this.connect();
 
-    if (!this.cmdLineArgs.account) {
-      this.error("-account argument missing.");
-    }
-
     this.subscription$ = this.api
-      .getPnL(
-        this.cmdLineArgs.account as string,
-        this.cmdLineArgs.model as string,
-      )
+      .getMarketScanner({
+        abovePrice: 1,
+        scanCode: ScanCode.MOST_ACTIVE,
+        locationCode: LocationCode.STK_US,
+        instrument: Instrument.STK,
+        numberOfRows: 20,
+      })
       .subscribe({
-        next: (pnl) => {
-          this.printObject(pnl);
-          if (!this.cmdLineArgs.watch) {
-            this.stop();
-          }
+        next: (data) => {
+          this.printObject(data.all);
+          if (!this.cmdLineArgs.watch) this.stop();
         },
-        error: (err: IBApiNextError) => {
-          this.error(`getPnL failed with '${err.error.message}'`);
+        error: (error: IBApiNextError) => {
+          logger.error("Error from the subscriber", error);
+          this.stop();
         },
       });
   }
-
   /**
    * Stop the app with success code.
    */
@@ -72,4 +72,4 @@ class PrintPositionsApp extends IBApiNextApp {
 
 // run the app
 
-new PrintPositionsApp().start();
+new PrintMarketScreenerApp().start();

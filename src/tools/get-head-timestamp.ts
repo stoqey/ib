@@ -5,7 +5,6 @@
 import path from "path";
 
 import { IBApiNextError } from "../api-next";
-import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -35,19 +34,26 @@ class PrintHeadTimestampApp extends IBApiNextApp {
    */
   start(): void {
     const scriptName = path.basename(__filename);
-    logger.debug(`Starting ${scriptName} script`);
-    this.connect(0);
+    this.info(`Starting ${scriptName} script`);
+    this.connect();
 
     // print next unused order id
     this.api
-      .getHeadTimestamp(this.getContractParameter(), "TRADES", true, 1)
+      .getHeadTimestamp(this.getContractArg(), "TRADES", true, 1)
       .then((timestamp) => {
         this.printText(timestamp);
-        this.exit();
+        this.stop();
       })
       .catch((err: IBApiNextError) => {
         this.error(`getHeadTimestamp failed with '${err.error.message}'`);
       });
+  }
+
+  /**
+   * Stop the app with success code.
+   */
+  stop() {
+    this.exit();
   }
 }
 

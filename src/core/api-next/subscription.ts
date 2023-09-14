@@ -1,8 +1,13 @@
-import { IBApiNextError, IBApiNext, ItemListUpdate } from "../../api-next";
 import { Observable, ReplaySubject, Subscription } from "rxjs";
+import { map } from "rxjs/operators";
+import { IBApiNext, IBApiNextError, ItemListUpdate } from "../../api-next";
 import { ConnectionState } from "../../api-next/common/connection-state";
 import { IBApiNextItemListUpdate } from "./item-list-update";
-import { map } from "rxjs/operators";
+
+export type IBApiNextItemListUpdateMinimal<T> = Omit<
+  IBApiNextItemListUpdate<T>,
+  "added" | "changed" | "removed"
+>;
 
 /**
  * @internal
@@ -28,7 +33,7 @@ export class IBApiNextSubscription<T> {
     private requestFunction: () => void,
     private cancelFunction: () => void,
     private cleanupFunction: () => void,
-    public readonly instanceId?: string
+    public readonly instanceId?: string,
   ) {
     this.reqId = api.nextReqId;
   }
@@ -43,17 +48,27 @@ export class IBApiNextSubscription<T> {
   private subject = new ReplaySubject<IBApiNextItemListUpdate<T>>(1);
 
   /** The last 'all' value as send to subscribers. */
-  private _lastAllValue?: T;
+  private _lastValue?: IBApiNextItemListUpdateMinimal<T>;
 
   /** The [[Subscription]] on the connection state. */
   private connectionState$?: Subscription;
 
   /** true when the end-event on an enumeration request has been received, false otherwise. */
-  public endEventReceived = false;
+  // public endEventReceived = false; // TODO: unused?
 
   /** Get the last 'all' value as send to subscribers. */
   get lastAllValue(): T | undefined {
-    return this._lastAllValue;
+    return this._lastValue?.all;
+  }
+
+  /** Get the last value as previouly saved or send to subscribers. */
+  get lastValue(): IBApiNextItemListUpdateMinimal<T> | undefined {
+    return this._lastValue;
+  }
+
+  /** Set the last value without publishing it to subscribers. For internal use only. */
+  set lastValue(value: IBApiNextItemListUpdateMinimal<T>) {
+    this._lastValue = { all: value.all, allset: value.allset };
   }
 
   /**
@@ -62,7 +77,7 @@ export class IBApiNextSubscription<T> {
    * @param value: The next value.
    */
   next(value: IBApiNextItemListUpdate<T>): void {
-    this._lastAllValue = value.all;
+    this._lastValue = { all: value.all, allset: value.allset };
     this.subject.next(value);
   }
 
@@ -78,7 +93,7 @@ export class IBApiNextSubscription<T> {
    * @param error: The [[IBApiError]] object.
    */
   error(error: IBApiNextError): void {
-    delete this._lastAllValue;
+    delete this._lastValue;
     this.subject.error(error);
     this.cancelTwsSubscription();
   }
@@ -105,9 +120,10 @@ export class IBApiNextSubscription<T> {
               ? ({
                   all: val.all,
                   added: val.all,
+                  allset: val.allset,
                 } as ItemListUpdate<T>)
               : val;
-          })
+          }),
         )
         .subscribe(subscriber);
 
@@ -139,8 +155,8 @@ export class IBApiNextSubscription<T> {
     if (!this.connectionState$) {
       this.connectionState$ = this.api.connectionState.subscribe((state) => {
         if (state === ConnectionState.Connected) {
-          delete this._lastAllValue;
-          this.endEventReceived = false;
+          delete this._lastValue;
+          // this.endEventReceived = false;
           this.requestFunction();
         }
       });

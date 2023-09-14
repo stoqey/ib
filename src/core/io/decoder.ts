@@ -1470,7 +1470,7 @@ export class Decoder {
    */
   private decodeMsg_SCANNER_DATA(): void {
     const version = this.readInt();
-    const tickerId = this.readInt();
+    const reqId = this.readInt();
     let numberOfElements = this.readInt();
 
     while (numberOfElements--) {
@@ -1507,7 +1507,7 @@ export class Decoder {
 
       this.emit(
         EventName.scannerData,
-        tickerId,
+        reqId,
         rank,
         contract,
         distance,
@@ -1517,7 +1517,7 @@ export class Decoder {
       );
     }
 
-    this.emit(EventName.scannerDataEnd, tickerId);
+    this.emit(EventName.scannerDataEnd, reqId);
   }
 
   /**
