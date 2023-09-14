@@ -52,20 +52,11 @@ class PrintMarketScreenerApp extends IBApiNextApp {
       })
       .subscribe({
         next: (data) => {
-          // console.log("app received", data);
-          if (data.allset) {
-            this.printObject(data.all);
-            if (!this.cmdLineArgs.watch) this.stop();
-          } else {
-            logger.debug("waiting for a complete list");
-          }
+          this.printObject(data.all);
+          if (!this.cmdLineArgs.watch) this.stop();
         },
         error: (error: IBApiNextError) => {
           logger.error("Error from the subscriber", error);
-          this.stop();
-        },
-        complete: () => {
-          logger.info("Completed");
           this.stop();
         },
       });
