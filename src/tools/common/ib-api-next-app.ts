@@ -53,6 +53,8 @@ export class IBApiNextApp {
     ["right=<P|C>", " The option type. Valid values are P, PUT, C, CALL."],
   ];
 
+  protected logLevel: LogLevel;
+
   constructor(
     appDescription: string,
     usageDescription: string,
@@ -65,6 +67,29 @@ export class IBApiNextApp {
       [...this.COMMON_OPTION_ARGUMENTS, ...optionArgumentDescriptions],
       usageExample,
     );
+    if (this.cmdLineArgs.log) {
+      switch (this.cmdLineArgs.log) {
+        case "error":
+          this.logLevel = LogLevel.ERROR;
+          break;
+        case "warn":
+          this.logLevel = LogLevel.WARN;
+          break;
+        case "info":
+          this.logLevel = LogLevel.INFO;
+          break;
+        case "debug":
+          this.logLevel = LogLevel.DETAIL;
+          break;
+        default:
+          this.error(
+            `Unknown value '${this.cmdLineArgs.log}' on -log argument.`,
+          );
+          break;
+      }
+    } else {
+      this.logLevel = LogLevel.ERROR;
+    }
   }
 
   /** Common command line options of all [[IBApiNext]] apps. */
@@ -77,9 +102,13 @@ export class IBApiNextApp {
     ],
     ["port=<number>", "Post number of the TWS or IB Gateway. Default is 4002."],
     [
+      "clientId=<number>",
+      "Client id of current ib connection. Default is random",
+    ],
+    [
       "watch",
-      "Watch for changes. If specified, the app will keep running and print positions updates to console as received from TWS. " +
-        "If not specified, the app will print a one-time snapshot and than exit.",
+      "Watch for changes. If specified, the app will keep running and print updates as received from TWS. " +
+        "If not specified, the app will print a one-time snapshot and then exit.",
     ],
   ];
 
@@ -98,8 +127,12 @@ export class IBApiNextApp {
 
     const port = (this.cmdLineArgs.port as number) ?? configuration.ib_port;
     const host = (this.cmdLineArgs.host as string) ?? configuration.ib_host;
+    if (reconnectInterval === undefined && this.cmdLineArgs.watch)
+      reconnectInterval = 10000;
+    if (clientId === undefined && this.cmdLineArgs.clientId)
+      clientId = +this.cmdLineArgs.clientId;
 
-    logger.debug(`Logging into server: ${host}:${port}`);
+    this.info(`Logging into server: ${host}:${port}`);
     if (!this.api) {
       this.api = new IBApiNext({
         reconnectInterval,
@@ -107,27 +140,7 @@ export class IBApiNextApp {
         port,
         logger,
       });
-      if (this.cmdLineArgs.log) {
-        switch (this.cmdLineArgs.log) {
-          case "error":
-            this.api.logLevel = LogLevel.ERROR;
-            break;
-          case "warn":
-            this.api.logLevel = LogLevel.WARN;
-            break;
-          case "info":
-            this.api.logLevel = LogLevel.INFO;
-            break;
-          case "debug":
-            this.api.logLevel = LogLevel.DETAIL;
-            break;
-          default:
-            this.error(
-              `Unknown value '${this.cmdLineArgs.log}' on -log argument.`,
-            );
-            break;
-        }
-      }
+      this.api.logLevel = this.logLevel;
     }
 
     // log generic errors (reqId = -1) and exit with failure code
@@ -135,7 +148,7 @@ export class IBApiNextApp {
     if (!this.error$) {
       this.error$ = this.api.errorSubject.subscribe((error) => {
         if (error.reqId === -1) {
-          logger.warn(error.error.message, `(Error #${error.code})`);
+          this.warn(`${error.error.message} (Error #${error.code})`);
         } else {
           this.error(
             `${error.error.message} (Error #${error.code}) ${
@@ -149,8 +162,7 @@ export class IBApiNextApp {
     try {
       this.api.connect(clientId);
     } catch (error) {
-      logger.error("Connection error", error.message);
-      logger.debug(`IB host: ${host} - IB port: ${port}`);
+      this.error(error.message);
     }
   }
 
@@ -169,13 +181,34 @@ export class IBApiNextApp {
   }
 
   /**
-   * Print and error to console and exit the app with error code, unless -watch argument is present.
+   * Print an error message and exit the app with error code, unless -watch argument is present.
    */
   error(text: string): void {
     logger.error(text);
     if (!this.cmdLineArgs.watch) {
       this.exit(1);
     }
+  }
+
+  /**
+   * Print a warning message
+   */
+  warn(text: string): void {
+    if (this.logLevel >= LogLevel.WARN) logger.warn(text);
+  }
+
+  /**
+   * Print an wainformation message
+   */
+  info(text: string): void {
+    if (this.logLevel >= LogLevel.INFO) logger.info(text);
+  }
+
+  /**
+   * Print an wainformation message
+   */
+  debug(text: string): void {
+    if (this.logLevel >= LogLevel.DETAIL) logger.debug(text);
   }
 
   /**
@@ -199,7 +232,7 @@ export class IBApiNextApp {
       const pair = arg.split("=");
       const name = pair[0].substr(1);
       if (!optionArguments.find((v) => v[0].split("=")[0] == name)) {
-        console.error("ERROR: Unknown argument -" + pair[0]);
+        console.error("ERROR: Unknown argument " + pair[0]);
         this.exit(1);
       }
       this.cmdLineArgs[name] = pair.length > 1 ? pair[1] ?? "1" : "1";
@@ -227,7 +260,8 @@ export class IBApiNextApp {
     return result + "Example: " + example;
   }
 
-  getContractParameter(): Contract {
+  /** get contract from command line args */
+  getContractArg(): Contract {
     return {
       conId: (this.cmdLineArgs.conid as number) ?? undefined,
       secType: this.cmdLineArgs.sectype as SecType,

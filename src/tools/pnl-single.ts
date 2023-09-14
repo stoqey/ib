@@ -5,7 +5,6 @@ import path from "path";
 import { Subscription } from "rxjs";
 
 import { IBApiNextError } from "../api-next";
-import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -22,11 +21,6 @@ const OPTION_ARGUMENTS: [string, string][] = [
     "(required) Contract ID (conId) of contract to receive daily PnL updates for.",
   ],
   ["model=<code>", "Model in which position exists."],
-  [
-    "watch",
-    "Watch for changes. If specified, the app will keep running and print PnL updates to console as received from TWS. " +
-    "If not specified, the app will print a one-time snapshot and than exit.",
-  ],
 ];
 const EXAMPLE_TEXT = "pnl-single.js -account=DU1234567 -conid=1234567 -watch";
 
@@ -47,7 +41,9 @@ class PrintPositionsApp extends IBApiNextApp {
    */
   start(): void {
     const scriptName = path.basename(__filename);
-    logger.debug(`Starting ${scriptName} script`);
+    this.info(`Starting ${scriptName} script`);
+    this.connect();
+
     if (!this.cmdLineArgs.account) {
       this.error("-account argument missing.");
     }
@@ -55,13 +51,11 @@ class PrintPositionsApp extends IBApiNextApp {
       this.error("-conid argument missing.");
     }
 
-    this.connect(this.cmdLineArgs.watch ? 10000 : 0);
-
     this.subscription$ = this.api
       .getPnLSingle(
         this.cmdLineArgs.account as string,
         this.cmdLineArgs.model as string,
-        this.cmdLineArgs.conid as number
+        this.cmdLineArgs.conid as number,
       )
       .subscribe({
         next: (pnlSingle) => {

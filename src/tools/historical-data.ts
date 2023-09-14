@@ -4,9 +4,8 @@
 import path from "path";
 
 import { IBApiNextError } from "../api-next";
-import logger from "../common/logger";
-import { IBApiNextApp } from "./common/ib-api-next-app";
 import { BarSizeSetting } from "../api/historical/bar-size-setting";
+import { IBApiNextApp } from "./common/ib-api-next-app";
 
 /////////////////////////////////////////////////////////////////////////////////
 // The help text                                                               //
@@ -47,7 +46,8 @@ class PrintPositionsApp extends IBApiNextApp {
    */
   start(): void {
     const scriptName = path.basename(__filename);
-    logger.debug(`Starting ${scriptName} script`);
+    this.info(`Starting ${scriptName} script`);
+    this.connect();
 
     if (!this.cmdLineArgs.conid) {
       this.error("-conid argument missing.");
@@ -66,15 +66,13 @@ class PrintPositionsApp extends IBApiNextApp {
     if (!endTime) {
       const now = new Date();
       endTime = `${now.getFullYear()}${("0" + (now.getMonth() + 1)).slice(
-        -2
+        -2,
       )}${("0" + now.getDate()).slice(-2)} ${("0" + now.getHours()).slice(
-        -2
+        -2,
       )}:${("0" + now.getMinutes()).slice(-2)}:${("0" + now.getSeconds()).slice(
-        -2
+        -2,
       )}`;
     }
-
-    this.connect();
 
     this.api
       .getHistoricalData(
@@ -87,7 +85,7 @@ class PrintPositionsApp extends IBApiNextApp {
         this.cmdLineArgs.barSize as BarSizeSetting,
         "MIDPOINT",
         0,
-        1
+        1,
       )
       .then((bars) => {
         this.printObject(bars);

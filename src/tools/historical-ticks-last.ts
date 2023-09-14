@@ -5,7 +5,6 @@ import path from "path";
 import { lastValueFrom, Subscription } from "rxjs";
 
 import { IBApiNextError } from "../api-next";
-import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -58,7 +57,8 @@ class PrintHistoricalTicksLastApp extends IBApiNextApp {
    */
   start(): void {
     const scriptName = path.basename(__filename);
-    logger.debug(`Starting ${scriptName} script`);
+    this.info(`Starting ${scriptName} script`);
+    this.connect();
 
     if (!this.cmdLineArgs.conid) {
       this.error("-conid argument missing.");
@@ -76,8 +76,6 @@ class PrintHistoricalTicksLastApp extends IBApiNextApp {
       this.error("-count argument missing.");
     }
 
-    this.connect();
-
     // We use lastValueFrom here as we are not interested in getting
     // incremental updates.
     // If you do so (e.g. to show results incrementally as received from TWS),
@@ -92,8 +90,8 @@ class PrintHistoricalTicksLastApp extends IBApiNextApp {
         this.cmdLineArgs.start as string,
         this.cmdLineArgs.end as string,
         this.cmdLineArgs.count as number,
-        this.cmdLineArgs.rth as number ?? 1
-      )
+        (this.cmdLineArgs.rth as number) ?? 1,
+      ),
     )
       .then((ticks) => {
         this.printObject(ticks);
@@ -101,7 +99,7 @@ class PrintHistoricalTicksLastApp extends IBApiNextApp {
       })
       .catch((err: IBApiNextError) => {
         this.error(
-          `getHistoricalTicksBidAsk failed with '${err.error.message}'`
+          `getHistoricalTicksBidAsk failed with '${err.error.message}'`,
         );
       });
   }

@@ -4,6 +4,11 @@ import { IBApiNext, IBApiNextError, ItemListUpdate } from "../../api-next";
 import { ConnectionState } from "../../api-next/common/connection-state";
 import { IBApiNextItemListUpdate } from "./item-list-update";
 
+export type IBApiNextItemListUpdateMinimal<T> = Omit<
+  IBApiNextItemListUpdate<T>,
+  "added" | "changed" | "removed"
+>;
+
 /**
  * @internal
  *
@@ -43,7 +48,7 @@ export class IBApiNextSubscription<T> {
   private subject = new ReplaySubject<IBApiNextItemListUpdate<T>>(1);
 
   /** The last 'all' value as send to subscribers. */
-  private _lastValue?: IBApiNextItemListUpdate<T>;
+  private _lastValue?: IBApiNextItemListUpdateMinimal<T>;
 
   /** The [[Subscription]] on the connection state. */
   private connectionState$?: Subscription;
@@ -57,12 +62,12 @@ export class IBApiNextSubscription<T> {
   }
 
   /** Get the last value as previouly saved or send to subscribers. */
-  get lastValue(): IBApiNextItemListUpdate<T> | undefined {
+  get lastValue(): IBApiNextItemListUpdateMinimal<T> | undefined {
     return this._lastValue;
   }
 
   /** Set the last value without publishing it to subscribers. For internal use only. */
-  set lastValue(value: IBApiNextItemListUpdate<T>) {
+  set lastValue(value: IBApiNextItemListUpdateMinimal<T>) {
     this._lastValue = { all: value.all, allset: value.allset };
   }
 

@@ -5,7 +5,6 @@ import path from "path";
 import { Subscription } from "rxjs";
 
 import { IBApiNextError } from "../api-next";
-import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -17,11 +16,6 @@ const DESCRIPTION_TEXT =
 const USAGE_TEXT = "Usage: pnl.js <options>";
 const OPTION_ARGUMENTS: [string, string][] = [
   ["account", "(required) The IBKR account id."],
-  [
-    "watch",
-    "Watch for changes. If specified, the app will keep running and print PnL updates to console as received from TWS. " +
-    "If not specified, the app will print a one-time snapshot and than exit.",
-  ],
 ];
 const EXAMPLE_TEXT = "pnl.js -account=DU1234567 -watch";
 
@@ -42,17 +36,17 @@ class PrintPositionsApp extends IBApiNextApp {
    */
   start(): void {
     const scriptName = path.basename(__filename);
-    logger.info(`Starting ${scriptName} script`);
+    this.info(`Starting ${scriptName} script`);
+    this.connect();
+
     if (!this.cmdLineArgs.account) {
       this.error("-account argument missing.");
     }
 
-    this.connect(this.cmdLineArgs.watch ? 10000 : 0);
-
     this.subscription$ = this.api
       .getPnL(
         this.cmdLineArgs.account as string,
-        this.cmdLineArgs.model as string
+        this.cmdLineArgs.model as string,
       )
       .subscribe({
         next: (pnl) => {

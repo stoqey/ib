@@ -43,9 +43,8 @@ class App extends IBApiNextApp {
    * Start the app.
    */
   start(): void {
-    logger.info(`Starting ${scriptName} script...`);
-
-    this.connect(this.cmdLineArgs.watch ? 10000 : 0);
+    this.info(`Starting ${scriptName} script`);
+    this.connect();
 
     this.api
       .getNextValidOrderId()

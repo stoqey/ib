@@ -11,7 +11,6 @@ import {
   IBApiTickType,
   MarketDataType,
 } from "../api-next";
-import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -44,12 +43,13 @@ class PrintMarketDataApp extends IBApiNextApp {
    */
   start(): void {
     const scriptName = path.basename(__filename);
-    logger.debug(`Starting ${scriptName} script`);
-    this.connect(this.cmdLineArgs.watch ? 10000 : 0);
+    this.info(`Starting ${scriptName} script`);
+    this.connect();
     this.api.setMarketDataType(MarketDataType.DELAYED_FROZEN);
+
     this.subscription$ = this.api
       .getMarketData(
-        this.getContractParameter(),
+        this.getContractArg(),
         this.cmdLineArgs.ticks as string,
         false,
         false,

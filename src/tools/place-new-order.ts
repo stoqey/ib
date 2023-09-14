@@ -6,7 +6,6 @@ import path from "path";
 
 import { Contract, Order, OrderAction, OrderType, SecType } from "../";
 import configuration from "../common/configuration";
-import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -19,7 +18,6 @@ const OPTION_ARGUMENTS: [string, string][] = [
   ["price=<number>", "price of an order."],
   ["symbol=<name>", "The symbol name."],
   ["quantity=<number>", "Quantity of an order."],
-  ["clientId=<number>", "Client id of current ib connection. Default is 0"],
 ];
 const EXAMPLE_TEXT =
   "place-new-orders.js -price=120 -symbol=AMZN -quantity=10 -clientId=0";
@@ -37,12 +35,8 @@ class PlaceNewOrdersApp extends IBApiNextApp {
    */
   start(): void {
     const scriptName = path.basename(__filename);
-    logger.debug(`Starting ${scriptName} script`);
-
-    this.connect(
-      this.cmdLineArgs.watch ? 10000 : 0,
-      this.cmdLineArgs.clientId ? +this.cmdLineArgs.clientId : 0,
-    );
+    this.info(`Starting ${scriptName} script`);
+    this.connect();
 
     const contract: Contract = {
       symbol: this.cmdLineArgs.symbol as string,

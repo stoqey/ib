@@ -39,9 +39,8 @@ class PrintMarketScreenerApp extends IBApiNextApp {
    */
   start(): void {
     const scriptName = path.basename(__filename);
-    logger.debug(`Starting ${scriptName} script`);
-
-    this.connect(this.cmdLineArgs.watch ? 10000 : 0);
+    this.info(`Starting ${scriptName} script`);
+    this.connect();
 
     this.subscription$ = this.api
       .getMarketScanner({
@@ -56,7 +55,7 @@ class PrintMarketScreenerApp extends IBApiNextApp {
           // console.log("app received", data);
           if (data.allset) {
             this.printObject(data.all);
-            this.stop();
+            if (!this.cmdLineArgs.watch) this.stop();
           } else {
             logger.debug("waiting for a complete list");
           }

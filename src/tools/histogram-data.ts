@@ -5,7 +5,6 @@ import path from "path";
 
 import { IBApiNextError } from "../api-next";
 import DurationUnit from "../api/data/enum/duration-unit";
-import logger from "../common/logger";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -43,7 +42,8 @@ class PrintHistogramDataApp extends IBApiNextApp {
    */
   start(): void {
     const scriptName = path.basename(__filename);
-    logger.debug(`Starting ${scriptName} script`);
+    this.info(`Starting ${scriptName} script`);
+    this.connect();
 
     if (!this.cmdLineArgs.conid) {
       this.error("-conid argument missing.");
@@ -59,11 +59,9 @@ class PrintHistogramDataApp extends IBApiNextApp {
     }
     if (!(this.cmdLineArgs.periodUnit in DurationUnit)) {
       this.error(
-        "Invalid -periodUnit argument value: " + this.cmdLineArgs.periodUnit
+        "Invalid -periodUnit argument value: " + this.cmdLineArgs.periodUnit,
       );
     }
-
-    this.connect();
 
     this.api
       .getHistogramData(
@@ -73,7 +71,7 @@ class PrintHistogramDataApp extends IBApiNextApp {
         },
         false,
         this.cmdLineArgs.period as number,
-        this.cmdLineArgs.periodUnit as DurationUnit
+        this.cmdLineArgs.periodUnit as DurationUnit,
       )
       .then((data) => {
         this.printObject(data);
