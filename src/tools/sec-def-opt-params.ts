@@ -2,8 +2,6 @@
  * This App will request security definition option parameters from TWS and print it to console.
  */
 
-import path from "path";
-
 import { SecType } from "../";
 import { IBApiNextError } from "../api-next";
 import { IBApiNextApp } from "./common/ib-api-next-app";
@@ -40,9 +38,7 @@ class PrintOptionsDetailsApp extends IBApiNextApp {
    * Start the app.
    */
   start(): void {
-    const scriptName = path.basename(__filename);
-    this.info(`Starting ${scriptName} script`);
-    this.connect();
+    super.start();
 
     this.api
       .getSecDefOptParams(

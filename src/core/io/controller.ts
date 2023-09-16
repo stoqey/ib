@@ -181,6 +181,16 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
     }
 
     this.ib.emit(EventName.all, eventName, args);
+
+    /*
+    Important: The IBApi.EWrapper.nextValidID callback is commonly used to indicate that the connection is completed
+    and other messages can be sent from the API client to TWS.
+    There is the possibility that function calls made prior to this time could be dropped by TWS.
+    */
+    if (eventName === EventName.nextValidId) {
+      // console.log("nextValidId received");
+      this.resume();
+    }
   }
 
   /**

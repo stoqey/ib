@@ -382,10 +382,10 @@ export class Socket {
       }
     }
 
-    // resume controller after CONNECT_DELAY, fix connect issue
-    setTimeout(() => {
-      this.controller.resume();
-    }, CONNECT_DELAY);
+    // resume controller moved to crontroller
+    // setTimeout(() => {
+    //   this.controller.resume();
+    // }, CONNECT_DELAY);
   }
 
   /**

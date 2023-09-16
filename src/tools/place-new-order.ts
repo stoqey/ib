@@ -2,8 +2,6 @@
  * This App will print IBKR account place new orders to console.
  */
 
-import path from "path";
-
 import { Contract, Order, OrderAction, OrderType, SecType } from "../";
 import configuration from "../common/configuration";
 import { IBApiNextApp } from "./common/ib-api-next-app";
@@ -34,9 +32,7 @@ class PlaceNewOrdersApp extends IBApiNextApp {
    * Start the app.
    */
   start(): void {
-    const scriptName = path.basename(__filename);
-    this.info(`Starting ${scriptName} script`);
-    this.connect();
+    super.start();
 
     const contract: Contract = {
       symbol: this.cmdLineArgs.symbol as string,

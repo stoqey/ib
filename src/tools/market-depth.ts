@@ -2,7 +2,6 @@
  * This App will print a contract's market depth (order book).
  */
 
-import path from "path";
 import { Subscription } from "rxjs";
 
 import { IBApiNextError } from "../api-next";
@@ -42,9 +41,7 @@ class PrintMarketDepthExchangesApp extends IBApiNextApp {
    * Start the app.
    */
   start(): void {
-    const scriptName = path.basename(__filename);
-    this.info(`Starting ${scriptName} script`);
-    this.connect();
+    super.start();
 
     if (!this.cmdLineArgs.conid) {
       this.error("-conid argument missing.");

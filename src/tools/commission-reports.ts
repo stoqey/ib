@@ -1,7 +1,6 @@
 /**
  * This App will print IBKR account place new orders to console.
  */
-import path from "path";
 
 import { ExecutionFilter } from "..";
 import { IBApiNextApp } from "./common/ib-api-next-app";
@@ -27,9 +26,7 @@ class CommissionReportApp extends IBApiNextApp {
    * Start the app.
    */
   start(): void {
-    const scriptName = path.basename(__filename);
-    this.info(`Starting ${scriptName} script`);
-    this.connect();
+    super.start();
 
     const executionFilter: ExecutionFilter = {
       clientId: "0",

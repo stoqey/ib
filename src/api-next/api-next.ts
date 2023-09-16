@@ -784,7 +784,9 @@ export class IBApiNext {
         }
       }
 
-      if (hasAdded) {
+      if (!subscription.endEventReceived) {
+        subscription.lastAllValue = cached;
+      } else if (hasAdded) {
         subscription.next({
           all: cached,
           added: new MutableAccountPositions([[account, [updatedPosition]]]),
@@ -803,6 +805,19 @@ export class IBApiNext {
     });
   };
 
+  /** position end enumeration event handler */
+  private readonly onPositionEnd = (
+    subscriptions: Map<number, IBApiNextSubscription<MutableAccountPositions>>,
+  ): void => {
+    // notify all subscribers
+    subscriptions.forEach((subscription) => {
+      const lastAllValue =
+        subscription.lastAllValue ?? new MutableAccountPositions();
+      subscription.endEventReceived = true;
+      subscription.next({ all: lastAllValue });
+    });
+  };
+
   /**
    * Create subscription to receive the positions on all accessible accounts.
    */
@@ -814,7 +829,10 @@ export class IBApiNext {
       () => {
         this.api.cancelPositions();
       },
-      [[EventName.position, this.onPosition]],
+      [
+        [EventName.position, this.onPosition],
+        [EventName.positionEnd, this.onPositionEnd],
+      ],
       "getPositions",
     );
   }
@@ -2363,28 +2381,26 @@ export class IBApiNext {
 
     // console.log("onScannerData", item);
 
-    const lastValue = subscription.lastValue ?? {
-      all: new Map<MarketScannerItemRank, MarketScannerItem>(),
-      allset: false,
-    };
+    const lastAllValue =
+      subscription.lastAllValue ??
+      new Map<MarketScannerItemRank, MarketScannerItem>();
 
-    const existing = lastValue.all.get(rank) != undefined;
-    lastValue.all.set(rank, item);
-    if (lastValue.allset) {
+    const existing = lastAllValue.get(rank) != undefined;
+    lastAllValue.set(rank, item);
+    if (subscription.endEventReceived) {
       const updated: MarketScannerRows = new Map<
         MarketScannerItemRank,
         MarketScannerItem
       >();
       updated.set(rank, item);
       subscription.next({
-        all: lastValue.all,
-        allset: lastValue.allset,
+        all: lastAllValue,
         changed: existing ? updated : undefined,
         added: existing ? undefined : updated,
       });
     } else {
       // console.log("saving for future use", lastValue);
-      subscription.lastValue = lastValue;
+      subscription.lastAllValue = lastAllValue;
     }
   };
 
@@ -2403,14 +2419,13 @@ export class IBApiNext {
       return;
     }
 
-    const lastValue = subscription.lastValue ?? {
-      all: new Map<MarketScannerItemRank, MarketScannerItem>(),
-    };
+    const lastAllValue =
+      subscription.lastAllValue ??
+      new Map<MarketScannerItemRank, MarketScannerItem>();
     const updated: IBApiNextItemListUpdate<MarketScannerRows> = {
-      all: lastValue.all,
-      allset: true,
-      added: lastValue.all,
+      all: lastAllValue,
     };
+    subscription.endEventReceived = true;
 
     // console.log("onScannerDataEnd", updated);
 
@@ -2539,10 +2554,14 @@ export class IBApiNext {
           orderStatus: undefined,
         };
         allOrders.push(addedOrder);
-        sub.next({
-          all: allOrders,
-          added: [addedOrder],
-        });
+        if (sub.endEventReceived) {
+          sub.next({
+            all: allOrders,
+            added: [addedOrder],
+          });
+        } else {
+          sub.lastAllValue = allOrders;
+        }
       } else {
         // update
         const updatedOrder: OpenOrder = allOrders[changeOrderIndex];
@@ -2564,13 +2583,16 @@ export class IBApiNext {
   };
 
   /**
-   *  Ends the subscrition once all openOrders are recieved
+   *  Ends the subscription once all openOrders are recieved
    *  @param subscriptions: listeners
    */
-  private readonly onOpenOrderEnd = (
+  private readonly onOpenOrderComplete = (
     subscriptions: Map<number, IBApiNextSubscription<OpenOrder[]>>,
   ): void => {
     subscriptions.forEach((sub) => {
+      const allOrders = sub.lastAllValue ?? [];
+      sub.endEventReceived = true;
+      sub.next({ all: allOrders });
       sub.complete();
     });
   };
@@ -2676,6 +2698,21 @@ export class IBApiNext {
   };
 
   /**
+   *  Ends the subscription once all openOrders are recieved
+   *  @param subscriptions: listeners
+   */
+  private readonly onOpenOrderEnd = (
+    subscriptions: Map<number, IBApiNextSubscription<OpenOrder[]>>,
+  ): void => {
+    // notify all subscribers
+    subscriptions.forEach((subscription) => {
+      const lastAllValue = subscription.lastAllValue ?? [];
+      subscription.endEventReceived = true;
+      subscription.next({ all: lastAllValue });
+    });
+  };
+
+  /**
    * Requests all current open orders in associated accounts at the current moment.
    */
   getAllOpenOrders(): Promise<OpenOrder[]> {
@@ -2690,7 +2727,7 @@ export class IBApiNext {
             [EventName.openOrder, this.onOpenOrder],
             [EventName.orderStatus, this.onOrderStatus],
             [EventName.orderBound, this.onOrderBound],
-            [EventName.openOrderEnd, this.onOpenOrderEnd],
+            [EventName.openOrderEnd, this.onOpenOrderComplete],
           ],
           "getAllOpenOrders", // use same instance id each time, to make sure there is only 1 pending request at time
         )
@@ -2715,6 +2752,7 @@ export class IBApiNext {
         [EventName.openOrder, this.onOpenOrder],
         [EventName.orderStatus, this.onOrderStatus],
         [EventName.orderBound, this.onOrderBound],
+        [EventName.openOrderEnd, this.onOpenOrderEnd],
       ],
       "getOpenOrders", // use same instance id each time, to make sure there is only 1 pending request at time
     );
@@ -2738,6 +2776,7 @@ export class IBApiNext {
         [EventName.openOrder, this.onOpenOrder],
         [EventName.orderStatus, this.onOrderStatus],
         [EventName.orderBound, this.onOrderBound],
+        [EventName.openOrderEnd, this.onOpenOrderEnd],
       ],
       "getAutoOpenOrders", // use same instance id each time, to make sure there is only 1 pending request at time
     );

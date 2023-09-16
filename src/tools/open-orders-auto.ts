@@ -2,7 +2,6 @@
  * This App will print real-time updates of the IBKR account open orders.
  */
 
-import path from "path";
 import { Subscription } from "rxjs";
 
 import { IBApiNextError } from "../";
@@ -33,9 +32,7 @@ class OpenOrdersApp extends IBApiNextApp {
    * Start the app.
    */
   start(): void {
-    const scriptName = path.basename(__filename);
-    this.info(`Starting ${scriptName} script`);
-    this.connect();
+    super.start();
 
     this.subscription$ = this.api
       .getAutoOpenOrders(this.cmdLineArgs.bind ? true : false)

@@ -1,7 +1,6 @@
 /**
  * This App will print historical bid / ask price Time&Sales data of and instrument.
  */
-import path from "path";
 import { lastValueFrom } from "rxjs";
 
 import { IBApiNextError } from "../api-next";
@@ -53,9 +52,7 @@ class PrintHistoricalTicksMidApp extends IBApiNextApp {
    * Start the app.
    */
   start(): void {
-    const scriptName = path.basename(__filename);
-    this.info(`Starting ${scriptName} script`);
-    this.connect();
+    super.start();
 
     if (!this.cmdLineArgs.conid) {
       this.error("-conid argument missing.");
