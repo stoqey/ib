@@ -10,14 +10,28 @@ const TEST_SERVER_POST = configuration.ib_port;
 
 describe("RequestAllOpenOrders", () => {
   jest.setTimeout(10000);
-  let _clientId = Math.floor(Math.random() * 32766) + 1; // ensure unique client
+
+  let ib: IBApi;
+  let clientId = Math.floor(Math.random() * 32766) + 1; // ensure unique client
+
+  beforeEach(() => {
+    ib = new IBApi({
+      host: configuration.ib_host,
+      port: configuration.ib_port,
+      clientId,
+    });
+    // logger.info("IBApi created");
+  });
+
+  afterEach(() => {
+    if (ib) {
+      ib.disconnect();
+      ib = undefined;
+    }
+    // logger.info("IBApi disconnected");
+  });
 
   it("Test reqAllOpenOrders", (done) => {
-    const ib = new IBApi({
-      host: TEST_SERVER_HOST,
-      port: TEST_SERVER_POST,
-    });
-
     let received = false;
 
     ib.on(EventName.openOrder, (orderId, contract, order, orderState) => {
@@ -26,28 +40,16 @@ describe("RequestAllOpenOrders", () => {
       // expect(orderId).toBeTruthy(); We sometimes get zeros
     })
       .on(EventName.openOrderEnd, () => {
-        // logger.info("openOrderEnd message received");
-        received = true;
-        // done
         ib.disconnect();
-      })
-      .on(EventName.connected, () => {
-        // logger.info("connected");
-        ib.reqIds();
-      })
-      .on(EventName.disconnected, () => {
-        if (received) done();
-        else done("We didn't received acknowledge");
+        done();
       })
       .on(EventName.error, (err: Error, code: ErrorCode, id: number) => {
         done(`${err.message} - code: ${code} - id: ${id}`);
       })
       .once(EventName.nextValidId, (orderId: number) => {
-        // logger.info(`nextValidId: ${orderId}, requesting orders`);
-
         ib.reqAllOpenOrders();
       });
 
-    ib.connect(_clientId++);
+    ib.connect();
   });
 });

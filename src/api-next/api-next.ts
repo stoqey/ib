@@ -437,7 +437,9 @@ export class IBApiNext {
       ],
     ]);
 
-    if (hasChanged) {
+    if (!subscription.endEventReceived) {
+      subscription.lastAllValue = cached;
+    } else if (hasChanged) {
       subscription.next({
         all: cached,
         changed: accountSummaryUpdate,
@@ -448,6 +450,25 @@ export class IBApiNext {
         added: accountSummaryUpdate,
       });
     }
+  };
+
+  /** accountSummaryEnd event handler */
+  private readonly onAccountSummaryEnd = (
+    subscriptions: Map<number, IBApiNextSubscription<MutableAccountSummaries>>,
+    reqId: number,
+  ): void => {
+    // get the subscription
+    const subscription = subscriptions.get(reqId);
+    if (!subscription) {
+      return;
+    }
+
+    // get latest value on cache
+    const cached = subscription.lastAllValue ?? new MutableAccountSummaries();
+
+    // sent data to subscribers
+    subscription.endEventReceived = true;
+    subscription.next({ all: cached });
   };
 
   /**
@@ -507,7 +528,10 @@ export class IBApiNext {
       (reqId) => {
         this.api.cancelAccountSummary(reqId);
       },
-      [[EventName.accountSummary, this.onAccountSummary]],
+      [
+        [EventName.accountSummary, this.onAccountSummary],
+        [EventName.accountSummaryEnd, this.onAccountSummaryEnd],
+      ],
       `${group}:${tags}`,
     );
   }
@@ -713,7 +737,12 @@ export class IBApiNext {
     accountName: string,
   ): void => {
     this.logger.debug(LOG_TAG, `onAccountDownloadEnd(${accountName})`);
-    // TODO finish implementation
+    // notify all subscribers
+    subscriptions.forEach((subscription) => {
+      const all: AccountUpdate = subscription.lastAllValue ?? {};
+      subscription.endEventReceived = true;
+      subscription.next({ all });
+    });
   };
 
   /**
@@ -2426,10 +2455,6 @@ export class IBApiNext {
       all: lastAllValue,
     };
     subscription.endEventReceived = true;
-
-    // console.log("onScannerDataEnd", updated);
-
-    // subscription.next(updated);
     subscription.next(updated);
   };
 

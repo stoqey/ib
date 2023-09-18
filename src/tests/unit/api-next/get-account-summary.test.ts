@@ -3,12 +3,12 @@
  */
 
 import { take } from "rxjs/operators";
-import { IBApi, IBApiNext, IBApiNextError, EventName } from "../../..";
+import { EventName, IBApi, IBApiNext, IBApiNextError } from "../../..";
 
 describe("RxJS Wrapper: getAccountSummary()", () => {
   test("Error Event", (done) => {
     const apiNext = new IBApiNext();
-    const api = ((apiNext as unknown) as Record<string, unknown>).api as IBApi;
+    const api = (apiNext as unknown as Record<string, unknown>).api as IBApi;
 
     // emit a error event and verify RxJS result
 
@@ -32,7 +32,7 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
 
   test("Update multicast", (done) => {
     const apiNext = new IBApiNext();
-    const api = ((apiNext as unknown) as Record<string, unknown>).api as IBApi;
+    const api = (apiNext as unknown as Record<string, unknown>).api as IBApi;
 
     // testing values
 
@@ -55,7 +55,7 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
         next: (update) => {
           expect(
             update.all.get(accountId1)?.get("NetLiquidation")?.get(currency)
-              ?.value
+              ?.value,
           ).toEqual(testValueReqId1);
           receivedNetLiquidation++;
           if (receivedNetLiquidation == 2 && receivedTotalCashValue == 2) {
@@ -74,7 +74,7 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
         next: (update) => {
           expect(
             update.all.get(accountId1)?.get("NetLiquidation")?.get(currency)
-              ?.value
+              ?.value,
           ).toEqual(testValueReqId1);
           receivedNetLiquidation++;
           if (receivedNetLiquidation == 2 && receivedTotalCashValue == 2) {
@@ -95,7 +95,7 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
         next: (update) => {
           expect(
             update.all.get(accountId2)?.get("TotalCashValue")?.get(currency)
-              ?.value
+              ?.value,
           ).toEqual(testValueReqId1);
           receivedTotalCashValue++;
           if (receivedNetLiquidation == 2 && receivedTotalCashValue == 2) {
@@ -114,7 +114,7 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
         next: (update) => {
           expect(
             update.all.get(accountId2)?.get("TotalCashValue")?.get(currency)
-              ?.value
+              ?.value,
           ).toEqual(testValueReqId1);
           receivedTotalCashValue++;
           if (receivedNetLiquidation == 2 && receivedTotalCashValue == 2) {
@@ -132,8 +132,9 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
       accountId1,
       "NetLiquidation",
       testValueReqId1,
-      currency
+      currency,
     );
+    api.emit(EventName.accountSummaryEnd, 1);
 
     api.emit(
       EventName.accountSummary,
@@ -141,13 +142,14 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
       accountId2,
       "TotalCashValue",
       testValueReqId1,
-      currency
+      currency,
     );
+    api.emit(EventName.accountSummaryEnd, 2);
   });
 
   test("Aggregate into all", (done) => {
     const apiNext = new IBApiNext();
-    const api = ((apiNext as unknown) as Record<string, unknown>).api as IBApi;
+    const api = (apiNext as unknown as Record<string, unknown>).api as IBApi;
 
     // testing values
 
@@ -175,38 +177,44 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
           update.all.forEach((tagValues) =>
             tagValues.forEach((currencyValues) => {
               totalValuesCount += currencyValues.size;
-            })
+            }),
           );
 
           switch (totalValuesCount) {
             case 6:
               expect(
-                update.all.get(accountId2)?.get(tagName2)?.get(currency2)?.value
+                update.all.get(accountId2)?.get(tagName2)?.get(currency2)
+                  ?.value,
               ).toEqual(currency2Value);
             // no break by intention
             case 5:
               expect(
-                update.all.get(accountId2)?.get(tagName2)?.get(currency1)?.value
+                update.all.get(accountId2)?.get(tagName2)?.get(currency1)
+                  ?.value,
               ).toEqual(currency1Value);
             // no break by intention
             case 4:
               expect(
-                update.all.get(accountId2)?.get(tagName1)?.get(currency2)?.value
+                update.all.get(accountId2)?.get(tagName1)?.get(currency2)
+                  ?.value,
               ).toEqual(currency2Value);
             // no break by intention
             case 3:
               expect(
-                update.all.get(accountId2)?.get(tagName1)?.get(currency1)?.value
+                update.all.get(accountId2)?.get(tagName1)?.get(currency1)
+                  ?.value,
               ).toEqual(currency1Value);
             // no break by intention
             case 2:
               expect(
-                update.all.get(accountId1)?.get(tagName1)?.get(currency2)?.value
+                update.all.get(accountId1)?.get(tagName1)?.get(currency2)
+                  ?.value,
               ).toEqual(currency2Value);
             // no break by intention
             case 1:
               expect(
-                update.all.get(accountId1)?.get(tagName1)?.get(currency1)?.value
+                update.all.get(accountId1)?.get(tagName1)?.get(currency1)
+                  ?.value,
               ).toEqual(currency1Value);
               break;
           }
@@ -227,8 +235,9 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
       accountId1,
       tagName1,
       currency1Value,
-      currency1
+      currency1,
     );
+    api.emit(EventName.accountSummaryEnd, 1);
 
     api.emit(
       EventName.accountSummary,
@@ -236,7 +245,7 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
       accountId1,
       tagName1,
       currency2Value,
-      currency2
+      currency2,
     );
 
     api.emit(
@@ -245,7 +254,7 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
       accountId2,
       tagName1,
       currency1Value,
-      currency1
+      currency1,
     );
 
     api.emit(
@@ -254,7 +263,7 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
       accountId2,
       tagName1,
       currency2Value,
-      currency2
+      currency2,
     );
 
     api.emit(
@@ -263,7 +272,7 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
       accountId2,
       tagName2,
       currency1Value,
-      currency1
+      currency1,
     );
 
     api.emit(
@@ -272,13 +281,13 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
       accountId2,
       tagName2,
       currency2Value,
-      currency2
+      currency2,
     );
   });
 
   test("Detected changes", (done) => {
     const apiNext = new IBApiNext();
-    const api = ((apiNext as unknown) as Record<string, unknown>).api as IBApi;
+    const api = (apiNext as unknown as Record<string, unknown>).api as IBApi;
 
     // testing values
 
@@ -297,11 +306,11 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
         next: (update) => {
           if (update.added?.size) {
             expect(
-              update.added.get(accountId)?.get(tagName)?.get(currency)?.value
+              update.added.get(accountId)?.get(tagName)?.get(currency)?.value,
             ).toEqual(testValue1);
           } else if (update.changed?.size) {
             expect(
-              update.changed.get(accountId)?.get(tagName)?.get(currency)?.value
+              update.changed.get(accountId)?.get(tagName)?.get(currency)?.value,
             ).toEqual(testValue2);
             done();
           } else {
@@ -319,8 +328,9 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
       accountId,
       tagName,
       testValue1,
-      currency
+      currency,
     );
+    api.emit(EventName.accountSummaryEnd, 1);
 
     api.emit(
       EventName.accountSummary,
@@ -328,7 +338,7 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
       accountId,
       tagName,
       testValue2,
-      currency
+      currency,
     );
   });
 
@@ -336,7 +346,7 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
     // create IBApiNext and reqId counter
 
     const apiNext = new IBApiNext();
-    const api = ((apiNext as unknown) as Record<string, unknown>).api as IBApi;
+    const api = (apiNext as unknown as Record<string, unknown>).api as IBApi;
 
     // testing values
 
@@ -353,7 +363,7 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
       .subscribe({
         next: (update) => {
           expect(
-            update.added.get(accountId)?.get(tagName)?.get(currency)?.value
+            update.added.get(accountId)?.get(tagName)?.get(currency)?.value,
           ).toEqual(testValue);
 
           apiNext
@@ -364,7 +374,7 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
               next: (update) => {
                 expect(
                   update.added.get(accountId)?.get(tagName)?.get(currency)
-                    ?.value
+                    ?.value,
                 ).toEqual(testValue);
                 done();
               },
@@ -384,7 +394,8 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
       accountId,
       tagName,
       testValue,
-      currency
+      currency,
     );
+    api.emit(EventName.accountSummaryEnd, 1);
   });
 });

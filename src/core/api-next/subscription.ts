@@ -4,11 +4,6 @@ import { IBApiNext, IBApiNextError, ItemListUpdate } from "../../api-next";
 import { ConnectionState } from "../../api-next/common/connection-state";
 import { IBApiNextItemListUpdate } from "./item-list-update";
 
-export type IBApiNextItemListUpdateMinimal<T> = Omit<
-  IBApiNextItemListUpdate<T>,
-  "added" | "changed" | "removed"
->;
-
 /**
  * @internal
  *
@@ -56,8 +51,8 @@ export class IBApiNextSubscription<T> {
   /** The [[Subscription]] on the connection state. */
   private connectionState$?: Subscription;
 
-  /** true when the end-event on an enumeration request has been received, false otherwise. */
-  private _endEventReceived = false;
+  /** @internal True when the end-event on an enumeration request has been received, false otherwise. */
+  public endEventReceived = false;
 
   /** Get the last 'all' value as send to subscribers. */
   get lastAllValue(): T | undefined {
@@ -67,16 +62,6 @@ export class IBApiNextSubscription<T> {
   /** @internal Set the last 'all' value without publishing it to subscribers. For internal use only. */
   set lastAllValue(value: T) {
     this._lastAllValue = value;
-  }
-
-  /** @internal Get the end event flag. For internal use only. */
-  get endEventReceived(): boolean {
-    return this._endEventReceived;
-  }
-
-  /** @internal Set the end event flag seen. For internal use only. */
-  set endEventReceived(value: boolean) {
-    this._endEventReceived = value;
   }
 
   /**
@@ -102,7 +87,7 @@ export class IBApiNextSubscription<T> {
    */
   error(error: IBApiNextError): void {
     delete this._lastAllValue;
-    this._endEventReceived = false;
+    this.endEventReceived = false;
     this.hasError = true;
     this.subject.error(error);
     this.cancelTwsSubscription();

@@ -32,7 +32,7 @@ const EOL = "\0";
  * @hidden
  * add a delay after connect before sending commands
  */
-const CONNECT_DELAY = 600;
+// const CONNECT_DELAY = 600;
 
 /**
  * @internal
