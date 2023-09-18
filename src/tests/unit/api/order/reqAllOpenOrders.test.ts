@@ -12,7 +12,7 @@ describe("RequestAllOpenOrders", () => {
   jest.setTimeout(10000);
 
   let ib: IBApi;
-  let clientId = Math.floor(Math.random() * 32766) + 1; // ensure unique client
+  const clientId = Math.floor(Math.random() * 32766) + 1; // ensure unique client
 
   beforeEach(() => {
     ib = new IBApi({
@@ -32,8 +32,6 @@ describe("RequestAllOpenOrders", () => {
   });
 
   it("Test reqAllOpenOrders", (done) => {
-    let received = false;
-
     ib.on(EventName.openOrder, (orderId, contract, order, orderState) => {
       // logger.info("openOrder message received");
       // todo add proper verification code here
