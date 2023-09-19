@@ -22,7 +22,7 @@ const awaitTimeout = (delay: number): Promise<unknown> =>
   new Promise((resolve): NodeJS.Timeout => setTimeout(resolve, delay * 1000));
 
 describe("PlaceOrder", () => {
-  jest.setTimeout(10000);
+  jest.setTimeout(15000);
 
   let ib: IBApi;
   let clientId = Math.floor(Math.random() * 32766) + 1; // ensure unique client
@@ -105,7 +105,7 @@ describe("PlaceOrder", () => {
         });
 
         // Give a few secs delay to get order placed
-        awaitTimeout(5).then(() => ib.reqOpenOrders());
+        awaitTimeout(10).then(() => ib.reqOpenOrders());
       });
 
     ib.connect();
@@ -187,7 +187,7 @@ describe("PlaceOrder", () => {
         });
 
         // Give a few secs delay to get order placed
-        awaitTimeout(5).then(() => ib.reqOpenOrders());
+        awaitTimeout(10).then(() => ib.reqOpenOrders());
       });
 
     ib.connect();

@@ -1,7 +1,6 @@
 /**
  * This App will print daily PnL and unrealized PnL for a given account id.
  */
-import path from "path";
 import { Subscription } from "rxjs";
 
 import { IBApiNextError } from "../api-next";
@@ -35,9 +34,7 @@ class PrintPositionsApp extends IBApiNextApp {
    * Start the app.
    */
   start(): void {
-    const scriptName = path.basename(__filename);
-    this.info(`Starting ${scriptName} script`);
-    this.connect();
+    super.start();
 
     if (!this.cmdLineArgs.account) {
       this.error("-account argument missing.");

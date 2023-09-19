@@ -2,8 +2,6 @@
  * This App will print the timestamp of earliest available historical data for a contract.
  */
 
-import path from "path";
-
 import { IBApiNextError } from "../api-next";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
@@ -33,9 +31,7 @@ class PrintHeadTimestampApp extends IBApiNextApp {
    * Start the app.
    */
   start(): void {
-    const scriptName = path.basename(__filename);
-    this.info(`Starting ${scriptName} script`);
-    this.connect();
+    super.start();
 
     // print next unused order id
     this.api

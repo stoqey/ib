@@ -2,7 +2,6 @@
  * This App will print all positions on your IBKR accounts to console.
  */
 
-import path from "path";
 import { Subscription } from "rxjs";
 
 import { IBApiNextError } from "../api-next";
@@ -34,9 +33,7 @@ class PrintPositionsApp extends IBApiNextApp {
    * Start the app.
    */
   start(): void {
-    const scriptName = path.basename(__filename);
-    this.info(`Starting ${scriptName} script`);
-    this.connect();
+    super.start();
 
     this.subscription$ = this.api.getPositions().subscribe({
       next: (positions) => {

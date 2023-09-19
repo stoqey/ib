@@ -32,7 +32,7 @@ const EOL = "\0";
  * @hidden
  * add a delay after connect before sending commands
  */
-const CONNECT_DELAY = 600;
+// const CONNECT_DELAY = 600;
 
 /**
  * @internal
@@ -382,10 +382,10 @@ export class Socket {
       }
     }
 
-    // resume controller after CONNECT_DELAY, fix connect issue
-    setTimeout(() => {
-      this.controller.resume();
-    }, CONNECT_DELAY);
+    // resume controller moved to crontroller
+    // setTimeout(() => {
+    //   this.controller.resume();
+    // }, CONNECT_DELAY);
   }
 
   /**

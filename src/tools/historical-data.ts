@@ -1,7 +1,6 @@
 /**
  * This App will print historical chart data of a contract.
  */
-import path from "path";
 
 import { IBApiNextError } from "../api-next";
 import { BarSizeSetting } from "../api/historical/bar-size-setting";
@@ -45,9 +44,7 @@ class PrintPositionsApp extends IBApiNextApp {
    * Start the app.
    */
   start(): void {
-    const scriptName = path.basename(__filename);
-    this.info(`Starting ${scriptName} script`);
-    this.connect();
+    super.start();
 
     if (!this.cmdLineArgs.conid) {
       this.error("-conid argument missing.");

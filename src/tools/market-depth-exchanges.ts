@@ -2,8 +2,6 @@
  * This App will print the venues for which market data is returned on getMarketDepthL2 (those with market makers)
  */
 
-import path from "path";
-
 import { IBApiNextError } from "../api-next";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
@@ -30,9 +28,7 @@ class PrintMarketDepthExchangesApp extends IBApiNextApp {
    * Start the app.
    */
   start(): void {
-    const scriptName = path.basename(__filename);
-    this.info(`Starting ${scriptName} script`);
-    this.connect();
+    super.start();
 
     // print current time
 

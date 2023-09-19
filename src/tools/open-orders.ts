@@ -2,8 +2,6 @@
  * This App will print IBKR account open orders to console.
  */
 
-import path from "path";
-
 import { IBApiNextError } from "../";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
@@ -29,9 +27,7 @@ class OpenOrdersApp extends IBApiNextApp {
    * Start the app.
    */
   start(): void {
-    const scriptName = path.basename(__filename);
-    this.info(`Starting ${scriptName} script`);
-    this.connect();
+    super.start();
 
     this.api
       .getAllOpenOrders()

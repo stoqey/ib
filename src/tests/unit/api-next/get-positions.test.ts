@@ -57,6 +57,7 @@ describe("RxJS Wrapper: getPositions()", () => {
       });
 
     api.emit(EventName.position, accountId, positionContract, posSize, avgCost);
+    api.emit(EventName.positionEnd);
   });
 
   test("Detected added / changed / removed", (done) => {
@@ -107,7 +108,7 @@ describe("RxJS Wrapper: getPositions()", () => {
       posSize1,
       avgCost,
     );
-
+    api.emit(EventName.positionEnd);
     api.emit(
       EventName.position,
       accountId,
@@ -161,5 +162,6 @@ describe("RxJS Wrapper: getPositions()", () => {
     });
 
     api.emit(EventName.position, accountId, positionContract, posSize, avgCost);
+    api.emit(EventName.positionEnd);
   });
 });

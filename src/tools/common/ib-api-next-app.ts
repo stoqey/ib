@@ -1,6 +1,7 @@
 import { Subscription } from "rxjs";
 
-import { IBApiNext } from "../../api-next";
+import path from "path";
+import { IBApiNext, MarketDataType } from "../../api-next";
 import Contract from "../../api/contract/contract";
 import LogLevel from "../../api/data/enum/log-level";
 import OptionType from "../../api/data/enum/option-type";
@@ -272,5 +273,13 @@ export class IBApiNextApp {
       strike: (this.cmdLineArgs.strike as number) ?? undefined,
       right: this.cmdLineArgs.right as OptionType,
     };
+  }
+
+  /** app startup */
+  start(): void {
+    const scriptName = path.basename(__filename);
+    this.info(`Starting ${scriptName} script`);
+    this.connect();
+    this.api.setMarketDataType(MarketDataType.DELAYED_FROZEN);
   }
 }

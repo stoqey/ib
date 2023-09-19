@@ -1,19 +1,17 @@
 {
-  "root": true,
-  "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint", "rxjs"],
   "extends": ["plugin:@typescript-eslint/recommended"],
+  "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": 2020,
     "project": ["tsconfig.json"],
     "sourceType": "module"
   },
+  "plugins": ["@typescript-eslint", "rxjs"],
+  "root": true,
   "rules": {
-    "strict": "error",
-    "semi": ["error", "always"],
-    "quotes": ["error", "double"],
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-duplicate-enum-values": "error",
     "@typescript-eslint/no-explicit-any": 1,
     "@typescript-eslint/no-inferrable-types": [
       "warn",
@@ -21,6 +19,7 @@
         "ignoreParameters": true
       }
     ],
+    "@typescript-eslint/no-unsafe-declaration-merging": "error",
     "@typescript-eslint/no-unused-vars": [
       "warn",
       {
@@ -29,12 +28,13 @@
         "varsIgnorePattern": "^_"
       }
     ],
-    "@typescript-eslint/no-duplicate-enum-values": "error",
-    "@typescript-eslint/no-unsafe-declaration-merging": "error",
+    "quotes": ["error", "double"],
     "rxjs/no-async-subscribe": "error",
     "rxjs/no-ignored-observable": "error",
     "rxjs/no-ignored-subscription": "error",
     "rxjs/no-unbound-methods": "error",
-    "rxjs/throw-error": "error"
+    "rxjs/throw-error": "error",
+    "semi": ["error", "always"],
+    "strict": "error"
   }
 }
