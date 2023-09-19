@@ -25,64 +25,70 @@ describe("IBApi reqMatchingSymbols Tests", () => {
   });
 
   test("SPY", (done) => {
-    let tickerId: number;
-    ib.once(EventName.nextValidId, (reqId) => {
-      tickerId = reqId;
-      ib.reqMatchingSymbols(reqId, "SPY");
+    const refId = 1;
+    ib.once(EventName.nextValidId, (_reqId) => {
+      ib.reqMatchingSymbols(refId, "SPY");
     })
-      .on(EventName.disconnected, () => {
-        done();
-      })
       .on(
         EventName.symbolSamples,
         (reqId, contractDescriptions: ContractDescription[]) => {
-          expect(reqId).toEqual(tickerId);
+          expect(reqId).toEqual(refId);
           expect(contractDescriptions[0].contract.symbol).toEqual("SPY");
           ib.disconnect();
         },
-      );
+      )
+      .on(EventName.disconnected, () => {
+        done();
+      })
+      .on(EventName.error, (err, code, id) => {
+        done(`${err.message} - code: ${code} - id: ${id}`);
+      });
 
     ib.connect();
   });
 
   test("META", (done) => {
-    let tickerId: number;
-    ib.once(EventName.nextValidId, (reqId) => {
-      tickerId = reqId;
-      ib.reqMatchingSymbols(reqId, "META");
+    const refId = 2;
+    ib.once(EventName.nextValidId, (_reqId) => {
+      ib.reqMatchingSymbols(refId, "META");
     })
-      .on(EventName.disconnected, () => {
-        done();
-      })
       .on(
         EventName.symbolSamples,
         (reqId, contractDescriptions: ContractDescription[]) => {
-          expect(reqId).toEqual(tickerId);
+          expect(reqId).toEqual(refId);
           expect(contractDescriptions[0].contract.symbol).toEqual("META");
           ib.disconnect();
         },
-      );
+      )
+      .on(EventName.disconnected, () => {
+        done();
+      })
+      .on(EventName.error, (err, code, id) => {
+        done(`${err.message} - code: ${code} - id: ${id}`);
+      });
 
     ib.connect();
   });
 
   test("AMC", (done) => {
-    let tickerId: number;
-    ib.once(EventName.nextValidId, (reqId) => {
-      tickerId = reqId;
-      ib.reqMatchingSymbols(reqId, "AMC");
+    const refId = 3;
+    ib.once(EventName.nextValidId, (_reqId) => {
+      ib.reqMatchingSymbols(refId, "AMC");
     })
-      .on(EventName.disconnected, () => {
-        done();
-      })
       .on(
         EventName.symbolSamples,
         (reqId, contractDescriptions: ContractDescription[]) => {
-          expect(reqId).toEqual(tickerId);
+          expect(reqId).toEqual(refId);
           expect(contractDescriptions[0].contract.symbol).toEqual("AMC");
           ib.disconnect();
         },
-      );
+      )
+      .on(EventName.disconnected, () => {
+        done();
+      })
+      .on(EventName.error, (err, code, id) => {
+        done(`${err.message} - code: ${code} - id: ${id}`);
+      });
 
     ib.connect();
   });
