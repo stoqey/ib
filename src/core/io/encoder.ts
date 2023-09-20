@@ -18,7 +18,10 @@ import TimeCondition from "../../api/order/condition/time-condition";
 import VolumeCondition from "../../api/order/condition/volume-condition";
 import { OrderConditionType } from "../../api/order/enum/order-condition-type";
 import { OrderType } from "../../api/order/enum/orderType";
-import { Order } from "../../api/order/order";
+import {
+  COMPETE_AGAINST_BEST_OFFSET_UP_TO_MID,
+  Order,
+} from "../../api/order/order";
 import { ExecutionFilter } from "../../api/report/executionFilter";
 import { ErrorCode } from "../../common/errorCode";
 
@@ -1089,6 +1092,21 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       );
     }
 
+    if (
+      this.serverVersion < MIN_SERVER_VER.PEGBEST_PEGMID_OFFSETS &&
+      (order.minTradeQty !== undefined ||
+        order.minCompeteSize !== undefined ||
+        order.competeAgainstBestOffset !== undefined ||
+        order.midOffsetAtWhole !== undefined ||
+        order.midOffsetAtHalf !== undefined)
+    ) {
+      return this.emitError(
+        "It does not support PEG BEST / PEG MID order parameters: minTradeQty, minCompeteSize, competeAgainstBestOffset, midOffsetAtWhole and midOffsetAtHalf",
+        ErrorCode.UPDATE_TWS,
+        id,
+      );
+    }
+
     const version = this.serverVersion < MIN_SERVER_VER.NOT_HELD ? 27 : 45;
 
     // send place order msg
@@ -1615,6 +1633,24 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
 
     if (this.serverVersion >= MIN_SERVER_VER.MANUAL_ORDER_TIME)
       tokens.push(order.manualOrderTime);
+
+    if (this.serverVersion >= MIN_SERVER_VER.PEGBEST_PEGMID_OFFSETS) {
+      let sendMidOffsets = false;
+      if (contract.exchange == "IBKRATS") tokens.push(order.minTradeQty);
+      if (order.orderType == OrderType.PEG_BEST) {
+        tokens.push(order.minCompeteSize);
+        tokens.push(order.competeAgainstBestOffset);
+        if (
+          order.competeAgainstBestOffset ==
+          COMPETE_AGAINST_BEST_OFFSET_UP_TO_MID
+        )
+          sendMidOffsets = true;
+      } else if (order.orderType == OrderType.PEG_MID) sendMidOffsets = true;
+      if (sendMidOffsets) {
+        tokens.push(order.midOffsetAtWhole);
+        tokens.push(order.midOffsetAtHalf);
+      }
+    }
 
     this.sendMsg(tokens);
   }

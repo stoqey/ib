@@ -11,12 +11,8 @@ import {
   OrderType,
   SecType,
 } from "../../../..";
-// import OptionType from "../../../../api/data/enum/option-type";
 import configuration from "../../../../common/configuration";
 import logger from "../../../../common/logger";
-
-const awaitTimeout = (delay: number): Promise<unknown> =>
-  new Promise((resolve): NodeJS.Timeout => setTimeout(resolve, delay * 1000));
 
 describe("CancelOrder", () => {
   jest.setTimeout(20 * 1000);

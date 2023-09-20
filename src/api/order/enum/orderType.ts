@@ -24,6 +24,7 @@ export enum OrderType {
   PEG_MKT = "PEG MKT",
   PEG_PRIM = "PEG PRIM",
   PEG_STK = "PEG STK",
+  PEG_BEST = "PEG BEST",
   REL_PLUS_LMT = "REL + LMT",
   REL_PLUS_MKT = "REL + MKT",
   SNAP_MID = "SNAP MID",

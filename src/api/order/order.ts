@@ -748,7 +748,7 @@ export interface Order {
   /** Defines the minimum size to compete. For IBKRATS orders. */
   minCompeteSize?: number;
 
-  /** Dpecifies the offset Off The Midpoint that will be applied to the order. For IBKRATS orders. */
+  /** Specifies the offset Off The Midpoint that will be applied to the order. For IBKRATS orders. */
   competeAgainstBestOffset?: number;
 
   /** This offset is applied when the spread is an even number of cents wide. This offset must be in whole-penny increments or zero. For IBKRATS orders. */
@@ -757,5 +757,7 @@ export interface Order {
   /** This offset is applied when the spread is an odd number of cents wide. This offset must be in half-penny increments. For IBKRATS orders. */
   midOffsetAtHalf?: number;
 }
+
+export const COMPETE_AGAINST_BEST_OFFSET_UP_TO_MID = Infinity;
 
 export default Order;

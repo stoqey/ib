@@ -813,6 +813,7 @@ export class Decoder {
     orderDecoder.readDuration();
     orderDecoder.readPostToAts();
     orderDecoder.readAutoCancelParent(MIN_SERVER_VER.AUTO_CANCEL_PARENT);
+    orderDecoder.readPegBestPegMidOrderAttributes();
 
     this.emit(EventName.openOrder, order.orderId, contract, order, orderState);
   }
@@ -3958,6 +3959,17 @@ class OrderDecoder {
   readPostToAts(): void {
     if (this.serverVersion >= MIN_SERVER_VER.POST_TO_ATS) {
       this.order.postToAts = this.decoder.readIntMax();
+    }
+  }
+
+  readPegBestPegMidOrderAttributes() {
+    if (this.serverVersion >= MIN_SERVER_VER.PEGBEST_PEGMID_OFFSETS) {
+      this.order.minTradeQty = this.decoder.readIntMax();
+      this.order.minCompeteSize = this.decoder.readIntMax();
+      this.order.competeAgainstBestOffset =
+        this.decoder.readDoubleOrUndefined();
+      this.order.midOffsetAtWhole = this.decoder.readDoubleOrUndefined();
+      this.order.midOffsetAtHalf = this.decoder.readDoubleOrUndefined();
     }
   }
 }
