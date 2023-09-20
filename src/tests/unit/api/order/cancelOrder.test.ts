@@ -2,18 +2,14 @@
  * This file implement test code for the placeOrder function .
  */
 import {
-  ConjunctionConnection,
   Contract,
   ErrorCode,
   EventName,
   IBApi,
-  OptionType,
   Order,
   OrderAction,
   OrderType,
-  PriceCondition,
   SecType,
-  TriggerMethod,
 } from "../../../..";
 // import OptionType from "../../../../api/data/enum/option-type";
 import configuration from "../../../../common/configuration";
@@ -22,7 +18,7 @@ import logger from "../../../../common/logger";
 const awaitTimeout = (delay: number): Promise<unknown> =>
   new Promise((resolve): NodeJS.Timeout => setTimeout(resolve, delay * 1000));
 
-describe("Place Orders", () => {
+describe("CancelOrder", () => {
   jest.setTimeout(20 * 1000);
 
   let ib: IBApi;
@@ -45,7 +41,7 @@ describe("Place Orders", () => {
     // logger.info("IBApi disconnected");
   });
 
-  test("Simple placeOrder", (done) => {
+  test("cancelOrder", (done) => {
     let refId: number;
 
     const contract: Contract = {
@@ -65,6 +61,7 @@ describe("Place Orders", () => {
       transmit: true,
     };
 
+    let order_found = false;
     ib.once(EventName.nextValidId, (orderId: number) => {
       refId = orderId;
       ib.placeOrder(refId, contract, order);
@@ -72,78 +69,29 @@ describe("Place Orders", () => {
       .on(EventName.openOrder, (orderId, _contract, _order, _orderState) => {
         expect(orderId).toEqual(refId);
         if (orderId === refId) {
-          done();
+          order_found = true;
+          ib.cancelOrder(refId);
         }
       })
       .on(
-        EventName.error,
+        EventName.orderStatus,
         (
-          error: Error,
-          code: ErrorCode,
-          reqId: number,
-          _advancedOrderReject?: unknown,
+          orderId,
+          _status,
+          _filled,
+          _remaining,
+          _avgFillPrice,
+          _permId?,
+          _parentId?,
+          _lastFillPrice?,
+          _clientId?,
+          _whyHeld?,
+          _mktCapPrice?,
         ) => {
-          if (reqId === -1) {
-            logger.info(error.message);
-          } else {
-            const msg = `[${reqId}] ${error.message} (Error #${code})`;
-            if (error.message.includes("Warning:")) {
-              logger.warn(msg);
-            } else {
-              ib.disconnect();
-              done(msg);
-            }
-          }
+          expect(orderId).toEqual(refId);
         },
-      );
-
-    ib.connect().reqOpenOrders();
-  });
-
-  test("placeOrder with PriceCondition", (done) => {
-    let refId: number;
-
-    // buy an Apple call, with a PriceCondition on underlying
-    const contract: Contract = {
-      symbol: "AAPL",
-      exchange: "SMART",
-      currency: "USD",
-      secType: SecType.OPT,
-      right: OptionType.Call,
-      strike: 200,
-      multiplier: 100,
-      lastTradeDateOrContractMonth: "20251219",
-    };
-    const priceCondition: PriceCondition = new PriceCondition(
-      29,
-      TriggerMethod.Default,
-      265598,
-      "SMART",
-      true,
-      ConjunctionConnection.OR,
-    );
-    const order: Order = {
-      orderType: OrderType.LMT,
-      action: OrderAction.BUY,
-      lmtPrice: 0.01,
-      totalQuantity: 1,
-      // account: "DU123567",
-      conditionsIgnoreRth: true,
-      conditionsCancelOrder: false,
-      conditions: [priceCondition],
-      transmit: true,
-    };
-
-    ib.once(EventName.nextValidId, (orderId: number) => {
-      refId = orderId;
-      ib.placeOrder(refId, contract, order);
-    })
-      .on(EventName.openOrder, (orderId, _contract, _order, _orderState) => {
-        expect(orderId).toEqual(refId);
-        if (orderId === refId) {
-          done();
-        }
-      })
+      )
+      .on(EventName.openOrderEnd, () => {})
       .on(
         EventName.error,
         (
@@ -158,8 +106,13 @@ describe("Place Orders", () => {
             const msg = `[${reqId}] ${error.message} (Error #${code})`;
             if (error.message.includes("Warning:")) {
               logger.warn(msg);
+            } else if (
+              code == ErrorCode.ORDER_CANCELLED &&
+              reqId == refId &&
+              order_found
+            ) {
+              done();
             } else {
-              ib.disconnect();
               done(msg);
             }
           }

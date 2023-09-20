@@ -736,7 +736,26 @@ export interface Order {
   /** Value must be positive, and it is number of seconds that SMART order would be parked for at IBKRATS before being routed to exchange. */
   postToAts?: number;
 
+  /** Accepts a list with parameters obtained from advancedOrderRejectJson */
   advancedErrorOverride?: string;
+
+  /** Used by brokers and advisors when manually entering, modifying or cancelling orders at the direction of a client. Only used when allocating orders to specific groups or accounts. Excluding "All" group. */
+  manualOrderTime?: string;
+
+  /** Defines the minimum trade quantity to fill. For IBKRATS orders. */
+  minTradeQty?: number;
+
+  /** Defines the minimum size to compete. For IBKRATS orders. */
+  minCompeteSize?: number;
+
+  /** Dpecifies the offset Off The Midpoint that will be applied to the order. For IBKRATS orders. */
+  competeAgainstBestOffset?: number;
+
+  /** This offset is applied when the spread is an even number of cents wide. This offset must be in whole-penny increments or zero. For IBKRATS orders. */
+  midOffsetAtWhole?: number;
+
+  /** This offset is applied when the spread is an odd number of cents wide. This offset must be in half-penny increments. For IBKRATS orders. */
+  midOffsetAtHalf?: number;
 }
 
 export default Order;

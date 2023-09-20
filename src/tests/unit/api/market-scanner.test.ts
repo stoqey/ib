@@ -31,7 +31,7 @@ describe("IBApi market scanner tests", () => {
 
   test("Scanner parameters", (done) => {
     ib.on(EventName.scannerParameters, (xml: string) => {
-      const match = '<?xml version="1.0" encoding="UTF-8"?>';
+      const match = '<?xml version="1.0" encoding="UTF-8"?>'; // eslint-disable-line quotes
       expect(xml.substring(0, match.length)).toEqual(match);
       ib.disconnect();
     })

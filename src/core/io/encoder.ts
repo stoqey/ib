@@ -518,10 +518,26 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   /**
    * Encode a CANCEL_ORDER message to an array of tokens.
    */
-  cancelOrder(id: number): void {
+  cancelOrder(id: number, manualCancelOrderTime?: string): void {
     const version = 1;
 
-    this.sendMsg(OUT_MSG_ID.CANCEL_ORDER, version, id);
+    if (
+      this.serverVersion < MIN_SERVER_VER.MANUAL_ORDER_TIME &&
+      manualCancelOrderTime?.length
+    ) {
+      return this.emitError(
+        "It does not support manual order cancel time attribute",
+        ErrorCode.UPDATE_TWS,
+        id,
+      );
+    }
+
+    const tokens: unknown[] = [OUT_MSG_ID.CANCEL_ORDER, version, id];
+
+    if (this.serverVersion >= MIN_SERVER_VER.MANUAL_ORDER_TIME)
+      tokens.push(manualCancelOrderTime);
+
+    this.sendMsg(tokens);
   }
 
   /**
@@ -1053,10 +1069,21 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
 
     if (
       this.serverVersion < MIN_SERVER_VER.ADVANCED_ORDER_REJECT &&
-      order.advancedErrorOverride != null
+      order.advancedErrorOverride != undefined
     ) {
       return this.emitError(
         "It does not support advanced error override attribute",
+        ErrorCode.UPDATE_TWS,
+        id,
+      );
+    }
+
+    if (
+      this.serverVersion < MIN_SERVER_VER.MANUAL_ORDER_TIME &&
+      order.manualOrderTime?.length
+    ) {
+      return this.emitError(
+        "It does not support manual order time attribute",
         ErrorCode.UPDATE_TWS,
         id,
       );
@@ -1585,6 +1612,9 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
 
     if (this.serverVersion >= MIN_SERVER_VER.ADVANCED_ORDER_REJECT)
       tokens.push(order.advancedErrorOverride);
+
+    if (this.serverVersion >= MIN_SERVER_VER.MANUAL_ORDER_TIME)
+      tokens.push(order.manualOrderTime);
 
     this.sendMsg(tokens);
   }

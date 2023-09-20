@@ -77,7 +77,7 @@ export interface IBApiCreationOptions {
 }
 
 /** Maximum supported version. */
-export const MAX_SUPPORTED_SERVER_VERSION = MIN_SERVER_VER.USER_INFO;
+export const MAX_SUPPORTED_SERVER_VERSION = MIN_SERVER_VER.MANUAL_ORDER_TIME;
 
 /** Minimum supported version. */
 export const MIN_SERVER_VER_SUPPORTED = 38;
