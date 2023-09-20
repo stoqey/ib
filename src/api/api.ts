@@ -77,8 +77,7 @@ export interface IBApiCreationOptions {
 }
 
 /** Maximum supported version. */
-export const MAX_SUPPORTED_SERVER_VERSION =
-  MIN_SERVER_VER.WSH_EVENT_DATA_FILTERS;
+export const MAX_SUPPORTED_SERVER_VERSION = MIN_SERVER_VER.BOND_ISSUERID;
 
 /** Minimum supported version. */
 export const MIN_SERVER_VER_SUPPORTED = 38;

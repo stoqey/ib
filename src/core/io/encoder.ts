@@ -1885,6 +1885,16 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       }
     }
 
+    if (this.serverVersion < MIN_SERVER_VER.BOND_ISSUERID) {
+      if (contract.issuerId) {
+        return this.emitError(
+          "It does not support issuerId parameter in reqContractDetails.",
+          ErrorCode.UPDATE_TWS,
+          reqId,
+        );
+      }
+    }
+
     const version = 8;
 
     // send req mkt data msg
@@ -1938,6 +1948,9 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       args.push(contract.secIdType);
       args.push(contract.secId);
     }
+
+    if (this.serverVersion >= MIN_SERVER_VER.BOND_ISSUERID)
+      args.push(contract.issuerId);
 
     this.sendMsg(args);
   }

@@ -2084,6 +2084,11 @@ export class Decoder {
         derivativeSecTypes[j] = this.readStr() as SecType;
       }
 
+      if (this.serverVersion >= MIN_SERVER_VER.BOND_ISSUERID) {
+        contract.description = this.readStr();
+        contract.issuerId = this.readStr();
+      }
+
       contractDescriptions[i] = {
         contract: contract,
         derivativeSecTypes: derivativeSecTypes,
