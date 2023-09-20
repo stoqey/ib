@@ -11,6 +11,7 @@ import { Contract } from "./contract/contract";
 import { ContractDescription } from "./contract/contractDescription";
 import { ContractDetails } from "./contract/contractDetails";
 import { DeltaNeutralContract } from "./contract/deltaNeutralContract";
+import WshEventData from "./contract/wsh";
 import DepthMktDataDescription from "./data/container/depth-mkt-data-description";
 import FamilyCode from "./data/container/family-code";
 import NewsProvider from "./data/container/news-provider";
@@ -277,13 +278,13 @@ export class IBApi extends EventEmitter {
   /**
    * Cancels a pending [[reqHeadTimeStamp]] request.
    *
-   * @param tickerId Id of the request
+   * @param reqId Id of the request
    *
    * @see [[reqHeadTimeStamp]]
    */
-  cancelHeadTimestamp(tickerId: number): IBApi {
+  cancelHeadTimestamp(reqId: number): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.cancelHeadTimestamp(tickerId),
+      this.controller.encoder.cancelHeadTimestamp(reqId),
     );
     return this;
   }
@@ -291,13 +292,13 @@ export class IBApi extends EventEmitter {
   /**
    * Cancels a historical data request.
    *
-   * @param tickerId The request's identifier.
+   * @param reqId The request's identifier.
    *
    * @see [[reqHistogramData]]
    */
-  cancelHistogramData(tickerId: number): IBApi {
+  cancelHistogramData(reqId: number): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.cancelHistogramData(tickerId),
+      this.controller.encoder.cancelHistogramData(reqId),
     );
     return this;
   }
@@ -305,13 +306,13 @@ export class IBApi extends EventEmitter {
   /**
    * Cancels a historical data request.
    *
-   * @param tickerId The request's identifier.
+   * @param reqId The request's identifier.
    *
    * @see [[reqHistoricalData]]
    */
-  cancelHistoricalData(tickerId: number): IBApi {
+  cancelHistoricalData(reqId: number): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.cancelHistoricalData(tickerId),
+      this.controller.encoder.cancelHistoricalData(reqId),
     );
     return this;
   }
@@ -319,13 +320,13 @@ export class IBApi extends EventEmitter {
   /**
    * Cancels a RT Market Data request.
    *
-   * @param tickerId The request's identifier.
+   * @param reqId The request's identifier.
    *
    * @see [[reqMktData]]
    */
-  cancelMktData(tickerId: number): IBApi {
+  cancelMktData(reqId: number): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.cancelMktData(tickerId),
+      this.controller.encoder.cancelMktData(reqId),
     );
     return this;
   }
@@ -333,14 +334,14 @@ export class IBApi extends EventEmitter {
   /**
    * Cancel a market depth's request.
    *
-   * @param tickerId The request's identifier.
+   * @param reqId The request's identifier.
    * @param isSmartDepth TODO document
    *
    * @see [[reqMktDepth]]
    */
-  cancelMktDepth(tickerId: number, isSmartDepth: boolean): IBApi {
+  cancelMktDepth(reqId: number, isSmartDepth: boolean): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.cancelMktDepth(tickerId, isSmartDepth),
+      this.controller.encoder.cancelMktDepth(reqId, isSmartDepth),
     );
     return this;
   }
@@ -427,11 +428,11 @@ export class IBApi extends EventEmitter {
   /**
    * Cancels Real Time Bars' subscription.
    *
-   * @param tickerId The request's identifier.
+   * @param reqId The request's identifier.
    */
-  cancelRealTimeBars(tickerId: number): IBApi {
+  cancelRealTimeBars(reqId: number): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.cancelRealTimeBars(tickerId),
+      this.controller.encoder.cancelRealTimeBars(reqId),
     );
     return this;
   }
@@ -453,13 +454,13 @@ export class IBApi extends EventEmitter {
   /**
    * Cancels tick-by-tick data.
    *
-   * @param tickerId Unique identifier of the request.
+   * @param reqId Unique identifier of the request.
    *
    * @see [[reqTickByTickData]]
    */
-  cancelTickByTickData(tickerId: number): IBApi {
+  cancelTickByTickData(reqId: number): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.cancelTickByTickData(tickerId),
+      this.controller.encoder.cancelTickByTickData(reqId),
     );
     return this;
   }
@@ -469,7 +470,7 @@ export class IBApi extends EventEmitter {
    *
    * Note: this function is affected by a TWS setting which specifies if an exercise request must be finalized.
    *
-   * @param tickerId The exercise request's identifier.
+   * @param reqId The exercise request's identifier.
    * @param contract The option [[Contract]] to be exercised.
    * @param exerciseAction 1 to exercise the option, 2 to let the option lapse.
    * @param exerciseQuantity Number of contracts to be exercised.
@@ -481,7 +482,7 @@ export class IBApi extends EventEmitter {
    *   exercised. Set to 1 to override, set to 0 not to.
    */
   exerciseOptions(
-    tickerId: number,
+    reqId: number,
     contract: Contract,
     exerciseAction: OptionExerciseAction,
     exerciseQuantity: number,
@@ -490,7 +491,7 @@ export class IBApi extends EventEmitter {
   ): IBApi {
     this.controller.schedule(() =>
       this.controller.encoder.exerciseOptions(
-        tickerId,
+        reqId,
         contract,
         exerciseAction as number,
         exerciseQuantity,
@@ -735,13 +736,17 @@ export class IBApi extends EventEmitter {
    * Requests event data from the wSH calendar.
    *
    * @param reqId The unique request identifier.
-   * @param conId Contract id of ticker.
+   * @param conId Contract id of ticker or WshEventData describing wanted events.
    *
    * @see [[reqCancelWshEventData]]
    */
-  reqWshEventData(reqId: number, conId: number) {
+  reqWshEventData(reqId: number, wshEventData: number | WshEventData) {
+    let wshEventData2: WshEventData;
+    if (typeof wshEventData == "number")
+      wshEventData2 = new WshEventData(wshEventData);
+    else wshEventData2 = wshEventData;
     this.controller.schedule(() =>
-      this.controller.encoder.reqWshEventData(reqId, conId),
+      this.controller.encoder.reqWshEventData(reqId, wshEventData2),
     );
     return this;
   }
@@ -882,14 +887,14 @@ export class IBApi extends EventEmitter {
   /**
    * Returns data histogram of specified contract.
    *
-   * @param tickerId An identifier for the request.
+   * @param reqId An identifier for the request.
    * @param contract [[Contract]] object for which histogram is being requested
    * @param useRTH Use regular trading hours only, `true` for yes or `false` for no.
    * @param period Period of which data is being requested
    * @param periodUnit Unit of the period of which data is being requested
    */
   reqHistogramData(
-    tickerId: number,
+    reqId: number,
     contract: Contract,
     useRTH: boolean,
     period: number,
@@ -898,7 +903,7 @@ export class IBApi extends EventEmitter {
     const periodStr = period + " " + periodUnit.toString().toLowerCase() + "s";
     this.controller.schedule(() =>
       this.controller.encoder.reqHistogramData(
-        tickerId,
+        reqId,
         contract,
         useRTH,
         periodStr,
@@ -919,7 +924,7 @@ export class IBApi extends EventEmitter {
    *
    * The resulting bars will be emitted as historicalData event.
    *
-   * @param tickerId The request's unique identifier.
+   * @param reqId The request's unique identifier.
    * @param contract The contract for which we want to retrieve the data.
    * @param endDateTime Request's ending time with format yyyyMMdd HH:mm:ss {TMZ}
    * @param durationStr The amount of time for which the data needs to be retrieved:
@@ -957,7 +962,7 @@ export class IBApi extends EventEmitter {
    *   endDateTime cannot be specified.
    */
   reqHistoricalData(
-    tickerId: number,
+    reqId: number,
     contract: Contract,
     endDateTime: string,
     durationStr: string,
@@ -969,7 +974,7 @@ export class IBApi extends EventEmitter {
   ): IBApi {
     this.controller.schedule(() =>
       this.controller.encoder.reqHistoricalData(
-        tickerId,
+        reqId,
         contract,
         endDateTime,
         durationStr,
@@ -1102,7 +1107,7 @@ export class IBApi extends EventEmitter {
    * The number of simultaneous market depth requests allowed in an account is calculated based on a formula
    * that looks at an accounts equity, commissions, and quote booster packs.
    *
-   * @param tickerId The request's identifier.
+   * @param reqId The request's identifier.
    * @param contract The [[Contract]] for which the depth is being requested.
    * @param numRows The number of rows on each side of the order book.
    * @param isSmartDepth Flag indicates that this is smart depth request.
@@ -1111,7 +1116,7 @@ export class IBApi extends EventEmitter {
    * @see [[cancelMktDepth]]
    */
   reqMktDepth(
-    tickerId: number,
+    reqId: number,
     contract: Contract,
     numRows: number,
     isSmartDepth: boolean,
@@ -1119,7 +1124,7 @@ export class IBApi extends EventEmitter {
   ): IBApi {
     this.controller.schedule(() =>
       this.controller.encoder.reqMktDepth(
-        tickerId,
+        reqId,
         contract,
         numRows,
         isSmartDepth,
@@ -1165,7 +1170,7 @@ export class IBApi extends EventEmitter {
    * Returns market data for an instrument either in real time or 10-15 minutes delayed (depending on the market data
    * type specified).
    *
-   * @param tickerId The request's identifier.
+   * @param reqId The request's identifier.
    * @param contract The [[Contract]] for which the data is being requested
    * @param genericTickList comma  separated ids of the available generic ticks:
    * - 100 Option Volume (currently for stocks)
@@ -1194,7 +1199,7 @@ export class IBApi extends EventEmitter {
    * @see [[cancelMktData]]
    */
   reqMktData(
-    tickerId: number,
+    reqId: number,
     contract: Contract,
     genericTickList: string,
     snapshot: boolean,
@@ -1202,7 +1207,7 @@ export class IBApi extends EventEmitter {
   ): IBApi {
     this.controller.schedule(() =>
       this.controller.encoder.reqMktData(
-        tickerId,
+        reqId,
         contract,
         genericTickList,
         snapshot,
@@ -1355,7 +1360,7 @@ export class IBApi extends EventEmitter {
    * than 600 seconds. Real time bars subscriptions are also included in the calculation of the number of Level 1
    * market data subscriptions allowed in an account.
    *
-   * @param tickerId The request's unique identifier.
+   * @param reqId The request's unique identifier.
    * @param contract The [[Contract]] for which the depth is being requested
    * @param barSize currently being ignored
    * @param whatToShow the nature of the data being retrieved:
@@ -1369,7 +1374,7 @@ export class IBApi extends EventEmitter {
    * @see [[cancelRealTimeBars]]
    */
   reqRealTimeBars(
-    tickerId: number,
+    reqId: number,
     contract: Contract,
     barSize: number,
     whatToShow: string,
@@ -1378,7 +1383,7 @@ export class IBApi extends EventEmitter {
   ): IBApi {
     this.controller.schedule(() =>
       this.controller.encoder.reqRealTimeBars(
-        tickerId,
+        reqId,
         contract,
         barSize,
         whatToShow,
@@ -3041,7 +3046,7 @@ export declare interface IBApi {
    * Exchange for Physicals.
    *
    * @param listener
-   * tickerId: The request's identifier.
+   * reqId: The request's identifier.
    *
    * tickType: The type of tick being received.
    *
@@ -3063,7 +3068,7 @@ export declare interface IBApi {
   on(
     event: EventName.tickEFP,
     listener: (
-      tickerId: number,
+      reqId: number,
       tickType: number,
       basisPoints: number,
       formattedBasisPoints: string,
@@ -3079,7 +3084,7 @@ export declare interface IBApi {
    * Provides a market data generic tick.
    *
    * @param listener
-   * tickerId: The id of request.
+   * reqId: The id of request.
    *
    * field: The type of tick being received.
    *
@@ -3089,14 +3094,14 @@ export declare interface IBApi {
    */
   on(
     event: EventName.tickGeneric,
-    listener: (tickerId: number, field: TickType, value: number) => void,
+    listener: (reqId: number, field: TickType, value: number) => void,
   ): this;
 
   /**
    * Provides a news headline tick.
    *
    * @param listener
-   * tickerId: The id of request.
+   * reqId: The id of request.
    *
    * field: The type of tick being received.
    *
@@ -3107,7 +3112,7 @@ export declare interface IBApi {
   on(
     event: EventName.tickNews,
     listener: (
-      tickerId: number,
+      reqId: number,
       timeStamp: number,
       providerCode: string,
       articleId: string,
@@ -3123,7 +3128,7 @@ export declare interface IBApi {
    * options underlier are received.
    *
    * @param listener
-   * tickerId: The id of request.
+   * reqId: The id of request.
    *
    * field:	Specifies the type of option computation.
    * Pass the field value into [[TickType.getField]] to retrieve the field description.
@@ -3153,7 +3158,7 @@ export declare interface IBApi {
   on(
     event: EventName.tickOptionComputation,
     listener: (
-      tickerId: number,
+      reqId: number,
       field: TickType,
       impliedVolatility?: number,
       delta?: number,
@@ -3174,7 +3179,7 @@ export declare interface IBApi {
    * contract).
    *
    * @param listener
-   * tickerId: The id of request.
+   * reqId: The id of request.
    *
    * field: The type of the price being received.
    *
@@ -3189,7 +3194,7 @@ export declare interface IBApi {
   on(
     event: EventName.tickPrice,
     listener: (
-      tickerId: number,
+      reqId: number,
       field: TickType,
       value: number,
       attribs?: unknown /* TODO: replace with TickAttrib type as soon as available. */,
@@ -3200,14 +3205,14 @@ export declare interface IBApi {
    * A tick with BOO exchange and snapshot permissions.
    *
    * @param listener
-   * tickerId: The id of request.
+   * reqId: The id of request.
    *
    * @see [[reqMktData]]
    */
   on(
     event: EventName.tickReqParams,
     listener: (
-      tickerId: number,
+      reqId: number,
       minTick: number,
       bboExchange: string,
       snapshotPermissions: number,
@@ -3218,7 +3223,7 @@ export declare interface IBApi {
    * Market data tick size callback. Handles all size-related ticks.
    *
    * @param listener
-   * tickerId: The id of request.
+   * reqId: The id of request.
    *
    * field: The type of size being received (i.e. bid size)
    *
@@ -3228,7 +3233,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.tickSize,
-    listener: (tickerId: number, field?: TickType, value?: number) => void,
+    listener: (reqId: number, field?: TickType, value?: number) => void,
   ): this;
 
   /**
@@ -3237,7 +3242,7 @@ export declare interface IBApi {
    * tickSize messages following a tickPrice.
    *
    * @param listener
-   * tickerId: The id of request.
+   * reqId: The id of request.
    *
    * field: The type of size being received (i.e. bid size)
    *
@@ -3247,7 +3252,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.tickString,
-    listener: (tickerId: number, field: TickType, value: string) => void,
+    listener: (reqId: number, field: TickType, value: string) => void,
   ): this;
 
   /**
@@ -3466,7 +3471,7 @@ export declare interface IBApi {
    * Returns the order book.
    *
    * @param listener
-   * tickerId: The request's identifier.
+   * reqId: The request's identifier.
    *
    * position: The order book's row being updated.
    *
@@ -3486,7 +3491,7 @@ export declare interface IBApi {
   on(
     event: EventName.updateMktDepth,
     listener: (
-      tickerId: number,
+      reqId: number,
       position: number,
       operation: number,
       side: number,
@@ -3499,7 +3504,7 @@ export declare interface IBApi {
    * Returns the order book (level 2).
    *
    * @param listener
-   * tickerId: The request's identifier.
+   * reqId: The request's identifier.
    *
    * position: The order book's row being updated.
    *
@@ -3523,7 +3528,7 @@ export declare interface IBApi {
   on(
     event: EventName.updateMktDepthL2,
     listener: (
-      tickerId: number,
+      reqId: number,
       position: number,
       marketMaker: string,
       operation: number,

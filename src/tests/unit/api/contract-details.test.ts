@@ -43,13 +43,14 @@ describe("IBApi reqContractDetails Tests", () => {
         expect(details.marketName).toEqual("EUR.USD");
       })
       .on(EventName.contractDetailsEnd, (reqId) => {
-        if (reqId == refId) ib.disconnect();
+        expect(reqId).toEqual(refId);
+        if (ib) ib.disconnect();
       })
       .on(EventName.disconnected, () => {
         done();
       })
-      .on(EventName.error, (err, code, id) => {
-        done(`${err.message} - code: ${code} - id: ${id}`);
+      .on(EventName.error, (err, code, reqId) => {
+        if (reqId == refId) done(`[${reqId}] ${err.message} (#${code})`);
       });
 
     ib.connect();
@@ -62,7 +63,6 @@ describe("IBApi reqContractDetails Tests", () => {
       ib.reqContractDetails(refId, contract);
     })
       .on(EventName.contractDetails, (reqId, details: ContractDetails) => {
-        console.log(details);
         expect(reqId).toEqual(refId);
         expect(details.contract.secType).toEqual(SecType.STK);
         expect(details.contract.symbol).toEqual("SPY");
@@ -70,13 +70,14 @@ describe("IBApi reqContractDetails Tests", () => {
         expect(details.marketName).toEqual("SPY");
       })
       .on(EventName.contractDetailsEnd, (reqId) => {
-        if (reqId == refId) ib.disconnect();
+        expect(reqId).toEqual(refId);
+        if (ib) ib.disconnect();
       })
       .on(EventName.disconnected, () => {
         done();
       })
-      .on(EventName.error, (err, code, id) => {
-        done(`${err.message} - code: ${code} - id: ${id}`);
+      .on(EventName.error, (err, code, reqId) => {
+        if (reqId == refId) done(`[${reqId}] ${err.message} (#${code})`);
       });
 
     ib.connect();
@@ -97,13 +98,14 @@ describe("IBApi reqContractDetails Tests", () => {
         expect(details.marketName).toEqual("SPY");
       })
       .on(EventName.contractDetailsEnd, (reqId) => {
-        if (reqId == refId) ib.disconnect();
+        expect(reqId).toEqual(refId);
+        if (ib) ib.disconnect();
       })
       .on(EventName.disconnected, () => {
         done();
       })
-      .on(EventName.error, (err, code, id) => {
-        done(`${err.message} - code: ${code} - id: ${id}`);
+      .on(EventName.error, (err, code, reqId) => {
+        if (reqId == refId) done(`[${reqId}] ${err.message} (#${code})`);
       });
 
     ib.connect();

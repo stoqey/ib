@@ -37,7 +37,7 @@ class PrintContractSearchApp extends IBApiNextApp {
     }
 
     this.api
-      .searchContracts(this.cmdLineArgs.pattern as string)
+      .getMatchingSymbols(this.cmdLineArgs.pattern as string)
       .then((searchResult) => {
         this.printObject(searchResult);
         this.stop();

@@ -1,9 +1,9 @@
 import { IBApi } from "../../../api/api";
-import ContractDescription from "../../../api/contract/contractDescription";
+import WshEventData from "../../../api/contract/wsh";
 import { EventName } from "../../../api/data/enum/event-name";
 import configuration from "../../../common/configuration";
 
-describe("IBApi reqMatchingSymbols Tests", () => {
+describe("IBApi Fundamental Data", () => {
   jest.setTimeout(5000);
 
   let ib: IBApi;
@@ -24,19 +24,16 @@ describe("IBApi reqMatchingSymbols Tests", () => {
     }
   });
 
-  test("SPY", (done) => {
+  test("reqWshMetaData", (done) => {
     const refId = 1;
-    ib.once(EventName.nextValidId, (_reqId) => {
-      ib.reqMatchingSymbols(refId, "SPY");
+    ib.once(EventName.connected, () => {
+      ib.reqWshMetaData(refId);
     })
-      .on(
-        EventName.symbolSamples,
-        (reqId, contractDescriptions: ContractDescription[]) => {
-          expect(reqId).toEqual(refId);
-          expect(contractDescriptions[0].contract.symbol).toEqual("SPY");
-          ib.disconnect();
-        },
-      )
+      .on(EventName.wshMetaData, (reqId, dataJson: string) => {
+        expect(reqId).toEqual(refId);
+        console.log(dataJson);
+        ib.disconnect();
+      })
       .on(EventName.disconnected, () => {
         done();
       })
@@ -47,19 +44,19 @@ describe("IBApi reqMatchingSymbols Tests", () => {
     ib.connect();
   });
 
-  test("META", (done) => {
+  test("reqWshEventData deprecated", (done) => {
     const refId = 2;
-    ib.once(EventName.nextValidId, (_reqId) => {
-      ib.reqMatchingSymbols(refId, "META");
+    ib.once(EventName.connected, () => {
+      ib.reqWshEventData(refId, 8314);
     })
-      .on(
-        EventName.symbolSamples,
-        (reqId, contractDescriptions: ContractDescription[]) => {
-          expect(reqId).toEqual(refId);
-          expect(contractDescriptions[0].contract.symbol).toEqual("META");
-          ib.disconnect();
-        },
-      )
+      .on(EventName.wshEventData, (reqId, dataJson: string) => {
+        expect(reqId).toEqual(refId);
+        console.log(dataJson);
+      })
+      .on(EventName.scannerDataEnd, (reqId) => {
+        expect(reqId).toEqual(refId);
+        if (ib) ib.disconnect();
+      })
       .on(EventName.disconnected, () => {
         done();
       })
@@ -70,19 +67,22 @@ describe("IBApi reqMatchingSymbols Tests", () => {
     ib.connect();
   });
 
-  test("AMC", (done) => {
+  test("reqWshEventData", (done) => {
     const refId = 3;
-    ib.once(EventName.nextValidId, (_reqId) => {
-      ib.reqMatchingSymbols(refId, "AMC");
+    ib.once(EventName.connected, () => {
+      ib.reqWshEventData(
+        refId,
+        new WshEventData(8314, false, false, false, "20220511", "", 5),
+      );
     })
-      .on(
-        EventName.symbolSamples,
-        (reqId, contractDescriptions: ContractDescription[]) => {
-          expect(reqId).toEqual(refId);
-          expect(contractDescriptions[0].contract.symbol).toEqual("AMC");
-          ib.disconnect();
-        },
-      )
+      .on(EventName.wshEventData, (reqId, dataJson: string) => {
+        expect(reqId).toEqual(refId);
+        console.log(dataJson);
+      })
+      .on(EventName.scannerDataEnd, (reqId) => {
+        expect(reqId).toEqual(refId);
+        if (ib) ib.disconnect();
+      })
       .on(EventName.disconnected, () => {
         done();
       })

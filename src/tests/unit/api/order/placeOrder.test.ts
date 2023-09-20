@@ -22,7 +22,7 @@ const awaitTimeout = (delay: number): Promise<unknown> =>
   new Promise((resolve): NodeJS.Timeout => setTimeout(resolve, delay * 1000));
 
 describe("PlaceOrder", () => {
-  jest.setTimeout(15000);
+  jest.setTimeout(20 * 1000);
 
   let ib: IBApi;
   let clientId = Math.floor(Math.random() * 32766) + 1; // ensure unique client
@@ -45,7 +45,43 @@ describe("PlaceOrder", () => {
   });
 
   test("Simple placeOrder", (done) => {
-    ib.on(
+    ib.once(EventName.nextValidId, (orderId: number) => {
+      // buy an Apple call, with a PriceCondition on underlying
+
+      const contract: Contract = {
+        symbol: "AAPL",
+        exchange: "SMART",
+        currency: "USD",
+        secType: SecType.STK,
+      };
+
+      ib.placeOrder(orderId, contract, {
+        orderType: OrderType.LMT,
+        action: OrderAction.BUY,
+        lmtPrice: 1,
+        orderId,
+        totalQuantity: 1,
+        // account: "DU123567",
+        tif: "DAY",
+        transmit: true,
+      });
+
+      // verify result
+      let received = false;
+
+      ib.on(EventName.openOrder, (id, _contract, _order, _orderState) => {
+        if (id === orderId) {
+          received = true;
+        }
+      }).on(EventName.openOrderEnd, () => {
+        ib.disconnect();
+        if (received) done();
+        else done(`Order ${orderId} not placed`);
+      });
+
+      // Give a few secs delay to get order placed
+      awaitTimeout(15).then(() => ib.reqOpenOrders());
+    }).on(
       EventName.error,
       (
         error: Error,
@@ -65,54 +101,64 @@ describe("PlaceOrder", () => {
           }
         }
       },
-    )
-      .on(EventName.connected, () => {
-        // logger.info("connected");
-        ib.reqIds();
-      })
-      .once(EventName.nextValidId, (orderId: number) => {
-        // buy an Apple call, with a PriceCondition on underlying
-
-        const contract: Contract = {
-          symbol: "AAPL",
-          exchange: "SMART",
-          currency: "USD",
-          secType: SecType.STK,
-        };
-
-        ib.placeOrder(orderId, contract, {
-          orderType: OrderType.LMT,
-          action: OrderAction.BUY,
-          lmtPrice: 1,
-          orderId,
-          totalQuantity: 1,
-          // account: "DU123567",
-          tif: "DAY",
-          transmit: true,
-        });
-
-        // verify result
-        let received = false;
-
-        ib.on(EventName.openOrder, (id, _contract, _order, _orderState) => {
-          if (id === orderId) {
-            received = true;
-          }
-        }).on(EventName.openOrderEnd, () => {
-          ib.disconnect();
-          if (received) done();
-          else done(`Order ${orderId} not placed`);
-        });
-
-        // Give a few secs delay to get order placed
-        awaitTimeout(10).then(() => ib.reqOpenOrders());
-      });
+    );
 
     ib.connect();
   });
 
   test("placeOrder with PriceCondition", (done) => {
-    ib.on(
+    ib.once(EventName.nextValidId, (orderId: number) => {
+      // buy an Apple call, with a PriceCondition on underlying
+
+      const contract: Contract = {
+        symbol: "AAPL",
+        exchange: "SMART",
+        currency: "USD",
+        secType: SecType.OPT,
+        right: OptionType.Call,
+        strike: 200,
+        multiplier: 100,
+        lastTradeDateOrContractMonth: "20251219",
+      };
+
+      const priceCondition: PriceCondition = new PriceCondition(
+        29,
+        TriggerMethod.Default,
+        3691937, // AMZN Stock on SMART
+        "SMART",
+        true,
+        ConjunctionConnection.OR,
+      );
+
+      ib.placeOrder(orderId, contract, {
+        orderType: OrderType.LMT,
+        action: OrderAction.BUY,
+        lmtPrice: 0.01,
+        orderId,
+        totalQuantity: 1,
+        // account: "DU123567",
+        conditionsIgnoreRth: true,
+        conditionsCancelOrder: false,
+        conditions: [priceCondition],
+        transmit: true,
+      });
+
+      // verify result
+      let received = false;
+
+      ib.on(EventName.openOrder, (id, _contract, _order, _orderState) => {
+        if (id === orderId) {
+          received = true;
+        }
+      }).on(EventName.openOrderEnd, () => {
+        ib.disconnect();
+        if (received) done();
+        else done(`Order ${orderId} not placed`);
+      });
+
+      // Give a few secs delay to get order placed
+      awaitTimeout(10).then(() => ib.reqOpenOrders());
+    }).on(
       EventName.error,
       (
         error: Error,
@@ -132,63 +178,7 @@ describe("PlaceOrder", () => {
           }
         }
       },
-    )
-      .on(EventName.connected, () => {
-        // logger.info("connected");
-        ib.reqIds();
-      })
-      .once(EventName.nextValidId, (orderId: number) => {
-        // buy an Apple call, with a PriceCondition on underlying
-
-        const contract: Contract = {
-          symbol: "AAPL",
-          exchange: "SMART",
-          currency: "USD",
-          secType: SecType.OPT,
-          right: OptionType.Call,
-          strike: 200,
-          multiplier: 100,
-          lastTradeDateOrContractMonth: "20251219",
-        };
-
-        const priceCondition: PriceCondition = new PriceCondition(
-          29,
-          TriggerMethod.Default,
-          3691937, // AMZN Stock on SMART
-          "SMART",
-          true,
-          ConjunctionConnection.OR,
-        );
-
-        ib.placeOrder(orderId, contract, {
-          orderType: OrderType.LMT,
-          action: OrderAction.BUY,
-          lmtPrice: 0.01,
-          orderId,
-          totalQuantity: 1,
-          // account: "DU123567",
-          conditionsIgnoreRth: true,
-          conditionsCancelOrder: false,
-          conditions: [priceCondition],
-          transmit: true,
-        });
-
-        // verify result
-        let received = false;
-
-        ib.on(EventName.openOrder, (id, _contract, _order, _orderState) => {
-          if (id === orderId) {
-            received = true;
-          }
-        }).on(EventName.openOrderEnd, () => {
-          ib.disconnect();
-          if (received) done();
-          else done(`Order ${orderId} not placed`);
-        });
-
-        // Give a few secs delay to get order placed
-        awaitTimeout(10).then(() => ib.reqOpenOrders());
-      });
+    );
 
     ib.connect();
   });

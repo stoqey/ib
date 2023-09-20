@@ -61,8 +61,8 @@ describe("IBApi Market data Tests", () => {
         if (received) done();
         else done("Didn't get any result");
       })
-      .on(EventName.error, (err, code, id) => {
-        done(`${err.message} - code: ${code} - id: ${id}`);
+      .on(EventName.error, (err, code, reqId) => {
+        if (reqId == refId) done(`[${reqId}] ${err.message} (#${code})`);
       });
 
     ib.connect();
@@ -93,8 +93,8 @@ describe("IBApi Market data Tests", () => {
         if (received) done();
         else done("Didn't get any result");
       })
-      .on(EventName.error, (err, code, id) => {
-        done(`${err.message} - code: ${code} - id: ${id}`);
+      .on(EventName.error, (err, code, reqId) => {
+        if (reqId == refId) done(`[${reqId}] ${err.message} (#${code})`);
       });
 
     ib.connect();

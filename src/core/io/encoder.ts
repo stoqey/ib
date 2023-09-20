@@ -1,5 +1,6 @@
 import { ScanCode } from "../../api-next/market-scanner/market-scanner";
 import { Contract } from "../../api/contract/contract";
+import WshEventData from "../../api/contract/wsh";
 import TagValue from "../../api/data/container/tag-value";
 import FADataType from "../../api/data/enum/fad-data-type";
 import LogLevel from "../../api/data/enum/log-level";
@@ -3090,7 +3091,6 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         ErrorCode.UPDATE_TWS,
         -1,
       );
-      return;
     }
 
     this.sendMsg(OUT_MSG_ID.REQ_WSH_META_DATA, reqId);
@@ -3103,23 +3103,65 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         ErrorCode.UPDATE_TWS,
         -1,
       );
-      return;
     }
 
     this.sendMsg(OUT_MSG_ID.CANCEL_WSH_META_DATA, reqId);
   }
 
-  reqWshEventData(reqId: number, conId: number): void {
+  reqWshEventData(reqId: number, wshEventData: WshEventData): void {
     if (this.serverVersion < MIN_SERVER_VER.WSHE_CALENDAR) {
       return this.emitError(
         "It does not support WSHE Calendar API.",
         ErrorCode.UPDATE_TWS,
         -1,
       );
-      return;
+    }
+    if (
+      this.serverVersion < MIN_SERVER_VER.WSH_EVENT_DATA_FILTERS &&
+      (wshEventData.filter?.length ||
+        wshEventData.fillWatchlist ||
+        wshEventData.fillPortfolio ||
+        wshEventData.fillCompetitors)
+    ) {
+      return this.emitError(
+        "It does not support WSH event data filters.",
+        ErrorCode.UPDATE_TWS,
+        reqId,
+      );
+    }
+    if (
+      this.serverVersion < MIN_SERVER_VER.WSH_EVENT_DATA_FILTERS_DATE &&
+      (wshEventData.startDate ||
+        wshEventData.endDate ||
+        wshEventData.totalLimit)
+    ) {
+      return this.emitError(
+        "It does not support WSH event data date filters.",
+        ErrorCode.UPDATE_TWS,
+        reqId,
+      );
     }
 
-    this.sendMsg(OUT_MSG_ID.REQ_WSH_EVENT_DATA, reqId, conId);
+    const tokens: unknown[] = [
+      OUT_MSG_ID.REQ_WSH_EVENT_DATA,
+      reqId,
+      wshEventData.conId,
+    ];
+
+    if (this.serverVersion >= MIN_SERVER_VER.WSH_EVENT_DATA_FILTERS) {
+      tokens.push(wshEventData.filter);
+      tokens.push(wshEventData.fillWatchlist);
+      tokens.push(wshEventData.fillPortfolio);
+      tokens.push(wshEventData.fillCompetitors);
+    }
+
+    if (this.serverVersion >= MIN_SERVER_VER.WSH_EVENT_DATA_FILTERS_DATE) {
+      tokens.push(wshEventData.startDate);
+      tokens.push(wshEventData.endDate);
+      tokens.push(wshEventData.totalLimit);
+    }
+
+    this.sendMsg(tokens);
   }
 
   reqCancelWshEventData(reqId: number): void {
@@ -3129,7 +3171,6 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         ErrorCode.UPDATE_TWS,
         -1,
       );
-      return;
     }
 
     this.sendMsg(OUT_MSG_ID.CANCEL_WSH_EVENT_DATA, reqId);
@@ -3142,7 +3183,6 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         ErrorCode.UPDATE_TWS,
         -1,
       );
-      return;
     }
 
     this.sendMsg(OUT_MSG_ID.REQ_USER_INFO, reqId);

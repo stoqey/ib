@@ -29,8 +29,8 @@ describe("IBApi connection Tests", () => {
     // logger.info("Starting Connect");
     ib.on(EventName.connected, () => {
       done();
-    }).on(EventName.error, (err, code, id) => {
-      done(`${err.message} - code: ${code} - id: ${id}`);
+    }).on(EventName.error, (err, code, reqId) => {
+      done(`[${reqId}] ${err.message} (#${code})`);
     });
 
     ib.connect();
@@ -45,8 +45,8 @@ describe("IBApi connection Tests", () => {
       .on(EventName.disconnected, () => {
         done();
       })
-      .on(EventName.error, (err, code, id) => {
-        done(`${err.message} - code: ${code} - id: ${id}`);
+      .on(EventName.error, (err, code, reqId) => {
+        done(`[${reqId}] ${err.message} (#${code})`);
       });
 
     ib.connect();
@@ -59,14 +59,13 @@ describe("IBApi connection Tests", () => {
     })
       .on(EventName.currentTime, (time) => {
         expect(time).toBeTruthy();
-        ib.disconnect();
+        if (ib) ib.disconnect();
       })
       .on(EventName.disconnected, () => {
-        ib = undefined;
         done();
       })
-      .on(EventName.error, (err, code, id) => {
-        done(`${err.message} - code: ${code} - id: ${id}`);
+      .on(EventName.error, (err, code, reqId) => {
+        done(`[${reqId}] ${err.message} (#${code})`);
       });
 
     ib.connect();

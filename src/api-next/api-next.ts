@@ -3027,7 +3027,7 @@ export class IBApiNext {
    *
    * @param pattern Either start of ticker symbol or (for larger strings) company name.
    */
-  searchContracts(pattern: string): Promise<ContractDescription[]> {
+  getMatchingSymbols(pattern: string): Promise<ContractDescription[]> {
     return lastValueFrom(
       this.subscriptions
         .register<ContractDescription[]>(
@@ -3040,6 +3040,8 @@ export class IBApiNext {
         .pipe(map((v: { all: ContractDescription[] }) => v.all)),
     );
   }
+  /** @deprecated use getMatchingSymbols instead */
+  searchContracts = this.getMatchingSymbols;
 
   /** userInfo event handler. */
   private readonly onUserInfo = (
