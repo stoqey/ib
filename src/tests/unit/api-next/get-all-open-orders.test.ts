@@ -50,7 +50,6 @@ describe("RxJS Wrapper: getAllOpenOrders", () => {
           faGroup: "",
           faMethod: "",
           faPercentage: "",
-          faProfile: "",
           modelCode: "",
           goodTillDate: "",
           rule80A: "0",

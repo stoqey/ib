@@ -17,7 +17,11 @@ import PriceCondition from "../../api/order/condition/price-condition";
 import TimeCondition from "../../api/order/condition/time-condition";
 import VolumeCondition from "../../api/order/condition/volume-condition";
 import { OrderConditionType } from "../../api/order/enum/order-condition-type";
-import { OrderType } from "../../api/order/enum/orderType";
+import {
+  isPegBenchOrder,
+  isPegBestOrder,
+  isPegMidOrder,
+} from "../../api/order/enum/orderType";
 import {
   COMPETE_AGAINST_BEST_OFFSET_UP_TO_MID,
   Order,
@@ -1272,10 +1276,12 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     if (this.serverVersion >= 13) {
+      // srv v13 and above
       tokens.push(order.faGroup);
       tokens.push(order.faMethod);
       tokens.push(order.faPercentage);
-      tokens.push(order.faProfile);
+      if (this.serverVersion < MIN_SERVER_VER.FA_PROFILE_DESUPPORT)
+        tokens.push(""); // send deprecated faProfile field
     }
 
     if (this.serverVersion >= MIN_SERVER_VER.MODELS_SUPPORT) {
@@ -1484,7 +1490,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     if (this.serverVersion >= MIN_SERVER_VER.PEGGED_TO_BENCHMARK) {
-      if (order.orderType == OrderType.PEG_BENCH) {
+      if (isPegBenchOrder(order.orderType)) {
         tokens.push(order.referenceContractId);
         tokens.push(order.isPeggedChangeAmountDecrease);
         tokens.push(order.peggedChangeAmount);
@@ -1637,7 +1643,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     if (this.serverVersion >= MIN_SERVER_VER.PEGBEST_PEGMID_OFFSETS) {
       let sendMidOffsets = false;
       if (contract.exchange == "IBKRATS") tokens.push(order.minTradeQty);
-      if (order.orderType == OrderType.PEG_BEST) {
+      if (isPegBestOrder(order.orderType)) {
         tokens.push(order.minCompeteSize);
         tokens.push(order.competeAgainstBestOffset);
         if (
@@ -1645,7 +1651,9 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
           COMPETE_AGAINST_BEST_OFFSET_UP_TO_MID
         )
           sendMidOffsets = true;
-      } else if (order.orderType == OrderType.PEG_MID) sendMidOffsets = true;
+      } else if (isPegMidOrder(order.orderType)) {
+        sendMidOffsets = true;
+      }
       if (sendMidOffsets) {
         tokens.push(order.midOffsetAtWhole);
         tokens.push(order.midOffsetAtHalf);
@@ -1663,8 +1671,18 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "This feature is only available for versions of TWS >= 13.",
         ErrorCode.UPDATE_TWS,
-        -1,
+        reqId,
       );
+    }
+
+    if (this.serverVersion >= MIN_SERVER_VER.FA_PROFILE_DESUPPORT) {
+      if (faDataType == FADataType.PROFILES) {
+        return this.emitError(
+          "FA Profile is not supported anymore, use FA Group instead.",
+          ErrorCode.UPDATE_TWS,
+          reqId,
+        );
+      }
     }
 
     const version = 1;
@@ -2830,13 +2848,23 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   /**
    * Encode a REQ_FA message.
    */
-  requestFA(faDataType: number): void {
+  requestFA(faDataType: FADataType): void {
     if (this.serverVersion < 13) {
       return this.emitError(
         "This feature is only available for versions of TWS >= 13.",
         ErrorCode.UPDATE_TWS,
         -1,
       );
+    }
+
+    if (this.serverVersion >= MIN_SERVER_VER.FA_PROFILE_DESUPPORT) {
+      if (faDataType == FADataType.PROFILES) {
+        return this.emitError(
+          "FA Profile is not supported anymore, use FA Group instead.",
+          ErrorCode.UPDATE_TWS,
+          -1,
+        );
+      }
     }
 
     const version = 1;

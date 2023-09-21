@@ -2,6 +2,8 @@ import { IBApi } from "../../../api/api";
 import WshEventData from "../../../api/contract/wsh";
 import { EventName } from "../../../api/data/enum/event-name";
 import configuration from "../../../common/configuration";
+import { ErrorCode } from "../../../common/errorCode";
+import logger from "../../../common/logger";
 
 describe("IBApi Fundamental Data", () => {
   jest.setTimeout(5000);
@@ -38,7 +40,13 @@ describe("IBApi Fundamental Data", () => {
         done();
       })
       .on(EventName.error, (err, code, reqId) => {
-        if (reqId == refId) done(`[${reqId}] ${err.message} (#${code})`);
+        const msg = `[${reqId}] ${err.message} (#${code})`;
+        if (code == ErrorCode.NEWS_FEED_NOT_ALLOWED) {
+          logger.error(msg);
+          done();
+        } else if (reqId == refId) {
+          done(msg);
+        }
       });
 
     ib.connect();
@@ -61,7 +69,13 @@ describe("IBApi Fundamental Data", () => {
         done();
       })
       .on(EventName.error, (err, code, reqId) => {
-        if (reqId == refId) done(`[${reqId}] ${err.message} (#${code})`);
+        const msg = `[${reqId}] ${err.message} (#${code})`;
+        if (code == ErrorCode.NEWS_FEED_NOT_ALLOWED) {
+          logger.error(msg);
+          done();
+        } else if (reqId == refId) {
+          done(msg);
+        }
       });
 
     ib.connect();
@@ -87,7 +101,13 @@ describe("IBApi Fundamental Data", () => {
         done();
       })
       .on(EventName.error, (err, code, reqId) => {
-        if (reqId == refId) done(`[${reqId}] ${err.message} (#${code})`);
+        const msg = `[${reqId}] ${err.message} (#${code})`;
+        if (code == ErrorCode.NEWS_FEED_NOT_ALLOWED) {
+          logger.error(msg);
+          done();
+        } else if (reqId == refId) {
+          done(msg);
+        }
       });
 
     ib.connect();

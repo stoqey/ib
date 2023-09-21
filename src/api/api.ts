@@ -77,7 +77,8 @@ export interface IBApiCreationOptions {
 }
 
 /** Maximum supported version. */
-export const MAX_SUPPORTED_SERVER_VERSION = MIN_SERVER_VER.BOND_ISSUERID;
+export const MAX_SUPPORTED_SERVER_VERSION =
+  MIN_SERVER_VER.PENDING_PRICE_REVISION;
 
 /** Minimum supported version. */
 export const MIN_SERVER_VER_SUPPORTED = 38;
@@ -2252,6 +2253,7 @@ export declare interface IBApi {
       volume: number,
       count: number | undefined,
       WAP: number,
+      /**  @deprecated */
       hasGaps: boolean | undefined,
     ) => void,
   ): this;

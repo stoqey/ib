@@ -28,7 +28,7 @@ import { ConjunctionConnection } from "../../api/order/enum/conjunction-connecti
 import OrderAction from "../../api/order/enum/order-action";
 import { OrderConditionType } from "../../api/order/enum/order-condition-type";
 import { OrderStatus } from "../../api/order/enum/order-status";
-import { OrderType } from "../../api/order/enum/orderType";
+import { OrderType, isPegBenchOrder } from "../../api/order/enum/orderType";
 import { TriggerMethod } from "../../api/order/enum/trigger-method";
 import { Execution } from "../../api/order/execution";
 import { Order } from "../../api/order/order";
@@ -480,6 +480,20 @@ export class Decoder {
   /**
    * Read a token from queue and return it as floating point value.
    *
+   * Returns undefined if the token is empty or is Number.MAX_VALUE.
+   */
+  readDecimal(): number | undefined {
+    const token = this.readStr().replaceAll(",", "");
+    if (!token || token === "") {
+      return undefined;
+    }
+    const val = parseFloat(token);
+    return val === Number.MAX_VALUE || val === Infinity ? undefined : val;
+  }
+
+  /**
+   * Read a token from queue and return it as floating point value.
+   *
    * Returns undefined if the token is empty or Number.MAX_VALUE.
    */
   readDoubleOrUndefined(): number | undefined {
@@ -570,7 +584,7 @@ export class Decoder {
 
     let size = undefined;
     if (version >= 2) {
-      size = this.readInt();
+      size = this.readDecimal();
     }
 
     let canAutoExecute = undefined;
@@ -618,7 +632,7 @@ export class Decoder {
     this.readInt(); // version
     const tickerId = this.readInt();
     const tickType = this.readInt();
-    const size = this.readInt();
+    const size = this.readDecimal();
 
     this.emit(EventName.tickSize, tickerId, tickType, size);
   }
@@ -633,8 +647,8 @@ export class Decoder {
         : this.readInt();
     const id = this.readInt();
     const status = this.readStr();
-    const filled = this.readInt();
-    const remaining = this.readInt();
+    const filled = this.readDecimal();
+    const remaining = this.readDecimal();
     const avgFillPrice = this.readDouble();
 
     let permId: number | undefined = undefined;
@@ -809,7 +823,6 @@ export class Decoder {
     orderDecoder.readIsOmsContainer();
     orderDecoder.readDiscretionaryUpToLimitPrice();
     orderDecoder.readUsePriceMgmtAlgo();
-
     orderDecoder.readDuration();
     orderDecoder.readPostToAts();
     orderDecoder.readAutoCancelParent(MIN_SERVER_VER.AUTO_CANCEL_PARENT);
@@ -832,7 +845,7 @@ export class Decoder {
   }
 
   /**
-   * Decode a PORTFOLIO_VALUE message from data queue and emit a updatePortfolio event.
+   * Decode a PORTFOLIO_VALUE message from data queue and emit a updatePortfolio (PortfolioValue) event.
    */
   private decodeMsg_PORTFOLIO_VALUE(): void {
     const version = this.readInt();
@@ -862,12 +875,7 @@ export class Decoder {
       contract.tradingClass = this.readStr();
     }
 
-    let position: number;
-    if (this.serverVersion >= MIN_SERVER_VER.FRACTIONAL_POSITIONS) {
-      position = this.readDouble();
-    } else {
-      position = this.readInt();
-    }
+    const position: number = this.readDecimal();
 
     const marketPrice = this.readDouble();
     const marketValue = this.readDouble();
@@ -1032,13 +1040,13 @@ export class Decoder {
         this.serverVersion >= MIN_SERVER_VER.FRACTIONAL_SIZE_SUPPORT &&
         this.serverVersion < MIN_SERVER_VER.SIZE_RULES
       ) {
-        this.readDouble(); // sizeMinTick - not used anymore
+        this.readDecimal(); // sizeMinTick - not used anymore
       }
 
       if (this.serverVersion >= MIN_SERVER_VER.SIZE_RULES) {
-        contract.minSize = this.readDouble();
-        contract.sizeIncrement = this.readDouble();
-        contract.suggestedSizeIncrement = this.readDouble();
+        contract.minSize = this.readDecimal();
+        contract.sizeIncrement = this.readDecimal();
+        contract.suggestedSizeIncrement = this.readDecimal();
       }
     }
 
@@ -1094,7 +1102,7 @@ export class Decoder {
     exec.acctNumber = this.readStr();
     exec.exchange = this.readStr();
     exec.side = this.readStr();
-    exec.shares = this.readInt();
+    exec.shares = this.readDecimal();
     exec.price = this.readDouble();
 
     if (version >= 2) {
@@ -1110,7 +1118,7 @@ export class Decoder {
     }
 
     if (version >= 6) {
-      exec.cumQty = this.readInt();
+      exec.cumQty = this.readDecimal();
       exec.avgPrice = this.readDouble();
     }
 
@@ -1131,11 +1139,15 @@ export class Decoder {
       exec.lastLiquidity = { value: this.readInt() };
     }
 
+    if (this.serverVersion >= MIN_SERVER_VER.PENDING_PRICE_REVISION) {
+      exec.pendingPriceRevision = this.readBool();
+    }
+
     this.emit(EventName.execDetails, reqId, contract, exec);
   }
 
   /**
-   * Decode a MARKET_DEPTH message from data queue and emit a updateMktDepth event.
+   * Decode a MARKET_DEPTH message from data queue and emit a MarketDepth event.
    */
   private decodeMsg_MARKET_DEPTH(): void {
     this.readInt(); // version
@@ -1144,7 +1156,7 @@ export class Decoder {
     const operation = this.readInt();
     const side = this.readInt();
     const price = this.readDouble();
-    const size = this.readInt();
+    const size = this.readDecimal();
 
     this.emit(
       EventName.updateMktDepth,
@@ -1158,7 +1170,7 @@ export class Decoder {
   }
 
   /**
-   * Decode a MARKET_DEPTH_L2 message from data queue and emit a updateMktDepthL2 event.
+   * Decode a MARKET_DEPTH_L2 message from data queue and emit a MarketDepthL2 event.
    */
   private decodeMsg_MARKET_DEPTH_L2(): void {
     this.readInt(); // version
@@ -1168,7 +1180,7 @@ export class Decoder {
     const operation = this.readInt();
     const side = this.readInt();
     const price = this.readDouble();
-    const size = this.readInt();
+    const size = this.readDecimal();
 
     let isSmartDepth = undefined;
     if (this.serverVersion >= MIN_SERVER_VER.SMART_DEPTH) {
@@ -1256,8 +1268,9 @@ export class Decoder {
       const high = this.readDouble();
       const low = this.readDouble();
       const close = this.readDouble();
-      const volume = this.readInt();
-      const WAP = this.readDouble();
+      const volume = this.readDecimal();
+      const WAP = this.readDecimal();
+      // TODO: hasGap is deprecated, we should readStr and ignore result
       let hasGaps: boolean | undefined = undefined;
       if (this.serverVersion < MIN_SERVER_VER.SYNT_REALTIME_BARS) {
         hasGaps = this.readBool();
@@ -1310,8 +1323,8 @@ export class Decoder {
     const close = this.readDouble();
     const high = this.readDouble();
     const low = this.readDouble();
-    const WAP = this.readDouble();
-    const volume = this.readInt();
+    const WAP = this.readDecimal();
+    const volume = this.readDecimal();
     this.emit(
       EventName.historicalDataUpdate,
       reqId,
@@ -1365,7 +1378,7 @@ export class Decoder {
   }
 
   /**
-   * Decode a BOND_CONTRACT_DATA message from data queue and emit a bondContractDetails event.
+   * Decode a BOND_CONTRACT_DATA message from data queue and emit a BondContractData event.
    */
   private decodeMsg_BOND_CONTRACT_DATA(): void {
     let version = 6;
@@ -1448,9 +1461,9 @@ export class Decoder {
       contract.marketRuleIds = this.readStr();
     }
     if (this.serverVersion >= MIN_SERVER_VER.SIZE_RULES) {
-      contract.minSize = this.readDouble();
-      contract.sizeIncrement = this.readDouble();
-      contract.suggestedSizeIncrement = this.readDouble();
+      contract.minSize = this.readDecimal();
+      contract.sizeIncrement = this.readDecimal();
+      contract.suggestedSizeIncrement = this.readDecimal();
     }
 
     this.emit(EventName.bondContractDetails, reqId, contract);
@@ -1681,7 +1694,7 @@ export class Decoder {
   }
 
   /**
-   * Decode a REAL_TIME_BARS message from data queue and emit a realtimeBar event.
+   * Decode a REAL_TIME_BARS message from data queue and emit a realtimeBars event.
    */
   private decodeMsg_REAL_TIME_BARS(): void {
     this.readInt(); // version
@@ -1691,8 +1704,8 @@ export class Decoder {
     const high = this.readDouble();
     const low = this.readDouble();
     const close = this.readDouble();
-    const volume = this.readInt();
-    const wap = this.readDouble();
+    const volume = this.readDecimal();
+    const wap = this.readDecimal();
     const count = this.readInt();
 
     this.emit(
@@ -1834,10 +1847,7 @@ export class Decoder {
       contract.tradingClass = this.readStr();
     }
 
-    const pos =
-      this.serverVersion >= MIN_SERVER_VER.FRACTIONAL_POSITIONS
-        ? this.readDouble()
-        : this.readInt();
+    const pos = this.readDecimal();
 
     let avgCost = 0;
     if (version >= 3) {
@@ -1903,7 +1913,7 @@ export class Decoder {
   }
 
   /**
-   * Decode a POSITION_MULTI message from data queue and emit a accountSummary event.
+   * Decode a POSITION_MULTI message from data queue and emit a PositionMulti event.
    */
   private decodeMsg_POSITION_MULTI(): void {
     this.readInt(); // version
@@ -1922,7 +1932,7 @@ export class Decoder {
     contract.currency = this.readStr();
     contract.localSymbol = this.readStr();
     contract.tradingClass = this.readStr();
-    const pos = this.readInt();
+    const pos = this.readDecimal();
     const avgCost = this.readDouble();
     const modelCode = this.readStr();
 
@@ -2265,7 +2275,7 @@ export class Decoder {
     for (let i = 0; i < count; i++) {
       items[i] = {
         price: this.readDouble(),
-        size: this.readInt(),
+        size: this.readDecimal(),
       };
     }
 
@@ -2297,7 +2307,7 @@ export class Decoder {
    */
   private decodeMsg_PNL_SINGLE(): void {
     const reqId = this.readInt();
-    const pos = this.readInt();
+    const pos = this.readDecimal();
     const dailyPnL = this.readDouble();
 
     let unrealizedPnL: number | undefined = undefined;
@@ -2334,7 +2344,7 @@ export class Decoder {
       const time = this.readInt();
       this.readInt(); //for consistency
       const price = this.readDouble();
-      const size = this.readInt();
+      const size = this.readDecimal();
       ticks[i] = {
         time,
         price,
@@ -2358,8 +2368,8 @@ export class Decoder {
       const flags = this.readInt();
       const priceBid = this.readDouble();
       const priceAsk = this.readDouble();
-      const sizeBid = this.readInt();
-      const sizeAsk = this.readInt();
+      const sizeBid = this.readDecimal();
+      const sizeAsk = this.readDecimal();
       ticks[i] = {
         time: time,
         tickAttribBidAsk: {
@@ -2388,7 +2398,7 @@ export class Decoder {
       const time = this.readInt();
       const mask = this.readInt();
       const price = this.readDouble();
-      const size = this.readInt();
+      const size = this.readDecimal();
       const exchange = this.readStr();
       const specialConditions = this.readStr();
       ticks[i] = {
@@ -2423,7 +2433,7 @@ export class Decoder {
       case 2: {
         // All-last
         const price = this.readDouble();
-        const size = this.readInt();
+        const size = this.readDecimal();
         const mask = this.readInt();
         const pastLimit = (mask & (1 << 0)) !== 0;
         const unreported = (mask & (1 << 1)) !== 0;
@@ -2447,8 +2457,8 @@ export class Decoder {
         // BidAsk
         const bidPrice = this.readDouble();
         const askPrice = this.readDouble();
-        const bidSize = this.readInt();
-        const askSize = this.readInt();
+        const bidSize = this.readDecimal();
+        const askSize = this.readDecimal();
         const mask = this.readInt();
         const bidPastLow = (mask & (1 << 0)) !== 0;
         const askPastHigh = (mask & (1 << 1)) !== 0;
@@ -3141,7 +3151,10 @@ export class Decoder {
   private readLastTradeDate(contract: ContractDetails, isBond: boolean): void {
     const lastTradeDateOrContractMonth = this.readStr();
     if (lastTradeDateOrContractMonth?.length) {
-      const tokens = lastTradeDateOrContractMonth.split("\\s+");
+      const tokens =
+        lastTradeDateOrContractMonth.indexOf("-") > 0
+          ? lastTradeDateOrContractMonth.split("-")
+          : lastTradeDateOrContractMonth.split("\\s+");
 
       if (tokens.length > 0) {
         if (isBond) {
@@ -3316,7 +3329,8 @@ class OrderDecoder {
       this.order.faGroup = this.decoder.readStr();
       this.order.faMethod = this.decoder.readStr();
       this.order.faPercentage = this.decoder.readStr();
-      this.order.faProfile = this.decoder.readStr();
+      if (this.serverVersion < MIN_SERVER_VER.FA_PROFILE_DESUPPORT)
+        this.order.faProfile = this.decoder.readStr();
     }
   }
 
@@ -3720,7 +3734,7 @@ class OrderDecoder {
 
   readPegToBenchParams(): void {
     if (this.serverVersion >= MIN_SERVER_VER.PEGGED_TO_BENCHMARK) {
-      if (this.order.orderType === OrderType.PEG_BENCH) {
+      if (isPegBenchOrder(this.order.orderType)) {
         this.order.referenceContractId = this.decoder.readInt();
         this.order.isPeggedChangeAmountDecrease = this.decoder.readBool();
         this.order.peggedChangeAmount = this.decoder.readDouble();

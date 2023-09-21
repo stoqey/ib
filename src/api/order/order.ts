@@ -208,7 +208,7 @@ export interface Order {
   /** The Financial Advisor group the trade will be allocated to. Use an empty string if not applicable. */
   faGroup?: string;
 
-  /** The Financial Advisor allocation profile the trade will be allocated to. Use an empty string if not applicable. */
+  /** @deprecated The Financial Advisor allocation profile the trade will be allocated to. Use an empty string if not applicable. */
   faProfile?: string;
 
   /** The Financial Advisor allocation method the trade will be allocated to. Use an empty string if not applicable.FaMethod */

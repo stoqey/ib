@@ -264,4 +264,7 @@ export enum ErrorCode {
 
   /* Requested market data is not subscribed. Displaying delayed market data. */
   DISPLAYING_DELAYED_DATA = 10167,
+
+  /* News feed is not allowed. */
+  NEWS_FEED_NOT_ALLOWED = 10276,
 }

@@ -50,10 +50,9 @@ describe("CancelOrder", () => {
       orderType: OrderType.LMT,
       action: OrderAction.BUY,
       lmtPrice: 1,
-      orderId: refId,
       totalQuantity: 1,
       // account: "DU123567",
-      tif: "DAY",
+      tif: "GTC",
       transmit: true,
     };
 
@@ -64,7 +63,7 @@ describe("CancelOrder", () => {
     })
       .on(EventName.openOrder, (orderId, _contract, _order, _orderState) => {
         expect(orderId).toEqual(refId);
-        if (orderId === refId) {
+        if (!order_found && orderId === refId) {
           order_found = true;
           ib.cancelOrder(refId);
         }
