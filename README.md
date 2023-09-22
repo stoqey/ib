@@ -6,6 +6,7 @@
   <div style="display: flex;justify-content:center;">
     <img src="https://img.shields.io/github/package-json/v/stoqey/ib"></img>
     <img src="https://circleci.com/gh/stoqey/ib.svg?style=svg"></img>
+    <img src="https://img.shields.io/badge/License-MIT-blue.svg"/> 
     <img src="https://img.shields.io/npm/dt/@stoqey/ib.svg"></img>
   </div>
 </div>
