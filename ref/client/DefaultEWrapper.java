@@ -18,13 +18,13 @@ public class DefaultEWrapper implements EWrapper {
 	}
 
 	@Override
-	public void tickSize(int tickerId, int field, int size) {
+	public void tickSize(int tickerId, int field, Decimal size) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void tickOptionComputation(int tickerId, int field,
+	public void tickOptionComputation(int tickerId, int field, int tickAttrib,
 			double impliedVol, double delta, double optPrice,
 			double pvDividend, double gamma, double vega, double theta,
 			double undPrice) {
@@ -53,8 +53,8 @@ public class DefaultEWrapper implements EWrapper {
 	}
 
 	@Override
-	public void orderStatus(int orderId, String status, double filled,
-			double remaining, double avgFillPrice, int permId, int parentId,
+	public void orderStatus(int orderId, String status, Decimal filled,
+			Decimal remaining, double avgFillPrice, int permId, int parentId,
 			double lastFillPrice, int clientId, String whyHeld, double mktCapPrice) {
 		// TODO Auto-generated method stub
 		
@@ -81,7 +81,7 @@ public class DefaultEWrapper implements EWrapper {
 	}
 
 	@Override
-	public void updatePortfolio(Contract contract, double position,
+	public void updatePortfolio(Contract contract, Decimal position,
 			double marketPrice, double marketValue, double averageCost,
 			double unrealizedPNL, double realizedPNL, String accountName) {
 		// TODO Auto-generated method stub
@@ -138,14 +138,14 @@ public class DefaultEWrapper implements EWrapper {
 
 	@Override
 	public void updateMktDepth(int tickerId, int position, int operation,
-			int side, double price, int size) {
+			int side, double price, Decimal size) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public void updateMktDepthL2(int tickerId, int position,
-			String marketMaker, int operation, int side, double price, int size, boolean isSmartDepth) {
+			String marketMaker, int operation, int side, double price, Decimal size, boolean isSmartDepth) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -197,7 +197,7 @@ public class DefaultEWrapper implements EWrapper {
 
 	@Override
 	public void realtimeBar(int reqId, long time, double open, double high,
-			double low, double close, long volume, double wap, int count) {
+			double low, double close, Decimal volume, Decimal wap, int count) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -239,7 +239,7 @@ public class DefaultEWrapper implements EWrapper {
 	}
 
 	@Override
-	public void position(String account, Contract contract, double pos,
+	public void position(String account, Contract contract, Decimal pos,
 			double avgCost) {
 		// TODO Auto-generated method stub
 		
@@ -313,7 +313,7 @@ public class DefaultEWrapper implements EWrapper {
 	}
 
 	@Override
-	public void error(int id, int errorCode, String errorMsg) {
+	public void error(int id, int errorCode, String errorMsg, String advancedOrderRejectJson) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -331,7 +331,7 @@ public class DefaultEWrapper implements EWrapper {
 	}
 	
 	@Override
-	public void positionMulti( int reqId, String account, String modelCode, Contract contract, double pos, double avgCost) {
+	public void positionMulti( int reqId, String account, String modelCode, Contract contract, Decimal pos, double avgCost) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -483,7 +483,7 @@ public class DefaultEWrapper implements EWrapper {
 	}
 
     @Override
-    public void pnlSingle(int reqId, int pos, double dailyPnL, double unrealizedPnL, double realizedPnL, double value) {
+    public void pnlSingle(int reqId, Decimal pos, double dailyPnL, double unrealizedPnL, double realizedPnL, double value) {
         // TODO Auto-generated method stub
         
     }
@@ -508,13 +508,13 @@ public class DefaultEWrapper implements EWrapper {
     }
 
     @Override
-    public void tickByTickAllLast(int reqId, int tickType, long time, double price, int size, TickAttribLast tickAttribLast,
+    public void tickByTickAllLast(int reqId, int tickType, long time, double price, Decimal size, TickAttribLast tickAttribLast,
              String exchange, String specialConditions) {
         // TODO Auto-generated method stub
     }
 
     @Override
-    public void tickByTickBidAsk(int reqId, long time, double bidPrice, double askPrice, int bidSize, int askSize,
+    public void tickByTickBidAsk(int reqId, long time, double bidPrice, double askPrice, Decimal bidSize, Decimal askSize,
             TickAttribBidAsk tickAttribBidAsk) {
         // TODO Auto-generated method stub
 	}
@@ -538,4 +538,34 @@ public class DefaultEWrapper implements EWrapper {
     public void completedOrdersEnd() {
         // TODO Auto-generated method stub
     }
+
+    @Override
+    public void replaceFAEnd(int reqId, String text) {
+        // TODO Auto-generated method stub
+    }
+
+	@Override
+	public void wshMetaData(int reqId, String dataJson) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void wshEventData(int reqId, String dataJson) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void historicalSchedule(int reqId, String startDateTime, String endDateTime, String timeZone,
+			List<HistoricalSession> sessions) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
+	public void userInfo(int reqId, String whiteBrandingId) {
+		// TODO Auto-generated method stub
+		
+	}
 }

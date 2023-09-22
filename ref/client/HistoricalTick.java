@@ -6,9 +6,9 @@ package com.ib.client;
 public class HistoricalTick {
     private long m_time;
     private double m_price;
-    private long m_size;
+    private Decimal m_size;
 
-    public HistoricalTick(long time, double price, long size) {
+    public HistoricalTick(long time, double price, Decimal size) {
         m_time = time;
         m_price = price;
         m_size = size;
@@ -22,7 +22,7 @@ public class HistoricalTick {
         return m_price;
     }
 
-    public long size() {
+    public Decimal size() {
         return m_size;
     }
 }

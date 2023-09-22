@@ -8,10 +8,10 @@ public class HistoricalTickBidAsk {
     private TickAttribBidAsk m_tickAttribBidAsk;
     private double m_priceBid;
     private double m_priceAsk;
-    private long m_sizeBid;
-    private long m_sizeAsk;
+    private Decimal m_sizeBid;
+    private Decimal m_sizeAsk;
 
-    public HistoricalTickBidAsk(long time, TickAttribBidAsk tickAttribBidAsk, double priceBid, double priceAsk, long sizeBid, long sizeAsk) {
+    public HistoricalTickBidAsk(long time, TickAttribBidAsk tickAttribBidAsk, double priceBid, double priceAsk, Decimal sizeBid, Decimal sizeAsk) {
         m_time = time;
         m_tickAttribBidAsk = tickAttribBidAsk;
         m_priceBid = priceBid;
@@ -36,11 +36,11 @@ public class HistoricalTickBidAsk {
         return m_priceAsk;
     }
 
-    public long sizeBid() {
+    public Decimal sizeBid() {
         return m_sizeBid;
     }
 
-    public long sizeAsk() {
+    public Decimal sizeAsk() {
         return m_sizeAsk;
     }
 

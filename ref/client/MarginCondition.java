@@ -26,7 +26,7 @@ public class MarginCondition extends OperatorCondition {
 
 	@Override
 	protected String valueToString() {
-		return "" + m_percent;
+		return Util.IntMaxString(m_percent);
 	}
 
 	@Override

@@ -10,11 +10,11 @@ public class Bar {
     private double m_high;
     private double m_low;
     private double m_close;
-    private long m_volume;
+    private Decimal m_volume;
     private int m_count;
-    private double m_wap;
+    private Decimal m_wap;
 
-    public Bar(String time, double open, double high, double low, double close, long volume, int count, double wap) {
+    public Bar(String time, double open, double high, double low, double close, Decimal volume, int count, Decimal wap) {
         this.m_time = time;
         this.m_open = open;
         this.m_high = high;
@@ -45,7 +45,7 @@ public class Bar {
         return m_close;
     }
 
-    public long volume() {
+    public Decimal volume() {
         return m_volume;
     }
 
@@ -53,7 +53,7 @@ public class Bar {
         return m_count;
     }
 
-    public double wap() {
+    public Decimal wap() {
         return m_wap;
     }
     

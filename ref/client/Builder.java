@@ -24,31 +24,35 @@ class Builder implements ObjectOutput {
 	    m_sb = new ByteBuffer( size );
 	}
 
-	public void send(int a) {
+	public void send(int a) throws EClientException {
         send( String.valueOf(a) );
 	}
 
-	public void sendMax(int a) {
+	public void sendMax(int a) throws EClientException {
 		send( a == Integer.MAX_VALUE ? "" : String.valueOf( a) );
 	}
 
-	public void send(double a) {
+	public void send(double a) throws EClientException {
         send( String.valueOf( a) );
 	}
 
-	public void sendMax(double a) {
+	public void sendMax(double a) throws EClientException {
 		send( a == Double.MAX_VALUE ? "" : String.valueOf( a) );
 	}
 
-	public void send(Boolean a) {
+	public void send(Boolean a) throws EClientException {
 		sendMax(a == null ? Integer.MAX_VALUE : a ? 1 : 0);
 	}
 
-	public void send( IApiEnum a) {
+	public void send( IApiEnum a) throws EClientException {
 		send( a == null ? null : a.getApiString() );
 	}
 
-	public void send( String a) {
+	public void send( String a) throws EClientException {
+		if (a != null && !isAsciiPrintable(a)) {
+			throw new EClientException(EClientErrors.INVALID_SYMBOL, a);
+		}
+		
 		if (a != null) {
 		    byte[] buffer = a.getBytes(StandardCharsets.UTF_8);
 		    m_sb.write( buffer, 0, buffer.length );
@@ -62,14 +66,14 @@ class Builder implements ObjectOutput {
         }
     }
 	
-	public void send(List<TagValue> miscOptions) {
+	public void send(List<TagValue> miscOptions) throws EClientException {
         String miscOptionsString = Optional.ofNullable(miscOptions).orElse(new ArrayList<TagValue>()).stream().
                 map(option -> option.m_tag + "=" + option.m_value + ";").reduce("", (sum, option) -> sum + option);
 
         send(miscOptionsString);
 	}
 	
-	public void send(Contract contract) {
+	public void send(Contract contract) throws EClientException {
         send(contract.conid());
         send(contract.symbol());
         send(contract.getSecType());
@@ -105,6 +109,22 @@ class Builder implements ObjectOutput {
         b[position+1] = (byte)(0xff & (val >> 16));
         b[position+2] = (byte)(0xff & (val >> 8));
         b[position+3] = (byte)(0xff & val);
+    }
+    
+    private static boolean isAsciiPrintable(String str) {
+        if (str == null) {
+            return false;
+        }
+        for (int i = 0; i < str.length(); i++) {
+            if (isAsciiPrintable(str.charAt(i)) == false) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean isAsciiPrintable(char ch) {
+        return ch >= 32 && ch < 127;
     }
 
     /** inner class: ByteBuffer - storage for bytes and direct access to buffer. */

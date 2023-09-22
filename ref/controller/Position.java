@@ -4,12 +4,13 @@
 package com.ib.controller;
 
 import com.ib.client.Contract;
+import com.ib.client.Decimal;
 
 
 public class Position {
 	private Contract m_contract;
 	private String m_account;
-	private double m_position;
+	private Decimal m_position;
 	private double m_marketPrice;
 	private double m_marketValue;
 	private double m_averageCost;
@@ -23,10 +24,10 @@ public class Position {
 	public double marketValue() 	{ return m_marketValue;}
 	public double realPnl() 		{ return m_realPnl;}
 	public double unrealPnl() 		{ return m_unrealPnl;}
-	public double position() 			{ return m_position;}
+	public Decimal position() 		{ return m_position;}
 	public String account() 		{ return m_account;}
 
-	public Position( Contract contract, String account, double position, double marketPrice, double marketValue, double averageCost, double unrealPnl, double realPnl) {
+	public Position( Contract contract, String account, Decimal position, double marketPrice, double marketValue, double averageCost, double unrealPnl, double realPnl) {
 		m_contract = contract;
 		m_account = account;
 		m_position = position;

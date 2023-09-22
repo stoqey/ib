@@ -6,7 +6,6 @@ package com.ib.controller;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +39,7 @@ public class ApiController implements EWrapper {
 	private IScannerHandler m_scannerHandler;
 	private ITimeHandler m_timeHandler;
 	private IBulletinHandler m_bulletinHandler;
+	private IUserInfoHandler m_userInfoHandler;
 	private final Map<Integer,IInternalHandler> m_contractDetailsMap = new HashMap<>();
 	private final Map<Integer,IOptHandler> m_optionCompMap = new HashMap<>();
 	private final Map<Integer,IEfpHandler> m_efpMap = new HashMap<>();
@@ -52,6 +52,7 @@ public class ApiController implements EWrapper {
 	private final Map<Integer, IHistogramDataHandler> m_histogramDataMap = new HashMap<>();
 	private final Map<Integer, IFundamentalsHandler> m_fundMap = new HashMap<>();
 	private final Map<Integer, IOrderHandler> m_orderHandlers = new HashMap<>();
+    private final Map<Integer, IOrderCancelHandler> m_orderCancelHandlers = new HashMap<>();
 	private final Map<Integer,IAccountSummaryHandler> m_acctSummaryHandlers = new HashMap<>();
 	private final Map<Integer,IMarketValueSummaryHandler> m_mktValSummaryHandlers = new HashMap<>();
 	private final Set<IPositionHandler> m_positionHandlers = new ConcurrentHashSet<>();
@@ -74,6 +75,9 @@ public class ApiController implements EWrapper {
     private final Map<Integer, IPnLSingleHandler> m_pnlSingleMap = new HashMap<>();
     private final Map<Integer, IHistoricalTickHandler> m_historicalTicksMap = new HashMap<>();
     private final Map<Integer, ITickByTickDataHandler> m_tickByTickDataMap = new HashMap<>();
+    private final Map<Integer, IWshMetaDataHandler> m_wshMetaDataMap = new HashMap<>();
+    private final Map<Integer, IWshEventDataHandler> m_wshEventDataMap = new HashMap<>();
+    private final Map<Integer, IHistoricalScheduleHandler> m_historicalScheduleMap = new HashMap<>();
 	private boolean m_connected = false;
 
 	public ApiConnection client() { return m_client; }
@@ -84,7 +88,7 @@ public class ApiController implements EWrapper {
 		void disconnected();
 		void accountList(List<String> list);
 		void error(Exception e);
-		void message(int id, int errorCode, String errorMsg);
+		void message(int id, int errorCode, String errorMsg, String advancedOrderRejectJson);
 		void show(String string);
 	}
 
@@ -158,11 +162,16 @@ public class ApiController implements EWrapper {
 		m_connectionHandler.error( e);
 	}
 
-	@Override public void error(int id, int errorCode, String errorMsg) {
+	@Override public void error(int id, int errorCode, String errorMsg, String advancedOrderRejectJson) {
 		IOrderHandler handler = m_orderHandlers.get( id);
 		if (handler != null) {
 			handler.handle( errorCode, errorMsg);
 		}
+
+        IOrderCancelHandler orderCancelHandler = m_orderCancelHandlers.get( id);
+        if (orderCancelHandler != null) {
+            orderCancelHandler.handle( errorCode, errorMsg);
+        }
 
 		for (ILiveOrderHandler liveHandler : m_liveOrderHandlers) {
 			liveHandler.handle( id, errorCode, errorMsg);
@@ -176,7 +185,7 @@ public class ApiController implements EWrapper {
 			}
 		}
 
-		m_connectionHandler.message( id, errorCode, errorMsg);
+		m_connectionHandler.message( id, errorCode, errorMsg, advancedOrderRejectJson);
 		recEOM();
 	}
 
@@ -228,7 +237,7 @@ public class ApiController implements EWrapper {
 		recEOM();
 	}
 
-	@Override public void updatePortfolio(Contract contract, double positionIn, double marketPrice, double marketValue, double averageCost, double unrealizedPNL, double realizedPNL, String account) {
+	@Override public void updatePortfolio(Contract contract, Decimal positionIn, double marketPrice, double marketValue, double averageCost, double unrealizedPNL, double realizedPNL, String account) {
 		contract.exchange( contract.primaryExch());
 
 		Position position = new Position( contract, account, positionIn, marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL);
@@ -338,7 +347,7 @@ public class ApiController implements EWrapper {
 
 	// ---------------------------------------- Position handling ----------------------------------------
 	public interface IPositionHandler {
-		void position( String account, Contract contract, double pos, double avgCost);
+		void position( String account, Contract contract, Decimal pos, double avgCost);
 		void positionEnd();
 	}
 
@@ -360,7 +369,7 @@ public class ApiController implements EWrapper {
 		sendEOM();
 	}
 
-	@Override public void position(String account, Contract contract, double pos, double avgCost) {
+	@Override public void position(String account, Contract contract, Decimal pos, double avgCost) {
 		for (IPositionHandler handler : m_positionHandlers) {
 			handler.position( account, contract, pos, avgCost);
 		}
@@ -412,8 +421,8 @@ public class ApiController implements EWrapper {
 		}
 
 		@Override
-		public void orderStatus(OrderStatus status, double filled,
-				double remaining, double avgFillPrice, int permId,
+		public void orderStatus(OrderStatus status, Decimal filled,
+				Decimal remaining, double avgFillPrice, int permId,
 				int parentId, double lastFillPrice, int clientId, String whyHeld, double mktCapPrice) {
 			// TODO Auto-generated method stub
 			
@@ -459,7 +468,7 @@ public class ApiController implements EWrapper {
 	// ---------------------------------------- Top Market Data handling ----------------------------------------
 	public interface ITopMktDataHandler {
 		void tickPrice(TickType tickType, double price, TickAttrib attribs);
-		void tickSize(TickType tickType, int size);
+		void tickSize(TickType tickType, Decimal size);
 		void tickString(TickType tickType, String value);
 		void tickSnapshotEnd();
 		void marketDataType(int marketDataType);
@@ -471,13 +480,13 @@ public class ApiController implements EWrapper {
 	}
 
 	public interface IOptHandler extends ITopMktDataHandler {
-		void tickOptionComputation( TickType tickType, double impliedVol, double delta, double optPrice, double pvDividend, double gamma, double vega, double theta, double undPrice);
+		void tickOptionComputation( TickType tickType, int tickAttrib, double impliedVol, double delta, double optPrice, double pvDividend, double gamma, double vega, double theta, double undPrice);
 	}
 
 	public static class TopMktDataAdapter implements ITopMktDataHandler {
 		@Override public void tickPrice(TickType tickType, double price, TickAttrib attribs) {
 		}
-		@Override public void tickSize(TickType tickType, int size) {
+		@Override public void tickSize(TickType tickType, Decimal size) {
 		}
 		@Override public void tickString(TickType tickType, String value) {
 		}
@@ -586,7 +595,7 @@ public class ApiController implements EWrapper {
 		recEOM();
 	}
 
-	@Override public void tickSize(int reqId, int tickType, int size) {
+	@Override public void tickSize(int reqId, int tickType, Decimal size) {
 		ITopMktDataHandler handler = m_topMktDataMap.get( reqId);
 		if (handler != null) {
 			handler.tickSize( TickType.get( tickType), size);
@@ -629,7 +638,7 @@ public class ApiController implements EWrapper {
 
 	// ---------------------------------------- Deep Market Data handling ----------------------------------------
 	public interface IDeepMktDataHandler {
-		void updateMktDepth(int position, String marketMaker, DeepType operation, DeepSide side, double price, int size);
+		void updateMktDepth(int position, String marketMaker, DeepType operation, DeepSide side, double price, Decimal size);
 	}
 
     public void reqDeepMktData( Contract contract, int numRows, boolean isSmartDepth, IDeepMktDataHandler handler) {
@@ -654,7 +663,7 @@ public class ApiController implements EWrapper {
     	}
     }
 
-	@Override public void updateMktDepth(int reqId, int position, int operation, int side, double price, int size) {
+	@Override public void updateMktDepth(int reqId, int position, int operation, int side, double price, Decimal size) {
 		IDeepMktDataHandler handler = m_deepMktDataMap.get( reqId);
 		if (handler != null) {
 			handler.updateMktDepth( position, null, DeepType.get( operation), DeepSide.get( side), price, size);
@@ -662,7 +671,7 @@ public class ApiController implements EWrapper {
 		recEOM();
 	}
 
-	@Override public void updateMktDepthL2(int reqId, int position, String marketMaker, int operation, int side, double price, int size, boolean isSmartDepth) {
+	@Override public void updateMktDepthL2(int reqId, int position, String marketMaker, int operation, int side, double price, Decimal size, boolean isSmartDepth) {
 		IDeepMktDataHandler handler = m_deepMktDataMap.get( reqId);
 		if (handler != null) {
 			handler.updateMktDepth( position, marketMaker, DeepType.get( operation), DeepSide.get( side), price, size);
@@ -702,13 +711,13 @@ public class ApiController implements EWrapper {
 		}
 	}
 
-	@Override public void tickOptionComputation(int reqId, int tickType, double impliedVol, double delta, double optPrice, double pvDividend, double gamma, double vega, double theta, double undPrice) {
+	@Override public void tickOptionComputation(int reqId, int tickType, int tickAttrib, double impliedVol, double delta, double optPrice, double pvDividend, double gamma, double vega, double theta, double undPrice) {
 		IOptHandler handler = m_optionCompMap.get( reqId);
 		if (handler != null) {
-			handler.tickOptionComputation( TickType.get( tickType), impliedVol, delta, optPrice, pvDividend, gamma, vega, theta, undPrice);
+			handler.tickOptionComputation( TickType.get( tickType), tickAttrib, impliedVol, delta, optPrice, pvDividend, gamma, vega, theta, undPrice);
 		}
 		else {
-			System.out.println( String.format( "not handled %s %s %s %s %s %s %s %s %s", tickType, impliedVol, delta, optPrice, pvDividend, gamma, vega, theta, undPrice) );
+			System.out.println( String.format( "not handled %s %s %s %s %s %s %s %s %s %s", tickType, tickAttrib, impliedVol, delta, optPrice, pvDividend, gamma, vega, theta, undPrice) );
 		}
 		recEOM();
 	}
@@ -760,7 +769,12 @@ public class ApiController implements EWrapper {
 		void groups(List<Group> groups);
 		void profiles(List<Profile> profiles);
 		void aliases(List<Alias> aliases);
+		void updateGroupsEnd(String text);
+		void updateProfilesEnd(String text);
 	}
+	
+	private static final int REPLACE_FA_GROUPS_REQ_ID = 0;
+	private static final int REPLACE_FA_PROFILES_REQ_ID = 1;
 
 	public void reqAdvisorData( FADataType type, IAdvisorHandler handler) {
 		if (!checkConnection())
@@ -775,7 +789,7 @@ public class ApiController implements EWrapper {
 		if (!checkConnection())
 			return;
 
-		m_client.replaceFA( FADataType.GROUPS.ordinal(), AdvisorUtil.getGroupsXml( groups) );
+		m_client.replaceFA( REPLACE_FA_GROUPS_REQ_ID, FADataType.GROUPS.ordinal(), AdvisorUtil.getGroupsXml( groups) );
 		sendEOM();
 	}
 
@@ -783,7 +797,7 @@ public class ApiController implements EWrapper {
 		if (!checkConnection())
 			return;
 
-		m_client.replaceFA( FADataType.PROFILES.ordinal(), AdvisorUtil.getProfilesXml( profiles) );
+		m_client.replaceFA( REPLACE_FA_PROFILES_REQ_ID, FADataType.PROFILES.ordinal(), AdvisorUtil.getProfilesXml( profiles) );
 		sendEOM();
 	}
 
@@ -815,15 +829,34 @@ public class ApiController implements EWrapper {
 		}
 		recEOM();
 	}
+	
+	@Override public final void replaceFAEnd(int reqId, String text) {
+		switch(reqId) {
+		case REPLACE_FA_GROUPS_REQ_ID:
+			m_advisorHandler.updateGroupsEnd(text);	
+			break;
+		case REPLACE_FA_PROFILES_REQ_ID:
+			m_advisorHandler.updateProfilesEnd(text);	
+			break;
+		default:
+			break;
+		}
+		recEOM();
+	}
 
 	// ---------------------------------------- Trading and Option Exercise ----------------------------------------
 	/** This interface is for receiving events for a specific order placed from the API.
 	 *  Compare to ILiveOrderHandler. */
 	public interface IOrderHandler {
 		void orderState(OrderState orderState);
-		void orderStatus(OrderStatus status, double filled, double remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld, double mktCapPrice);
+		void orderStatus(OrderStatus status, Decimal filled, Decimal remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld, double mktCapPrice);
 		void handle(int errorCode, String errorMsg);
 	}
+
+    public interface IOrderCancelHandler {
+        void orderStatus(String orderStatus);
+        void handle(int errorCode, String errorMsg);
+    }
 
 	public void placeOrModifyOrder(Contract contract, final Order order, final IOrderHandler handler) {
 		if (!checkConnection())
@@ -841,11 +874,15 @@ public class ApiController implements EWrapper {
 		sendEOM();
 	}
 
-	public void cancelOrder(int orderId) {
+    public void cancelOrder(int orderId, String manualOrderCancelTime, final IOrderCancelHandler orderCancelHandler) {
 		if (!checkConnection())
 			return;
 
-		m_client.cancelOrder( orderId);
+        if (orderCancelHandler != null) {
+            m_orderCancelHandlers.put( orderId, orderCancelHandler);
+        }
+
+        m_client.cancelOrder( orderId, manualOrderCancelTime);
 		sendEOM();
 	}
 
@@ -869,6 +906,9 @@ public class ApiController implements EWrapper {
 		getAndRemoveKey(m_orderHandlers, handler);
 	}
 
+    public void removeOrderCancelHandler( IOrderCancelHandler orderCancelHandler) {
+        getAndRemoveKey(m_orderCancelHandlers, orderCancelHandler);
+    }
 
 	// ---------------------------------------- Live order handling ----------------------------------------
 	/** This interface is for downloading and receiving events for all live orders.
@@ -876,7 +916,7 @@ public class ApiController implements EWrapper {
 	public interface ILiveOrderHandler {
 		void openOrder(Contract contract, Order order, OrderState orderState);
 		void openOrderEnd();
-		void orderStatus(int orderId, OrderStatus status, double filled, double remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld, double mktCapPrice);
+		void orderStatus(int orderId, OrderStatus status, Decimal filled, Decimal remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld, double mktCapPrice);
 		void handle(int orderId, int errorCode, String errorMsg);  // add permId?
 	}
 
@@ -932,11 +972,16 @@ public class ApiController implements EWrapper {
 		recEOM();
 	}
 
-	@Override public void orderStatus(int orderId, String status, double filled, double remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld, double mktCapPrice) {
+	@Override public void orderStatus(int orderId, String status, Decimal filled, Decimal remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld, double mktCapPrice) {
 		IOrderHandler handler = m_orderHandlers.get( orderId);
 		if (handler != null) {
 			handler.orderStatus( OrderStatus.valueOf( status), filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld, mktCapPrice);
 		}
+
+        IOrderCancelHandler orderCancelHandler = m_orderCancelHandlers.get( orderId);
+        if (orderCancelHandler != null) {
+            orderCancelHandler.orderStatus(status);
+        }
 
 		for (ILiveOrderHandler liveOrderHandler : m_liveOrderHandlers) {
 			liveOrderHandler.orderStatus(orderId, OrderStatus.valueOf( status), filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld, mktCapPrice);
@@ -1021,7 +1066,7 @@ public class ApiController implements EWrapper {
     	int reqId = m_reqId++;
     	m_historicalDataMap.put( reqId, handler);
     	String durationStr = duration + " " + durationUnit.toString().charAt( 0);
-    	m_client.reqHistoricalData(reqId, contract, endDateTime, durationStr, barSize.toString(), whatToShow.toString(), rthOnly ? 1 : 0, 2, keepUpToDate, Collections.emptyList());
+    	m_client.reqHistoricalData(reqId, contract, endDateTime, durationStr, barSize.toString(), whatToShow.toString(), rthOnly ? 1 : 0, 1, keepUpToDate, Collections.emptyList());
 		sendEOM();
     }
 
@@ -1043,17 +1088,7 @@ public class ApiController implements EWrapper {
 				handler.historicalDataEnd();
 			}
 			else {
-				long longDate;
-				if (bar.time().length() == 8) {
-					int year = Integer.parseInt( bar.time().substring( 0, 4) );
-					int month = Integer.parseInt( bar.time().substring( 4, 6) );
-					int day = Integer.parseInt( bar.time().substring( 6) );
-					longDate = new GregorianCalendar( year, month - 1, day).getTimeInMillis() / 1000;
-				}
-				else {
-					longDate = Long.parseLong( bar.time());
-				}
-				Bar bar2 = new Bar( longDate, bar.high(), bar.low(), bar.open(), bar.close(), bar.wap(), bar.volume(), bar.count());
+				Bar bar2 = new Bar( bar.time(), bar.high(), bar.low(), bar.open(), bar.close(), bar.wap(), bar.volume(), bar.count());
 				handler.historicalData(bar2);
 			}
 		}
@@ -1088,7 +1123,7 @@ public class ApiController implements EWrapper {
     	}
     }
 
-    @Override public void realtimeBar(int reqId, long time, double open, double high, double low, double close, long volume, double wap, int count) {
+    @Override public void realtimeBar(int reqId, long time, double open, double high, double low, double close, Decimal volume, Decimal wap, int count) {
     	IRealTimeBarHandler handler = m_realTimeBarMap.get( reqId);
 		if (handler != null) {
 			Bar bar = new Bar( time, high, low, open, close, wap, volume, count);
@@ -1136,7 +1171,7 @@ public class ApiController implements EWrapper {
 
 	protected boolean checkConnection() {
 		if (!isConnected()) {
-			error(EClientErrors.NO_VALID_ID, EClientErrors.NOT_CONNECTED.code(), EClientErrors.NOT_CONNECTED.msg());
+			error(EClientErrors.NO_VALID_ID, EClientErrors.NOT_CONNECTED.code(), EClientErrors.NOT_CONNECTED.msg(), null);
 			return false;
 		}
 		
@@ -1176,7 +1211,7 @@ public class ApiController implements EWrapper {
 
 	// ---------------------------------------- Position Multi handling ----------------------------------------
 	public interface IPositionMultiHandler {
-		void positionMulti( String account, String modelCode, Contract contract, double pos, double avgCost);
+		void positionMulti( String account, String modelCode, Contract contract, Decimal pos, double avgCost);
 		void positionMultiEnd();
 	}
 
@@ -1201,7 +1236,7 @@ public class ApiController implements EWrapper {
 		}
 	}
 
-	@Override public void positionMulti( int reqId, String account, String modelCode, Contract contract, double pos, double avgCost) {
+	@Override public void positionMulti( int reqId, String account, String modelCode, Contract contract, Decimal pos, double avgCost) {
 		IPositionMultiHandler handler = m_positionMultiMap.get( reqId);
 		if (handler != null) {
 			handler.positionMulti( account, modelCode, contract, pos, avgCost);
@@ -1636,7 +1671,7 @@ public class ApiController implements EWrapper {
 		Integer reqId = getAndRemoveKey(m_histogramDataMap, handler);
 		
     	if (reqId != null) {
-    		m_client.cancelHistoricalData(reqId);
+    		m_client.cancelHistogramData(reqId);
     		sendEOM();
     	}
     }
@@ -1729,7 +1764,7 @@ public class ApiController implements EWrapper {
     
     public interface IPnLSingleHandler {
 
-        void pnlSingle(int reqId, int pos, double dailyPnL, double unrealizedPnL, double realizedPnL, double value);
+        void pnlSingle(int reqId, Decimal pos, double dailyPnL, double unrealizedPnL, double realizedPnL, double value);
         
     }
 
@@ -1757,7 +1792,7 @@ public class ApiController implements EWrapper {
     }    
 
     @Override
-    public void pnlSingle(int reqId, int pos, double dailyPnL, double unrealizedPnL, double realizedPnL, double value) {
+    public void pnlSingle(int reqId, Decimal pos, double dailyPnL, double unrealizedPnL, double realizedPnL, double value) {
         IPnLSingleHandler handler = m_pnlSingleMap.get(reqId);
         
         if (handler != null) {
@@ -1840,8 +1875,8 @@ public class ApiController implements EWrapper {
     }
 
     public interface ITickByTickDataHandler {
-        void tickByTickAllLast(int reqId, int tickType, long time, double price, int size, TickAttribLast tickAttribLast, String exchange, String specialConditions);
-        void tickByTickBidAsk(int reqId, long time, double bidPrice, double askPrice, int bidSize, int askSize, TickAttribBidAsk tickAttribBidAsk);
+        void tickByTickAllLast(int reqId, int tickType, long time, double price, Decimal size, TickAttribLast tickAttribLast, String exchange, String specialConditions);
+        void tickByTickBidAsk(int reqId, long time, double bidPrice, double askPrice, Decimal bidSize, Decimal askSize, TickAttribBidAsk tickAttribBidAsk);
         void tickByTickMidPoint(int reqId, long time, double midPoint);
         void tickByTickHistoricalTickAllLast(int reqId, List<HistoricalTickLast> ticks);
         void tickByTickHistoricalTickBidAsk(int reqId, List<HistoricalTickBidAsk> ticks);        
@@ -1871,7 +1906,7 @@ public class ApiController implements EWrapper {
     }
 
     @Override
-    public void tickByTickAllLast(int reqId, int tickType, long time, double price, int size, TickAttribLast tickAttribLast,
+    public void tickByTickAllLast(int reqId, int tickType, long time, double price, Decimal size, TickAttribLast tickAttribLast,
             String exchange, String specialConditions) {
         ITickByTickDataHandler handler = m_tickByTickDataMap.get(reqId);
 
@@ -1883,7 +1918,7 @@ public class ApiController implements EWrapper {
     }
 
     @Override
-    public void tickByTickBidAsk(int reqId, long time, double bidPrice, double askPrice, int bidSize, int askSize,
+    public void tickByTickBidAsk(int reqId, long time, double bidPrice, double askPrice, Decimal bidSize, Decimal askSize,
             TickAttribBidAsk tickAttribBidAsk) {
         ITickByTickDataHandler handler = m_tickByTickDataMap.get(reqId);
 
@@ -1938,6 +1973,138 @@ public class ApiController implements EWrapper {
         if (m_completedOrdersHandler != null) {
             m_completedOrdersHandler.completedOrdersEnd();
         }
+        recEOM();
+    }
+    
+    // ---------------------------------------- WSH Meta Data ----------------------------------------
+    public interface IWshMetaDataHandler {
+        void wshMetaData(int reqId, String dataJson);
+    }
+    
+    public void reqWshMetaData(IWshMetaDataHandler handler) {
+        if (!checkConnection())
+            return;
+
+        int reqId = m_reqId++;
+        m_wshMetaDataMap.put(reqId, handler);
+        m_client.reqWshMetaData(reqId);
+        sendEOM();;
+    }
+    
+    public void cancelWshMetaData(IWshMetaDataHandler handler) {
+        if (!checkConnection())
+            return;
+
+        Integer reqId = getAndRemoveKey(m_wshMetaDataMap, handler);
+        if (reqId != null) {
+            m_client.cancelWshMetaData(reqId);
+            sendEOM();
+        }
+    }
+
+    @Override
+    public void wshMetaData(int reqId, String dataJson) {
+        IWshMetaDataHandler handler = m_wshMetaDataMap.get(reqId);
+
+        if (handler != null) {
+            handler.wshMetaData(reqId, dataJson);
+        }
+
+        recEOM(); 
+    }
+
+    // ---------------------------------------- WSH Event Data ----------------------------------------
+    public interface IWshEventDataHandler {
+        void wshEventData(int reqId, String dataJson);
+    }
+    
+    public void reqWshEventData(WshEventData wshEventData, IWshEventDataHandler handler) {
+        if (!checkConnection())
+            return;
+
+        int reqId = m_reqId++;
+        m_wshEventDataMap.put(reqId, handler);
+        m_client.reqWshEventData(reqId, wshEventData);
+        sendEOM();
+    }
+    
+    public void cancelWshEventData(IWshEventDataHandler handler) {
+        if (!checkConnection())
+            return;
+
+        Integer reqId = getAndRemoveKey(m_wshEventDataMap, handler);
+        if (reqId != null) {
+            m_client.cancelWshMetaData(reqId);
+            sendEOM();
+        }
+    }
+
+    @Override
+    public void wshEventData(int reqId, String dataJson) {
+        IWshEventDataHandler handler = m_wshEventDataMap.get(reqId);
+
+        if (handler != null) {
+            handler.wshEventData(reqId, dataJson);
+        }
+
+        recEOM();       
+    }
+
+    // ---------------------------------------- Historical Schedule ----------------------------------------
+    public interface IHistoricalScheduleHandler {
+        void historicalSchedule(int reqId, String startDateTime, String endDateTime, String timeZone, List<HistoricalSession> sessions);
+    }
+
+    public void reqHistoricalSchedule(Contract contract, String endDateTime, int duration, DurationUnit durationUnit, boolean rthOnly, IHistoricalScheduleHandler handler) {
+        if (!checkConnection())
+            return;
+
+        int reqId = m_reqId++;
+        m_historicalScheduleMap.put(reqId, handler);
+            String durationStr = duration + " " + durationUnit.toString().charAt( 0);
+        m_client.reqHistoricalData(reqId, contract, endDateTime, durationStr, BarSize._1_day.toString(), WhatToShow.SCHEDULE.name(), rthOnly ? 1 : 0, 2, false, Collections.emptyList());
+
+        sendEOM();
+    }
+
+    public void cancelHistoricalSchedule(IHistoricalScheduleHandler handler) {
+        if (!checkConnection())
+            return;
+
+        Integer reqId = getAndRemoveKey(m_historicalScheduleMap, handler);
+        if (reqId != null) {
+            m_client.cancelHistoricalData(reqId);
+
+            sendEOM();
+        }
+    }
+
+    @Override public void historicalSchedule(int reqId, String startDateTime, String endDateTime, String timeZone, List<HistoricalSession> sessions) {
+        IHistoricalScheduleHandler handler = m_historicalScheduleMap.get(reqId);
+
+        if (handler != null) {
+            handler.historicalSchedule(reqId, startDateTime, endDateTime, timeZone, sessions);
+        }
+
+        recEOM();
+    }
+    
+    // ---------------------------------------- User Info handling ----------------------------------------
+    public interface IUserInfoHandler {
+        void userInfo(int reqId, String whiteBrandingId);
+    }
+
+    public void reqUserInfo(int reqId, IUserInfoHandler handler) {
+        if (!checkConnection())
+            return;
+
+        m_userInfoHandler = handler;
+        m_client.reqUserInfo(reqId);
+        sendEOM();
+    }
+
+    @Override public void userInfo(int reqId, String whiteBrandingId) {
+        m_userInfoHandler.userInfo(reqId, whiteBrandingId);
         recEOM();
     }
 }

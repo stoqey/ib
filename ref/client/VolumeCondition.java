@@ -31,7 +31,7 @@ public class VolumeCondition extends ContractCondition {
 
 	@Override
 	protected String valueToString() {
-		return "" + m_volume;
+		return Util.IntMaxString(m_volume);
 	}
 
 	@Override

@@ -31,7 +31,7 @@ public class PercentChangeCondition extends ContractCondition {
 
 	@Override
 	protected String valueToString() {
-		return "" + m_changePercent;
+		return Util.DoubleMaxString(m_changePercent);
 	}
 
 	@Override
