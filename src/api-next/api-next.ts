@@ -27,6 +27,7 @@ import {
   ScannerSubscription,
   SecType,
   TagValue,
+  WhatToShow,
 } from "../";
 import LogLevel from "../api/data/enum/log-level";
 import OrderStatus from "../api/order/enum/order-status";
@@ -491,7 +492,7 @@ export class IBApiNext {
    * - AccruedCash — Total accrued cash value of stock, commodities and securities
    * - BuyingPower — Buying power serves as a measurement of the dollar value of securities that one may purchase in a securities account without depositing additional funds
    * - EquityWithLoanValue — Forms the basis for determining whether a client has the necessary assets to either initiate or maintain security positions. Cash + stocks + bonds + mutual funds
-   * - PreviousEquityWithLoanValue — Marginable Equity with Loan value as of 16:00 ET the previous day
+   * - PreviousDayEquityWithLoanValue — Marginable Equity with Loan value as of 16:00 ET the previous day
    * - GrossPositionValue — The sum of the absolute value of all stock and equity option positions
    * - RegTEquity — Regulation T equity for universal account
    * - RegTMargin — Regulation T margin for universal account
@@ -1617,7 +1618,7 @@ export class IBApiNext {
    */
   getHeadTimestamp(
     contract: Contract,
-    whatToShow: string,
+    whatToShow: WhatToShow,
     useRTH: boolean,
     formatDate: number,
   ): Promise<string> {
@@ -1754,7 +1755,7 @@ export class IBApiNext {
     endDateTime: string | undefined,
     durationStr: string,
     barSizeSetting: BarSizeSetting,
-    whatToShow: string,
+    whatToShow: WhatToShow,
     useRTH: number,
     formatDate: number,
   ): Promise<Bar[]> {
@@ -1858,7 +1859,7 @@ export class IBApiNext {
   getHistoricalDataUpdates(
     contract: Contract,
     barSizeSetting: BarSizeSetting,
-    whatToShow: string,
+    whatToShow: WhatToShow,
     formatDate: number,
   ): Observable<Bar> {
     return this.subscriptions
@@ -1943,7 +1944,7 @@ export class IBApiNext {
             startDateTime,
             endDateTime,
             numberOfTicks,
-            "MIDPOINT",
+            WhatToShow.MIDPOINT,
             useRTH,
             false,
           );
@@ -2013,7 +2014,7 @@ export class IBApiNext {
             startDateTime,
             endDateTime,
             numberOfTicks,
-            "BID_ASK",
+            WhatToShow.BID_ASK,
             useRTH,
             ignoreSize,
           );
@@ -2079,7 +2080,7 @@ export class IBApiNext {
             startDateTime,
             endDateTime,
             numberOfTicks,
-            "TRADES",
+            WhatToShow.TRADES,
             useRTH,
             false,
           );

@@ -1,8 +1,9 @@
-import SoftDollarTier from "../data/container/soft-dollar-tier";
-import TagValue from "../data/container/tag-value";
-import OrderCondition from "./condition/order-condition";
-import OrderAction from "./enum/order-action";
+import { SoftDollarTier } from "../data/container/soft-dollar-tier";
+import { TagValue } from "../data/container/tag-value";
+import { OrderCondition } from "./condition/order-condition";
+import { OrderAction } from "./enum/order-action";
 import { OrderType } from "./enum/orderType";
+import { TimeInForce } from "./enum/tif";
 import { OrderComboLeg } from "./orderComboLeg";
 
 /**
@@ -77,7 +78,7 @@ export interface Order {
    * - FOK - If the entire Fill-or-Kill order does not execute as soon as it becomes available, the entire order is canceled.
    * - DTC - Day until Canceled
    */
-  tif?: string;
+  tif?: TimeInForce;
 
   /** One-Cancels-All group identifier. */
   ocaGroup?: string;

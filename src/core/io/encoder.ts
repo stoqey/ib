@@ -1,3 +1,4 @@
+import { WhatToShow } from "../..";
 import { ScanCode } from "../../api-next/market-scanner/market-scanner";
 import { Contract } from "../../api/contract/contract";
 import WshEventData from "../../api/contract/wsh";
@@ -1839,7 +1840,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   reqHeadTimestamp(
     reqId: number,
     contract: Contract,
-    whatToShow: string,
+    whatToShow: WhatToShow,
     useRTH: boolean,
     formatDate: number,
   ): void {
@@ -2100,7 +2101,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     endDateTime: string,
     durationStr: string,
     barSizeSetting: BarSizeSetting,
-    whatToShow: string,
+    whatToShow: WhatToShow,
     useRTH: number,
     formatDate: number,
     keepUpToDate: boolean,
@@ -2218,7 +2219,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     startDateTime: string,
     endDateTime: string,
     numberOfTicks: number,
-    whatToShow: string,
+    whatToShow: WhatToShow,
     useRth: number,
     ignoreSize: boolean,
     miscOptions?: TagValue[],
@@ -2688,7 +2689,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     tickerId: number,
     contract: Contract,
     barSize: number,
-    whatToShow: string,
+    whatToShow: WhatToShow,
     useRTH: boolean,
     realTimeBarsOptions: TagValue[],
   ): void {

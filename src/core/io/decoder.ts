@@ -29,6 +29,7 @@ import OrderAction from "../../api/order/enum/order-action";
 import { OrderConditionType } from "../../api/order/enum/order-condition-type";
 import { OrderStatus } from "../../api/order/enum/order-status";
 import { OrderType, isPegBenchOrder } from "../../api/order/enum/orderType";
+import { TimeInForce } from "../../api/order/enum/tif";
 import { TriggerMethod } from "../../api/order/enum/trigger-method";
 import { Execution } from "../../api/order/execution";
 import { Order } from "../../api/order/order";
@@ -483,11 +484,11 @@ export class Decoder {
    * Returns undefined if the token is empty or is Number.MAX_VALUE.
    */
   readDecimal(): number | undefined {
-    const token = this.readStr().replaceAll(",", "");
+    const token = this.readStr();
     if (!token || token === "") {
       return undefined;
     }
-    const val = parseFloat(token);
+    const val = parseFloat(token.replaceAll(",", ""));
     return val === Number.MAX_VALUE || val === Infinity ? undefined : val;
   }
 
@@ -2543,7 +2544,7 @@ export class Decoder {
     } else {
       order.auxPrice = this.readDoubleOrUndefined();
     }
-    order.tif = this.readStr();
+    order.tif = this.readStr() as TimeInForce;
     order.ocaGroup = this.readStr();
     order.account = this.readStr();
     order.openClose = this.readStr();
@@ -3046,7 +3047,7 @@ export class Decoder {
       order.auxPrice = this.readDoubleOrUndefined();
     }
 
-    order.tif = this.readStr();
+    order.tif = this.readStr() as TimeInForce;
     order.ocaGroup = this.readStr();
     order.account = this.readStr();
     order.openClose = this.readStr();
@@ -3225,11 +3226,7 @@ class OrderDecoder {
   }
 
   readTotalQuantity(): void {
-    if (this.serverVersion >= MIN_SERVER_VER.FRACTIONAL_POSITIONS) {
-      this.order.totalQuantity = this.decoder.readDouble();
-    } else {
-      this.order.totalQuantity = this.decoder.readInt();
-    }
+    this.order.totalQuantity = this.decoder.readDecimal();
   }
 
   readOrderType(): void {
@@ -3253,7 +3250,7 @@ class OrderDecoder {
   }
 
   readTIF(): void {
-    this.order.tif = this.decoder.readStr();
+    this.order.tif = this.decoder.readStr() as TimeInForce;
   }
 
   readOcaGroup(): void {
@@ -3923,7 +3920,7 @@ class OrderDecoder {
   }
 
   readFilledQuantity(): void {
-    this.order.filledQuantity = this.decoder.readDoubleOrUndefined();
+    this.order.filledQuantity = this.decoder.readDecimal();
   }
 
   readRefFuturesConId(): void {

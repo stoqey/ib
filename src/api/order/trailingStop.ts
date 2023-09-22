@@ -1,5 +1,6 @@
-import OrderAction from "./enum/order-action";
+import { OrderAction } from "./enum/order-action";
 import { OrderType } from "./enum/orderType";
+import { TimeInForce } from "./enum/tif";
 
 /**
  * Represents a trailing-stop order.
@@ -32,11 +33,11 @@ export class TrailingStopOrder {
     public trailingPercent?: number,
     public transmit?: boolean,
     public parentId?: number,
-    public tif?: string
+    public tif?: TimeInForce,
   ) {
     this.transmit = this.transmit ?? true;
     this.parentId = this.parentId ?? 0;
-    this.tif = this.tif ?? "DAY";
+    this.tif = this.tif ?? TimeInForce.DAY;
   }
 
   /** The order's type (must be [[OrderType.TRAIL]]). */

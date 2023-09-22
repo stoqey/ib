@@ -2,7 +2,14 @@
  * This file implements tests for the [[IBApiNext.getHistoricalDataUpdates]] function.
  */
 
-import { IBApi, IBApiNext, IBApiNextError, EventName, Bar } from "../../..";
+import {
+  Bar,
+  EventName,
+  IBApi,
+  IBApiNext,
+  IBApiNextError,
+  WhatToShow,
+} from "../../..";
 import { BarSizeSetting } from "../../../api/historical/bar-size-setting";
 
 describe("RxJS Wrapper: getHistoricalDataUpdates()", () => {
@@ -10,7 +17,7 @@ describe("RxJS Wrapper: getHistoricalDataUpdates()", () => {
     // create IBApiNext
 
     const apiNext = new IBApiNext();
-    const api = ((apiNext as unknown) as Record<string, unknown>).api as IBApi;
+    const api = (apiNext as unknown as Record<string, unknown>).api as IBApi;
 
     // emit EventName.historicalData events and verify RxJS result
 
@@ -50,7 +57,7 @@ describe("RxJS Wrapper: getHistoricalDataUpdates()", () => {
     let updateCount = 0;
 
     apiNext
-      .getHistoricalDataUpdates({}, "" as BarSizeSetting, "", 0)
+      .getHistoricalDataUpdates({}, "" as BarSizeSetting, WhatToShow.None, 0)
       // eslint-disable-next-line rxjs/no-ignored-subscription
       .subscribe({
         next: (update) => {
@@ -84,7 +91,7 @@ describe("RxJS Wrapper: getHistoricalDataUpdates()", () => {
         REF_BARS[i].close,
         REF_BARS[i].volume,
         REF_BARS[i].count,
-        REF_BARS[i].WAP
+        REF_BARS[i].WAP,
       );
     }
   });

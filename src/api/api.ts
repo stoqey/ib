@@ -3,7 +3,7 @@
  */
 /* eslint @typescript-eslint/no-unsafe-declaration-merging:warn */
 import { EventEmitter } from "eventemitter3";
-import { DurationUnit } from "..";
+import { DurationUnit, WhatToShow } from "..";
 
 import { ErrorCode } from "../common/errorCode";
 import { Controller } from "../core/io/controller";
@@ -575,7 +575,7 @@ export class IBApi extends EventEmitter {
    *   securities account without depositing additional funds
    * - EquityWithLoanValue — Forms the basis for determining whether a client has the necessary assets to either
    *   initiate or maintain security positions. Cash + stocks + bonds + mutual funds
-   * - PreviousEquityWithLoanValue — Marginable Equity with Loan value as of 16:00 ET the previous day
+   * - PreviousDayEquityWithLoanValue — Marginable Equity with Loan value as of 16:00 ET the previous day
    * - GrossPositionValue — The sum of the absolute value of all stock and equity option positions
    * - RegTEquity — Regulation T equity for universal account
    * - RegTMargin — Regulation T margin for universal account
@@ -869,7 +869,7 @@ export class IBApi extends EventEmitter {
   reqHeadTimestamp(
     reqId: number,
     contract: Contract,
-    whatToShow: string,
+    whatToShow: WhatToShow,
     useRTH: boolean,
     formatDate: number,
   ): IBApi {
@@ -968,7 +968,7 @@ export class IBApi extends EventEmitter {
     endDateTime: string,
     durationStr: string,
     barSizeSetting: BarSizeSetting,
-    whatToShow: string,
+    whatToShow: WhatToShow,
     useRTH: number,
     formatDate: number,
     keepUpToDate: boolean,
@@ -1040,7 +1040,7 @@ export class IBApi extends EventEmitter {
     startDateTime: string,
     endDateTime: string,
     numberOfTicks: number,
-    whatToShow: string,
+    whatToShow: WhatToShow,
     useRTH: number,
     ignoreSize: boolean,
   ): IBApi {
@@ -1378,7 +1378,7 @@ export class IBApi extends EventEmitter {
     reqId: number,
     contract: Contract,
     barSize: number,
-    whatToShow: string,
+    whatToShow: WhatToShow,
     useRTH: boolean,
     realTimeBarsOptions: TagValue[] = [],
   ): IBApi {
@@ -1758,7 +1758,7 @@ export declare interface IBApi {
    *   securities account without depositing additional funds.
    * - EquityWithLoanValue: Forms the basis for determining whether a client has the necessary assets to either
    *   initiate or maintain security positions. Cash + stocks + bonds + mutual funds
-   * - PreviousEquityWithLoanValue:  Marginable Equity with Loan value as of 16:00 ET the previous day
+   * - PreviousDayEquityWithLoanValue:  Marginable Equity with Loan value as of 16:00 ET the previous day
    * - GrossPositionValue: The sum of the absolute value of all stock and equity option positions
    * - RegTEquity:Regulation T equity for universal account
    * - RegTMargin. Regulation T margin for universal account

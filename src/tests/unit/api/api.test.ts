@@ -1,7 +1,14 @@
 /**
  * This file implement test code for the public API interfaces.
  */
-import { Contract, ErrorCode, EventName, IBApi, SecType } from "../../..";
+import {
+  Contract,
+  ErrorCode,
+  EventName,
+  IBApi,
+  SecType,
+  WhatToShow,
+} from "../../..";
 import configuration from "../../../common/configuration";
 import logger from "../../../common/logger";
 
@@ -148,7 +155,7 @@ describe("IBApi Tests", () => {
       "20210101-16:00:00",
       null,
       1000,
-      "TRADES",
+      WhatToShow.TRADES,
       0,
       true,
     );

@@ -13,6 +13,7 @@ import {
   OrderType,
   PriceCondition,
   SecType,
+  TimeInForce,
   TriggerMethod,
 } from "../../../..";
 import configuration from "../../../../common/configuration";
@@ -55,9 +56,9 @@ describe("Place Orders", () => {
       action: OrderAction.BUY,
       lmtPrice: 1,
       orderId: refId,
-      totalQuantity: 1,
+      totalQuantity: 2,
       // account: "DU123567",
-      tif: "DAY",
+      tif: TimeInForce.DAY,
       transmit: true,
     };
 
@@ -65,8 +66,10 @@ describe("Place Orders", () => {
       refId = orderId;
       ib.placeOrder(refId, contract, order);
     })
-      .on(EventName.openOrder, (orderId, _contract, _order, _orderState) => {
+      .on(EventName.openOrder, (orderId, contract, order, _orderState) => {
         expect(orderId).toEqual(refId);
+        expect(contract.symbol).toEqual("AAPL");
+        expect(order.totalQuantity).toEqual(2);
         if (orderId === refId) {
           done();
         }

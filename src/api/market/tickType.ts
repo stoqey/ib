@@ -293,6 +293,10 @@ export enum TickType {
   /** Number of shares available to short (TWS Build 974+ is required) */
   SHORTABLE_SHARES = 89,
 
+  DELAYED_HALTED = 90,
+
+  REUTERS_2_MUTUAL_FUNDS = 91,
+
   /**
    * Today's closing price of ETF's Net Asset Value (NAV).
    * Calculation is based on prices of ETF's underlying securities.

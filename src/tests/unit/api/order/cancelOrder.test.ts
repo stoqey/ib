@@ -10,6 +10,7 @@ import {
   OrderAction,
   OrderType,
   SecType,
+  TimeInForce,
 } from "../../../..";
 import configuration from "../../../../common/configuration";
 import logger from "../../../../common/logger";
@@ -52,7 +53,7 @@ describe("CancelOrder", () => {
       lmtPrice: 1,
       totalQuantity: 1,
       // account: "DU123567",
-      tif: "GTC",
+      tif: TimeInForce.GTC,
       transmit: true,
     };
 
