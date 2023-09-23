@@ -2,7 +2,13 @@
  * This file implements tests for the [[IBApiNext.getHeadTimestamp]] function.
  */
 
-import { IBApi, IBApiNext, IBApiNextError, EventName } from "../../..";
+import {
+  EventName,
+  IBApi,
+  IBApiNext,
+  IBApiNextError,
+  WhatToShow,
+} from "../../..";
 
 describe("RxJS Wrapper: getHeadTimestamp()", () => {
   test("Promise result", (done) => {
@@ -13,7 +19,7 @@ describe("RxJS Wrapper: getHeadTimestamp()", () => {
     // emit a EventName.headTimestamp and verify RxJS result
     const testValue = Math.random();
     apiNext
-      .getHeadTimestamp({}, "TRADES", true, 1)
+      .getHeadTimestamp({}, WhatToShow.TRADES, true, 1)
       .then((time) => {
         expect(time).toEqual(testValue);
         done();

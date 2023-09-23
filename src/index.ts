@@ -60,29 +60,30 @@ export { TagValue } from "./api/data/container/tag-value";
 
 // export enum types
 
+export { EventName } from "./api/data/enum/event-name";
 export { FADataType } from "./api/data/enum/fad-data-type";
 export { LogLevel } from "./api/data/enum/log-level";
 export { MIN_SERVER_VER } from "./api/data/enum/min-server-version";
 export { OptionExerciseAction } from "./api/data/enum/option-exercise-action";
 export { OptionType } from "./api/data/enum/option-type";
 export { SecType } from "./api/data/enum/sec-type";
-export { EventName } from "./api/data/enum/event-name";
 
 // export historic market-data types
 
+export { DurationUnit } from "./api/data/enum/duration-unit";
 export { Bar } from "./api/historical/bar";
 export { BarSizeSetting } from "./api/historical/bar-size-setting";
 export { HistogramEntry } from "./api/historical/histogramEntry";
 export { HistoricalTick } from "./api/historical/historicalTick";
 export { HistoricalTickBidAsk } from "./api/historical/historicalTickBidAsk";
 export { HistoricalTickLast } from "./api/historical/historicalTickLast";
-export { DurationUnit } from "./api/data/enum/duration-unit";
+export { WhatToShow } from "./api/historical/what-to-show";
+export { ScannerSubscription } from "./api/market/scannerSubscription";
+export { TickByTickDataType } from "./api/market/tickByTickDataType";
 
 // export realtime market-data types
 
 import { TickType as IBApiTickType } from "./api/market/tickType";
-export { TickByTickDataType } from "./api/market/tickByTickDataType";
-export { ScannerSubscription } from "./api/market/scannerSubscription";
 
 // export order condition types
 
@@ -101,13 +102,14 @@ export { VolumeCondition } from "./api/order/condition/volume-condition";
 export { ConjunctionConnection } from "./api/order/enum/conjunction-connection";
 export { OrderAction } from "./api/order/enum/order-action";
 export { OrderConditionType } from "./api/order/enum/order-condition-type";
-export { OrderType } from "./api/order/enum/orderType";
-export { TriggerMethod } from "./api/order/enum/trigger-method";
 export { OrderStatus } from "./api/order/enum/order-status";
+export { OrderType } from "./api/order/enum/orderType";
+export { TimeInForce } from "./api/order/enum/tif";
+export { TriggerMethod } from "./api/order/enum/trigger-method";
 
 // export order types
 
-export { Liquidities, Execution } from "./api/order/execution";
+export { Execution, Liquidities } from "./api/order/execution";
 export { LimitOrder } from "./api/order/limit";
 export { MarketOrder } from "./api/order/market";
 export { MarketCloseOrder } from "./api/order/marketClose";

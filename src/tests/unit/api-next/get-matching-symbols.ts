@@ -4,11 +4,11 @@
 
 import { fail } from "assert";
 import {
+  ContractDetails,
+  EventName,
   IBApi,
   IBApiNext,
   IBApiNextError,
-  EventName,
-  ContractDetails,
 } from "../../..";
 
 describe("RxJS Wrapper: searchContracts()", () => {
@@ -21,7 +21,7 @@ describe("RxJS Wrapper: searchContracts()", () => {
     const testValue = "We want this error";
 
     apiNext
-      .searchContracts("AAPL")
+      .getMatchingSymbols("AAPL")
       .then(() => {
         fail();
       })
@@ -53,7 +53,7 @@ describe("RxJS Wrapper: searchContracts()", () => {
     ];
 
     apiNext
-      .searchContracts("AAPL")
+      .getMatchingSymbols("AAPL")
       .then((result) => {
         expect(result).toEqual(testValues);
         done();

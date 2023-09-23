@@ -45,11 +45,11 @@ public class Execution {
     private String 	m_acctNumber;
     private String 	m_exchange;
     private String 	m_side;
-    private double 	m_shares;
+    private Decimal m_shares;
     private double 	m_price;
     private int		m_permId;
     private int     m_liquidation;
-    private double	m_cumQty;
+    private Decimal m_cumQty;
     private double	m_avgPrice;
     private String  m_orderRef;
     private String 	m_evRule;
@@ -65,11 +65,11 @@ public class Execution {
     public String acctNumber()   { return m_acctNumber; }
     public String exchange()     { return m_exchange; }
     public String side()         { return m_side; }
-    public double shares()          { return m_shares; }
+    public Decimal shares()      { return m_shares; }
     public double price()        { return m_price; }
     public int permId()          { return m_permId; }
     public int liquidation()     { return m_liquidation; }
-    public double cumQty()          { return m_cumQty; }
+    public Decimal cumQty()      { return m_cumQty; }
     public double avgPrice()     { return m_avgPrice; }
     public String orderRef()     { return m_orderRef; }
     public String evRule()       { return m_evRule; }
@@ -86,11 +86,11 @@ public class Execution {
     public void acctNumber(String acctNumber)     { m_acctNumber = acctNumber; }
     public void exchange(String exchange)         { m_exchange = exchange; }
     public void side(String side)                 { m_side = side; }
-    public void shares(double shares)                { m_shares = shares; }
+    public void shares(Decimal shares)            { m_shares = shares; }
     public void price(double price)               { m_price = price; }
     public void permId(int permId)                { m_permId = permId; }
     public void liquidation(int liquidation)      { m_liquidation = liquidation; }
-    public void cumQty(double cumQty)             { m_cumQty = cumQty; }
+    public void cumQty(Decimal cumQty)            { m_cumQty = cumQty; }
     public void avgPrice(double avgPrice)         { m_avgPrice = avgPrice; }
     public void orderRef(String orderRef)         { m_orderRef = orderRef; }
     public void evRule(String evRule)             { m_evRule = evRule; }
@@ -101,19 +101,19 @@ public class Execution {
     public Execution() {
         m_orderId = 0;
         m_clientId = 0;
-        m_shares = 0;
+        m_shares = Decimal.ZERO;
         m_price = 0;
         m_permId = 0;
         m_liquidation = 0;
-        m_cumQty = 0;
+        m_cumQty = Decimal.ZERO;
         m_avgPrice = 0;
         m_evMultiplier = 0;
         m_lastLiquidity = Liquidities.None;
     }
 
     public Execution( int p_orderId, int p_clientId, String p_execId, String p_time,
-                      String p_acctNumber, String p_exchange, String p_side, int p_shares,
-                      double p_price, int p_permId, int p_liquidation, int p_cumQty,
+                      String p_acctNumber, String p_exchange, String p_side, Decimal p_shares,
+                      double p_price, int p_permId, int p_liquidation, Decimal p_cumQty,
                       double p_avgPrice, String p_orderRef, String p_evRule, double p_evMultiplier,
                       String p_modelCode) {
         m_orderId = p_orderId;

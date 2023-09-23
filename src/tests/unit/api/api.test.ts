@@ -1,7 +1,14 @@
 /**
  * This file implement test code for the public API interfaces.
  */
-import { Contract, ErrorCode, EventName, IBApi, SecType } from "../../..";
+import {
+  Contract,
+  ErrorCode,
+  EventName,
+  IBApi,
+  SecType,
+  WhatToShow,
+} from "../../..";
 import configuration from "../../../common/configuration";
 import logger from "../../../common/logger";
 
@@ -17,7 +24,6 @@ describe("IBApi Tests", () => {
       port: configuration.ib_port,
       clientId,
     });
-    // logger.info("IBApi created");
   });
 
   afterEach(() => {
@@ -25,7 +31,6 @@ describe("IBApi Tests", () => {
       ib.disconnect();
       ib = undefined;
     }
-    // logger.info("IBApi disconnected");
   });
 
   let _account: string; // maintain account name for further tests
@@ -66,12 +71,11 @@ describe("IBApi Tests", () => {
   });
 
   it("Test reqPnL / cancelPnL", (done) => {
+    const refId = 43;
     let received = false;
 
-    ib.on(EventName.error, (err, code, id) => {
-      expect(`${err.message} - code: ${code} - id: ${id}`).toBeFalsy();
-    }).on(EventName.pnl, (reqId: number, pnl: number) => {
-      expect(reqId).toEqual(43);
+    ib.on(EventName.pnl, (reqId: number, pnl: number) => {
+      expect(reqId).toEqual(refId);
       expect(pnl).toBeTruthy();
       if (!received) {
         ib.cancelPnL(reqId);
@@ -79,18 +83,18 @@ describe("IBApi Tests", () => {
         done();
       }
       received = true;
+    }).on(EventName.error, (err, code, reqId) => {
+      if (reqId == refId) done(`[${reqId}] ${err.message} (#${code})`);
     });
 
-    ib.connect().reqPnL(43, _account);
+    ib.connect().reqPnL(refId, _account);
   });
 
   it("Test reqPnLSingle / cancelPnLSingle", (done) => {
+    const refId = 44;
     let received = false;
 
-    ib.on(EventName.error, (err: Error, code: ErrorCode, id: number) => {
-      expect(`${err.message} - code: ${code} - id: ${id}`).toBeFalsy();
-      done(`${err.message} - code: ${code} - id: ${id}`);
-    }).on(
+    ib.on(
       EventName.pnlSingle,
       (
         reqId: number,
@@ -100,7 +104,7 @@ describe("IBApi Tests", () => {
         realizedPnL: number,
         value: number,
       ) => {
-        expect(reqId).toEqual(44);
+        expect(reqId).toEqual(refId);
         expect(pos).toBeTruthy();
         expect(dailyPnL).toBeTruthy();
         expect(unrealizedPnL).toBeTruthy();
@@ -113,33 +117,30 @@ describe("IBApi Tests", () => {
         }
         received = true;
       },
-    );
+    ).on(EventName.error, (err, code, reqId) => {
+      if (reqId == refId) done(`[${reqId}] ${err.message} (#${code})`);
+    });
 
-    ib.connect().reqPnLSingle(44, _account, null, _conId);
+    ib.connect().reqPnLSingle(refId, _account, null, _conId);
   });
 
   it("Test request tick history", (done) => {
+    const refId = 45;
     let isConnected = false;
 
-    ib.on(EventName.connected, function onConnected() {
+    ib.on(EventName.connected, () => {
       isConnected = true;
     })
-      .on(EventName.error, function onError(err: Error) {
+      .on(EventName.historicalTicksLast, (reqId: number, ticks: []) => {
+        expect(ticks.length).toBeGreaterThan(0);
         if (isConnected) {
           ib.disconnect();
         }
-        throw err;
+        done();
       })
-      .on(
-        EventName.historicalTicksLast,
-        function onData(reqId: number, ticks: []) {
-          expect(ticks.length).toBeGreaterThan(0);
-          if (isConnected) {
-            ib.disconnect();
-          }
-          done();
-        },
-      );
+      .on(EventName.error, (err, code, reqId) => {
+        if (reqId == refId) done(`[${reqId}] ${err.message} (#${code})`);
+      });
 
     const contract: Contract = {
       symbol: "SPY",
@@ -149,12 +150,12 @@ describe("IBApi Tests", () => {
     };
 
     ib.connect().reqHistoricalTicks(
-      45,
+      refId,
       contract,
       "20210101-16:00:00",
       null,
       1000,
-      "TRADES",
+      WhatToShow.TRADES,
       0,
       true,
     );

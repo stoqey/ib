@@ -1,8 +1,9 @@
-import SoftDollarTier from "../data/container/soft-dollar-tier";
-import TagValue from "../data/container/tag-value";
-import OrderCondition from "./condition/order-condition";
-import OrderAction from "./enum/order-action";
+import { SoftDollarTier } from "../data/container/soft-dollar-tier";
+import { TagValue } from "../data/container/tag-value";
+import { OrderCondition } from "./condition/order-condition";
+import { OrderAction } from "./enum/order-action";
 import { OrderType } from "./enum/orderType";
+import { TimeInForce } from "./enum/tif";
 import { OrderComboLeg } from "./orderComboLeg";
 
 /**
@@ -77,7 +78,7 @@ export interface Order {
    * - FOK - If the entire Fill-or-Kill order does not execute as soon as it becomes available, the entire order is canceled.
    * - DTC - Day until Canceled
    */
-  tif?: string;
+  tif?: TimeInForce;
 
   /** One-Cancels-All group identifier. */
   ocaGroup?: string;
@@ -208,7 +209,7 @@ export interface Order {
   /** The Financial Advisor group the trade will be allocated to. Use an empty string if not applicable. */
   faGroup?: string;
 
-  /** The Financial Advisor allocation profile the trade will be allocated to. Use an empty string if not applicable. */
+  /** @deprecated The Financial Advisor allocation profile the trade will be allocated to. Use an empty string if not applicable. */
   faProfile?: string;
 
   /** The Financial Advisor allocation method the trade will be allocated to. Use an empty string if not applicable.FaMethod */
@@ -736,7 +737,28 @@ export interface Order {
   /** Value must be positive, and it is number of seconds that SMART order would be parked for at IBKRATS before being routed to exchange. */
   postToAts?: number;
 
+  /** Accepts a list with parameters obtained from advancedOrderRejectJson */
   advancedErrorOverride?: string;
+
+  /** Used by brokers and advisors when manually entering, modifying or cancelling orders at the direction of a client. Only used when allocating orders to specific groups or accounts. Excluding "All" group. */
+  manualOrderTime?: string;
+
+  /** Defines the minimum trade quantity to fill. For IBKRATS orders. */
+  minTradeQty?: number;
+
+  /** Defines the minimum size to compete. For IBKRATS orders. */
+  minCompeteSize?: number;
+
+  /** Specifies the offset Off The Midpoint that will be applied to the order. For IBKRATS orders. */
+  competeAgainstBestOffset?: number;
+
+  /** This offset is applied when the spread is an even number of cents wide. This offset must be in whole-penny increments or zero. For IBKRATS orders. */
+  midOffsetAtWhole?: number;
+
+  /** This offset is applied when the spread is an odd number of cents wide. This offset must be in half-penny increments. For IBKRATS orders. */
+  midOffsetAtHalf?: number;
 }
+
+export const COMPETE_AGAINST_BEST_OFFSET_UP_TO_MID = Infinity;
 
 export default Order;

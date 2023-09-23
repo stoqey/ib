@@ -49,7 +49,7 @@ public class PriceCondition extends ContractCondition {
 
 	@Override
 	protected String valueToString() {
-		return "" + m_price;
+		return Util.DoubleMaxString(m_price);
 	}
 
 	@Override

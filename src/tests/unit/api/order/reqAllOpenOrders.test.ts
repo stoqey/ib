@@ -2,7 +2,7 @@
 /**
  * This file implement test code for the reqAllOpenOrders function and openOrder event.
  */
-import { ErrorCode, EventName, IBApi } from "../../../..";
+import { EventName, IBApi } from "../../../..";
 import configuration from "../../../../common/configuration";
 
 const TEST_SERVER_HOST = configuration.ib_host;
@@ -32,20 +32,22 @@ describe("RequestAllOpenOrders", () => {
   });
 
   it("Test reqAllOpenOrders", (done) => {
-    ib.on(EventName.openOrder, (orderId, contract, order, orderState) => {
-      // logger.info("openOrder message received");
-      // todo add proper verification code here
-      // expect(orderId).toBeTruthy(); We sometimes get zeros
+    ib.once(EventName.nextValidId, (orderId: number) => {
+      ib.reqAllOpenOrders();
     })
+      .on(EventName.openOrder, (orderId, contract, order, orderState) => {
+        // logger.info("openOrder message received");
+        // todo add proper verification code here
+        // expect(orderId).toBeTruthy(); We sometimes get zeros
+      })
       .on(EventName.openOrderEnd, () => {
-        ib.disconnect();
+        if (ib) ib.disconnect();
+      })
+      .on(EventName.disconnected, () => {
         done();
       })
-      .on(EventName.error, (err: Error, code: ErrorCode, id: number) => {
-        done(`${err.message} - code: ${code} - id: ${id}`);
-      })
-      .once(EventName.nextValidId, (orderId: number) => {
-        ib.reqAllOpenOrders();
+      .on(EventName.error, (err, code, reqId) => {
+        done(`[${reqId}] ${err.message} (#${code})`);
       });
 
     ib.connect();

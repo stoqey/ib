@@ -6,12 +6,12 @@
   <div style="display: flex;justify-content:center;">
     <img src="https://img.shields.io/github/package-json/v/stoqey/ib"></img>
     <img src="https://circleci.com/gh/stoqey/ib.svg?style=svg"></img>
-    <a href="https://lgtm.com/projects/g/stoqey/ib/context:javascript"><img alt="Language grade: JavaScript" src="https://img.shields.io/lgtm/grade/javascript/g/stoqey/ib.svg?logo=lgtm&logoWidth=18"/></a>
+    <img src="https://img.shields.io/badge/License-MIT-blue.svg"/> 
     <img src="https://img.shields.io/npm/dt/@stoqey/ib.svg"></img>
   </div>
 </div>
 
-`@stoqey/ib` is an [Interactive Brokers](http://interactivebrokers.com/) TWS (or IB Gateway) Typescript API client library for [Node.js](http://nodejs.org/). It is a direct port of Interactive Brokers' Java Client Version 9.76 from May 08 2019.
+`@stoqey/ib` is an [Interactive Brokers](http://interactivebrokers.com/) TWS (or IB Gateway) Typescript API client library for [Node.js](http://nodejs.org/). It is a direct port of Interactive Brokers' Java Client Version 10.25 ("latest") from Sept 7 2023.
 
 Refer to the [Trader Workstation API](https://interactivebrokers.github.io/tws-api/) for the official documentation and the C#/Java/VB/C++/Python client.
 
@@ -117,7 +117,7 @@ ib.on(EventName.error, (err: Error, code: ErrorCode, reqId: number) => {
     (account: string, contract: Contract, pos: number, avgCost?: number) => {
       console.log(`${account}: ${pos} x ${contract.symbol} @ ${avgCost}`);
       positionsCount++;
-    }
+    },
   )
   .once(EventName.positionEnd, () => {
     console.log(`Total: ${positionsCount} positions.`);

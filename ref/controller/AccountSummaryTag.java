@@ -13,7 +13,7 @@ public enum AccountSummaryTag {
 	AccruedCash,					// Net accrued interest
 	BuyingPower,					// The maximum amount of marginable US stocks the account can buy
 	EquityWithLoanValue,			// Cash + stocks + bonds + mutual funds
-	PreviousEquityWithLoanValue,
+	PreviousDayEquityWithLoanValue,
 	GrossPositionValue,				// The sum of the absolute value of all stock and equity option positions
 	RegTEquity,
 	RegTMargin,

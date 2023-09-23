@@ -83,6 +83,8 @@ export interface Execution {
    * Requires TWS 968+ and API v973.05+.
    */
   lastLiquidity?: Liquidities;
+
+  pendingPriceRevision?: boolean;
 }
 
 export default Execution;

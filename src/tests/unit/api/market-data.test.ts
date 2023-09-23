@@ -1,7 +1,15 @@
 /**
  * This file implement test code for the public API interfaces.
  */
-import { Contract, EventName, IBApi, Option, OptionType, SecType, TickType } from "../../..";
+import {
+  Contract,
+  EventName,
+  IBApi,
+  Option,
+  OptionType,
+  SecType,
+  TickType,
+} from "../../..";
 import configuration from "../../../common/configuration";
 
 describe("IBApi Market data Tests", () => {
@@ -31,24 +39,30 @@ describe("IBApi Market data Tests", () => {
     const refId = 46;
     let received = false;
 
-    ib.on(EventName.connected, () => {
-      const contract: Contract = { symbol: "SPY", currency: "USD", secType: SecType.STK, exchange: "SMART" };
+    ib.once(EventName.connected, () => {
+      const contract: Contract = {
+        symbol: "SPY",
+        currency: "USD",
+        secType: SecType.STK,
+        exchange: "SMART",
+      };
       ib.reqMktData(refId, contract, "", true, false);
     })
-      .on(EventName.error, (err, code, id) => {
-        // should use expect(error).toEqual("<string message>")
-        expect(`${err.message} - code: ${code} - id: ${id}`).toBeFalsy();
-        ib.disconnect();
-      })
-      .on(EventName.tickPrice, (reqId: number, _field: TickType, _value: number) => {
-        expect(reqId).toEqual(refId);
-        if (reqId == refId) received = true;
-        // console.log(_field, _value);
-      })
+      .on(
+        EventName.tickPrice,
+        (reqId: number, _field: TickType, _value: number) => {
+          expect(reqId).toEqual(refId);
+          if (reqId == refId) received = true;
+          // console.log(_field, _value);
+        },
+      )
       .on(EventName.tickSnapshotEnd, (reqId: number) => {
         expect(reqId).toEqual(refId);
         if (received) done();
         else done("Didn't get any result");
+      })
+      .on(EventName.error, (err, code, reqId) => {
+        if (reqId == refId) done(`[${reqId}] ${err.message} (#${code})`);
       });
 
     ib.connect();
@@ -58,23 +72,29 @@ describe("IBApi Market data Tests", () => {
     const refId = 47;
     let received = false;
 
-    ib.on(EventName.connected, () => {
-      const contract: Option = new Option("AAPL", "20251219", 200, OptionType.Put);
+    ib.once(EventName.connected, () => {
+      const contract: Option = new Option(
+        "AAPL",
+        "20251219",
+        200,
+        OptionType.Put,
+      );
       ib.reqMktData(refId, contract, "", true, false);
     })
-      .on(EventName.error, (err, code, id) => {
-        // should use expect(error).toEqual("<string message>")
-        expect(`${err.message} - code: ${code} - id: ${id}`).toBeFalsy();
-        ib.disconnect();
-      })
-      .on(EventName.tickPrice, (reqId: number, _field: TickType, _value: number) => {
-        expect(reqId).toEqual(refId);
-        if (reqId == refId) received = true;
-      })
+      .on(
+        EventName.tickPrice,
+        (reqId: number, _field: TickType, _value: number) => {
+          expect(reqId).toEqual(refId);
+          if (reqId == refId) received = true;
+        },
+      )
       .on(EventName.tickSnapshotEnd, (reqId: number) => {
         expect(reqId).toEqual(refId);
         if (received) done();
         else done("Didn't get any result");
+      })
+      .on(EventName.error, (err, code, reqId) => {
+        if (reqId == refId) done(`[${reqId}] ${err.message} (#${code})`);
       });
 
     ib.connect();

@@ -85,6 +85,12 @@ public class EClientErrors {
     static final CodeMsgPair FAIL_SEND_REQTICKBYTICK = new CodeMsgPair(570, "Request Tick-By-Tick Sending Error - ");
     static final CodeMsgPair FAIL_SEND_CANTICKBYTICK = new CodeMsgPair(571, "Cancel Tick-By-Tick Sending Error - ");
     static final CodeMsgPair FAIL_SEND_REQ_COMPLETED_ORDERS = new CodeMsgPair(572, "Request Completed Orders Sending Error - ");
+    static final CodeMsgPair FAIL_SEND_REQ_WSH_META_DATA = new CodeMsgPair(573, "Request WSH Meta Data Sending Error - ");
+    static final CodeMsgPair FAIL_SEND_CAN_WSH_META_DATA = new CodeMsgPair(574, "Cancel WSH Meta Data Sending Error - ");
+    static final CodeMsgPair FAIL_SEND_REQ_WSH_EVENT_DATA = new CodeMsgPair(575, "Request WSH Event Data Sending Error - ");
+    static final CodeMsgPair FAIL_SEND_CAN_WSH_EVENT_DATA = new CodeMsgPair(576, "Cancel WSH Event Data Sending Error - ");
+    static final CodeMsgPair FAIL_SEND_REQUSERINFO = new CodeMsgPair(577, "Request User Info Sending Error - ");
+    static final CodeMsgPair INVALID_SYMBOL = new CodeMsgPair(579, "Invalid symbol in string - ");
 
     public EClientErrors() {
     }

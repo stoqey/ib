@@ -293,6 +293,10 @@ export enum TickType {
   /** Number of shares available to short (TWS Build 974+ is required) */
   SHORTABLE_SHARES = 89,
 
+  DELAYED_HALTED = 90,
+
+  REUTERS_2_MUTUAL_FUNDS = 91,
+
   /**
    * Today's closing price of ETF's Net Asset Value (NAV).
    * Calculation is based on prices of ETF's underlying securities.
@@ -332,6 +336,21 @@ export enum TickType {
 
   /** The low price of ETF's Net Asset Value (NAV). */
   ETF_NAV_LOW = 99,
+
+  /** TBD */
+  SOCIAL_MARKET_ANALYTICS = 100,
+
+  /** Midpoint is calculated based on IPO price range */
+  ESTIMATED_IPO_MIDPOINT = 101,
+
+  /** Final price for IPO */
+  FINAL_IPO_LAST = 102,
+
+  /** TBD */
+  DELAYED_YIELD_BID = 103,
+
+  /** TBD */
+  DELAYED_YIELD_ASK = 104,
 
   UNKNOWN = 2147483647, // MAX int32
 }

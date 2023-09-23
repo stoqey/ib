@@ -25,6 +25,8 @@ public class Contract implements Cloneable {
     private String  m_tradingClass;
     private String  m_secIdType; // CUSIP;SEDOL;ISIN;RIC
     private String  m_secId;
+    private String  m_description;
+    private String  m_issuerId;
 
     private DeltaNeutralContract m_deltaNeutralContract;
     private boolean m_includeExpired;  // can not be set to true for orders
@@ -54,6 +56,8 @@ public class Contract implements Cloneable {
     public DeltaNeutralContract deltaNeutralContract() { return m_deltaNeutralContract; }
     public List<ComboLeg> comboLegs()  { return m_comboLegs; }
     public String comboLegsDescrip()        { return m_comboLegsDescrip; }
+    public String description()     { return m_description; }
+    public String issuerId()        { return m_issuerId; }
 
     // Set
     public void conid(int v)            { m_conid = v; }
@@ -77,6 +81,8 @@ public class Contract implements Cloneable {
     public void includeExpired(boolean v)         { m_includeExpired = v; }
     public void comboLegs(List<ComboLeg> v)  { m_comboLegs = v; }
     public void comboLegsDescrip(String v)        { m_comboLegsDescrip = v; }
+    public void description(String v)   { m_description = v; }
+    public void issuerId(String v)      { m_issuerId = v; }
 
     public Contract() {
     	m_conid = 0;
@@ -105,7 +111,7 @@ public class Contract implements Cloneable {
                     double p_strike, String p_right, String p_multiplier,
                     String p_exchange, String p_currency, String p_localSymbol, String p_tradingClass,
                     List<ComboLeg> p_comboLegs, String p_primaryExch, boolean p_includeExpired,
-                    String p_secIdType, String p_secId) {
+                    String p_secIdType, String p_secId, String p_description, String p_issuerId) {
     	m_conid = p_conId;
         m_symbol = p_symbol;
         m_secType = p_secType;
@@ -121,7 +127,9 @@ public class Contract implements Cloneable {
         m_comboLegs = p_comboLegs;
         m_primaryExch = p_primaryExch;
         m_secIdType = p_secIdType;
-        m_secId = p_secId ;
+        m_secId = p_secId;
+        m_description = p_description;
+        m_issuerId = p_issuerId;
     }
 
     @Override
@@ -187,6 +195,14 @@ public class Contract implements Cloneable {
         		return false;
         	}
         }
+        
+        if (Util.StringCompare(m_description, l_theOther.m_description) != 0) {
+        	return false;
+        }
+        if (Util.StringCompare(m_issuerId, l_theOther.m_issuerId) != 0) {
+        	return false;
+        }
+        
         return true;
     }
 
@@ -201,7 +217,7 @@ public class Contract implements Cloneable {
     }
 
     /** Returns a text description that can be used for display. */
-    public String description() {
+    public String textDescription() {
         StringBuilder sb = new StringBuilder();
 
         if (isCombo() ) {
@@ -264,6 +280,8 @@ public class Contract implements Cloneable {
         add( sb, "primaryExch", m_primaryExch);
         add( sb, "secIdType", m_secIdType);
         add( sb, "secId", m_secId);
+        add( sb, "description", m_description);
+        add( sb, "issuerId", m_issuerId);
 
         return sb.toString();
     }

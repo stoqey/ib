@@ -7,11 +7,11 @@ public class HistoricalTickLast {
     private long m_time;
     private TickAttribLast m_tickAttribLast;
     private double m_price;
-    private long m_size;
+    private Decimal m_size;
     private String m_exchange;
     private String m_specialConditions;
 
-    public HistoricalTickLast(long time, TickAttribLast tickAttribLast, double price, long size, String exchange, String specialConditions) {
+    public HistoricalTickLast(long time, TickAttribLast tickAttribLast, double price, Decimal size, String exchange, String specialConditions) {
         m_time = time;
         m_tickAttribLast = tickAttribLast;
         m_price = price;
@@ -32,7 +32,7 @@ public class HistoricalTickLast {
         return m_price;
     }
 
-    public long size() {
+    public Decimal size() {
         return m_size;
     }
 

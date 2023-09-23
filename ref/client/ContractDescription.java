@@ -51,6 +51,8 @@ public class ContractDescription {
                 + "secType: " + m_contract.secType().toString() + "\n"
                 + "primaryExch: " + m_contract.primaryExch() + "\n"
                 + "currency: " + m_contract.currency() + "\n"
+                + "description: " + m_contract.description() + "\n"
+                + "issuerId: " + m_contract.issuerId() + "\n"
                 + "derivativeSecTypes: " + Arrays.toString(m_derivativeSecTypes) + "\n";
     }
 }

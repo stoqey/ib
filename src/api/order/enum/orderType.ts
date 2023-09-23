@@ -20,6 +20,7 @@ export enum OrderType {
   MTL = "MTL",
   PASSV_REL = "PASSV REL",
   PEG_BENCH = "PEG BENCH",
+  PEG_BEST = "PEG BEST",
   PEG_MID = "PEG MID",
   PEG_MKT = "PEG MKT",
   PEG_PRIM = "PEG PRIM",
@@ -43,5 +44,23 @@ export enum OrderType {
   PEG_MKT_VOL = "PMV",
   PEG_SRF_VOL = "PSV",
 }
+
+export const isPegBenchOrder = (orderType: OrderType): boolean => {
+  if (orderType == OrderType.PEG_BENCH || (orderType as string) == "PEGBENCH")
+    return true;
+  else return false;
+};
+
+export const isPegBestOrder = (orderType: OrderType): boolean => {
+  if (orderType == OrderType.PEG_BEST || (orderType as string) == "PEGBEST")
+    return true;
+  else return false;
+};
+
+export const isPegMidOrder = (orderType: OrderType): boolean => {
+  if (orderType == OrderType.PEG_MID || (orderType as string) == "PEGMID")
+    return true;
+  else return false;
+};
 
 export default OrderType;

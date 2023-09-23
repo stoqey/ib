@@ -5,6 +5,7 @@ package com.ib.client;
 
 import static com.ib.controller.Formats.fmt;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -18,6 +19,14 @@ import com.ib.controller.ApiController.IContractDetailsHandler;
 public class Util {
     public static final String SPACE_SYMBOL = " ";
     public static final String EQUALS_SIGN = "=";
+
+    public static String decimalToStringNoZero(Decimal value) {
+        return Decimal.isValidNotZeroValue(value) ? value.toString() : ""; 
+    }
+    
+	public static boolean isValidValue(double value) {
+		return value != Double.MAX_VALUE && !Double.isNaN(value) && !Double.isInfinite(value);
+	}
     
 	public static boolean StringIsEmpty(String str) {
 		return str == null || str.length() == 0;
@@ -79,7 +88,11 @@ public class Util {
     }
 
     public static String DoubleMaxString(double value) {
-    	return (value == Double.MAX_VALUE) ? "" : String.valueOf(value);
+        return DoubleMaxString(value, "");
+    }
+    
+    public static String DoubleMaxString(double value, String defValue) {
+        return (value == Double.MAX_VALUE) ? defValue : new DecimalFormat("0.########").format(value);
     }
     
     public static String UnixMillisecondsToString(long milliseconds, String dateFormat){
@@ -121,9 +134,6 @@ public class Util {
 		}
 	}
 	
-	public static String maxDoubleToString(Double value){
-		return value != Double.MAX_VALUE ? Double.toString(value) : "N/A";
-	}
 
     public static void appendNonEmptyString(StringBuilder sb, String name, String value, String excludeValue) {
         if (!Util.StringIsEmpty(value) && !value.equals(excludeValue)) {
@@ -145,7 +155,7 @@ public class Util {
 
     public static void appendValidIntValue(StringBuilder sb, String name, int value) {
         if (value != Integer.MAX_VALUE) {
-            sb.append(SPACE_SYMBOL).append(name).append(EQUALS_SIGN).append(value);
+            sb.append(SPACE_SYMBOL).append(name).append(EQUALS_SIGN).append(Util.IntMaxString(value));
         }
     }
 
@@ -157,7 +167,7 @@ public class Util {
 
     public static void appendValidDoubleValue(StringBuilder sb, String name, double value) {
         if (value != Double.MAX_VALUE) {
-            sb.append(SPACE_SYMBOL).append(name).append(EQUALS_SIGN).append(value);
+            sb.append(SPACE_SYMBOL).append(name).append(EQUALS_SIGN).append(Util.DoubleMaxString(value));
         }
     }
 
@@ -184,7 +194,7 @@ public class Util {
 
     public static void appendValidLongValue(StringBuilder sb, String name, long value) {
         if (value != Long.MAX_VALUE) {
-            sb.append(SPACE_SYMBOL).append(name).append(EQUALS_SIGN).append(value);
+            sb.append(SPACE_SYMBOL).append(name).append(EQUALS_SIGN).append(Util.LongMaxString(value));
         }
     }
     

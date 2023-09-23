@@ -1,7 +1,6 @@
 import { IBApi } from "../../../api/api";
 import { EventName } from "../../../api/data/enum/event-name";
 import configuration from "../../../common/configuration";
-import logger from "../../../common/logger";
 
 describe("IBApi connection Tests", () => {
   jest.setTimeout(10000);
@@ -30,6 +29,8 @@ describe("IBApi connection Tests", () => {
     // logger.info("Starting Connect");
     ib.on(EventName.connected, () => {
       done();
+    }).on(EventName.error, (err, code, reqId) => {
+      done(`[${reqId}] ${err.message} (#${code})`);
     });
 
     ib.connect();
@@ -40,9 +41,13 @@ describe("IBApi connection Tests", () => {
     ib.on(EventName.connected, () => {
       ib.disconnect();
       ib = undefined;
-    }).on(EventName.disconnected, () => {
-      done();
-    });
+    })
+      .on(EventName.disconnected, () => {
+        done();
+      })
+      .on(EventName.error, (err, code, reqId) => {
+        done(`[${reqId}] ${err.message} (#${code})`);
+      });
 
     ib.connect();
   });
@@ -54,17 +59,13 @@ describe("IBApi connection Tests", () => {
     })
       .on(EventName.currentTime, (time) => {
         expect(time).toBeTruthy();
-        ib.disconnect();
+        if (ib) ib.disconnect();
       })
       .on(EventName.disconnected, () => {
-        ib = undefined;
         done();
       })
-      .on(EventName.error, (err, code, _id) => {
-        const msg = `${err.message} (Error #${code})`;
-        logger.error(msg);
-        expect(msg).toBeFalsy();
-        ib.disconnect();
+      .on(EventName.error, (err, code, reqId) => {
+        done(`[${reqId}] ${err.message} (#${code})`);
       });
 
     ib.connect();

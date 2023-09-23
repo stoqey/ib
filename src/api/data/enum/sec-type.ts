@@ -11,35 +11,53 @@ export enum SecType {
   /* Future */
   FUT = "FUT",
 
-  /* Index. */
-  IND = "IND",
-
-  /** Futures option. */
-  FOP = "FOP",
-
-  /** Contract for Difference. */
-  CFD = "CFD",
+  CONTFUT = "CONTFUT",
 
   /** Forex pair. */
   CASH = "CASH",
 
-  /** Combo. */
-  BAG = "BAG",
+  /** Bond. */
+  BOND = "BOND",
+
+  /** Contract for Difference. */
+  CFD = "CFD",
+
+  /** Futures option. */
+  FOP = "FOP",
 
   /** Warrant. */
   WAR = "WAR",
 
-  /** Bond. */
-  BOND = "BOND",
+  IOPT = "IOPT",
 
-  /** Commodity. */
-  CMDTY = "CMDTY",
+  FWD = "FWD",
+
+  /** Combo. */
+  BAG = "BAG",
+
+  /* Index. */
+  IND = "IND",
+
+  BILL = "BILL",
+
+  /** Mutual fund. */
+  FUND = "FUND",
+
+  FIXED = "FIXED",
+
+  SLB = "SLB",
 
   /** News. */
   NEWS = "NEWS",
 
-  /** Mutual fund. */
-  FUND = "FUND",
+  /** Commodity. */
+  CMDTY = "CMDTY",
+
+  BSK = "BSK",
+
+  ICU = "ICU",
+
+  ICS = "ICS",
 
   /** Cryptocurrency. */
   CRYPTO = "CRYPTO ",

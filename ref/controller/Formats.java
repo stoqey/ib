@@ -11,17 +11,23 @@ import java.util.Date;
 import java.util.TimeZone;
 
 public class Formats {
+	private static final Format FMT8 = new DecimalFormat( "#,##0.00000000");
 	private static final Format FMT2 = new DecimalFormat( "#,##0.00");
 	private static final Format FMT0 = new DecimalFormat( "#,##0");
 	private static final Format PCT = new DecimalFormat( "0.0%");
 	private static final ThreadLocal<DateFormat> GMT_DATE_TIME_FORMAT_CACHE = ThreadLocal.withInitial(() -> {
-		final DateFormat format = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss");
+		final DateFormat format = new SimpleDateFormat( "yyyyMMdd-HH:mm:ss");
 		format.setTimeZone(TimeZone.getTimeZone("GMT"));
 		return format;
 	});
-    private static final ThreadLocal<DateFormat> DATE_TIME_FORMAT_CACHE = ThreadLocal.withInitial(() -> new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss"));
+    private static final ThreadLocal<DateFormat> DATE_TIME_FORMAT_CACHE = ThreadLocal.withInitial(() -> new SimpleDateFormat( "yyyyMMdd-HH:mm:ss"));
 	private static final ThreadLocal<DateFormat> TIME_FORMAT_CACHE = ThreadLocal.withInitial(() -> new SimpleDateFormat( "HH:mm:ss"));
 
+	/** Format with 8 decimals. */
+	public static String fmt8( double v) {
+		return v == Double.MAX_VALUE ? null : FMT8.format( v);
+	}
+	
 	/** Format with two decimals. */
 	public static String fmt( double v) {
 		return v == Double.MAX_VALUE ? null : FMT2.format( v);

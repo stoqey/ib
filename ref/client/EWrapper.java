@@ -13,8 +13,8 @@ public interface EWrapper {
     // Interface methods
     ///////////////////////////////////////////////////////////////////////
     void tickPrice( int tickerId, int field, double price, TickAttrib attrib);
-    void tickSize( int tickerId, int field, int size);
-    void tickOptionComputation( int tickerId, int field, double impliedVol,
+    void tickSize( int tickerId, int field, Decimal size);
+    void tickOptionComputation( int tickerId, int field, int tickAttrib, double impliedVol,
     		double delta, double optPrice, double pvDividend,
     		double gamma, double vega, double theta, double undPrice);
 	void tickGeneric(int tickerId, int tickType, double value);
@@ -22,13 +22,13 @@ public interface EWrapper {
 	void tickEFP(int tickerId, int tickType, double basisPoints,
 			String formattedBasisPoints, double impliedFuture, int holdDays,
 			String futureLastTradeDate, double dividendImpact, double dividendsToLastTradeDate);
-    void orderStatus( int orderId, String status, double filled, double remaining,
+    void orderStatus( int orderId, String status, Decimal filled, Decimal remaining,
             double avgFillPrice, int permId, int parentId, double lastFillPrice,
             int clientId, String whyHeld, double mktCapPrice);
     void openOrder( int orderId, Contract contract, Order order, OrderState orderState);
     void openOrderEnd();
     void updateAccountValue(String key, String value, String currency, String accountName);
-    void updatePortfolio(Contract contract, double position, double marketPrice, double marketValue,
+    void updatePortfolio(Contract contract, Decimal position, double marketPrice, double marketValue,
             double averageCost, double unrealizedPNL, double realizedPNL, String accountName);
     void updateAccountTime(String timeStamp);
     void accountDownloadEnd(String accountName);
@@ -38,9 +38,9 @@ public interface EWrapper {
     void contractDetailsEnd(int reqId);
     void execDetails( int reqId, Contract contract, Execution execution);
     void execDetailsEnd( int reqId);
-    void updateMktDepth( int tickerId, int position, int operation, int side, double price, int size);
+    void updateMktDepth( int tickerId, int position, int operation, int side, double price, Decimal size);
     void updateMktDepthL2( int tickerId, int position, String marketMaker, int operation,
-    		int side, double price, int size, boolean isSmartDepth);
+    		int side, double price, Decimal size, boolean isSmartDepth);
     void updateNewsBulletin( int msgId, int msgType, String message, String origExchange);
     void managedAccounts( String accountsList);
     void receiveFA(int faDataType, String xml);
@@ -49,14 +49,14 @@ public interface EWrapper {
     void scannerData(int reqId, int rank, ContractDetails contractDetails, String distance,
     		String benchmark, String projection, String legsStr);
     void scannerDataEnd(int reqId);
-    void realtimeBar(int reqId, long time, double open, double high, double low, double close, long volume, double wap, int count);
+    void realtimeBar(int reqId, long time, double open, double high, double low, double close, Decimal volume, Decimal wap, int count);
     void currentTime(long time);
     void fundamentalData(int reqId, String data);
     void deltaNeutralValidation(int reqId, DeltaNeutralContract deltaNeutralContract);
     void tickSnapshotEnd(int reqId);
     void marketDataType(int reqId, int marketDataType);
     void commissionReport(CommissionReport commissionReport);
-    void position(String account, Contract contract, double pos, double avgCost);
+    void position(String account, Contract contract, Decimal pos, double avgCost);
     void positionEnd();
     void accountSummary(int reqId, String account, String tag, String value, String currency);
     void accountSummaryEnd(int reqId);
@@ -68,10 +68,10 @@ public interface EWrapper {
     void displayGroupUpdated( int reqId, String contractInfo);
     void error( Exception e);
     void error( String str);
-    void error(int id, int errorCode, String errorMsg);
+    void error(int id, int errorCode, String errorMsg, String advancedOrderRejectJson);
     void connectionClosed();
     void connectAck();
-    void positionMulti( int reqId, String account, String modelCode, Contract contract, double pos, double avgCost);
+    void positionMulti( int reqId, String account, String modelCode, Contract contract, Decimal pos, double avgCost);
     void positionMultiEnd( int reqId);
     void accountUpdateMulti( int reqId, String account, String modelCode, String key, String value, String currency);
     void accountUpdateMultiEnd( int reqId);
@@ -96,15 +96,20 @@ public interface EWrapper {
 	void rerouteMktDepthReq(int reqId, int conId, String exchange);
     void marketRule(int marketRuleId, PriceIncrement[] priceIncrements);
 	void pnl(int reqId, double dailyPnL, double unrealizedPnL, double realizedPnL);
-	void pnlSingle(int reqId, int pos, double dailyPnL, double unrealizedPnL, double realizedPnL, double value);
+	void pnlSingle(int reqId, Decimal pos, double dailyPnL, double unrealizedPnL, double realizedPnL, double value);
     void historicalTicks(int reqId, List<HistoricalTick> ticks, boolean done);
     void historicalTicksBidAsk(int reqId, List<HistoricalTickBidAsk> ticks, boolean done);
     void historicalTicksLast(int reqId, List<HistoricalTickLast> ticks, boolean done);
-    void tickByTickAllLast(int reqId, int tickType, long time, double price, int size, TickAttribLast tickAttribLast, String exchange, String specialConditions);
-    void tickByTickBidAsk(int reqId, long time, double bidPrice, double askPrice, int bidSize, int askSize, TickAttribBidAsk tickAttribBidAsk);
+    void tickByTickAllLast(int reqId, int tickType, long time, double price, Decimal size, TickAttribLast tickAttribLast, String exchange, String specialConditions);
+    void tickByTickBidAsk(int reqId, long time, double bidPrice, double askPrice, Decimal bidSize, Decimal askSize, TickAttribBidAsk tickAttribBidAsk);
     void tickByTickMidPoint(int reqId, long time, double midPoint);
     void orderBound(long orderId, int apiClientId, int apiOrderId);
     void completedOrder(Contract contract, Order order, OrderState orderState);
     void completedOrdersEnd();
+    void replaceFAEnd(int reqId, String text);
+	void wshMetaData(int reqId, String dataJson);
+	void wshEventData(int reqId, String dataJson);
+    void historicalSchedule(int reqId, String startDateTime, String endDateTime, String timeZone, List<HistoricalSession> sessions);
+    void userInfo(int reqId, String whiteBrandingId);
 }
 

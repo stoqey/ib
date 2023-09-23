@@ -5,6 +5,7 @@ import { Subscription } from "rxjs";
 
 import { IBApiNextError } from "../api-next";
 import { BarSizeSetting } from "../api/historical/bar-size-setting";
+import { WhatToShow } from "../api/historical/what-to-show";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -59,7 +60,7 @@ class PrintPositionsApp extends IBApiNextApp {
           exchange: this.cmdLineArgs.exchange as string,
         },
         this.cmdLineArgs.barSize as BarSizeSetting,
-        "MIDPOINT",
+        WhatToShow.MIDPOINT,
         1,
       )
       .subscribe({

@@ -10,8 +10,8 @@ public class FutContract extends Contract {
     public FutContract(String symbol, String lastTradeDateOrContractMonth) {
         symbol(symbol);
         secType(SecType.FUT);
-        exchange("ONE");
-        currency("USD");
+        exchange("EUREX");
+        currency("EUR");
         lastTradeDateOrContractMonth(lastTradeDateOrContractMonth);
     }
 

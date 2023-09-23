@@ -1,5 +1,7 @@
+import { WhatToShow } from "../..";
 import { ScanCode } from "../../api-next/market-scanner/market-scanner";
 import { Contract } from "../../api/contract/contract";
+import WshEventData from "../../api/contract/wsh";
 import TagValue from "../../api/data/container/tag-value";
 import FADataType from "../../api/data/enum/fad-data-type";
 import LogLevel from "../../api/data/enum/log-level";
@@ -16,8 +18,15 @@ import PriceCondition from "../../api/order/condition/price-condition";
 import TimeCondition from "../../api/order/condition/time-condition";
 import VolumeCondition from "../../api/order/condition/volume-condition";
 import { OrderConditionType } from "../../api/order/enum/order-condition-type";
-import { OrderType } from "../../api/order/enum/orderType";
-import { Order } from "../../api/order/order";
+import {
+  isPegBenchOrder,
+  isPegBestOrder,
+  isPegMidOrder,
+} from "../../api/order/enum/orderType";
+import {
+  COMPETE_AGAINST_BEST_OFFSET_UP_TO_MID,
+  Order,
+} from "../../api/order/order";
 import { ExecutionFilter } from "../../api/report/executionFilter";
 import { ErrorCode } from "../../common/errorCode";
 
@@ -517,10 +526,26 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   /**
    * Encode a CANCEL_ORDER message to an array of tokens.
    */
-  cancelOrder(id: number): void {
+  cancelOrder(id: number, manualCancelOrderTime?: string): void {
     const version = 1;
 
-    this.sendMsg(OUT_MSG_ID.CANCEL_ORDER, version, id);
+    if (
+      this.serverVersion < MIN_SERVER_VER.MANUAL_ORDER_TIME &&
+      manualCancelOrderTime?.length
+    ) {
+      return this.emitError(
+        "It does not support manual order cancel time attribute",
+        ErrorCode.UPDATE_TWS,
+        id,
+      );
+    }
+
+    const tokens: unknown[] = [OUT_MSG_ID.CANCEL_ORDER, version, id];
+
+    if (this.serverVersion >= MIN_SERVER_VER.MANUAL_ORDER_TIME)
+      tokens.push(manualCancelOrderTime);
+
+    this.sendMsg(tokens);
   }
 
   /**
@@ -1052,10 +1077,36 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
 
     if (
       this.serverVersion < MIN_SERVER_VER.ADVANCED_ORDER_REJECT &&
-      order.advancedErrorOverride != null
+      order.advancedErrorOverride != undefined
     ) {
       return this.emitError(
         "It does not support advanced error override attribute",
+        ErrorCode.UPDATE_TWS,
+        id,
+      );
+    }
+
+    if (
+      this.serverVersion < MIN_SERVER_VER.MANUAL_ORDER_TIME &&
+      order.manualOrderTime?.length
+    ) {
+      return this.emitError(
+        "It does not support manual order time attribute",
+        ErrorCode.UPDATE_TWS,
+        id,
+      );
+    }
+
+    if (
+      this.serverVersion < MIN_SERVER_VER.PEGBEST_PEGMID_OFFSETS &&
+      (order.minTradeQty !== undefined ||
+        order.minCompeteSize !== undefined ||
+        order.competeAgainstBestOffset !== undefined ||
+        order.midOffsetAtWhole !== undefined ||
+        order.midOffsetAtHalf !== undefined)
+    ) {
+      return this.emitError(
+        "It does not support PEG BEST / PEG MID order parameters: minTradeQty, minCompeteSize, competeAgainstBestOffset, midOffsetAtWhole and midOffsetAtHalf",
         ErrorCode.UPDATE_TWS,
         id,
       );
@@ -1226,10 +1277,12 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     if (this.serverVersion >= 13) {
+      // srv v13 and above
       tokens.push(order.faGroup);
       tokens.push(order.faMethod);
       tokens.push(order.faPercentage);
-      tokens.push(order.faProfile);
+      if (this.serverVersion < MIN_SERVER_VER.FA_PROFILE_DESUPPORT)
+        tokens.push(""); // send deprecated faProfile field
     }
 
     if (this.serverVersion >= MIN_SERVER_VER.MODELS_SUPPORT) {
@@ -1438,7 +1491,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     if (this.serverVersion >= MIN_SERVER_VER.PEGGED_TO_BENCHMARK) {
-      if (order.orderType == OrderType.PEG_BENCH) {
+      if (isPegBenchOrder(order.orderType)) {
         tokens.push(order.referenceContractId);
         tokens.push(order.isPeggedChangeAmountDecrease);
         tokens.push(order.peggedChangeAmount);
@@ -1585,6 +1638,29 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     if (this.serverVersion >= MIN_SERVER_VER.ADVANCED_ORDER_REJECT)
       tokens.push(order.advancedErrorOverride);
 
+    if (this.serverVersion >= MIN_SERVER_VER.MANUAL_ORDER_TIME)
+      tokens.push(order.manualOrderTime);
+
+    if (this.serverVersion >= MIN_SERVER_VER.PEGBEST_PEGMID_OFFSETS) {
+      let sendMidOffsets = false;
+      if (contract.exchange == "IBKRATS") tokens.push(order.minTradeQty);
+      if (isPegBestOrder(order.orderType)) {
+        tokens.push(order.minCompeteSize);
+        tokens.push(order.competeAgainstBestOffset);
+        if (
+          order.competeAgainstBestOffset ==
+          COMPETE_AGAINST_BEST_OFFSET_UP_TO_MID
+        )
+          sendMidOffsets = true;
+      } else if (isPegMidOrder(order.orderType)) {
+        sendMidOffsets = true;
+      }
+      if (sendMidOffsets) {
+        tokens.push(order.midOffsetAtWhole);
+        tokens.push(order.midOffsetAtHalf);
+      }
+    }
+
     this.sendMsg(tokens);
   }
 
@@ -1596,8 +1672,18 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "This feature is only available for versions of TWS >= 13.",
         ErrorCode.UPDATE_TWS,
-        -1,
+        reqId,
       );
+    }
+
+    if (this.serverVersion >= MIN_SERVER_VER.FA_PROFILE_DESUPPORT) {
+      if (faDataType == FADataType.PROFILES) {
+        return this.emitError(
+          "FA Profile is not supported anymore, use FA Group instead.",
+          ErrorCode.UPDATE_TWS,
+          reqId,
+        );
+      }
     }
 
     const version = 1;
@@ -1754,7 +1840,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   reqHeadTimestamp(
     reqId: number,
     contract: Contract,
-    whatToShow: string,
+    whatToShow: WhatToShow,
     useRTH: boolean,
     formatDate: number,
   ): void {
@@ -1818,6 +1904,16 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       }
     }
 
+    if (this.serverVersion < MIN_SERVER_VER.BOND_ISSUERID) {
+      if (contract.issuerId) {
+        return this.emitError(
+          "It does not support issuerId parameter in reqContractDetails.",
+          ErrorCode.UPDATE_TWS,
+          reqId,
+        );
+      }
+    }
+
     const version = 8;
 
     // send req mkt data msg
@@ -1871,6 +1967,9 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       args.push(contract.secIdType);
       args.push(contract.secId);
     }
+
+    if (this.serverVersion >= MIN_SERVER_VER.BOND_ISSUERID)
+      args.push(contract.issuerId);
 
     this.sendMsg(args);
   }
@@ -2002,7 +2101,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     endDateTime: string,
     durationStr: string,
     barSizeSetting: BarSizeSetting,
-    whatToShow: string,
+    whatToShow: WhatToShow,
     useRTH: number,
     formatDate: number,
     keepUpToDate: boolean,
@@ -2120,7 +2219,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     startDateTime: string,
     endDateTime: string,
     numberOfTicks: number,
-    whatToShow: string,
+    whatToShow: WhatToShow,
     useRth: number,
     ignoreSize: boolean,
     miscOptions?: TagValue[],
@@ -2590,7 +2689,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     tickerId: number,
     contract: Contract,
     barSize: number,
-    whatToShow: string,
+    whatToShow: WhatToShow,
     useRTH: boolean,
     realTimeBarsOptions: TagValue[],
   ): void {
@@ -2750,13 +2849,23 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   /**
    * Encode a REQ_FA message.
    */
-  requestFA(faDataType: number): void {
+  requestFA(faDataType: FADataType): void {
     if (this.serverVersion < 13) {
       return this.emitError(
         "This feature is only available for versions of TWS >= 13.",
         ErrorCode.UPDATE_TWS,
         -1,
       );
+    }
+
+    if (this.serverVersion >= MIN_SERVER_VER.FA_PROFILE_DESUPPORT) {
+      if (faDataType == FADataType.PROFILES) {
+        return this.emitError(
+          "FA Profile is not supported anymore, use FA Group instead.",
+          ErrorCode.UPDATE_TWS,
+          -1,
+        );
+      }
     }
 
     const version = 1;
@@ -3090,7 +3199,6 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         ErrorCode.UPDATE_TWS,
         -1,
       );
-      return;
     }
 
     this.sendMsg(OUT_MSG_ID.REQ_WSH_META_DATA, reqId);
@@ -3103,23 +3211,65 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         ErrorCode.UPDATE_TWS,
         -1,
       );
-      return;
     }
 
     this.sendMsg(OUT_MSG_ID.CANCEL_WSH_META_DATA, reqId);
   }
 
-  reqWshEventData(reqId: number, conId: number): void {
+  reqWshEventData(reqId: number, wshEventData: WshEventData): void {
     if (this.serverVersion < MIN_SERVER_VER.WSHE_CALENDAR) {
       return this.emitError(
         "It does not support WSHE Calendar API.",
         ErrorCode.UPDATE_TWS,
         -1,
       );
-      return;
+    }
+    if (
+      this.serverVersion < MIN_SERVER_VER.WSH_EVENT_DATA_FILTERS &&
+      (wshEventData.filter?.length ||
+        wshEventData.fillWatchlist ||
+        wshEventData.fillPortfolio ||
+        wshEventData.fillCompetitors)
+    ) {
+      return this.emitError(
+        "It does not support WSH event data filters.",
+        ErrorCode.UPDATE_TWS,
+        reqId,
+      );
+    }
+    if (
+      this.serverVersion < MIN_SERVER_VER.WSH_EVENT_DATA_FILTERS_DATE &&
+      (wshEventData.startDate ||
+        wshEventData.endDate ||
+        wshEventData.totalLimit)
+    ) {
+      return this.emitError(
+        "It does not support WSH event data date filters.",
+        ErrorCode.UPDATE_TWS,
+        reqId,
+      );
     }
 
-    this.sendMsg(OUT_MSG_ID.REQ_WSH_EVENT_DATA, reqId, conId);
+    const tokens: unknown[] = [
+      OUT_MSG_ID.REQ_WSH_EVENT_DATA,
+      reqId,
+      wshEventData.conId,
+    ];
+
+    if (this.serverVersion >= MIN_SERVER_VER.WSH_EVENT_DATA_FILTERS) {
+      tokens.push(wshEventData.filter);
+      tokens.push(wshEventData.fillWatchlist);
+      tokens.push(wshEventData.fillPortfolio);
+      tokens.push(wshEventData.fillCompetitors);
+    }
+
+    if (this.serverVersion >= MIN_SERVER_VER.WSH_EVENT_DATA_FILTERS_DATE) {
+      tokens.push(wshEventData.startDate);
+      tokens.push(wshEventData.endDate);
+      tokens.push(wshEventData.totalLimit);
+    }
+
+    this.sendMsg(tokens);
   }
 
   reqCancelWshEventData(reqId: number): void {
@@ -3129,7 +3279,6 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         ErrorCode.UPDATE_TWS,
         -1,
       );
-      return;
     }
 
     this.sendMsg(OUT_MSG_ID.CANCEL_WSH_EVENT_DATA, reqId);
@@ -3142,7 +3291,6 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         ErrorCode.UPDATE_TWS,
         -1,
       );
-      return;
     }
 
     this.sendMsg(OUT_MSG_ID.REQ_USER_INFO, reqId);

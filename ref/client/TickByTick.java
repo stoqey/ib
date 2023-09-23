@@ -7,18 +7,18 @@ public class TickByTick {
     private int m_tickType; // 0 - None, 1 - Last, 2 - AllLast, 3 -BidAsk, 4 - MidPoint
     private long m_time;  // in seconds
     private double m_price;
-    private long m_size;
+    private Decimal m_size;
     private TickAttribLast m_tickAttribLast;
     private TickAttribBidAsk m_tickAttribBidAsk;
     private String m_exchange;
     private String m_specialConditions;
     private double m_bidPrice;
-    private long m_bidSize;
+    private Decimal m_bidSize;
     private double m_askPrice;
-    private long m_askSize;
+    private Decimal m_askSize;
     private double m_midPoint;
 
-    public TickByTick(int tickType, long time, double price, long size, TickAttribLast tickAttribLast, String exchange, String specialConditions) {
+    public TickByTick(int tickType, long time, double price, Decimal size, TickAttribLast tickAttribLast, String exchange, String specialConditions) {
     	m_tickType = tickType;
         m_time = time;
         m_price = price;
@@ -28,7 +28,7 @@ public class TickByTick {
         m_specialConditions = specialConditions;
     }
 
-    public TickByTick(long time, double bidPrice, long bidSize, double askPrice, long askSize, TickAttribBidAsk tickAttribBidAsk) {
+    public TickByTick(long time, double bidPrice, Decimal bidSize, double askPrice, Decimal askSize, TickAttribBidAsk tickAttribBidAsk) {
     	m_tickType = 3;
         m_time = time;
         m_bidPrice = bidPrice;
@@ -56,7 +56,7 @@ public class TickByTick {
         return m_price;
     }
 
-    public long size() {
+    public Decimal size() {
         return m_size;
     }
 
@@ -94,7 +94,7 @@ public class TickByTick {
         return m_bidPrice;
     }
 
-    public long bidSize() {
+    public Decimal bidSize() {
         return m_bidSize;
     }
     
@@ -102,7 +102,7 @@ public class TickByTick {
         return m_askPrice;
     }
 
-    public long askSize() {
+    public Decimal askSize() {
         return m_askSize;
     }
 

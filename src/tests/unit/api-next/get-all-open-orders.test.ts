@@ -1,4 +1,4 @@
-import IBApi, { IBApiNext } from "../../..";
+import IBApi, { IBApiNext, TimeInForce } from "../../..";
 import { OpenOrder } from "../../../api-next/order/open-order";
 import { EventName } from "../../../api/data/enum/event-name";
 import SecType from "../../../api/data/enum/sec-type";
@@ -35,7 +35,7 @@ describe("RxJS Wrapper: getAllOpenOrders", () => {
           orderType: OrderType.LMT,
           lmtPrice: 7.1,
           auxPrice: 0,
-          tif: "GTC",
+          tif: TimeInForce.GTC,
           ocaGroup: "",
           account: "DU*******",
           openClose: "",
@@ -50,7 +50,6 @@ describe("RxJS Wrapper: getAllOpenOrders", () => {
           faGroup: "",
           faMethod: "",
           faPercentage: "",
-          faProfile: "",
           modelCode: "",
           goodTillDate: "",
           rule80A: "0",

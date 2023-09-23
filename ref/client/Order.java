@@ -31,6 +31,7 @@ public class Order {
     final public static int 	AUCTION_IMPROVEMENT = 2;
     final public static int 	AUCTION_TRANSPARENT = 3;
     final public static String  EMPTY_STR = "";
+    final public static double COMPETE_AGAINST_BEST_OFFSET_UP_TO_MID = Double.POSITIVE_INFINITY;
 
     // order id's
     private int  m_clientId;
@@ -40,7 +41,7 @@ public class Order {
 
     // primary attributes
     private String      m_action = "BUY";
-    private double      m_totalQuantity;
+    private Decimal     m_totalQuantity = Decimal.INVALID;
     private int         m_displaySize;
     private String      m_orderType = "LMT";
     private double      m_lmtPrice = Double.MAX_VALUE;
@@ -126,7 +127,7 @@ public class Order {
     private boolean m_overridePercentageConstraints;
     
     // Institutional orders only
-    private String m_openClose = "O"; // O=Open, C=Close
+    private String m_openClose;       // O=Open, C=Close
     private int    m_origin;          // 0=Customer, 1=Firm
     private int    m_shortSaleSlot;   // 1 if you hold the shares, 2 if they will be delivered from elsewhere.  Only for Action="SSHORT
     private String m_designatedLocation; // set when slot=2 only.
@@ -137,9 +138,6 @@ public class Order {
     
     // SMART routing only
     private double  m_discretionaryAmt = Double.MAX_VALUE;
-    private boolean m_eTradeOnly;
-    private boolean m_firmQuoteOnly;
-    private double  m_nbboPriceCap = Double.MAX_VALUE;
     private boolean m_optOutSmartRouting;
 
     // BOX or VOL ORDERS ONLY
@@ -209,7 +207,7 @@ public class Order {
     private boolean m_discretionaryUpToLimitPrice;
     
     private String  m_autoCancelDate;
-    private double  m_filledQuantity;
+    private Decimal m_filledQuantity;
     private int     m_refFuturesConId;
     private boolean m_autoCancelParent;
     private String  m_shareholder;
@@ -218,14 +216,21 @@ public class Order {
     private long    m_parentPermId;
 
     private Boolean m_usePriceMgmtAlgo;
+    private int     m_duration;
+    private int     m_postToAts;
+    private String  m_advancedErrorOverride;
+    private String  m_manualOrderTime;
+    private int     m_minTradeQty;
+    private int     m_minCompeteSize;
+    private double  m_competeAgainstBestOffset;
+    private double  m_midOffsetAtWhole;
+    private double  m_midOffsetAtHalf;
 	
 	// getters
     public Action  action()                         { return Action.get(m_action); }
     public String  getAction()                      { return m_action; }
     public boolean allOrNone()                      { return m_allOrNone; }
     public boolean blockOrder()                     { return m_blockOrder; }
-    public boolean eTradeOnly()                     { return m_eTradeOnly; }
-    public boolean firmQuoteOnly()                  { return m_firmQuoteOnly; }
     public boolean hidden()                         { return m_hidden; }
     public boolean outsideRth()                     { return m_outsideRth; }
     public boolean notHeld()                        { return m_notHeld; }
@@ -241,7 +246,6 @@ public class Order {
     public double deltaNeutralAuxPrice()            { return m_deltaNeutralAuxPrice; }
     public double discretionaryAmt()                { return m_discretionaryAmt; }
     public double lmtPrice()                        { return m_lmtPrice; }
-    public double nbboPriceCap()                    { return m_nbboPriceCap; }
     public double percentOffset()                   { return m_percentOffset; }
     public double scalePriceAdjustValue()           { return m_scalePriceAdjustValue; }
     public double scalePriceIncrement()             { return m_scalePriceIncrement; }
@@ -271,7 +275,7 @@ public class Order {
     public int scaleInitPosition()                  { return m_scaleInitPosition; }
     public int scalePriceAdjustInterval()           { return m_scalePriceAdjustInterval; }
     public int scaleSubsLevelSize()                 { return m_scaleSubsLevelSize; }
-    public double totalQuantity()                   { return m_totalQuantity; }
+    public Decimal totalQuantity()                  { return m_totalQuantity; }
     public int permId()                             { return m_permId; }
     public Method faMethod()                        { return Method.get(m_faMethod); }
     public String getFaMethod()                     { return m_faMethod; }
@@ -353,7 +357,7 @@ public class Order {
     public boolean isOmsContainer()                 { return m_isOmsContainer; }
     public boolean discretionaryUpToLimitPrice()    { return m_discretionaryUpToLimitPrice; }
     public String autoCancelDate()                  { return m_autoCancelDate; }
-    public double filledQuantity()                  { return m_filledQuantity; }
+    public Decimal filledQuantity()                 { return m_filledQuantity; }
     public int refFuturesConId()                    { return m_refFuturesConId; }
     public boolean autoCancelParent()               { return m_autoCancelParent; }
     public String shareholder()                     { return m_shareholder; }
@@ -361,6 +365,16 @@ public class Order {
     public boolean routeMarketableToBbo()           { return m_routeMarketableToBbo; }
     public long parentPermId()                      { return m_parentPermId; }
     public Boolean usePriceMgmtAlgo()               { return m_usePriceMgmtAlgo; }
+    public int duration()                           { return m_duration; }
+    public int postToAts()                          { return m_postToAts; }
+    public String advancedErrorOverride()           { return m_advancedErrorOverride; }
+    public String manualOrderTime()                 { return m_manualOrderTime; }
+    public int minTradeQty()                        { return m_minTradeQty; }
+    public int minCompeteSize()                     { return m_minCompeteSize; }
+    public double competeAgainstBestOffset()        { return m_competeAgainstBestOffset; }
+    public boolean isCompeteAgainstBestOffsetUpToMid() { return m_competeAgainstBestOffset == COMPETE_AGAINST_BEST_OFFSET_UP_TO_MID; }
+    public double midOffsetAtWhole()                { return m_midOffsetAtWhole; }
+    public double midOffsetAtHalf()                 { return m_midOffsetAtHalf; }
   
 	// setters
 	public void referenceContractId(int m_referenceContractId)          { this.m_referenceContractId = m_referenceContractId; }
@@ -389,13 +403,11 @@ public class Order {
     public void deltaNeutralOrderType(String v)                         { m_deltaNeutralOrderType = v; }
     public void discretionaryAmt(double v)                              { m_discretionaryAmt = v; }
     public void displaySize(int v)                                      { m_displaySize = v; }
-    public void eTradeOnly(boolean v)                                   { m_eTradeOnly = v; }
     public void faGroup(String v)                                       { m_faGroup = v; }
     public void faMethod(Method v)                                      { m_faMethod = ( v == null ) ? null : v.getApiString(); }
     public void faMethod(String v)                                      { m_faMethod = v; }
     public void faPercentage(String v)                                  { m_faPercentage = v; }
     public void faProfile(String v)                                     { m_faProfile = v; }
-    public void firmQuoteOnly(boolean v)                                { m_firmQuoteOnly = v; }
     public void goodAfterTime(String v)                                 { m_goodAfterTime = v; }
     public void goodTillDate(String v)                                  { m_goodTillDate = v; }
     public void hedgeParam(String v)                                    { m_hedgeParam = v; }
@@ -404,7 +416,6 @@ public class Order {
     public void hidden(boolean v)                                       { m_hidden = v; }
     public void lmtPrice(double v)                                      { m_lmtPrice = v; }
     public void minQty(int v)                                           { m_minQty = v; }
-    public void nbboPriceCap(double v)                                  { m_nbboPriceCap = v; }
     public void notHeld(boolean v)                                      { m_notHeld = v; }
     public void solicited(boolean v)                                    { m_solicited = v; }
     public void ocaGroup(String v)                                      { m_ocaGroup = v; }
@@ -448,7 +459,7 @@ public class Order {
     public void sweepToFill(boolean v)                                  { m_sweepToFill = v; }
     public void tif(TimeInForce v)                                      { m_tif = ( v == null ) ? null : v.getApiString(); }
     public void tif(String v)                                           { m_tif = v; }
-    public void totalQuantity(double v)                                 { m_totalQuantity = v; }
+    public void totalQuantity(Decimal v)                                { m_totalQuantity = v; }
     public void trailingPercent(double v)                               { m_trailingPercent = v; }
     public void trailStopPrice(double v)                                { m_trailStopPrice = v; }
     public void transmit(boolean v)                                     { m_transmit = v; }
@@ -497,7 +508,7 @@ public class Order {
     public void isOmsContainer(boolean v)                               { m_isOmsContainer = v; }
     public void discretionaryUpToLimitPrice(boolean v)                  { m_discretionaryUpToLimitPrice = v; }
     public void autoCancelDate(String v)                                { m_autoCancelDate = v; }
-    public void filledQuantity(double v)                                { m_filledQuantity = v; }
+    public void filledQuantity(Decimal v)                               { m_filledQuantity = v; }
     public void refFuturesConId(int v)                                  { m_refFuturesConId = v; }
     public void autoCancelParent(boolean v)                             { m_autoCancelParent = v; }
     public void shareholder(String v)                                   { m_shareholder = v; }
@@ -505,9 +516,20 @@ public class Order {
     public void routeMarketableToBbo(boolean v)                         { m_routeMarketableToBbo = v; }
     public void parentPermId(long v)                                    { m_parentPermId = v; }
     public void usePriceMgmtAlgo(Boolean v)                             { m_usePriceMgmtAlgo = v; }
+    public void duration(int v)                                         { m_duration = v; }
+    public void postToAts(int v)                                        { m_postToAts = v; }
+    public void advancedErrorOverride(String v)                         { m_advancedErrorOverride = v; }
+    public void manualOrderTime(String v)                               { m_manualOrderTime = v; }
+    public void minTradeQty(int v)                                      { m_minTradeQty = v; }
+    public void minCompeteSize(int v)                                   { m_minCompeteSize = v; }
+    public void competeAgainstBestOffset(double v)                      { m_competeAgainstBestOffset = v; }
+    public void setCompeteAgainstBestOffsetUpToMid()                    { m_competeAgainstBestOffset = COMPETE_AGAINST_BEST_OFFSET_UP_TO_MID; }
+    public void midOffsetAtWhole(double v)                              { m_midOffsetAtWhole = v; }
+    public void midOffsetAtHalf(double v)                               { m_midOffsetAtHalf = v; }
 
 
     public Order() {
+        m_openClose = EMPTY_STR;
         m_activeStartTime = EMPTY_STR;
         m_activeStopTime = EMPTY_STR;
     	m_outsideRth = false;
@@ -543,7 +565,7 @@ public class Order {
         m_isOmsContainer = false;
         m_discretionaryUpToLimitPrice = false;
         m_autoCancelDate = EMPTY_STR;
-        m_filledQuantity = Double.MAX_VALUE;
+        m_filledQuantity = Decimal.INVALID;
         m_refFuturesConId = 0;
         m_autoCancelParent = false;
         m_shareholder = EMPTY_STR;
@@ -551,6 +573,15 @@ public class Order {
         m_routeMarketableToBbo = false;
         m_parentPermId = 0;
         m_usePriceMgmtAlgo = null;
+        m_duration = Integer.MAX_VALUE;
+        m_postToAts = Integer.MAX_VALUE;
+        m_advancedErrorOverride = EMPTY_STR;
+        m_manualOrderTime = EMPTY_STR;
+        m_minTradeQty = Integer.MAX_VALUE;
+        m_minCompeteSize = Integer.MAX_VALUE;
+        m_competeAgainstBestOffset = Double.MAX_VALUE;
+        m_midOffsetAtWhole = Double.MAX_VALUE;
+        m_midOffsetAtHalf = Double.MAX_VALUE;
     }
 
     public List<TagValue> algoParams() {
@@ -597,9 +628,6 @@ public class Order {
         	|| m_origin != l_theOther.m_origin
         	|| m_shortSaleSlot != l_theOther.m_shortSaleSlot
         	|| m_discretionaryAmt != l_theOther.m_discretionaryAmt
-        	|| m_eTradeOnly != l_theOther.m_eTradeOnly
-        	|| m_firmQuoteOnly != l_theOther.m_firmQuoteOnly
-        	|| m_nbboPriceCap != l_theOther.m_nbboPriceCap
         	|| m_optOutSmartRouting != l_theOther.m_optOutSmartRouting
         	|| m_auctionStrategy != l_theOther.m_auctionStrategy
         	|| m_startingPrice != l_theOther.m_startingPrice
@@ -655,6 +683,13 @@ public class Order {
             || m_imbalanceOnly != l_theOther.m_imbalanceOnly
             || m_routeMarketableToBbo != l_theOther.m_routeMarketableToBbo
             || m_parentPermId != l_theOther.m_parentPermId
+            || m_duration != l_theOther.m_duration
+            || m_postToAts != l_theOther.m_postToAts
+            || m_minTradeQty != l_theOther.m_minTradeQty
+            || m_minCompeteSize != l_theOther.m_minCompeteSize
+            || m_competeAgainstBestOffset != l_theOther.m_competeAgainstBestOffset
+            || m_midOffsetAtWhole != l_theOther.m_midOffsetAtWhole
+            || m_midOffsetAtHalf != l_theOther.m_midOffsetAtHalf
             ) {
         	return false;
         }
@@ -699,6 +734,8 @@ public class Order {
             || Util.StringCompare(m_mifid2ExecutionAlgo, l_theOther.m_mifid2ExecutionAlgo) != 0
             || Util.StringCompare(m_autoCancelDate, l_theOther.m_autoCancelDate) != 0 
             || Util.StringCompare(m_shareholder, l_theOther.m_shareholder) != 0 
+            || Util.StringCompare(m_advancedErrorOverride, l_theOther.m_advancedErrorOverride) != 0 
+            || Util.StringCompare(m_manualOrderTime, l_theOther.m_manualOrderTime) != 0 
             ) {
         	return false;
         }

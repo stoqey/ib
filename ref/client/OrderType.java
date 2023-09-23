@@ -23,6 +23,7 @@ public enum OrderType implements IApiEnum {
 	MTL( "MTL"),
 	PASSV_REL( "PASSV REL"),
 	PEG_BENCH( "PEG BENCH"),
+	PEG_BEST( "PEG BEST"),
 	PEG_MID( "PEG MID"),
 	PEG_MKT( "PEG MKT"),
 	PEG_PRIM( "PEG PRIM"),

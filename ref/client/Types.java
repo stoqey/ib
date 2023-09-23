@@ -25,6 +25,8 @@ import static com.ib.client.Types.AlgoParam.strategyType;
 import static com.ib.client.Types.AlgoParam.timeBetweenOrders;
 import static com.ib.client.Types.AlgoParam.useOddLots;
 import static com.ib.client.Types.AlgoParam.waitForFill;
+import static com.ib.client.Types.AlgoParam.activeTimeStart;
+import static com.ib.client.Types.AlgoParam.activeTimeEnd;
 
 public class Types {
 	public enum TickByTickType {
@@ -37,7 +39,7 @@ public class Types {
 
 	public enum AlgoParam {
 		startTime, endTime, allowPastEndTime, maxPctVol, pctVol, strategyType, noTakeLiq, riskAversion, forceCompletion, displaySize, getDone, noTradeAhead, useOddLots,
-		componentSize, timeBetweenOrders, randomizeTime20, randomizeSize55, giveUp, catchUp, waitForFill	
+		componentSize, timeBetweenOrders, randomizeTime20, randomizeSize55, giveUp, catchUp, waitForFill, activeTimeStart, activeTimeEnd, 	
 	}
 
 	public enum AlgoStrategy implements IApiEnum {
@@ -47,7 +49,7 @@ public class Types {
 		ArrivalPx( startTime, endTime, allowPastEndTime, maxPctVol, riskAversion, forceCompletion),
 		DarkIce( startTime, endTime, allowPastEndTime, displaySize),
 		PctVol( startTime, endTime, pctVol, noTakeLiq),
-		AD( startTime, endTime, componentSize, timeBetweenOrders, randomizeTime20, randomizeSize55, giveUp, catchUp, waitForFill);
+		AD( activeTimeStart, activeTimeEnd, componentSize, timeBetweenOrders, randomizeTime20, randomizeSize55, giveUp, catchUp, waitForFill);
 
 		private AlgoParam[] m_params;
 
@@ -191,7 +193,7 @@ public class Types {
 	}
 
 	public enum TimeInForce implements IApiEnum {
-		DAY, GTC, OPG, IOC, GTD, GTT, AUC, FOK, GTX, DTC;
+		DAY, GTC, OPG, IOC, GTD, GTT, AUC, FOK, GTX, DTC, Minutes;
 
         public static TimeInForce get(String apiString) {
             return getValueOf(apiString, values(), null);
@@ -232,7 +234,8 @@ public class Types {
 
 	public enum WhatToShow {
 		TRADES, MIDPOINT, BID, ASK, // << only these are valid for real-time bars
-        BID_ASK, HISTORICAL_VOLATILITY, OPTION_IMPLIED_VOLATILITY, YIELD_ASK, YIELD_BID, YIELD_BID_ASK, YIELD_LAST, ADJUSTED_LAST
+        BID_ASK, HISTORICAL_VOLATILITY, OPTION_IMPLIED_VOLATILITY, YIELD_ASK, YIELD_BID, YIELD_BID_ASK, YIELD_LAST, ADJUSTED_LAST,
+        SCHEDULE
 	}
 
 	public enum BarSize {
@@ -250,6 +253,7 @@ public class Types {
 		_20_mins("20 mins"),
 		_30_mins("30 mins"),
 		_1_hour("1 hour"),
+		_2_hours("2 hours"),
 		_4_hours("4 hours"),
 		_1_day("1 day"),
 		_1_week("1 week"),
@@ -316,7 +320,7 @@ public class Types {
 	}
 
 	public enum SecType implements IApiEnum {
-		None, STK, OPT, FUT, CONTFUT, CASH, BOND, CFD, FOP, WAR, IOPT, FWD, BAG, IND, BILL, FUND, FIXED, SLB, NEWS, CMDTY, BSK, ICU, ICS;
+		None, STK, OPT, FUT, CONTFUT, CASH, BOND, CFD, FOP, WAR, IOPT, FWD, BAG, IND, BILL, FUND, FIXED, SLB, NEWS, CMDTY, BSK, ICU, ICS, CRYPTO;
 
         public static SecType get(String str) {
             return getValueOf(str, values(), None);

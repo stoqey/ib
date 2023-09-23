@@ -69,6 +69,16 @@ export interface Contract {
   /** Identifier of the security type. */
   secId?: string;
 
+  /** Description of the contract. */
+  description?: string;
+
+  /** IssuerId of the contract. */
+  issuerId?: string;
+
+  /*
+  Combo
+  */
+
   /** Description of the combo legs. */
   comboLegsDescription?: string;
 

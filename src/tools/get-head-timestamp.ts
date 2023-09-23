@@ -2,6 +2,7 @@
  * This App will print the timestamp of earliest available historical data for a contract.
  */
 
+import { WhatToShow } from "..";
 import { IBApiNextError } from "../api-next";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
@@ -35,7 +36,7 @@ class PrintHeadTimestampApp extends IBApiNextApp {
 
     // print next unused order id
     this.api
-      .getHeadTimestamp(this.getContractArg(), "TRADES", true, 1)
+      .getHeadTimestamp(this.getContractArg(), WhatToShow.TRADES, true, 1)
       .then((timestamp) => {
         this.printText(timestamp);
         this.stop();
