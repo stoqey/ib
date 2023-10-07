@@ -1,11 +1,13 @@
-import { IBApi } from "../../../api/api";
-import ContractDetails from "../../../api/contract/contractDetails";
-import Forex from "../../../api/contract/forex";
-import Option from "../../../api/contract/option";
-import Stock from "../../../api/contract/stock";
-import { EventName } from "../../../api/data/enum/event-name";
-import OptionType from "../../../api/data/enum/option-type";
-import SecType from "../../../api/data/enum/sec-type";
+import {
+  ContractDetails,
+  EventName,
+  Forex,
+  IBApi,
+  Option,
+  OptionType,
+  SecType,
+  Stock,
+} from "../../..";
 import configuration from "../../../common/configuration";
 
 describe("IBApi reqContractDetails Tests", () => {

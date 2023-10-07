@@ -2,25 +2,22 @@
 
 export {
   AccountSummaries,
+  AccountSummariesUpdate,
   AccountSummaryTagName,
   AccountSummaryTagValues,
   AccountSummaryValue,
   AccountSummaryValues,
-  AccountSummariesUpdate,
 } from "./account/account-summary";
 
-export {
-  AccountUpdate,
-  AccountUpdatesUpdate,
-} from "./account/account-update";
+export { AccountUpdate, AccountUpdatesUpdate } from "./account/account-update";
 
 // common
 
 export { AccountId, ConId, CurrencyCode } from "./common/common-types";
-export { IBApiNextError } from "./common/error";
-export { Logger } from "./common/logger";
-export { ItemListUpdate } from "./common/item-list-update";
 export { ConnectionState } from "./common/connection-state";
+export { IBApiNextError } from "./common/error";
+export { ItemListUpdate } from "./common/item-list-update";
+export { Logger } from "./common/logger";
 
 // contract
 
@@ -29,14 +26,14 @@ export { SecurityDefinitionOptionParameterType } from "./contract/sec-def-opt-pa
 
 // market
 
-export { MarketDataType } from "./market/market-data-type";
 export {
   MarketDataTick,
   MarketDataTicks,
   MarketDataUpdate,
 } from "./market/market-data";
-import { TickType as IBApiTickType } from "../api/market/tickType";
+export { MarketDataType } from "./market/market-data-type";
 export { IBApiTickType };
+import { TickType as IBApiTickType } from "../api/market/tickType";
 import { TickType as IBApiNextTickType } from "./market/tick-type";
 export { IBApiNextTickType };
 
@@ -48,26 +45,35 @@ export { PnLSingle } from "./pnl/pnl-single";
 // position
 
 export {
-  Position,
   AccountPositions,
   AccountPositionsUpdate,
+  Position,
 } from "./position/position";
 
-// market depth
+// Market depth
 
 export {
+  OrderBook,
   OrderBookRow,
   OrderBookRowPosition,
   OrderBookRows,
-  OrderBook,
   OrderBookUpdate,
 } from "./market-depth/order-book";
 
 // Order
 
+export { ExecutionDetail } from "./order/execution-detail";
 export { OpenOrder } from "./order/open-order";
 export { OpenOrdersUpdate } from "./order/open-order-update";
-export { ExecutionDetail } from "./order/execution-detail";
+
+// Market scanner
+
+export {
+  MarketScannerItem,
+  MarketScannerItemRank,
+  MarketScannerRows,
+  MarketScannerUpdate,
+} from "./market-scanner/market-scanner";
 
 // IBApiNext
 

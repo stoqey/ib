@@ -70,9 +70,9 @@ describe("Place Orders", () => {
         expect(orderId).toEqual(refId);
         expect(contract.symbol).toEqual("AAPL");
         expect(order.totalQuantity).toEqual(2);
-        if (orderId === refId) {
-          done();
-        }
+      })
+      .on(EventName.openOrderEnd, () => {
+        done();
       })
       .on(
         EventName.error,
@@ -139,9 +139,9 @@ describe("Place Orders", () => {
     })
       .on(EventName.openOrder, (orderId, _contract, _order, _orderState) => {
         expect(orderId).toEqual(refId);
-        if (orderId === refId) {
-          done();
-        }
+      })
+      .on(EventName.openOrderEnd, () => {
+        done();
       })
       .on(
         EventName.error,

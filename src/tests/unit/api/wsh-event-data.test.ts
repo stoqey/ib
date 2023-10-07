@@ -1,8 +1,5 @@
-import { IBApi } from "../../../api/api";
-import WshEventData from "../../../api/contract/wsh";
-import { EventName } from "../../../api/data/enum/event-name";
+import { ErrorCode, EventName, IBApi, WshEventData } from "../../..";
 import configuration from "../../../common/configuration";
-import { ErrorCode } from "../../../common/errorCode";
 import logger from "../../../common/logger";
 
 describe("IBApi Fundamental Data", () => {

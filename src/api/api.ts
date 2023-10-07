@@ -928,12 +928,15 @@ export class IBApi extends EventEmitter {
    * @param reqId The request's unique identifier.
    * @param contract The contract for which we want to retrieve the data.
    * @param endDateTime Request's ending time with format yyyyMMdd HH:mm:ss {TMZ}
-   * @param durationStr The amount of time for which the data needs to be retrieved:
-   * - " S (seconds) - " D (days)
-   * - " W (weeks) - " M (months)
-   * - " Y (years)
+   * @param durationStr The amount of time for which the data needs to be retrieved (number space unit).
+   * Note: min duration is "30 S", available units:
+   * - S (seconds)
+   * - D (days)
+   * - W (weeks)
+   * - M (months)
+   * - Y (years)
    * @param barSizeSetting the size of the bar:
-   * - 1 sec
+   * - 1 secs
    * - 5 secs
    * - 15 secs
    * - 30 secs

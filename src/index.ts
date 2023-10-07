@@ -49,6 +49,7 @@ export { Future } from "./api/contract/future";
 export { Index } from "./api/contract/ind";
 export { Option } from "./api/contract/option";
 export { Stock } from "./api/contract/stock";
+export { WshEventData } from "./api/contract/wsh";
 
 // export container types
 
@@ -124,6 +125,14 @@ export { TrailingStopOrder } from "./api/order/trailingStop";
 
 export { CommissionReport } from "./api/report/commissionReport";
 export { ExecutionFilter } from "./api/report/executionFilter";
+
+// export market scanner types
+
+export {
+  Instrument,
+  LocationCode,
+  ScanCode,
+} from "./api/market-scanner/market-scanner";
 
 // export IBApi as default
 
