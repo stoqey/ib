@@ -1,3 +1,6 @@
+/**
+ * This file implements tests for the [[reqContractDetails]] API entry point.
+ */
 import {
   ContractDetails,
   EventName,
@@ -101,6 +104,39 @@ describe("IBApi reqContractDetails Tests", () => {
       })
       .on(EventName.contractDetailsEnd, (reqId) => {
         expect(reqId).toEqual(refId);
+        if (ib) ib.disconnect();
+      })
+      .on(EventName.disconnected, () => {
+        done();
+      })
+      .on(EventName.error, (err, code, reqId) => {
+        if (reqId == refId) done(`[${reqId}] ${err.message} (#${code})`);
+      });
+
+    ib.connect();
+  });
+
+  test("Option chain", (done) => {
+    const refId = 4;
+    let count = 0;
+
+    ib.once(EventName.nextValidId, (_reqId) => {
+      const contract = new Option("SPY", "20260116", 0, OptionType.Call);
+      ib.reqContractDetails(refId, contract);
+    })
+      .on(EventName.contractDetails, (reqId, details: ContractDetails) => {
+        expect(reqId).toEqual(refId);
+        expect(details.contract.secType).toEqual(SecType.OPT);
+        expect(details.contract.symbol).toEqual("SPY");
+        expect(details.contract.currency).toEqual("USD");
+        expect(details.marketName).toEqual("SPY");
+        // console.log(details.contract);
+        count++;
+      })
+      .on(EventName.contractDetailsEnd, (reqId) => {
+        expect(reqId).toEqual(refId);
+        expect(count).toBeGreaterThanOrEqual(92);
+        // console.log(count);
         if (ib) ib.disconnect();
       })
       .on(EventName.disconnected, () => {

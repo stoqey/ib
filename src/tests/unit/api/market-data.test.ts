@@ -7,7 +7,7 @@ import {
   IBApi,
   Option,
   OptionType,
-  SecType,
+  Stock,
   TickType,
 } from "../../..";
 import configuration from "../../../common/configuration";
@@ -40,12 +40,7 @@ describe("IBApi Market data Tests", () => {
     let received = false;
 
     ib.once(EventName.connected, () => {
-      const contract: Contract = {
-        symbol: "SPY",
-        currency: "USD",
-        secType: SecType.STK,
-        exchange: "SMART",
-      };
+      const contract: Contract = new Stock("SPY");
       ib.reqMktData(refId, contract, "", true, false);
     })
       .on(

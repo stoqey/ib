@@ -7,12 +7,13 @@ import {
   ErrorCode,
   EventName,
   IBApi,
+  Option,
   OptionType,
   Order,
   OrderAction,
   OrderType,
   PriceCondition,
-  SecType,
+  Stock,
   TimeInForce,
   TriggerMethod,
 } from "../../../..";
@@ -45,12 +46,7 @@ describe("Place Orders", () => {
   test("Simple placeOrder", (done) => {
     let refId: number;
 
-    const contract: Contract = {
-      symbol: "AAPL",
-      exchange: "SMART",
-      currency: "USD",
-      secType: SecType.STK,
-    };
+    const contract: Contract = new Stock("SPY");
     const order: Order = {
       orderType: OrderType.LMT,
       action: OrderAction.BUY,
@@ -103,16 +99,12 @@ describe("Place Orders", () => {
     let refId: number;
 
     // buy an Apple call, with a PriceCondition on underlying
-    const contract: Contract = {
-      symbol: "AAPL",
-      exchange: "SMART",
-      currency: "USD",
-      secType: SecType.OPT,
-      right: OptionType.Call,
-      strike: 200,
-      multiplier: 100,
-      lastTradeDateOrContractMonth: "20251219",
-    };
+    const contract: Contract = new Option(
+      "AAPL",
+      "20251219",
+      200,
+      OptionType.Call,
+    );
     const priceCondition: PriceCondition = new PriceCondition(
       29,
       TriggerMethod.Default,

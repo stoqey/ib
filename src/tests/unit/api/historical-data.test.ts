@@ -8,13 +8,13 @@ import {
   IBApi,
   Option,
   OptionType,
-  SecType,
+  Stock,
   WhatToShow,
 } from "../../..";
 import configuration from "../../../common/configuration";
 
 describe("IBApi Historical data Tests", () => {
-  jest.setTimeout(20000);
+  jest.setTimeout(10 * 1000);
 
   let ib: IBApi;
   const clientId = Math.floor(Math.random() * 32766) + 1; // ensure unique client
@@ -41,12 +41,7 @@ describe("IBApi Historical data Tests", () => {
     let counter = 0;
 
     ib.once(EventName.connected, () => {
-      const contract: Contract = {
-        symbol: "SPY",
-        currency: "USD",
-        secType: SecType.STK,
-        exchange: "SMART",
-      };
+      const contract: Contract = new Stock("SPY");
       ib.reqHistoricalData(
         refId,
         contract,
@@ -181,12 +176,7 @@ describe("IBApi Historical data Tests", () => {
     let counter = 0;
 
     ib.once(EventName.connected, () => {
-      const contract: Contract = {
-        symbol: "SPY",
-        currency: "USD",
-        secType: SecType.STK,
-        exchange: "SMART",
-      };
+      const contract: Contract = new Stock("SPY");
       ib.reqHistoricalData(
         refId,
         contract,
@@ -251,12 +241,7 @@ describe("IBApi Historical data Tests", () => {
     let counter = 0;
 
     ib.once(EventName.connected, () => {
-      const contract: Contract = {
-        symbol: "SPY",
-        currency: "USD",
-        secType: SecType.STK,
-        exchange: "SMART",
-      };
+      const contract: Contract = new Stock("SPY");
       ib.reqHistoricalData(
         refId,
         contract,
@@ -314,5 +299,37 @@ describe("IBApi Historical data Tests", () => {
       });
 
     ib.connect();
+  });
+
+  it("Test request tick history", (done) => {
+    const refId = 45;
+    let isConnected = false;
+
+    ib.on(EventName.connected, () => {
+      isConnected = true;
+    })
+      .on(EventName.historicalTicksLast, (reqId: number, ticks: []) => {
+        expect(ticks.length).toBeGreaterThan(0);
+        if (isConnected) {
+          ib.disconnect();
+        }
+        done();
+      })
+      .on(EventName.error, (err, code, reqId) => {
+        if (reqId == refId) done(`[${reqId}] ${err.message} (#${code})`);
+      });
+
+    const contract: Contract = new Stock("SPY");
+
+    ib.connect().reqHistoricalTicks(
+      refId,
+      contract,
+      "20210101-16:00:00",
+      null,
+      1000,
+      WhatToShow.TRADES,
+      0,
+      true,
+    );
   });
 });

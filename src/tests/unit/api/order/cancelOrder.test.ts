@@ -9,7 +9,7 @@ import {
   Order,
   OrderAction,
   OrderType,
-  SecType,
+  Stock,
   TimeInForce,
 } from "../../../..";
 import configuration from "../../../../common/configuration";
@@ -41,12 +41,7 @@ describe("CancelOrder", () => {
   test("cancelOrder", (done) => {
     let refId: number;
 
-    const contract: Contract = {
-      symbol: "AAPL",
-      exchange: "SMART",
-      currency: "USD",
-      secType: SecType.STK,
-    };
+    const contract: Contract = new Stock("SPY");
     const order: Order = {
       orderType: OrderType.LMT,
       action: OrderAction.BUY,
