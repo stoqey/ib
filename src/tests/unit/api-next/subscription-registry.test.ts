@@ -49,6 +49,10 @@ describe("Subscription registry Tests", () => {
       next: (data) => {
         console.log(data);
       },
+      complete: () => {
+        console.log("getOpenOrders completed.");
+        done();
+      },
       error: (err: IBApiNextError) => {
         console.error(`getOpenOrders failed with '${err.error.message}'`);
       },
@@ -58,7 +62,7 @@ describe("Subscription registry Tests", () => {
       .getAllOpenOrders()
       .then((orders) => {
         console.log(orders);
-        done();
+        subscription$.unsubscribe();
       })
       .catch((err: IBApiNextError) => {
         console.error(`getAllOpenOrders failed with '${err}'`);
