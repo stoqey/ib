@@ -10,6 +10,9 @@ export enum ErrorCode {
   /** Already connected. */
   ALREADY_CONNECTED = 501,
 
+  /** Requested market data is not subscribed. Delayed market data is not available. */
+  REQ_MKT_DATA_NOT_AVAIL = 354,
+
   /**
    * Couldn't connect to TWS.
    *

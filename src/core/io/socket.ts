@@ -34,6 +34,15 @@ const EOL = "\0";
  */
 // const CONNECT_DELAY = 600;
 
+export const ConnectionStatus = {
+  Disconnected: 0,
+  Disconnecting: 1,
+  Connecting: 2,
+  Connected: 3,
+} as const;
+export type ConnectionStatus =
+  (typeof ConnectionStatus)[keyof typeof ConnectionStatus];
+
 /**
  * @internal
  *
@@ -62,8 +71,8 @@ export class Socket {
   /** The TCP client socket. */
   private client?: net.Socket;
 
-  /** `true` if the TCP socket is connected and [[OUT_MSG_ID.START_API]] has been sent, `false` otherwise.  */
-  private _connected = false;
+  /** `connected` if the TCP socket is connected and [[OUT_MSG_ID.START_API]] has been sent.  */
+  private _status: ConnectionStatus = ConnectionStatus.Disconnected;
 
   /** The IB API Server version, or 0 if not connected yet. */
   private _serverVersion = 0;
@@ -91,7 +100,12 @@ export class Socket {
 
   /** Returns `true` if connected to TWS/IB Gateway, `false` otherwise.  */
   get connected(): boolean {
-    return this._connected;
+    return this._status === ConnectionStatus.Connected;
+  }
+
+  /** Returns connection status */
+  get status(): ConnectionStatus {
+    return this._status;
   }
 
   /** Returns the IB API Server version. */
@@ -124,6 +138,10 @@ export class Socket {
    * default client id (0) will used.
    */
   connect(clientId?: number): void {
+    // Reject any connect attempt is not disconnected
+    if (this._status >= ConnectionStatus.Connecting) return;
+    this._status = ConnectionStatus.Connecting;
+
     // update client id
 
     if (clientId !== undefined) {
@@ -161,6 +179,8 @@ export class Socket {
    * Disconnect from API server.
    */
   disconnect(): void {
+    this._status = ConnectionStatus.Disconnecting;
+
     // pause controller while connection is down.
 
     this.controller.pause();
@@ -324,7 +344,7 @@ export class Socket {
    * Called when first data has arrived on the connection.
    */
   private onServerVersion(tokens: string[]): void {
-    this._connected = true;
+    this._status = ConnectionStatus.Connected;
 
     this._serverVersion = parseInt(tokens[0], 10);
     this._serverConnectionTime = tokens[1];
@@ -415,8 +435,8 @@ export class Socket {
    * Called when TCP socket connection has been closed.
    */
   private onEnd(): void {
-    if (this._connected) {
-      this._connected = false;
+    if (this._status) {
+      this._status = ConnectionStatus.Disconnected;
       this.controller.emitEvent(EventName.disconnected);
     }
 

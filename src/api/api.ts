@@ -3,7 +3,7 @@
  */
 /* eslint @typescript-eslint/no-unsafe-declaration-merging:warn */
 import { EventEmitter } from "eventemitter3";
-import { DurationUnit, WhatToShow } from "..";
+import { DurationUnit, MarketDataType, WhatToShow } from "..";
 
 import { ErrorCode } from "../common/errorCode";
 import { Controller } from "../core/io/controller";
@@ -1096,7 +1096,7 @@ export class IBApi extends EventEmitter {
    * - 3 (delayed) enables delayed and disables delayed-frozen market data.
    * - 4 (delayed-frozen) enables delayed and delayed-frozen market data.
    */
-  reqMarketDataType(marketDataType: number): IBApi {
+  reqMarketDataType(marketDataType: MarketDataType): IBApi {
     this.controller.schedule(() =>
       this.controller.encoder.reqMarketDataType(marketDataType),
     );
