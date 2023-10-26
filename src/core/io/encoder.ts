@@ -1,4 +1,4 @@
-import { WhatToShow } from "../..";
+import { MarketDataType, WhatToShow } from "../..";
 import { ScanCode } from "../../api-next/market-scanner/market-scanner";
 import { Contract } from "../../api/contract/contract";
 import WshEventData from "../../api/contract/wsh";
@@ -2362,7 +2362,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   /**
    * Encode a REQ_MARKET_DATA_TYPE message.
    */
-  reqMarketDataType(marketDataType: number): void {
+  reqMarketDataType(marketDataType: MarketDataType): void {
     if (this.serverVersion < MIN_SERVER_VER.REQ_MARKET_DATA_TYPE) {
       return this.emitError(
         "It does not support marketDataType requests.",

@@ -41,10 +41,10 @@ class OpenOrdersApp extends IBApiNextApp {
           this.printObject(data);
         },
         error: (err: IBApiNextError) => {
-          this.error(`getOpenOrders failed with '${err.error.message}'`);
+          this.error(`getAutoOpenOrders failed with '${err.error.message}'`);
         },
         complete: () => {
-          console.log("getOpenOrders completed.");
+          console.log("getAutoOpenOrders completed.");
         },
       });
   }

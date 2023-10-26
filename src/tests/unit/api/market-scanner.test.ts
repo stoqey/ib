@@ -1,11 +1,11 @@
 import {
+  ContractDetails,
+  EventName,
+  IBApi,
   Instrument,
   LocationCode,
   ScanCode,
-} from "../../../api-next/market-scanner/market-scanner";
-import { IBApi } from "../../../api/api";
-import ContractDetails from "../../../api/contract/contractDetails";
-import { EventName } from "../../../api/data/enum/event-name";
+} from "../../..";
 import configuration from "../../../common/configuration";
 
 describe("IBApi market scanner tests", () => {

@@ -1,6 +1,4 @@
-import { IBApi } from "../../../api/api";
-import ContractDescription from "../../../api/contract/contractDescription";
-import { EventName } from "../../../api/data/enum/event-name";
+import { ContractDescription, EventName, IBApi } from "../../..";
 import configuration from "../../../common/configuration";
 
 describe("IBApi reqMatchingSymbols Tests", () => {

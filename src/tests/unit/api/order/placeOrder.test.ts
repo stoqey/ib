@@ -7,12 +7,13 @@ import {
   ErrorCode,
   EventName,
   IBApi,
+  Option,
   OptionType,
   Order,
   OrderAction,
   OrderType,
   PriceCondition,
-  SecType,
+  Stock,
   TimeInForce,
   TriggerMethod,
 } from "../../../..";
@@ -45,12 +46,7 @@ describe("Place Orders", () => {
   test("Simple placeOrder", (done) => {
     let refId: number;
 
-    const contract: Contract = {
-      symbol: "AAPL",
-      exchange: "SMART",
-      currency: "USD",
-      secType: SecType.STK,
-    };
+    const contract: Contract = new Stock("SPY");
     const order: Order = {
       orderType: OrderType.LMT,
       action: OrderAction.BUY,
@@ -70,9 +66,9 @@ describe("Place Orders", () => {
         expect(orderId).toEqual(refId);
         expect(contract.symbol).toEqual("AAPL");
         expect(order.totalQuantity).toEqual(2);
-        if (orderId === refId) {
-          done();
-        }
+      })
+      .on(EventName.openOrderEnd, () => {
+        done();
       })
       .on(
         EventName.error,
@@ -103,16 +99,12 @@ describe("Place Orders", () => {
     let refId: number;
 
     // buy an Apple call, with a PriceCondition on underlying
-    const contract: Contract = {
-      symbol: "AAPL",
-      exchange: "SMART",
-      currency: "USD",
-      secType: SecType.OPT,
-      right: OptionType.Call,
-      strike: 200,
-      multiplier: 100,
-      lastTradeDateOrContractMonth: "20251219",
-    };
+    const contract: Contract = new Option(
+      "AAPL",
+      "20251219",
+      200,
+      OptionType.Call,
+    );
     const priceCondition: PriceCondition = new PriceCondition(
       29,
       TriggerMethod.Default,
@@ -139,9 +131,9 @@ describe("Place Orders", () => {
     })
       .on(EventName.openOrder, (orderId, _contract, _order, _orderState) => {
         expect(orderId).toEqual(refId);
-        if (orderId === refId) {
-          done();
-        }
+      })
+      .on(EventName.openOrderEnd, () => {
+        done();
       })
       .on(
         EventName.error,

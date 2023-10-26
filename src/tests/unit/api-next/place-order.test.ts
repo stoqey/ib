@@ -8,7 +8,7 @@ import IBApi, {
   OrderState,
   OrderStatus,
   OrderType,
-  SecType,
+  Stock,
 } from "../../..";
 import configuration from "../../../common/configuration";
 // import configuration from "../../../common/configuration";
@@ -21,27 +21,32 @@ describe("Place orders to IB", () => {
       .on(EventName.error, (error: Error, _code: ErrorCode, _reqId: number) => {
         fail(error.message);
       })
-      .on(EventName.openOrder, (openOrderId, _contract: Contract, _order: Order, _orderState: OrderState) => {
-        expect(openOrderId).toEqual(orderId);
-        // done();
-      })
-      .on(EventName.orderStatus, (openOrderId: number, status: string, filled: number, ..._arg) => {
-        expect(openOrderId).toEqual(orderId);
-        expect(status).toEqual(OrderStatus.Submitted);
-        expect(filled).toBeFalsy();
-        // done();
-      })
+      .on(
+        EventName.openOrder,
+        (
+          openOrderId,
+          _contract: Contract,
+          _order: Order,
+          _orderState: OrderState,
+        ) => {
+          expect(openOrderId).toEqual(orderId);
+          // done();
+        },
+      )
+      .on(
+        EventName.orderStatus,
+        (openOrderId: number, status: string, filled: number, ..._arg) => {
+          expect(openOrderId).toEqual(orderId);
+          expect(status).toEqual(OrderStatus.Submitted);
+          expect(filled).toBeFalsy();
+          // done();
+        },
+      )
       .on(EventName.openOrderEnd, () => {
         done();
       });
     const orderId = 1;
-    const contract: Contract = {
-      symbol: "AAPL",
-      exchange: "SMART",
-      currency: "USD",
-      secType: SecType.STK,
-    };
-
+    const contract: Contract = new Stock("SPY");
     const order: Order = {
       orderType: OrderType.LMT,
       action: OrderAction.BUY,

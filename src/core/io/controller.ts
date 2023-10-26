@@ -7,7 +7,7 @@ import configuration from "../../common/configuration";
 import { ErrorCode } from "../../common/errorCode";
 import { Decoder, DecoderCallbacks } from "./decoder";
 import { Encoder, EncoderCallbacks } from "./encoder";
-import { Socket } from "./socket";
+import { ConnectionStatus, Socket } from "./socket";
 
 /**
  * @internal
@@ -268,7 +268,7 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
    * @see [[disconnect]]
    */
   private executeDisconnect(): void {
-    if (this.socket.connected) {
+    if (this.socket.status >= ConnectionStatus.Connecting) {
       this.socket.disconnect();
     } else {
       this.emitInfo(

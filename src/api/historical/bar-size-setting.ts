@@ -22,8 +22,8 @@ export enum BarSizeSetting {
   HOURS_FOUR = "4 hours",
   HOURS_EIGHT = "8 hours",
   DAYS_ONE = "1 day",
-  WEEKS_ONE = "1W",
-  MONTHS_ONE = "1M"
+  WEEKS_ONE = "1 week", // "1W" or "1 week"?
+  MONTHS_ONE = "1 month", // "1M" or "1 month"?
 }
 
 export default BarSizeSetting;

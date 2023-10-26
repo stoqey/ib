@@ -1725,7 +1725,7 @@ export class IBApiNext {
    * - [n] M (months)
    * - [n] Y (years)
    * @param barSizeSetting the size of the bar:
-   * - 1 sec
+   * - 1 secs
    * - 5 secs
    * - 15 secs
    * - 30 secs
@@ -1832,7 +1832,7 @@ export class IBApiNext {
    *
    * @param contract The contract for which we want to retrieve the data.
    * @param barSizeSetting the size of the bar:
-   * - 1 sec
+   * - 1 secs
    * - 5 secs
    * - 15 secs
    * - 30 secs

@@ -3,17 +3,21 @@
  */
 import {
   Contract,
+  ErrorCode,
   EventName,
+  Future,
   IBApi,
+  Index,
+  MarketDataType,
   Option,
   OptionType,
-  SecType,
+  Stock,
   TickType,
 } from "../../..";
 import configuration from "../../../common/configuration";
 
 describe("IBApi Market data Tests", () => {
-  jest.setTimeout(20000);
+  jest.setTimeout(15 * 1000);
 
   let ib: IBApi;
   const clientId = Math.floor(Math.random() * 32766) + 1; // ensure unique client
@@ -35,17 +39,16 @@ describe("IBApi Market data Tests", () => {
     // logger.info("IBApi disconnected");
   });
 
+  const IsError = (code: ErrorCode) =>
+    code !== ErrorCode.REQ_MKT_DATA_NOT_AVAIL &&
+    code !== ErrorCode.DISPLAYING_DELAYED_DATA;
+
   it("Stock market data", (done) => {
-    const refId = 46;
+    const refId = 45;
     let received = false;
 
     ib.once(EventName.connected, () => {
-      const contract: Contract = {
-        symbol: "SPY",
-        currency: "USD",
-        secType: SecType.STK,
-        exchange: "SMART",
-      };
+      const contract: Contract = new Stock("AAPL");
       ib.reqMktData(refId, contract, "", true, false);
     })
       .on(
@@ -62,10 +65,38 @@ describe("IBApi Market data Tests", () => {
         else done("Didn't get any result");
       })
       .on(EventName.error, (err, code, reqId) => {
-        if (reqId == refId) done(`[${reqId}] ${err.message} (#${code})`);
+        if (IsError(code)) done(`[${reqId}] ${err.message} (#${code})`);
       });
 
-    ib.connect();
+    ib.connect().reqMarketDataType(MarketDataType.DELAYED_FROZEN);
+  });
+
+  it("SPY market data", (done) => {
+    const refId = 46;
+    let received = false;
+
+    ib.once(EventName.connected, () => {
+      const contract: Contract = new Stock("SPY");
+      ib.reqMktData(refId, contract, "", true, false);
+    })
+      .on(
+        EventName.tickPrice,
+        (reqId: number, _field: TickType, _value: number) => {
+          expect(reqId).toEqual(refId);
+          if (reqId == refId) received = true;
+          // console.log(_field, _value);
+        },
+      )
+      .on(EventName.tickSnapshotEnd, (reqId: number) => {
+        expect(reqId).toEqual(refId);
+        if (received) done();
+        else done("Didn't get any result");
+      })
+      .on(EventName.error, (err, code, reqId) => {
+        if (IsError(code)) done(`[${reqId}] ${err.message} (#${code})`);
+      });
+
+    ib.connect().reqMarketDataType(MarketDataType.DELAYED_FROZEN);
   });
 
   test("Option market data", (done) => {
@@ -94,9 +125,93 @@ describe("IBApi Market data Tests", () => {
         else done("Didn't get any result");
       })
       .on(EventName.error, (err, code, reqId) => {
-        if (reqId == refId) done(`[${reqId}] ${err.message} (#${code})`);
+        if (IsError(code)) done(`[${reqId}] ${err.message} (#${code})`);
       });
 
-    ib.connect();
+    ib.connect().reqMarketDataType(MarketDataType.DELAYED_FROZEN);
+  });
+
+  it("Future market data", (done) => {
+    const refId = 48;
+    let received = false;
+
+    ib.once(EventName.connected, () => {
+      const contract: Contract = new Future("ES", "ESZ3", "202312", "CME", 50);
+      ib.reqMktData(refId, contract, "", true, false);
+    })
+      .on(
+        EventName.tickPrice,
+        (reqId: number, _field: TickType, _value: number) => {
+          expect(reqId).toEqual(refId);
+          if (reqId == refId) received = true;
+          // console.log(_field, _value);
+        },
+      )
+      .on(EventName.tickSnapshotEnd, (reqId: number) => {
+        expect(reqId).toEqual(refId);
+        if (received) done();
+        else done("Didn't get any result");
+      })
+      .on(EventName.error, (err, code, reqId) => {
+        if (IsError(code)) done(`[${reqId}] ${err.message} (#${code})`);
+      });
+
+    ib.connect().reqMarketDataType(MarketDataType.DELAYED_FROZEN);
+  });
+
+  it("DAX market data", (done) => {
+    const refId = 49;
+    let received = false;
+
+    ib.once(EventName.connected, () => {
+      const contract: Contract = new Index("DAX", "EUR", "EUREX");
+      ib.reqMktData(refId, contract, "", true, false);
+    })
+      .on(
+        EventName.tickPrice,
+        (reqId: number, _field: TickType, _value: number) => {
+          expect(reqId).toEqual(refId);
+          if (reqId == refId) received = true;
+          // console.log(_field, _value);
+        },
+      )
+      .on(EventName.tickSnapshotEnd, (reqId: number) => {
+        expect(reqId).toEqual(refId);
+        if (received) done();
+        else done("Didn't get any result");
+      })
+      .on(EventName.error, (err, code: ErrorCode, reqId) => {
+        if (IsError(code)) done(`[${reqId}] ${err.message} (#${code})`);
+      });
+
+    ib.connect().reqMarketDataType(MarketDataType.DELAYED_FROZEN);
+  });
+
+  it("Index market data", (done) => {
+    const refId = 50;
+    let received = false;
+
+    ib.once(EventName.connected, () => {
+      const contract: Contract = new Index("ES");
+      ib.reqMktData(refId, contract, "", true, false);
+    })
+      .on(
+        EventName.tickPrice,
+        (reqId: number, _field: TickType, _value: number) => {
+          expect(reqId).toEqual(refId);
+          if (reqId == refId) received = true;
+          // console.log(_field, _value);
+        },
+      )
+      .on(EventName.tickSnapshotEnd, (reqId: number) => {
+        expect(reqId).toEqual(refId);
+        if (received) done();
+        else done("Didn't get any result");
+      })
+      .on(EventName.error, (err, code, reqId) => {
+        if (IsError(code)) done(`[${reqId}] ${err.message} (#${code})`);
+      });
+
+    ib.connect().reqMarketDataType(MarketDataType.DELAYED_FROZEN);
   });
 });

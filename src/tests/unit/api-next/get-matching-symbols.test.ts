@@ -1,5 +1,5 @@
 /**
- * This file implements tests for the [[IBApiNext.getContractDetails]] function.
+ * This file implements tests for the [[IBApiNext.getMatchingSymbols]] function.
  */
 
 import { fail } from "assert";

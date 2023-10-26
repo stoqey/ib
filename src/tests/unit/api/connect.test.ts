@@ -3,7 +3,7 @@ import { EventName } from "../../../api/data/enum/event-name";
 import configuration from "../../../common/configuration";
 
 describe("IBApi connection Tests", () => {
-  jest.setTimeout(10000);
+  jest.setTimeout(5 * 1000);
 
   let ib: IBApi;
   const clientId = Math.floor(Math.random() * 32766) + 1; // ensure unique client

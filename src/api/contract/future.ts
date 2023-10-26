@@ -11,8 +11,10 @@ export class Future implements Contract {
     public lastTradeDateOrContractMonth: string,
     public exchange: string,
     public multiplier: number,
-    public currency: string,
-  ) {}
+    public currency?: string,
+  ) {
+    this.currency = this.currency ?? "USD";
+  }
 
   public secType = SecType.FUT;
 }
