@@ -67,7 +67,7 @@ describe("IBApi Tests", () => {
     const refId = 43;
     let received = false;
 
-    ib.on(EventName.pnl, (reqId: number, pnl: number) => {
+    ib.on(EventName.pnl, (reqId: number, _pnl: number) => {
       expect(reqId).toEqual(refId);
       // expect(pnl).toBeTruthy();
       if (!received) {
