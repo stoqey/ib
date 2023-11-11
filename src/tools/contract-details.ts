@@ -13,7 +13,7 @@ const DESCRIPTION_TEXT =
   "Requests contract details from TWS and prints it to console.";
 const USAGE_TEXT = "Usage: contract-details.js <options>";
 const OPTION_ARGUMENTS: [string, string][] = [
-  ...IBApiNextApp.DEFAULT_CONTRACT_OPTIONS,
+  ...IBApiNextApp.DEFAULT_OPT_CONTRACT_OPTIONS,
 ];
 const EXAMPLE_TEXT =
   "contract-details.ts -symbol=AMZN -sectype=STK -currency=USD";
