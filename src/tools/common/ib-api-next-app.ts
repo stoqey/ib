@@ -41,6 +41,7 @@ export class IBApiNextApp {
     ["symbol=<name>", "The symbol name."],
     ["currency=<currency>", "The contract currency."],
     ["exchange=<name>", "The destination exchange name."],
+    ["localsymbol=<name>", "The symbol's local symbol."],
   ];
 
   public static readonly DEFAULT_OPT_CONTRACT_OPTIONS: [string, string][] = [
@@ -52,6 +53,7 @@ export class IBApiNextApp {
     ],
     ["strike=<number>", "The option's strike price."],
     ["right=<P|C>", " The option type. Valid values are P, PUT, C, CALL."],
+    ["multiplier=<number>", "The option's multiplier."],
   ];
 
   protected logLevel: LogLevel;
@@ -267,11 +269,13 @@ export class IBApiNextApp {
       conId: (this.cmdLineArgs.conid as number) ?? undefined,
       secType: this.cmdLineArgs.sectype as SecType,
       symbol: this.cmdLineArgs.symbol as string,
+      localSymbol: this.cmdLineArgs.localsymbol as string,
       currency: (this.cmdLineArgs.currency as string) ?? "USD",
       exchange: (this.cmdLineArgs.exchange as string) ?? "SMART",
       lastTradeDateOrContractMonth: this.cmdLineArgs.expiry as string,
       strike: (this.cmdLineArgs.strike as number) ?? undefined,
       right: this.cmdLineArgs.right as OptionType,
+      multiplier: (this.cmdLineArgs.multiplier as number) ?? undefined,
     };
   }
 
