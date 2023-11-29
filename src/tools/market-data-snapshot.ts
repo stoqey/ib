@@ -16,7 +16,8 @@ const DESCRIPTION_TEXT =
 const USAGE_TEXT = "Usage: market-data-snapshot.js <options>";
 const OPTION_ARGUMENTS: [string, string][] = [
   ...IBApiNextApp.DEFAULT_CONTRACT_OPTIONS,
-  ["ticks=<ticks>", "Comma separated list of generic ticks to fetch."],
+  // Snapshot market data subscription is not applicable to generic ticks (Error #321)
+  // ["ticks=<ticks>", "Comma separated list of generic ticks to fetch."],
 ];
 const EXAMPLE_TEXT =
   "market-data-snapshot.js -symbol=AAPL -conid=265598 -sectype=STK -exchange=SMART";
@@ -30,7 +31,7 @@ class PrintMarketDataSingleApp extends IBApiNextApp {
     super(DESCRIPTION_TEXT, USAGE_TEXT, OPTION_ARGUMENTS, EXAMPLE_TEXT);
   }
 
-  /** The [[Subscription]] on the PnLSingle. */
+  /** The [[Subscription]] */
   private subscription$: Subscription;
 
   /**
@@ -40,13 +41,8 @@ class PrintMarketDataSingleApp extends IBApiNextApp {
     super.start();
 
     this.api
-      .getMarketDataSnapshot(
-        this.getContractArg(),
-        this.cmdLineArgs.ticks as string,
-        false,
-      )
+      .getMarketDataSnapshot(this.getContractArg(), "", false)
       .then((marketData) => {
-        // this.printObject(marketData);
         const dataWithTickNames = new Map<string, number>();
         marketData.forEach((tick, type) => {
           if (type > IBApiNextTickType.API_NEXT_FIRST_TICK_ID) {

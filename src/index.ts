@@ -36,6 +36,7 @@ export { ErrorCode } from "./common/errorCode";
 
 // export contract types
 
+export { Bond } from "./api/contract/bond";
 export { CFD } from "./api/contract/cfd";
 export { Combo } from "./api/contract/combo";
 export { ComboLeg } from "./api/contract/comboLeg";

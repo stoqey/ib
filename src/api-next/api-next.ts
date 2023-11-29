@@ -921,6 +921,7 @@ export class IBApiNext {
           undefined,
           [
             [EventName.contractDetails, this.onContractDetails],
+            [EventName.bondContractDetails, this.onContractDetails],
             [EventName.contractDetailsEnd, this.onContractDetailsEnd],
           ],
         )
@@ -2565,6 +2566,7 @@ export class IBApiNext {
     order: Order,
     orderState: OrderState,
   ): void => {
+    console.log("onOpenOrder");
     subscriptions.forEach((sub) => {
       const allOrders = sub.lastAllValue ?? [];
       const changeOrderIndex = allOrders.findIndex(
@@ -2615,6 +2617,7 @@ export class IBApiNext {
   private readonly onOpenOrderComplete = (
     subscriptions: Map<number, IBApiNextSubscription<OpenOrder[]>>,
   ): void => {
+    console.log("onOpenOrderComplete");
     subscriptions.forEach((sub) => {
       const allOrders = sub.lastAllValue ?? [];
       sub.endEventReceived = true;
@@ -2730,6 +2733,7 @@ export class IBApiNext {
   private readonly onOpenOrderEnd = (
     subscriptions: Map<number, IBApiNextSubscription<OpenOrder[]>>,
   ): void => {
+    console.log("onOpenOrderEnd");
     // notify all subscribers
     subscriptions.forEach((subscription) => {
       const lastAllValue = subscription.lastAllValue ?? [];
@@ -2742,6 +2746,7 @@ export class IBApiNext {
    * Requests all current open orders in associated accounts at the current moment.
    */
   getAllOpenOrders(): Promise<OpenOrder[]> {
+    console.log("getAllOpenOrders");
     return lastValueFrom(
       this.subscriptions
         .register<OpenOrder[]>(
@@ -2769,6 +2774,7 @@ export class IBApiNext {
    * For client ID 0, this will bind previous manual TWS orders.
    */
   getOpenOrders(): Observable<OpenOrdersUpdate> {
+    console.log("getOpenOrders");
     return this.subscriptions.register<OpenOrder[]>(
       () => {
         this.api.reqOpenOrders();
