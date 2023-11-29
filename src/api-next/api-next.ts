@@ -2410,8 +2410,6 @@ export class IBApiNext {
       legStr,
     };
 
-    // console.log("onScannerData", item);
-
     const lastAllValue =
       subscription.lastAllValue ??
       new Map<MarketScannerItemRank, MarketScannerItem>();
@@ -2430,7 +2428,6 @@ export class IBApiNext {
         added: existing ? undefined : updated,
       });
     } else {
-      // console.log("saving for future use", lastValue);
       subscription.lastAllValue = lastAllValue;
     }
   };
@@ -2566,7 +2563,6 @@ export class IBApiNext {
     order: Order,
     orderState: OrderState,
   ): void => {
-    console.log("onOpenOrder");
     subscriptions.forEach((sub) => {
       const allOrders = sub.lastAllValue ?? [];
       const changeOrderIndex = allOrders.findIndex(
@@ -2617,7 +2613,6 @@ export class IBApiNext {
   private readonly onOpenOrderComplete = (
     subscriptions: Map<number, IBApiNextSubscription<OpenOrder[]>>,
   ): void => {
-    console.log("onOpenOrderComplete");
     subscriptions.forEach((sub) => {
       const allOrders = sub.lastAllValue ?? [];
       sub.endEventReceived = true;
@@ -2733,7 +2728,6 @@ export class IBApiNext {
   private readonly onOpenOrderEnd = (
     subscriptions: Map<number, IBApiNextSubscription<OpenOrder[]>>,
   ): void => {
-    console.log("onOpenOrderEnd");
     // notify all subscribers
     subscriptions.forEach((subscription) => {
       const lastAllValue = subscription.lastAllValue ?? [];
@@ -2746,7 +2740,6 @@ export class IBApiNext {
    * Requests all current open orders in associated accounts at the current moment.
    */
   getAllOpenOrders(): Promise<OpenOrder[]> {
-    console.log("getAllOpenOrders");
     return lastValueFrom(
       this.subscriptions
         .register<OpenOrder[]>(
@@ -2774,7 +2767,6 @@ export class IBApiNext {
    * For client ID 0, this will bind previous manual TWS orders.
    */
   getOpenOrders(): Observable<OpenOrdersUpdate> {
-    console.log("getOpenOrders");
     return this.subscriptions.register<OpenOrder[]>(
       () => {
         this.api.reqOpenOrders();
