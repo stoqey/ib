@@ -2,7 +2,7 @@ import SecType from "../data/enum/sec-type";
 import { Contract } from "./contract";
 
 /**
- * A Future Option Contract
+ * A Future Contract
  */
 export class Future implements Contract {
   constructor(

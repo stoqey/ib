@@ -7,6 +7,7 @@ import { IBApiNextError } from "../api-next";
 import {
   Instrument,
   LocationCode,
+  MarketScannerUpdate,
   ScanCode,
 } from "../api-next/market-scanner/market-scanner";
 import logger from "../common/logger";
@@ -48,7 +49,7 @@ class PrintMarketScreenerApp extends IBApiNextApp {
         numberOfRows: 20,
       })
       .subscribe({
-        next: (data) => {
+        next: (data: MarketScannerUpdate) => {
           this.printObject(data.all);
           if (!this.cmdLineArgs.watch) this.stop();
         },

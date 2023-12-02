@@ -11,7 +11,6 @@ import IBApi, {
   Stock,
 } from "../../..";
 import configuration from "../../../common/configuration";
-// import configuration from "../../../common/configuration";
 
 describe("Place orders to IB", () => {
   test("Error Event", (done) => {

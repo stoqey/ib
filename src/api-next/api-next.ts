@@ -921,6 +921,7 @@ export class IBApiNext {
           undefined,
           [
             [EventName.contractDetails, this.onContractDetails],
+            [EventName.bondContractDetails, this.onContractDetails],
             [EventName.contractDetailsEnd, this.onContractDetailsEnd],
           ],
         )
@@ -2409,8 +2410,6 @@ export class IBApiNext {
       legStr,
     };
 
-    // console.log("onScannerData", item);
-
     const lastAllValue =
       subscription.lastAllValue ??
       new Map<MarketScannerItemRank, MarketScannerItem>();
@@ -2429,7 +2428,6 @@ export class IBApiNext {
         added: existing ? undefined : updated,
       });
     } else {
-      // console.log("saving for future use", lastValue);
       subscription.lastAllValue = lastAllValue;
     }
   };
