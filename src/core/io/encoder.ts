@@ -216,12 +216,11 @@ export class Encoder {
       contract.right,
       contract.multiplier,
       contract.exchange,
+      contract.primaryExch,
       contract.currency,
       contract.localSymbol,
       contract.tradingClass,
-      contract.primaryExch,
-      contract.secIdType,
-      contract.secId,
+      contract.includeExpired ? 1 : 0,
     ];
   }
 
@@ -1856,8 +1855,8 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       OUT_MSG_ID.REQ_HEAD_TIMESTAMP,
       reqId,
       this.encodeContract(contract),
-      whatToShow,
       useRTH ? 1 : 0,
+      whatToShow,
       formatDate,
     );
   }
@@ -3127,8 +3126,8 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       OUT_MSG_ID.REQ_HISTOGRAM_DATA,
       tickerId,
       this.encodeContract(contract),
-      timePeriod,
       useRTH ? 1 : 0,
+      timePeriod,
     );
   }
 
