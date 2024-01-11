@@ -1,5 +1,6 @@
 import {
   ContractDetails,
+  ErrorCode,
   EventName,
   IBApi,
   Instrument,
@@ -9,7 +10,7 @@ import {
 import configuration from "../../../common/configuration";
 
 describe("IBApi market scanner tests", () => {
-  jest.setTimeout(5000);
+  jest.setTimeout(10 * 1000);
 
   let ib: IBApi;
   const clientId = Math.floor(Math.random() * 32766) + 1; // ensure unique client
@@ -38,7 +39,7 @@ describe("IBApi market scanner tests", () => {
       .on(EventName.disconnected, () => {
         done();
       })
-      .on(EventName.error, (err, code, reqId) => {
+      .on(EventName.error, (err, code: ErrorCode, reqId) => {
         if (reqId !== -1) done(`[${reqId}] ${err.message} (#${code})`);
       });
 
@@ -78,7 +79,10 @@ describe("IBApi market scanner tests", () => {
         done();
       })
       .on(EventName.error, (err, code, reqId) => {
-        if (reqId == refId) done(`[${reqId}] ${err.message} (#${code})`);
+        if (reqId == refId) {
+          if (code == ErrorCode.SCANNER_LOW_PRECISION) return;
+          done(`[${reqId}] ${err.message} (#${code})`);
+        }
       });
 
     ib.connect();

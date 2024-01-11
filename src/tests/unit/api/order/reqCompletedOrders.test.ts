@@ -28,13 +28,11 @@ describe("RequestAllOpenOrders", () => {
     // logger.info("IBApi disconnected");
   });
 
-  it("Test reqAllOpenOrders", (done) => {
-    ib.on(EventName.openOrder, (orderId, contract, order, orderState) => {
-      // logger.info("openOrder message received");
-      // todo add proper verification code here
-      // expect(orderId).toBeTruthy(); We sometimes get zeros
+  it("Test reqCompletedOrders", (done) => {
+    ib.on(EventName.completedOrder, (contract, order, orderState) => {
+      expect(orderState.status).toBeTruthy();
     })
-      .on(EventName.openOrderEnd, () => {
+      .on(EventName.completedOrdersEnd, () => {
         if (ib) ib.disconnect();
       })
       .on(EventName.disconnected, () => {
@@ -44,6 +42,6 @@ describe("RequestAllOpenOrders", () => {
         done(`[${reqId}] ${err.message} (#${code})`);
       });
 
-    ib.connect().reqAllOpenOrders();
+    ib.connect().reqCompletedOrders(false);
   });
 });

@@ -2,19 +2,21 @@
  * This file implement test code for the public API interfaces.
  */
 import {
-  Contract,
   ErrorCode,
   EventName,
-  Future,
   IBApi,
-  Index,
   MarketDataType,
-  Option,
-  OptionType,
-  Stock,
   TickType,
 } from "../../..";
 import configuration from "../../../common/configuration";
+import {
+  sample_dax_index,
+  sample_etf,
+  sample_future,
+  sample_index,
+  sample_option,
+  sample_stock,
+} from "../contracts";
 
 describe("IBApi Market data Tests", () => {
   jest.setTimeout(15 * 1000);
@@ -43,13 +45,12 @@ describe("IBApi Market data Tests", () => {
     code !== ErrorCode.REQ_MKT_DATA_NOT_AVAIL &&
     code !== ErrorCode.DISPLAYING_DELAYED_DATA;
 
-  it("Stock market data", (done) => {
+  it("ETF market data", (done) => {
     const refId = 45;
     let received = false;
 
     ib.once(EventName.connected, () => {
-      const contract: Contract = new Stock("AAPL");
-      ib.reqMktData(refId, contract, "", true, false);
+      ib.reqMktData(refId, sample_etf, "", true, false);
     })
       .on(
         EventName.tickPrice,
@@ -71,13 +72,12 @@ describe("IBApi Market data Tests", () => {
     ib.connect().reqMarketDataType(MarketDataType.DELAYED_FROZEN);
   });
 
-  it("SPY market data", (done) => {
+  it("Stock market data", (done) => {
     const refId = 46;
     let received = false;
 
     ib.once(EventName.connected, () => {
-      const contract: Contract = new Stock("SPY");
-      ib.reqMktData(refId, contract, "", true, false);
+      ib.reqMktData(refId, sample_stock, "", true, false);
     })
       .on(
         EventName.tickPrice,
@@ -104,13 +104,7 @@ describe("IBApi Market data Tests", () => {
     let received = false;
 
     ib.once(EventName.connected, () => {
-      const contract: Option = new Option(
-        "AAPL",
-        "20251219",
-        200,
-        OptionType.Put,
-      );
-      ib.reqMktData(refId, contract, "", true, false);
+      ib.reqMktData(refId, sample_option, "", true, false);
     })
       .on(
         EventName.tickPrice,
@@ -136,8 +130,7 @@ describe("IBApi Market data Tests", () => {
     let received = false;
 
     ib.once(EventName.connected, () => {
-      const contract: Contract = new Future("ES", "ESZ3", "202312", "CME", 50);
-      ib.reqMktData(refId, contract, "", true, false);
+      ib.reqMktData(refId, sample_future, "", true, false);
     })
       .on(
         EventName.tickPrice,
@@ -164,8 +157,7 @@ describe("IBApi Market data Tests", () => {
     let received = false;
 
     ib.once(EventName.connected, () => {
-      const contract: Contract = new Index("DAX", "EUR", "EUREX");
-      ib.reqMktData(refId, contract, "", true, false);
+      ib.reqMktData(refId, sample_dax_index, "", true, false);
     })
       .on(
         EventName.tickPrice,
@@ -192,8 +184,7 @@ describe("IBApi Market data Tests", () => {
     let received = false;
 
     ib.once(EventName.connected, () => {
-      const contract: Contract = new Index("ES");
-      ib.reqMktData(refId, contract, "", true, false);
+      ib.reqMktData(refId, sample_index, "", true, false);
     })
       .on(
         EventName.tickPrice,

@@ -2231,21 +2231,11 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       );
     }
 
-    const args: unknown[] = [OUT_MSG_ID.REQ_HISTORICAL_TICKS, tickerId];
-
-    args.push(contract.conId);
-    args.push(contract.symbol);
-    args.push(contract.secType);
-    args.push(contract.lastTradeDateOrContractMonth);
-    args.push(contract.strike);
-    args.push(contract.right);
-    args.push(contract.multiplier);
-    args.push(contract.exchange);
-    args.push(contract.primaryExch);
-    args.push(contract.currency);
-    args.push(contract.localSymbol);
-    args.push(contract.tradingClass);
-    args.push(contract.includeExpired);
+    const args: unknown[] = [
+      OUT_MSG_ID.REQ_HISTORICAL_TICKS,
+      tickerId,
+      ...this.encodeContract(contract),
+    ];
     args.push(startDateTime);
     args.push(endDateTime);
     args.push(numberOfTicks);

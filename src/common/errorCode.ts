@@ -7,6 +7,9 @@ export enum ErrorCode {
   /** Order Canceled - reason: */
   ORDER_CANCELLED = 202,
 
+  /** ou must subscribe for additional permissions to obtain precise results for scanner.Parameter:Most Active,Filter:Price;Real-Time Market Data:Pink Sheets */
+  SCANNER_LOW_PRECISION = 492,
+
   /** Already connected. */
   ALREADY_CONNECTED = 501,
 
