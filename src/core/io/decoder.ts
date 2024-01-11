@@ -2507,409 +2507,80 @@ export class Decoder {
     const contract: Contract = {};
     const order: Order = {};
     const orderState: OrderState = {};
+    const orderDecoder = new OrderDecoder(
+      this,
+      contract,
+      order,
+      orderState,
+      Number.MAX_VALUE,
+      this.serverVersion,
+    );
 
-    if (this.serverVersion >= 12) {
-      contract.conId = this.readInt();
-    }
-    contract.symbol = this.readStr();
-    contract.secType = this.readStr() as SecType;
-    contract.lastTradeDateOrContractMonth = this.readStr();
-    contract.strike = this.readDouble();
-    contract.right = validateOptionType(this.readStr() as OptionType);
-    if (this.serverVersion >= 32) {
-      contract.multiplier = this.readDouble();
-    }
-    contract.exchange = this.readStr();
-    contract.currency = this.readStr();
-    if (this.serverVersion >= 2) {
-      contract.localSymbol = this.readStr();
-    }
-    if (this.serverVersion >= 32) {
-      contract.tradingClass = this.readStr();
-    }
-    order.action = this.readStr() as OrderAction;
-    if (this.serverVersion >= MIN_SERVER_VER.FRACTIONAL_POSITIONS) {
-      order.totalQuantity = this.readDouble();
-    } else {
-      order.totalQuantity = this.readInt();
-    }
-    order.orderType = this.readStr() as OrderType;
-    if (this.serverVersion < 29) {
-      order.lmtPrice = this.readDouble();
-    } else {
-      order.lmtPrice = this.readDoubleOrUndefined();
-    }
-    if (this.serverVersion < 30) {
-      order.auxPrice = this.readDouble();
-    } else {
-      order.auxPrice = this.readDoubleOrUndefined();
-    }
-    order.tif = this.readStr() as TimeInForce;
-    order.ocaGroup = this.readStr();
-    order.account = this.readStr();
-    order.openClose = this.readStr();
-    order.origin = this.readInt();
-    order.orderRef = this.readStr();
-    if (this.serverVersion >= 3) {
-      order.permId = this.readInt();
-    }
-    if (this.serverVersion >= 4) {
-      order.hidden = this.readBool();
-    }
-    order.discretionaryAmt =
-      this.serverVersion >= 4 ? this.readDouble() : undefined;
-    order.goodAfterTime = this.serverVersion >= 4 ? this.readStr() : undefined;
+    // read contract fields
+    orderDecoder.readContractFields();
 
-    if (this.serverVersion >= 4) {
-      if (this.serverVersion < 18) {
-        // will never happen
-        /* ignoreRth = */ this.readBool();
-      } else {
-        order.outsideRth = this.readBool();
-      }
-    }
-
-    if (this.serverVersion >= 7) {
-      order.faGroup = this.readStr();
-      order.faMethod = this.readStr();
-      order.faPercentage = this.readStr();
-      order.faProfile = this.readStr();
-    }
-
-    if (this.serverVersion >= MIN_SERVER_VER.MODELS_SUPPORT) {
-      order.modelCode = this.readStr();
-    }
-
-    if (this.serverVersion >= 8) {
-      order.goodTillDate = this.readStr();
-    }
-
-    if (this.serverVersion >= 9) {
-      order.rule80A = this.readStr();
-      order.percentOffset = this.readDoubleOrUndefined();
-      order.settlingFirm = this.readStr();
-
-      order.shortSaleSlot = this.readInt();
-      order.designatedLocation = this.readStr();
-      if (this.serverVersion == 51) {
-        this.readInt(); // exemptCode
-      } else if (this.serverVersion >= 23) {
-        order.exemptCode = this.readInt();
-      }
-
-      order.startingPrice = this.readDoubleOrUndefined();
-      order.stockRefPrice = this.readDoubleOrUndefined();
-      order.delta = this.readDoubleOrUndefined();
-
-      order.stockRangeLower = this.readDoubleOrUndefined();
-      order.stockRangeUpper = this.readDoubleOrUndefined();
-
-      order.displaySize = this.readInt();
-
-      order.sweepToFill = this.readBool();
-      order.allOrNone = this.readBool();
-      order.minQty = this.readIntOrUndefined();
-      order.ocaType = this.readInt();
-    }
-
-    order.triggerMethod = this.serverVersion >= 10 ? this.readInt() : undefined;
-
-    if (this.serverVersion >= 11) {
-      order.volatility = this.readDoubleOrUndefined();
-      order.volatilityType = this.readInt();
-      if (this.serverVersion == 11) {
-        order.deltaNeutralOrderType = this.readInt() == 0 ? "NONE" : "MKT";
-      } else {
-        order.deltaNeutralOrderType = this.readStr();
-        order.deltaNeutralAuxPrice = this.readDoubleOrUndefined();
-
-        if (this.serverVersion >= 27 && order.deltaNeutralOrderType !== "") {
-          order.deltaNeutralConId = this.readInt();
-        }
-
-        if (this.serverVersion >= 31 && order.deltaNeutralOrderType !== "") {
-          order.deltaNeutralShortSale = this.readBool();
-          order.deltaNeutralShortSaleSlot = this.readInt();
-          order.deltaNeutralDesignatedLocation = this.readStr();
-        }
-      }
-      order.continuousUpdate = this.readInt();
-      if (this.serverVersion == 26) {
-        order.stockRangeLower = this.readDouble();
-        order.stockRangeUpper = this.readDouble();
-      }
-      order.referencePriceType = this.readInt();
-    }
-
-    if (this.serverVersion >= 13) {
-      order.trailStopPrice = this.readDoubleOrUndefined();
-    }
-
-    if (this.serverVersion >= 30) {
-      order.trailStopPrice = this.readDoubleOrUndefined();
-    }
-
-    if (this.serverVersion >= 1) {
-      contract.comboLegsDescription = this.readStr();
-    }
-
-    if (this.serverVersion >= 29) {
-      const comboLegsCount = this.readInt();
-
-      const comboLegs = new Array(comboLegsCount);
-      for (let i = 0; i < comboLegsCount; i++) {
-        comboLegs[i] = {
-          conId: this.readInt(),
-          ratio: this.readInt(),
-          action: this.readStr(),
-          exchange: this.readStr(),
-          openClose: this.readInt(),
-          shortSaleSlot: this.readInt(),
-          designatedLocation: this.readStr(),
-          exemptCode: this.readInt(),
-        };
-      }
-      contract.comboLegs = comboLegs;
-
-      const orderComboLegsCount = this.readInt();
-      const orderComboLegs = new Array(orderComboLegsCount);
-      for (let i = 0; i < orderComboLegsCount; i++) {
-        orderComboLegs[i] = { price: this.readDoubleOrUndefined() };
-      }
-      order.orderComboLegs = orderComboLegs;
-    }
-
-    if (this.serverVersion >= 26) {
-      const smartComboRoutingParamsCount = this.readInt();
-
-      const smartComboRoutingParams = new Array(smartComboRoutingParamsCount);
-      for (let i = 0; i < smartComboRoutingParamsCount; i++) {
-        smartComboRoutingParams[i] = {
-          tag: this.readStr(),
-          value: this.readStr(),
-        };
-      }
-      order.smartComboRoutingParams = smartComboRoutingParams;
-    }
-
-    if (this.serverVersion >= 15) {
-      if (this.serverVersion >= 20) {
-        order.scaleInitLevelSize = this.readIntOrUndefined();
-        order.scaleSubsLevelSize = this.readIntOrUndefined();
-      } else {
-        /* notSuppScaleNumComponents = */ this.readIntOrUndefined();
-        order.scaleSubsLevelSize = this.readIntOrUndefined();
-      }
-      order.scalePriceIncrement = this.readDoubleOrUndefined();
-    }
-
-    if (this.serverVersion >= 28 && order.scalePriceIncrement != undefined) {
-      order.scalePriceAdjustValue = this.readDoubleOrUndefined();
-      order.scalePriceAdjustInterval = this.readIntOrUndefined();
-      order.scaleProfitOffset = this.readDoubleOrUndefined();
-      order.scaleAutoReset = this.readBool();
-      order.scaleInitPosition = this.readIntOrUndefined();
-      order.scaleInitFillQty = this.readIntOrUndefined();
-      order.scaleRandomPercent = this.readBool();
-    }
-
-    if (this.serverVersion >= 24) {
-      order.hedgeType = this.readStr();
-      if (order.hedgeType !== "") {
-        order.hedgeParam = this.readStr();
-      }
-    }
-
-    if (this.serverVersion >= 19) {
-      order.clearingAccount = this.readStr();
-      order.clearingIntent = this.readStr();
-    }
-
-    if (this.serverVersion >= 22) {
-      order.notHeld = this.readBool();
-    }
-
-    if (this.serverVersion >= 20) {
-      if (this.readBool()) {
-        contract.deltaNeutralContract = {
-          conId: this.readInt(),
-          delta: this.readDouble(),
-          price: this.readDouble(),
-        };
-      }
-    }
-
-    if (this.serverVersion >= 21) {
-      order.algoStrategy = this.readStr();
-      if (order.algoStrategy !== "") {
-        const algoParamsCount = this.readInt();
-        const allParams = new Array(algoParamsCount);
-        for (let i = 0; i < algoParamsCount; i++) {
-          allParams[i] = { tag: this.readStr(), value: this.readStr() };
-        }
-        order.algoParams = allParams;
-      }
-    }
-
-    if (this.serverVersion >= 33) {
-      order.solicited = this.readBool();
-    }
-
-    orderState.status = this.readStr() as OrderStatus;
-
-    if (this.serverVersion >= 34) {
-      order.randomizeSize = this.readBool();
-      order.randomizePrice = this.readBool();
-    }
-
-    if (this.serverVersion >= MIN_SERVER_VER.PEGGED_TO_BENCHMARK) {
-      if (order.orderType == OrderType.PEG_BENCH) {
-        order.referenceContractId = this.readInt();
-        order.isPeggedChangeAmountDecrease = this.readBool();
-        order.peggedChangeAmount = this.readDouble();
-        order.referenceChangeAmount = this.readDouble();
-        order.referenceExchangeId = this.readStr();
-      }
-
-      const nConditions = this.readInt();
-      order.conditions = new Array(nConditions);
-      for (let i = 0; i < nConditions; i++) {
-        const type = this.readInt();
-
-        // OrderCondition
-        const conjunctionConnection = this.readStr()?.toLocaleLowerCase();
-
-        switch (type) {
-          case OrderConditionType.Execution: {
-            const secType = this.readStr() as SecType;
-            const exchange = this.readStr();
-            const symbol = this.readStr();
-
-            order.conditions[i] = new ExecutionCondition(
-              exchange,
-              secType,
-              symbol,
-              conjunctionConnection as ConjunctionConnection,
-            );
-            break;
-          }
-
-          case OrderConditionType.Margin: {
-            // OperatorCondition
-            const isMore = this.readBool();
-            const value = this.readInt();
-
-            order.conditions[i] = new MarginCondition(
-              value,
-              isMore,
-              conjunctionConnection as ConjunctionConnection,
-            );
-            break;
-          }
-
-          case OrderConditionType.PercentChange: {
-            // OperatorCondition
-            const isMore = this.readBool();
-            const value = this.readDouble();
-            // ContractCondition
-            const condId = this.readInt();
-            const exchange = this.readStr();
-
-            order.conditions[i] = new PercentChangeCondition(
-              value,
-              condId,
-              exchange,
-              isMore,
-              conjunctionConnection as ConjunctionConnection,
-            );
-            break;
-          }
-
-          case OrderConditionType.Price: {
-            // OperatorCondition
-            const isMore = this.readBool();
-            const value = this.readDouble();
-            // ContractCondition
-            const condId = this.readInt();
-            const exchange = this.readStr();
-            // PriceCondition
-            const triggerMethod = this.readInt() as TriggerMethod;
-
-            order.conditions[i] = new PriceCondition(
-              value,
-              triggerMethod,
-              condId,
-              exchange,
-              isMore,
-              conjunctionConnection as ConjunctionConnection,
-            );
-            break;
-          }
-
-          case OrderConditionType.Time: {
-            // OperatorCondition
-            const isMore = this.readBool();
-            const value = this.readStr();
-
-            order.conditions[i] = new TimeCondition(
-              value,
-              isMore,
-              conjunctionConnection as ConjunctionConnection,
-            );
-            break;
-          }
-
-          case OrderConditionType.Volume: {
-            // OperatorCondition
-            const isMore = this.readBool();
-            const value = this.readInt();
-            // ContractCondition
-            const condId = this.readInt();
-            const exchange = this.readStr();
-
-            order.conditions[i] = new VolumeCondition(
-              value,
-              condId,
-              exchange,
-              isMore,
-              conjunctionConnection as ConjunctionConnection,
-            );
-            break;
-          }
-        }
-      }
-
-      if (order.conditions.length) {
-        order.conditionsIgnoreRth = this.readBool();
-        order.conditionsCancelOrder = this.readBool();
-      }
-    }
-
-    order.trailStopPrice = this.readDoubleOrUndefined();
-    order.lmtPriceOffset = this.readDoubleOrUndefined();
-
-    if (this.serverVersion >= MIN_SERVER_VER.CASH_QTY) {
-      order.cashQty = this.readDoubleOrUndefined();
-    }
-
-    if (this.serverVersion >= MIN_SERVER_VER.AUTO_PRICE_FOR_HEDGE) {
-      order.dontUseAutoPriceForHedge = this.readBool();
-    }
-
-    if (this.serverVersion >= MIN_SERVER_VER.ORDER_CONTAINER) {
-      order.isOmsContainer = this.readBool();
-    }
-
-    order.autoCancelDate = this.readStr();
-    order.filledQuantity = this.readDoubleOrUndefined();
-    order.refFuturesConId = this.readInt();
-    order.autoCancelParent = this.readBool();
-    order.shareholder = this.readStr();
-    order.imbalanceOnly = this.readBool();
-    order.routeMarketableToBbo = this.readBool();
-    order.parentPermId = this.readInt();
-    orderState.completedTime = this.readStr();
-    orderState.completedStatus = this.readStr();
+    // read order fields
+    orderDecoder.readAction();
+    orderDecoder.readTotalQuantity();
+    orderDecoder.readOrderType();
+    orderDecoder.readLmtPrice();
+    orderDecoder.readAuxPrice();
+    orderDecoder.readTIF();
+    orderDecoder.readOcaGroup();
+    orderDecoder.readAccount();
+    orderDecoder.readOpenClose();
+    orderDecoder.readOrigin();
+    orderDecoder.readOrderRef();
+    orderDecoder.readPermId();
+    orderDecoder.readOutsideRth();
+    orderDecoder.readHidden();
+    orderDecoder.readDiscretionaryAmount();
+    orderDecoder.readGoodAfterTime();
+    orderDecoder.readFAParams();
+    orderDecoder.readModelCode();
+    orderDecoder.readGoodTillDate();
+    orderDecoder.readRule80A();
+    orderDecoder.readPercentOffset();
+    orderDecoder.readSettlingFirm();
+    orderDecoder.readShortSaleParams();
+    orderDecoder.readBoxOrderParams();
+    orderDecoder.readPegToStkOrVolOrderParams();
+    orderDecoder.readDisplaySize();
+    orderDecoder.readSweepToFill();
+    orderDecoder.readAllOrNone();
+    orderDecoder.readMinQty();
+    orderDecoder.readOcaType();
+    orderDecoder.readTriggerMethod();
+    orderDecoder.readVolOrderParams(false);
+    orderDecoder.readTrailParams();
+    orderDecoder.readComboLegs();
+    orderDecoder.readSmartComboRoutingParams();
+    orderDecoder.readScaleOrderParams();
+    orderDecoder.readHedgeParams();
+    orderDecoder.readClearingParams();
+    orderDecoder.readNotHeld();
+    orderDecoder.readDeltaNeutral();
+    orderDecoder.readAlgoParams();
+    orderDecoder.readSolicited();
+    orderDecoder.readOrderStatus();
+    orderDecoder.readVolRandomizeFlags();
+    orderDecoder.readPegToBenchParams();
+    orderDecoder.readConditions();
+    orderDecoder.readStopPriceAndLmtPriceOffset();
+    orderDecoder.readCashQty();
+    orderDecoder.readDontUseAutoPriceForHedge();
+    orderDecoder.readIsOmsContainer();
+    orderDecoder.readAutoCancelDate();
+    orderDecoder.readFilledQuantity();
+    orderDecoder.readRefFuturesConId();
+    orderDecoder.readAutoCancelParent();
+    orderDecoder.readShareholder();
+    orderDecoder.readImbalanceOnly();
+    orderDecoder.readRouteMarketableToBbo();
+    orderDecoder.readParentPermId();
+    orderDecoder.readCompletedTime();
+    orderDecoder.readCompletedStatus();
+    orderDecoder.readPegBestPegMidOrderAttributes();
 
     this.emit(EventName.completedOrder, contract, order, orderState);
   }
@@ -3326,8 +2997,7 @@ class OrderDecoder {
       this.order.faGroup = this.decoder.readStr();
       this.order.faMethod = this.decoder.readStr();
       this.order.faPercentage = this.decoder.readStr();
-      if (this.serverVersion < MIN_SERVER_VER.FA_PROFILE_DESUPPORT)
-        this.order.faProfile = this.decoder.readStr();
+      this.order.faProfile = this.decoder.readStr();
     }
   }
 

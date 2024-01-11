@@ -1,9 +1,6 @@
 import { Subscription } from "rxjs";
 import { IBApiNext, IBApiNextError } from "../../..";
 
-const _awaitTimeout = (delay: number): Promise<unknown> =>
-  new Promise((resolve): NodeJS.Timeout => setTimeout(resolve, delay * 1000));
-
 describe("Subscription registry Tests", () => {
   jest.setTimeout(20000);
 
@@ -45,7 +42,7 @@ describe("Subscription registry Tests", () => {
   });
 
   it("Twice the same event callback bug", (done) => {
-    // Disable this test for the time to commit other changes
+    // Two active subscriptions for the same Event #193
     done();
     return;
     subscription$ = api.getOpenOrders().subscribe({
