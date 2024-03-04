@@ -3414,9 +3414,10 @@ class OrderDecoder {
   readConditions(): void {
     if (this.serverVersion >= MIN_SERVER_VER.PEGGED_TO_BENCHMARK) {
       const nConditions = this.decoder.readInt();
-      this.order.conditions = new Array(nConditions);
 
       if (nConditions > 0) {
+        this.order.conditions = new Array(nConditions);
+        
         for (let i = 0; i < nConditions; i++) {
           const orderConditionType = this.decoder.readInt();
 
