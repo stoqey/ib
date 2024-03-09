@@ -60,7 +60,7 @@ export enum SecType {
   ICS = "ICS",
 
   /** Cryptocurrency. */
-  CRYPTO = "CRYPTO ",
+  CRYPTO = "CRYPTO",
 }
 
 export default SecType;
