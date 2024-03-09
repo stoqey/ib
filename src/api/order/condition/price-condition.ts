@@ -12,10 +12,11 @@ export class PriceCondition implements ContractCondition {
   /**
    * Create a [[PriceCondition]] object.
    *
-   * @param conId The contract id.
-   * @param exchange The exchange code.
    * @param price TODO document
    * @param triggerMethod TODO document
+   * @param conId The contract id.
+   * @param exchange The exchange code.
+   * @param isMore TODO document
    * @param conjunctionConnection Conjunction connection type.
    */
   constructor(
@@ -24,7 +25,7 @@ export class PriceCondition implements ContractCondition {
     public conId: number,
     public exchange: string,
     public isMore: boolean,
-    public conjunctionConnection: ConjunctionConnection
+    public conjunctionConnection: ConjunctionConnection,
   ) {}
 
   get strValue(): string {

@@ -540,13 +540,13 @@ export class IBApiNext {
   /**
    * Response to API updateAccountValue control message.
    *
-   * @param subscriptions: listeners
-   * @param account: The IBKR account Id.
-   * @param tag: the tag of the value.
-   * @param value: numetical value associated to the tag.
-   * @param currency: the currency of the value.
+   * @param subscriptions listeners
+   * @param account The IBKR account Id.
+   * @param tag the tag of the value.
+   * @param value numetical value associated to the tag.
+   * @param currency the currency of the value.
    *
-   * @see [[reqOpenOrders]]
+   * @see [[reqAccountUpdates]]
    */
   private readonly onUpdateAccountValue = (
     subscriptions: Map<number, IBApiNextSubscription<AccountUpdate>>,
@@ -605,17 +605,17 @@ export class IBApiNext {
   /**
    * Response to API updatePortfolio control message.
    *
-   * @param subscriptions: listeners
-   * @param contract: The position's [[Contract]]
-   * @param pos: The number of units held.
-   * @param marketPrice: the market price of the contract.
-   * @param marketValue: the market value of the position.
-   * @param avgCost: The average cost of the position.
-   * @param unrealizedPNL: The unrealized PNL of the position.
-   * @param realizedPNL: The realized PNL of the position.
-   * @param account: The IBKR account Id.
+   * @param subscriptions listeners
+   * @param contract The position's [[Contract]]
+   * @param pos The number of units held.
+   * @param marketPrice the market price of the contract.
+   * @param marketValue the market value of the position.
+   * @param avgCost The average cost of the position.
+   * @param unrealizedPNL The unrealized PNL of the position.
+   * @param realizedPNL The realized PNL of the position.
+   * @param account The IBKR account Id.
    *
-   * @see [[reqOpenOrders]]
+   * @see [[reqAccountUpdates]]
    */
   private readonly onUpdatePortfolio = (
     subscriptions: Map<number, IBApiNextSubscription<AccountUpdate>>,
@@ -704,10 +704,10 @@ export class IBApiNext {
   /**
    * Response to API updateAccountTime control message.
    *
-   * @param subscriptions: listeners
-   * @param timeStamp: the current timestamp
+   * @param subscriptions listeners
+   * @param timeStamp the current timestamp
    *
-   * @see [[reqOpenOrders]]
+   * @see [[reqAccountUpdates]]
    */
   private readonly onUpdateAccountTime = (
     subscriptions: Map<number, IBApiNextSubscription<AccountUpdate>>,
@@ -728,10 +728,10 @@ export class IBApiNext {
   /**
    * Response to API accountDownloadEnd control message.
    *
-   * @param subscriptions: listeners
-   * @param accountName: the account name
+   * @param subscriptions listeners
+   * @param accountName the account name
    *
-   * @see [[reqOpenOrders]]
+   * @see [[reqAccountUpdates]]
    */
   private readonly onAccountDownloadEnd = (
     subscriptions: Map<number, IBApiNextSubscription<AccountUpdate>>,
@@ -1060,17 +1060,17 @@ export class IBApiNext {
    * @param account Account for which to receive PnL updates.
    * @param modelCode Specify to request PnL updates for a specific model.
    */
-  getPnL(account: string, model?: string): Observable<PnL> {
+  getPnL(account: string, modelCode?: string): Observable<PnL> {
     return this.subscriptions
       .register(
         (reqId) => {
-          this.api.reqPnL(reqId, account, model);
+          this.api.reqPnL(reqId, account, modelCode);
         },
         (reqId) => {
           this.api.cancelPnL(reqId);
         },
         [[EventName.pnl, this.onPnL]],
-        `${account}:${model}`,
+        `${account}:${modelCode}`,
       )
       .pipe(map((v: { all: PnL }) => v.all));
   }
@@ -2548,11 +2548,11 @@ export class IBApiNext {
   /**
    * Feeds in currently open orders.
    *
-   * @param subscriptions: listeners
-   * @param orderId: The order's unique id.
-   * @param contract: The order's [[Contract]]
-   * @param order: The currently active [[Order]]
-   * @param orderState: The order's [[OrderState]]
+   * @param subscriptions listeners
+   * @param orderId The order's unique id.
+   * @param contract The order's [[Contract]]
+   * @param order The currently active [[Order]]
+   * @param orderState The order's [[OrderState]]
    *
    * @see [[placeOrder]], [[reqAllOpenOrders]], [[reqAutoOpenOrders]]
    */
@@ -2608,7 +2608,7 @@ export class IBApiNext {
 
   /**
    *  Ends the subscription once all openOrders are recieved
-   *  @param subscriptions: listeners
+   *  @param subscriptions listeners
    */
   private readonly onOpenOrderComplete = (
     subscriptions: Map<number, IBApiNextSubscription<OpenOrder[]>>,
@@ -2624,10 +2624,10 @@ export class IBApiNext {
   /**
    * Response to API bind order control message.
    *
-   * @param subscriptions: listeners
-   * @param orderId: permId (mistake from IB documentation, value is orderId not permId)
-   * @param apiClientId: API client id.
-   * @param apiOrderId: API order id.
+   * @param subscriptions listeners
+   * @param orderId permId (mistake from IB documentation, value is orderId not permId)
+   * @param apiClientId API client id.
+   * @param apiOrderId API order id.
    *
    * @see [[reqOpenOrders]]
    */
@@ -2652,17 +2652,17 @@ export class IBApiNext {
   /**
    * Response to API status order control message.
    *
-   * @param orderId
-   * @param status
-   * @param filled
-   * @param remaining
-   * @param avgFillPrice
-   * @param permId
-   * @param parentId
-   * @param lastFillPrice
-   * @param clientId
-   * @param whyHeld
-   * @param mktCapPrice
+   * @param orderId the order's client id.
+   * @param status the current status of the order. Possible values: PendingSubmit - indicates that you have transmitted the order, but have not yet received confirmation that it has been accepted by the order destination. PendingCancel - indicates that you have sent a request to cancel the order but have not yet received cancel confirmation from the order destination. At this point, your order is not confirmed canceled. It is not guaranteed that the cancellation will be successful. PreSubmitted - indicates that a simulated order type has been accepted by the IB system and that this order has yet to be elected. The order is held in the IB system until the election criteria are met. At that time the order is transmitted to the order destination as specified . Submitted - indicates that your order has been accepted by the system. ApiCancelled - after an order has been submitted and before it has been acknowledged, an API client client can request its cancelation, producing this state. Cancelled - indicates that the balance of your order has been confirmed canceled by the IB system. This could occur unexpectedly when IB or the destination has rejected your order. Filled - indicates that the order has been completely filled. Market orders executions will not always trigger a Filled status. Inactive - indicates that the order was received by the system but is no longer active because it was rejected or canceled.
+   * @param filled number of filled positions.
+   * @param remaining the remnant positions.
+   * @param avgFillPrice average filling price.
+   * @param permId the order's permId used by the TWS to identify orders.
+   * @param parentId parent's id. Used for bracket and auto trailing stop orders.
+   * @param lastFillPrice price at which the last positions were filled.
+   * @param clientId API client which submitted the order.
+   * @param whyHeld this field is used to identify an order held when TWS is trying to locate shares for a short sell. The value used to indicate this is 'locate'.
+   * @param mktCapPrice If an order has been capped, this indicates the current capped price. Requires TWS 967+ and API v973.04+. Python API specifically requires API v973.06+.
    *
    * @see [[reqOpenOrders]]
    */
@@ -2723,7 +2723,7 @@ export class IBApiNext {
 
   /**
    *  Ends the subscription once all openOrders are recieved
-   *  @param subscriptions: listeners
+   *  @param subscriptions listeners
    */
   private readonly onOpenOrderEnd = (
     subscriptions: Map<number, IBApiNextSubscription<OpenOrder[]>>,
@@ -2886,10 +2886,11 @@ export class IBApiNext {
    * Note: API clients cannot cancel individual orders placed by other clients.
    * Use [[cancelAllOrders]] instead.
    *
-   * @param id The order id.
+   * @param orderId Specify which order should be cancelled by its identifier.
+   * @param manualOrderCancelTime Specify the time the order should be cancelled. An empty string will cancel the order immediately.
    */
-  cancelOrder(id: number): void {
-    this.api.cancelOrder(id);
+  cancelOrder(orderId: number, manualOrderCancelTime?: string): void {
+    this.api.cancelOrder(orderId, manualOrderCancelTime);
   }
 
   /**

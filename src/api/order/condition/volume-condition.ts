@@ -14,7 +14,7 @@ export class VolumeCondition implements ContractCondition {
    * @param volume TODO document
    * @param conId The contract id.
    * @param exchange The exchange code.
-   * @param triggerMethod TODO document
+   * @param isMore TODO document
    * @param conjunctionConnection Conjunction connection type.
    */
   constructor(
@@ -22,7 +22,7 @@ export class VolumeCondition implements ContractCondition {
     public conId: number,
     public exchange: string,
     public isMore: boolean,
-    public conjunctionConnection: ConjunctionConnection
+    public conjunctionConnection: ConjunctionConnection,
   ) {}
 
   get strValue(): string {

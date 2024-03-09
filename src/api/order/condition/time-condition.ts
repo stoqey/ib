@@ -12,12 +12,13 @@ export class TimeCondition implements OperatorCondition {
    * Create a [[TimeCondition]] object.
    *
    * @param time Time field used in conditional order logic. Valid format: YYYYMMDD HH:MM:SS.
+   * @param isMore TODO
    * @param conjunctionConnection Conjunction connection type.
    */
   constructor(
     public time: string,
     public isMore: boolean,
-    public conjunctionConnection: ConjunctionConnection
+    public conjunctionConnection: ConjunctionConnection,
   ) {}
 
   get strValue(): string {

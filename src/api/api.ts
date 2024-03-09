@@ -365,13 +365,14 @@ export class IBApi extends EventEmitter {
    * Note: API clients cannot cancel individual orders placed by other clients.
    * Use [[reqGlobalCancel]] instead.
    *
-   * @param id The order's client id.
+   * @param orderId Specify which order should be cancelled by its identifier.
+   * @param manualOrderCancelTime Specify the time the order should be cancelled. An empty string will cancel the order immediately.
    *
    * @see [[placeOrder]], [[reqGlobalCancel]]
    */
-  cancelOrder(orderId: number): IBApi {
+  cancelOrder(orderId: number, manualOrderCancelTime?: string): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.cancelOrder(orderId),
+      this.controller.encoder.cancelOrder(orderId, manualOrderCancelTime),
     );
     return this;
   }
@@ -737,7 +738,7 @@ export class IBApi extends EventEmitter {
    * Requests event data from the wSH calendar.
    *
    * @param reqId The unique request identifier.
-   * @param conId Contract id of ticker or WshEventData describing wanted events.
+   * @param wshEventData Contract id (conId) of ticker or WshEventData describing wanted events.
    *
    * @see [[reqCancelWshEventData]]
    */

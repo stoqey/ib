@@ -12,12 +12,13 @@ export class MarginCondition implements OperatorCondition {
    * Create a [[MarginCondition]] object.
    *
    * @param percent TODO document
+   * @param isMore TODO document
    * @param conjunctionConnection Conjunction connection type.
    */
   constructor(
     public percent: number,
     public isMore: boolean,
-    public conjunctionConnection: ConjunctionConnection
+    public conjunctionConnection: ConjunctionConnection,
   ) {}
 
   get strValue(): string {

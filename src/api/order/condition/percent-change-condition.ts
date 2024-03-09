@@ -14,6 +14,7 @@ export class PercentChangeCondition implements ContractCondition {
    * @param percent TODO document
    * @param conId The contract id.
    * @param exchange The exchange code.
+   * @param isMore TODO document
    * @param conjunctionConnection Conjunction connection type.
    */
   constructor(
@@ -21,7 +22,7 @@ export class PercentChangeCondition implements ContractCondition {
     public conId: number,
     public exchange: string,
     public isMore: boolean,
-    public conjunctionConnection: ConjunctionConnection
+    public conjunctionConnection: ConjunctionConnection,
   ) {}
 
   get strValue(): string {

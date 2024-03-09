@@ -525,7 +525,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   /**
    * Encode a CANCEL_ORDER message to an array of tokens.
    */
-  cancelOrder(id: number, manualCancelOrderTime?: string): void {
+  cancelOrder(orderId: number, manualCancelOrderTime?: string): void {
     const version = 1;
 
     if (
@@ -535,11 +535,11 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support manual order cancel time attribute",
         ErrorCode.UPDATE_TWS,
-        id,
+        orderId,
       );
     }
 
-    const tokens: unknown[] = [OUT_MSG_ID.CANCEL_ORDER, version, id];
+    const tokens: unknown[] = [OUT_MSG_ID.CANCEL_ORDER, version, orderId];
 
     if (this.serverVersion >= MIN_SERVER_VER.MANUAL_ORDER_TIME)
       tokens.push(manualCancelOrderTime);
