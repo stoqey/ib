@@ -10,13 +10,14 @@ import {
 } from "../../..";
 import configuration from "../../../common/configuration";
 import {
+  sample_crypto,
   sample_dax_index,
   sample_etf,
   sample_future,
   sample_index,
   sample_option,
   sample_stock,
-} from "../contracts";
+} from "../sample-data/contracts";
 
 describe("IBApi Market data Tests", () => {
   jest.setTimeout(15 * 1000);
@@ -185,6 +186,33 @@ describe("IBApi Market data Tests", () => {
 
     ib.once(EventName.connected, () => {
       ib.reqMktData(refId, sample_index, "", true, false);
+    })
+      .on(
+        EventName.tickPrice,
+        (reqId: number, _field: TickType, _value: number) => {
+          expect(reqId).toEqual(refId);
+          if (reqId == refId) received = true;
+          // console.log(_field, _value);
+        },
+      )
+      .on(EventName.tickSnapshotEnd, (reqId: number) => {
+        expect(reqId).toEqual(refId);
+        if (received) done();
+        else done("Didn't get any result");
+      })
+      .on(EventName.error, (err, code, reqId) => {
+        if (IsError(code)) done(`[${reqId}] ${err.message} (#${code})`);
+      });
+
+    ib.connect().reqMarketDataType(MarketDataType.DELAYED_FROZEN);
+  });
+
+  it("Crypto market data", (done) => {
+    const refId = 51;
+    let received = false;
+
+    ib.once(EventName.connected, () => {
+      ib.reqMktData(refId, sample_crypto, "", true, false);
     })
       .on(
         EventName.tickPrice,

@@ -5,15 +5,10 @@ import { Contract } from "./contract";
  * Crypto contract.
  */
 export class Crypto implements Contract {
-  constructor(
-    public symbol: string,
-    public exchange?: string,
-    public currency?: string,
-  ) {
-    this.currency = this.currency ?? "USD";
-    this.exchange = this.exchange ?? "SMART";
-  }
+  constructor(public symbol: string) {}
 
+  public currency = "USD";
+  public exchange = "PAXOS";
   public secType = SecType.CRYPTO;
 }
 

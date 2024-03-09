@@ -9,7 +9,7 @@ export class VolumeCondition implements ContractCondition {
   type = OrderConditionType.Volume;
 
   /**
-   * Create a [[PriceCondition]] object.
+   * Create a [[VolumeCondition]] object.
    *
    * @param conId Whenever contract...
    * @param exchange When traded at

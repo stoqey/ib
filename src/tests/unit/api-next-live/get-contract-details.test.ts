@@ -9,7 +9,7 @@ import {
   sample_crypto,
   sample_option,
   sample_stock,
-} from "../contracts";
+} from "../sample-data/contracts";
 
 describe("ApiNext: getContractDetails()", () => {
   jest.setTimeout(10 * 1000);
