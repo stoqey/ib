@@ -62,7 +62,7 @@ describe("Place Orders", () => {
       refId = orderId;
       ib.placeOrder(refId, refContract, refOrder);
     })
-      .on(EventName.openOrder, (orderId, contract, order, orderState) => {
+      .on(EventName.openOrder, (orderId, contract, order, _orderState) => {
         if (orderId == refId) {
           expect(contract.symbol).toEqual(refContract.symbol);
           expect(order.totalQuantity).toEqual(refOrder.totalQuantity);
@@ -131,7 +131,7 @@ describe("Place Orders", () => {
       refId = orderId;
       ib.placeOrder(refId, refContract, refOrder);
     })
-      .on(EventName.openOrder, (orderId, contract, order, orderState) => {
+      .on(EventName.openOrder, (orderId, contract, order, _orderState) => {
         if (orderId == refId) {
           expect(contract.symbol).toEqual(refContract.symbol);
           expect(order.totalQuantity).toEqual(refOrder.totalQuantity);

@@ -16,7 +16,6 @@ describe("ApiNext: getContractDetails()", () => {
 
   const clientId = Math.floor(Math.random() * 32766) + 1; // ensure unique client
 
-  let subscription$: Subscription;
   let api: IBApiNext;
   let error$: Subscription;
 
