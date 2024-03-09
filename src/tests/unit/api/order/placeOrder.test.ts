@@ -46,8 +46,8 @@ describe("Place Orders", () => {
   test("Simple placeOrder", (done) => {
     let refId: number;
 
-    const contract: Contract = new Stock("SPY");
-    const order: Order = {
+    const refContract: Contract = new Stock("SPY");
+    const refOrder: Order = {
       orderType: OrderType.LMT,
       action: OrderAction.BUY,
       lmtPrice: 1,
@@ -60,15 +60,14 @@ describe("Place Orders", () => {
 
     ib.once(EventName.nextValidId, (orderId: number) => {
       refId = orderId;
-      ib.placeOrder(refId, contract, order);
+      ib.placeOrder(refId, refContract, refOrder);
     })
-      .on(EventName.openOrder, (orderId, contract, order, _orderState) => {
-        expect(orderId).toEqual(refId);
-        expect(contract.symbol).toEqual("AAPL");
-        expect(order.totalQuantity).toEqual(2);
-      })
-      .on(EventName.openOrderEnd, () => {
-        done();
+      .on(EventName.openOrder, (orderId, contract, order, orderState) => {
+        if (orderId == refId) {
+          expect(contract.symbol).toEqual(refContract.symbol);
+          expect(order.totalQuantity).toEqual(refOrder.totalQuantity);
+          done();
+        }
       })
       .on(
         EventName.error,
@@ -82,7 +81,10 @@ describe("Place Orders", () => {
             logger.info(error.message);
           } else {
             const msg = `[${reqId}] ${error.message} (Error #${code})`;
-            if (error.message.includes("Warning:")) {
+            if (
+              error.message.includes("Warning:") ||
+              error.message.includes("Order Message:")
+            ) {
               logger.warn(msg);
             } else {
               ib.disconnect();
@@ -99,7 +101,7 @@ describe("Place Orders", () => {
     let refId: number;
 
     // buy an Apple call, with a PriceCondition on underlying
-    const contract: Contract = new Option(
+    const refContract: Contract = new Option(
       "AAPL",
       "20251219",
       200,
@@ -113,7 +115,7 @@ describe("Place Orders", () => {
       true,
       ConjunctionConnection.OR,
     );
-    const order: Order = {
+    const refOrder: Order = {
       orderType: OrderType.LMT,
       action: OrderAction.BUY,
       lmtPrice: 0.01,
@@ -127,13 +129,14 @@ describe("Place Orders", () => {
 
     ib.once(EventName.nextValidId, (orderId: number) => {
       refId = orderId;
-      ib.placeOrder(refId, contract, order);
+      ib.placeOrder(refId, refContract, refOrder);
     })
-      .on(EventName.openOrder, (orderId, _contract, _order, _orderState) => {
-        expect(orderId).toEqual(refId);
-      })
-      .on(EventName.openOrderEnd, () => {
-        done();
+      .on(EventName.openOrder, (orderId, contract, order, orderState) => {
+        if (orderId == refId) {
+          expect(contract.symbol).toEqual(refContract.symbol);
+          expect(order.totalQuantity).toEqual(refOrder.totalQuantity);
+          done();
+        }
       })
       .on(
         EventName.error,
@@ -147,7 +150,67 @@ describe("Place Orders", () => {
             logger.info(error.message);
           } else {
             const msg = `[${reqId}] ${error.message} (Error #${code})`;
-            if (error.message.includes("Warning:")) {
+            if (
+              error.message.includes("Warning:") ||
+              error.message.includes("Order Message:")
+            ) {
+              logger.warn(msg);
+            } else {
+              ib.disconnect();
+              done(msg);
+            }
+          }
+        },
+      );
+
+    ib.connect().reqOpenOrders();
+  });
+
+  test("What if Order", (done) => {
+    let refId: number;
+
+    const refContract: Contract = new Stock("SPY");
+    const refOrder: Order = {
+      orderType: OrderType.LMT,
+      action: OrderAction.BUY,
+      lmtPrice: 1,
+      orderId: refId,
+      totalQuantity: 2,
+      tif: TimeInForce.DAY,
+      transmit: true,
+      whatIf: true,
+    };
+
+    ib.once(EventName.nextValidId, (orderId: number) => {
+      refId = orderId;
+      ib.placeOrder(refId, refContract, refOrder);
+    })
+      .on(EventName.openOrder, (orderId, contract, order, orderState) => {
+        if (orderId == refId) {
+          expect(contract.symbol).toEqual(refContract.symbol);
+          expect(order.totalQuantity).toEqual(refOrder.totalQuantity);
+          if (orderState.minCommission || orderState.maxCommission) {
+            expect(orderState.commissionCurrency).toEqual(refContract.currency);
+            done();
+          }
+        }
+      })
+      .on(
+        EventName.error,
+        (
+          error: Error,
+          code: ErrorCode,
+          reqId: number,
+          _advancedOrderReject?: unknown,
+        ) => {
+          if (reqId === -1) {
+            logger.info(error.message);
+          } else {
+            const msg = `[${reqId}] ${error.message} (Error #${code})`;
+            if (
+              error.message.includes("Warning:") ||
+              error.message.includes("Order Message:")
+            ) {
               logger.warn(msg);
             } else {
               ib.disconnect();

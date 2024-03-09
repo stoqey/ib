@@ -1,6 +1,6 @@
 import { Observable } from "rxjs";
 import { EventName } from "../..";
-import { IBApiNextError, IBApiNext, ItemListUpdate } from "../../api-next";
+import { IBApiNext, IBApiNextError, ItemListUpdate } from "../../api-next";
 import { IBApiAutoConnection } from "./auto-connection";
 import { IBApiNextMap } from "./map";
 import { IBApiNextSubscription } from "./subscription";
@@ -31,7 +31,7 @@ class RegistryEntry {
     public readonly callback: (
       subscriptions: Map<number, IBApiNextSubscription<unknown>>,
       ...eventArgs: unknown[]
-    ) => void
+    ) => void,
   ) {
     this.listener = (...eventArgs) => {
       this.callback(this.subscriptions, ...eventArgs);
@@ -42,10 +42,8 @@ class RegistryEntry {
   public readonly listener: (...eventArgs: unknown[]) => void;
 
   /** Map of all active subscriptions, with reqId as key. */
-  public readonly subscriptions: Map<
-    number,
-    IBApiNextSubscription<unknown>
-  > = new Map();
+  public readonly subscriptions: Map<number, IBApiNextSubscription<unknown>> =
+    new Map();
 }
 
 /**
@@ -67,8 +65,8 @@ export class IBApiNextSubscriptionRegistry {
    */
   constructor(
     private readonly api: IBApiAutoConnection,
-    private readonly apiNext: IBApiNext
-  ) { }
+    private readonly apiNext: IBApiNext,
+  ) {}
 
   /** A Map containing the subscription registry, with event name as key. */
   private readonly entires = new IBApiNextMap<EventName, RegistryEntry>();
@@ -94,33 +92,35 @@ export class IBApiNextSubscriptionRegistry {
       (
         subscriptions: Map<number, IBApiNextSubscription<T>>,
         ...eventArgs: unknown[]
-      ) => void
+      ) => void,
     ][],
-    instanceId?: string
+    instanceId?: string,
   ): Observable<ItemListUpdate<T>> {
     // get the existing registry entries, or add if not existing yet
 
-    const entires: RegistryEntry[] = [];
+    const entries: RegistryEntry[] = [];
     eventHandler.forEach((handler) => {
       const eventName = handler[0];
       const callback = handler[1];
+      console.log(`Add RegistryEntry getOrAdd EventName.${eventName}`);
       const entry = this.entires.getOrAdd(eventName, () => {
         const entry = new RegistryEntry(eventName, callback);
         this.apiNext.logger.debug(
           LOG_TAG,
-          `Add RegistryEntry for EventName.${eventName}`
+          `Add RegistryEntry for EventName.${eventName}`,
         );
+        console.log(`Add RegistryEntry for EventName.${eventName}`);
         this.api.addListener(eventName, entry.listener);
         return entry;
       });
-      entires.push(entry);
+      entries.push(entry);
     });
 
     // lookup subscription by instance id
 
     let subscription: IBApiNextSubscription<T>;
     if (instanceId) {
-      entires.forEach((entry) => {
+      entries.forEach((entry) => {
         const values = entry.subscriptions.values();
         while (!subscription) {
           const it = values.next();
@@ -150,13 +150,16 @@ export class IBApiNextSubscriptionRegistry {
           }
         },
         () => {
-          entires.forEach((entry) => {
+          entries.forEach((entry) => {
             entry.subscriptions.delete(subscription.reqId);
             if (!entry.subscriptions.size) {
+              console.log(
+                `Remove RegistryEntry for EventName.${entry.eventName}.`,
+              );
               this.api.removeListener(entry.eventName, entry.listener);
               this.apiNext.logger.debug(
                 LOG_TAG,
-                `Remove RegistryEntry for EventName.${entry.eventName}.`
+                `Remove RegistryEntry for EventName.${entry.eventName}.`,
               );
               this.entires.delete(entry.eventName);
             }
@@ -164,16 +167,16 @@ export class IBApiNextSubscriptionRegistry {
 
           this.apiNext.logger.debug(
             LOG_TAG,
-            `Deleted IBApiNextSubscription for ${subscription.reqId}.`
+            `Deleted IBApiNextSubscription for ${subscription.reqId}.`,
           );
         },
-        instanceId
+        instanceId,
       );
 
-      entires.forEach((entry) => {
+      entries.forEach((entry) => {
         this.apiNext.logger.debug(
           LOG_TAG,
-          `Add IBApiNextSubscription on EventName.${entry.eventName} for ${subscription.reqId}.`
+          `Add IBApiNextSubscription on EventName.${entry.eventName} for ${subscription.reqId}.`,
         );
         entry.subscriptions.set(subscription.reqId, subscription);
       });
