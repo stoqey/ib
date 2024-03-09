@@ -11,11 +11,11 @@ export class VolumeCondition implements ContractCondition {
   /**
    * Create a [[PriceCondition]] object.
    *
-   * @param volume TODO document
-   * @param conId The contract id.
-   * @param exchange The exchange code.
-   * @param isMore TODO document
-   * @param conjunctionConnection Conjunction connection type.
+   * @param conId Whenever contract...
+   * @param exchange When traded at
+   * @param isMore reaches a volume higher/lower
+   * @param volume than this...
+   * @param conjunctionConnection AND | OR next condition (will be ignored if no more conditions are added)
    */
   constructor(
     public volume: number,
