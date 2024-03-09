@@ -499,7 +499,7 @@ export class Decoder {
    */
   readDoubleOrUndefined(): number | undefined {
     const token = this.readStr();
-    if (!token || token === "") {
+    if (!token) {
       return undefined;
     }
     const val = parseFloat(token);
@@ -525,6 +525,7 @@ export class Decoder {
    * Read a token from queue and return it as integer value.
    *
    * Returns Number.MAX_VALUE if the token is empty.
+   * @deprecated readIntOrUndefined is probably what you are looking for
    */
   readIntMax(): number {
     const token = this.readStr();
@@ -3066,7 +3067,7 @@ class OrderDecoder {
 
   readDisplaySize(): void {
     if (this.version >= 9) {
-      this.order.displaySize = this.decoder.readInt();
+      this.order.displaySize = this.decoder.readIntOrUndefined();
     }
   }
 
@@ -3417,7 +3418,7 @@ class OrderDecoder {
 
       if (nConditions > 0) {
         this.order.conditions = new Array(nConditions);
-        
+
         for (let i = 0; i < nConditions; i++) {
           const orderConditionType = this.decoder.readInt();
 
@@ -3645,14 +3646,14 @@ class OrderDecoder {
 
   readPostToAts(): void {
     if (this.serverVersion >= MIN_SERVER_VER.POST_TO_ATS) {
-      this.order.postToAts = this.decoder.readIntMax();
+      this.order.postToAts = this.decoder.readIntOrUndefined();
     }
   }
 
   readPegBestPegMidOrderAttributes() {
     if (this.serverVersion >= MIN_SERVER_VER.PEGBEST_PEGMID_OFFSETS) {
-      this.order.minTradeQty = this.decoder.readIntMax();
-      this.order.minCompeteSize = this.decoder.readIntMax();
+      this.order.minTradeQty = this.decoder.readIntOrUndefined();
+      this.order.minCompeteSize = this.decoder.readIntOrUndefined();
       this.order.competeAgainstBestOffset =
         this.decoder.readDoubleOrUndefined();
       this.order.midOffsetAtWhole = this.decoder.readDoubleOrUndefined();

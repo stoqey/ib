@@ -68,26 +68,26 @@
   "dependencies": {
     "colors": "^1.4.0",
     "command-buffer": "^0.1.0",
-    "dotenv": "^16.3.1",
+    "dotenv": "^16.4.4",
     "eventemitter3": "^5.0.1",
     "function-rate-limit": "^1.1.0",
     "rxjs": "^7.8.1"
   },
   "devDependencies": {
-    "@types/jest": "^29.5.11",
-    "@types/node": "^18.17.15",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^18.19.15",
     "@types/source-map-support": "^0.5.10",
     "@typescript-eslint/eslint-plugin": "^6.18.1",
     "@typescript-eslint/parser": "^6.18.1",
     "ajv": "^8.12.0",
     "eslint": "^8.56.0",
-    "eslint-plugin-jest": "^27.6.2",
+    "eslint-plugin-jest": "^27.8.0",
     "eslint-plugin-rxjs": "^5.0.3",
     "jest": "^29.7.0",
     "jest-environment-node": "^29.7.0",
     "jest-junit": "^16.0.0",
-    "ts-jest": "^29.1.1",
-    "typedoc": "^0.25.7",
+    "ts-jest": "^29.1.2",
+    "typedoc": "^0.25.8",
     "typescript": "^5.2.2"
   },
   "engines": {
