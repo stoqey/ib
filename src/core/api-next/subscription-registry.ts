@@ -102,14 +102,12 @@ export class IBApiNextSubscriptionRegistry {
     eventHandler.forEach((handler) => {
       const eventName = handler[0];
       const callback = handler[1];
-      console.log(`Add RegistryEntry getOrAdd EventName.${eventName}`);
       const entry = this.entires.getOrAdd(eventName, () => {
         const entry = new RegistryEntry(eventName, callback);
         this.apiNext.logger.debug(
           LOG_TAG,
           `Add RegistryEntry for EventName.${eventName}`,
         );
-        console.log(`Add RegistryEntry for EventName.${eventName}`);
         this.api.addListener(eventName, entry.listener);
         return entry;
       });
@@ -153,9 +151,6 @@ export class IBApiNextSubscriptionRegistry {
           entries.forEach((entry) => {
             entry.subscriptions.delete(subscription.reqId);
             if (!entry.subscriptions.size) {
-              console.log(
-                `Remove RegistryEntry for EventName.${entry.eventName}.`,
-              );
               this.api.removeListener(entry.eventName, entry.listener);
               this.apiNext.logger.debug(
                 LOG_TAG,
