@@ -19,6 +19,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18.19.1
+          cache: "yarn" # caches the yarn cache folder not node_modules
 
       - name: Prepare
         run: yarn install --frozen-lockfile

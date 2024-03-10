@@ -3,7 +3,7 @@
  */
 /* eslint @typescript-eslint/no-unsafe-declaration-merging:warn */
 import { EventEmitter } from "eventemitter3";
-import { DurationUnit, MarketDataType, WhatToShow } from "..";
+import { DurationUnit, MarketDataType, OrderStatus, WhatToShow } from "..";
 
 import { ErrorCode } from "../common/errorCode";
 import { Controller } from "../core/io/controller";
@@ -2582,7 +2582,7 @@ export declare interface IBApi {
     event: EventName.orderStatus,
     listener: (
       orderId: number,
-      status: string,
+      status: OrderStatus,
       filled: number,
       remaining: number,
       avgFillPrice: number,

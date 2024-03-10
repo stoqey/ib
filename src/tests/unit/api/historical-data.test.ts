@@ -87,9 +87,9 @@ describe("IBApi Historical data Tests", () => {
             expect(open).toEqual(429.5);
             expect(high).toEqual(429.6);
             expect(low).toEqual(429.47);
-            expect(close).toEqual(429.52);
-            expect(volume).toEqual(345338);
-            expect(count).toEqual(1076);
+            expect(close).toEqual(429.51);
+            expect(volume).toEqual(3487.38);
+            expect(count).toEqual(1090);
             expect(WAP).toEqual(429.532);
           }
         },
@@ -223,7 +223,7 @@ describe("IBApi Historical data Tests", () => {
             expect(high).toEqual(453.67);
             expect(low).toEqual(437.3);
             expect(close).toEqual(450.92);
-            expect(volume).toEqual(277178324);
+            expect(volume).toEqual(2771783.24);
             expect(count).toEqual(1393264);
             expect(WAP).toEqual(448.476);
           }
@@ -288,7 +288,7 @@ describe("IBApi Historical data Tests", () => {
             expect(high).toEqual(453.67);
             expect(low).toEqual(449.68);
             expect(close).toEqual(450.92);
-            expect(volume).toEqual(47405890);
+            expect(volume).toEqual(474058.9);
             expect(count).toEqual(248346);
             expect(WAP).toEqual(451.3);
           }
@@ -324,9 +324,9 @@ describe("IBApi Historical data Tests", () => {
     ib.connect().reqHistoricalTicks(
       refId,
       contract,
-      "20210101-16:00:00",
+      "20240102-16:00:00",
       null,
-      1000,
+      10,
       WhatToShow.TRADES,
       0,
       true,

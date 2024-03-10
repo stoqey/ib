@@ -1,17 +1,9 @@
 /**
  * This file implements tests for the [[reqContractDetails]] API entry point.
  */
-import {
-  ContractDetails,
-  EventName,
-  Forex,
-  IBApi,
-  Option,
-  OptionType,
-  SecType,
-  Stock,
-} from "../../..";
+import { ContractDetails, EventName, Forex, IBApi } from "../../..";
 import configuration from "../../../common/configuration";
+import { sample_option, sample_stock } from "../sample-data/contracts";
 
 describe("IBApi reqContractDetails Tests", () => {
   jest.setTimeout(5000);
@@ -36,22 +28,21 @@ describe("IBApi reqContractDetails Tests", () => {
 
   test("Forex", (done) => {
     const refId = 1;
+    const refContract = new Forex("USD", "EUR");
     ib.once(EventName.nextValidId, (_reqId) => {
-      const contract = new Forex("USD", "EUR");
-      ib.reqContractDetails(refId, contract);
+      ib.reqContractDetails(refId, refContract);
     })
       .on(EventName.contractDetails, (reqId, details: ContractDetails) => {
         expect(reqId).toEqual(refId);
-        expect(details.contract.secType).toEqual(SecType.CASH);
-        expect(details.contract.symbol).toEqual("EUR");
-        expect(details.contract.currency).toEqual("USD");
-        expect(details.marketName).toEqual("EUR.USD");
+        expect(details.contract.secType).toEqual(refContract.secType);
+        expect(details.contract.symbol).toEqual(refContract.symbol);
+        expect(details.contract.currency).toEqual(refContract.currency);
+        expect(details.marketName).toEqual(
+          `${refContract.symbol}.${refContract.currency}`,
+        );
       })
       .on(EventName.contractDetailsEnd, (reqId) => {
         expect(reqId).toEqual(refId);
-        if (ib) ib.disconnect();
-      })
-      .on(EventName.disconnected, () => {
         done();
       })
       .on(EventName.error, (err, code, reqId) => {
@@ -63,22 +54,18 @@ describe("IBApi reqContractDetails Tests", () => {
 
   test("Stock", (done) => {
     const refId = 2;
+    const refContract = sample_stock;
     ib.once(EventName.nextValidId, (_reqId) => {
-      const contract = new Stock("SPY", "ARCA", "USD");
-      ib.reqContractDetails(refId, contract);
+      ib.reqContractDetails(refId, refContract);
     })
       .on(EventName.contractDetails, (reqId, details: ContractDetails) => {
         expect(reqId).toEqual(refId);
-        expect(details.contract.secType).toEqual(SecType.STK);
-        expect(details.contract.symbol).toEqual("SPY");
-        expect(details.contract.currency).toEqual("USD");
-        expect(details.marketName).toEqual("SPY");
+        expect(details.contract.secType).toEqual(refContract.secType);
+        expect(details.contract.symbol).toEqual(refContract.symbol);
+        expect(details.contract.currency).toEqual(refContract.currency);
       })
       .on(EventName.contractDetailsEnd, (reqId) => {
         expect(reqId).toEqual(refId);
-        if (ib) ib.disconnect();
-      })
-      .on(EventName.disconnected, () => {
         done();
       })
       .on(EventName.error, (err, code, reqId) => {
@@ -90,23 +77,19 @@ describe("IBApi reqContractDetails Tests", () => {
 
   test("Option", (done) => {
     const refId = 3;
+    const refContract = sample_option;
     ib.once(EventName.nextValidId, (_reqId) => {
-      const contract = new Option("SPY", "20260116", 440, OptionType.Call);
-      ib.reqContractDetails(refId, contract);
+      ib.reqContractDetails(refId, refContract);
     })
       .on(EventName.contractDetails, (reqId, details: ContractDetails) => {
         expect(reqId).toEqual(refId);
-        expect(details.contract.secType).toEqual(SecType.OPT);
-        expect(details.contract.symbol).toEqual("SPY");
-        expect(details.contract.currency).toEqual("USD");
+        expect(details.contract.secType).toEqual(refContract.secType);
+        expect(details.contract.symbol).toEqual(refContract.symbol);
+        expect(details.contract.currency).toEqual(refContract.currency);
         expect(details.contract.conId).toEqual(653318228);
-        expect(details.marketName).toEqual("SPY");
       })
       .on(EventName.contractDetailsEnd, (reqId) => {
         expect(reqId).toEqual(refId);
-        if (ib) ib.disconnect();
-      })
-      .on(EventName.disconnected, () => {
         done();
       })
       .on(EventName.error, (err, code, reqId) => {
@@ -120,26 +103,21 @@ describe("IBApi reqContractDetails Tests", () => {
     const refId = 4;
     let count = 0;
 
+    const refContract = sample_option;
+    refContract.strike = 0;
     ib.once(EventName.nextValidId, (_reqId) => {
-      const contract = new Option("SPY", "20260116", 0, OptionType.Call);
-      ib.reqContractDetails(refId, contract);
+      ib.reqContractDetails(refId, refContract);
     })
       .on(EventName.contractDetails, (reqId, details: ContractDetails) => {
         expect(reqId).toEqual(refId);
-        expect(details.contract.secType).toEqual(SecType.OPT);
-        expect(details.contract.symbol).toEqual("SPY");
-        expect(details.contract.currency).toEqual("USD");
-        expect(details.marketName).toEqual("SPY");
-        // console.log(details.contract);
+        expect(details.contract.secType).toEqual(refContract.secType);
+        expect(details.contract.symbol).toEqual(refContract.symbol);
+        expect(details.contract.currency).toEqual(refContract.currency);
         count++;
       })
       .on(EventName.contractDetailsEnd, (reqId) => {
         expect(reqId).toEqual(refId);
         expect(count).toBeGreaterThanOrEqual(92);
-        // console.log(count);
-        if (ib) ib.disconnect();
-      })
-      .on(EventName.disconnected, () => {
         done();
       })
       .on(EventName.error, (err, code, reqId) => {

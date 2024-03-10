@@ -8,12 +8,13 @@ import {
   IBApi,
   Order,
   OrderAction,
+  OrderStatus,
   OrderType,
-  Stock,
   TimeInForce,
 } from "../../../..";
 import configuration from "../../../../common/configuration";
 import logger from "../../../../common/logger";
+import { sample_etf } from "../../sample-data/contracts";
 
 describe("CancelOrder", () => {
   jest.setTimeout(20 * 1000);
@@ -41,48 +42,50 @@ describe("CancelOrder", () => {
   test("cancelOrder", (done) => {
     let refId: number;
 
-    const contract: Contract = new Stock("SPY");
+    const contract: Contract = sample_etf;
     const order: Order = {
       orderType: OrderType.LMT,
       action: OrderAction.BUY,
-      lmtPrice: 1,
-      totalQuantity: 1,
-      // account: "DU123567",
-      tif: TimeInForce.GTC,
+      lmtPrice: 3,
+      totalQuantity: 3,
+      tif: TimeInForce.DAY,
+      outsideRth: false,
       transmit: true,
     };
 
-    let order_found = false;
+    let cancelling = false;
     ib.once(EventName.nextValidId, (orderId: number) => {
       refId = orderId;
       ib.placeOrder(refId, contract, order);
     })
-      .on(EventName.openOrder, (orderId, _contract, _order, _orderState) => {
-        expect(orderId).toEqual(refId);
-        if (!order_found && orderId === refId) {
-          order_found = true;
-          ib.cancelOrder(refId);
-        }
-      })
       .on(
         EventName.orderStatus,
         (
           orderId,
-          _status,
+          status,
           _filled,
           _remaining,
           _avgFillPrice,
-          _permId?,
-          _parentId?,
-          _lastFillPrice?,
-          _clientId?,
-          _whyHeld?,
-          _mktCapPrice?,
+          _permId,
+          _parentId,
+          _lastFillPrice,
+          _clientId,
+          _whyHeld,
+          _mktCapPrice,
         ) => {
-          expect(orderId).toEqual(refId);
+          if (orderId === refId) {
+            if (
+              !cancelling &&
+              [OrderStatus.PreSubmitted, OrderStatus.Submitted].includes(
+                status as OrderStatus,
+              )
+            ) {
+              cancelling = true;
+              ib.cancelOrder(refId);
+            }
+          }
         },
       )
-      .on(EventName.openOrderEnd, () => {})
       .on(
         EventName.error,
         (
@@ -100,8 +103,9 @@ describe("CancelOrder", () => {
             } else if (
               code == ErrorCode.ORDER_CANCELLED &&
               reqId == refId &&
-              order_found
+              cancelling
             ) {
+              logger.info(msg);
               done();
             } else {
               done(msg);
