@@ -11,17 +11,18 @@ export class PercentChangeCondition implements ContractCondition {
   /**
    * Create a [[PercentChangeCondition]] object.
    *
-   * @param percent TODO document
-   * @param conId The contract id.
-   * @param exchange The exchange code.
-   * @param conjunctionConnection Conjunction connection type.
+   * @param isMore If there is a price percent change measured against last close price above or below...
+   * @param percent this amount...
+   * @param conId on this contract
+   * @param exchange when traded on this exchange...
+   * @param conjunctionConnection AND | OR next condition (will be ignored if no more conditions are added)
    */
   constructor(
     public percent: number,
     public conId: number,
     public exchange: string,
     public isMore: boolean,
-    public conjunctionConnection: ConjunctionConnection
+    public conjunctionConnection: ConjunctionConnection,
   ) {}
 
   get strValue(): string {

@@ -9,20 +9,20 @@ export class VolumeCondition implements ContractCondition {
   type = OrderConditionType.Volume;
 
   /**
-   * Create a [[PriceCondition]] object.
+   * Create a [[VolumeCondition]] object.
    *
-   * @param volume TODO document
-   * @param conId The contract id.
-   * @param exchange The exchange code.
-   * @param triggerMethod TODO document
-   * @param conjunctionConnection Conjunction connection type.
+   * @param conId Whenever contract...
+   * @param exchange When traded at
+   * @param isMore reaches a volume higher/lower
+   * @param volume than this...
+   * @param conjunctionConnection AND | OR next condition (will be ignored if no more conditions are added)
    */
   constructor(
     public volume: number,
     public conId: number,
     public exchange: string,
     public isMore: boolean,
-    public conjunctionConnection: ConjunctionConnection
+    public conjunctionConnection: ConjunctionConnection,
   ) {}
 
   get strValue(): string {

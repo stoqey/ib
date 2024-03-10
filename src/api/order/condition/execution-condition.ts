@@ -15,16 +15,16 @@ export class ExecutionCondition implements OrderCondition {
   /**
    * Create a [[ExecutionCondition]] object.
    *
-   * @param exchange Exchange where the symbol needs to be traded.
-   * @param secType Kind of instrument being monitored.
-   * @param symbol 	Instrument's symbol.
-   * @param conjunctionConnection Conjunction connection type.
+   * @param symbol When an execution on symbol
+   * @param exchange at exchange
+   * @param secType for this secType
+   * @param conjunctionConnection AND | OR next condition (will be ignored if no more conditions are added)
    */
   constructor(
     public exchange: string,
     public secType: SecType,
     public symbol: string,
-    public conjunctionConnection: ConjunctionConnection
+    public conjunctionConnection: ConjunctionConnection,
   ) {}
 }
 

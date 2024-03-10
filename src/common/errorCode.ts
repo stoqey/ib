@@ -16,6 +16,8 @@ export enum ErrorCode {
   /** Requested market data is not subscribed. Delayed market data is not available. */
   REQ_MKT_DATA_NOT_AVAIL = 354,
 
+  /** No trading permissions. */
+  NO_TRADING_PERMISSIONS = 460,
   /**
    * Couldn't connect to TWS.
    *

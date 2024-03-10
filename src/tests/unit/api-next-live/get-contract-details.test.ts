@@ -6,10 +6,10 @@ import { Subscription } from "rxjs";
 import { IBApiNext, IBApiNextError } from "../../..";
 import {
   sample_bond,
-  sample_future,
+  sample_crypto,
   sample_option,
   sample_stock,
-} from "../contracts";
+} from "../sample-data/contracts";
 
 describe("ApiNext: getContractDetails()", () => {
   jest.setTimeout(10 * 1000);
@@ -71,13 +71,13 @@ describe("ApiNext: getContractDetails()", () => {
 
   test("Future contract details", (done) => {
     api
-      .getContractDetails(sample_future)
+      .getContractDetails(sample_crypto)
       .then((result) => {
         // console.log(result);
         expect(result.length).toBeGreaterThan(0);
         if (result.length) {
-          expect(result[0].contract.symbol).toEqual(sample_future.symbol);
-          expect(result[0].contract.secType).toEqual(sample_future.secType);
+          expect(result[0].contract.symbol).toEqual(sample_crypto.symbol);
+          expect(result[0].contract.secType).toEqual(sample_crypto.secType);
         }
         done();
       })
@@ -115,6 +115,25 @@ describe("ApiNext: getContractDetails()", () => {
         expect(result.length).toBeGreaterThan(0);
         if (result.length) {
           expect(result[0].contract.secType).toEqual(sample_bond.secType);
+        }
+        done();
+      })
+      .catch((err: IBApiNextError) => {
+        done(
+          `getContractDetails failed with '${err.error.message}' (Error #${err.code})`,
+        );
+      });
+  });
+
+  test("Crypto contract details", (done) => {
+    api
+      .getContractDetails(sample_crypto)
+      .then((result) => {
+        // console.log(result);
+        expect(result.length).toBeGreaterThan(0);
+        if (result.length) {
+          expect(result[0].contract.symbol).toEqual(sample_crypto.symbol);
+          expect(result[0].contract.secType).toEqual(sample_crypto.secType);
         }
         done();
       })

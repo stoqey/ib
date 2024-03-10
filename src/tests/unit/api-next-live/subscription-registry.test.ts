@@ -43,7 +43,7 @@ describe("Subscription registry Tests", () => {
 
   it("Twice the same event callback bug", (done) => {
     // Two active subscriptions for the same Event #193
-    done();
+    done("Please fix issue #193");
     return;
     subscription$ = api.getOpenOrders().subscribe({
       next: (data) => {
