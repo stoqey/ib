@@ -21,6 +21,7 @@ jobs:
         uses: "actions/setup-node@v4"
         with:
           node-version: 18.19.1
+          cache: "yarn" # caches the yarn cache folder not node_modules
 
       # Automated Version Bump
       - name: "Automated Version Bump"
@@ -35,7 +36,7 @@ jobs:
         run: yarn install --frozen-lockfile
 
       # Publish the package
-      - name: npm publish
+      - name: "Publishing to Npm registry"
         run: |
           npm config set //registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN
           npm publish

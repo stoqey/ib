@@ -2,13 +2,14 @@
 #
 # Check https://circleci.com/docs/2.0/language-javascript/ for more details
 #
-version: 2
+version: 2.1
+
 jobs:
   build-dependencies:
     environment:
       NODE_ENV: development
     docker:
-      - image: node:18.17.1
+      - image: node:18.19.1
     working_directory: ~/repo
     steps:
       - restore_cache:
@@ -66,7 +67,7 @@ jobs:
       - JAVA_PATH=/opt/i4j_jres/1.8.0_152/bin # JRE is bundled starting with TWS 952
       - APP=GATEWAY
     docker:
-      - image: node:18.17.1
+      - image: node:18.19.1
     working_directory: ~/repo
     steps:
       - restore_cache:
@@ -99,7 +100,7 @@ jobs:
       # CC_TEST_REPORTER_ID: <insert id>
       NODE_ENV: development
     docker:
-      - image: node:18.17.1
+      - image: node:18.19.1
       - image: industrialninja/ib_gateway:latest
         environment:
           - TZ=America/NewYork
@@ -160,7 +161,8 @@ jobs:
     environment:
       CC_TEST_REPORTER_ID: <insert id>
     docker:
-      - image: circleci/node:12.18.4
+      # - image: circleci/node:16.13.1
+      - image: node:18.19.1
     working_directory: ~/repo
     steps:
       - attach_workspace:
