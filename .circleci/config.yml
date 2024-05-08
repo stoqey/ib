@@ -106,8 +106,6 @@ jobs:
           - TZ=America/NewYork
           - APP=GATEWAY
           - TRADING_MODE=paper
-        ports:
-          - 4003:4003
     working_directory: ~/repo
     steps:
       - restore_cache:
