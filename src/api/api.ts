@@ -2994,7 +2994,9 @@ export declare interface IBApi {
       time: number,
       price: number,
       size: number,
-      tickAttribLast: unknown /* TODO: replace with TickAttribLast type as soon as available. */,
+      tickAttribLast: unknown, /* TODO: replace with TickAttribLast type as soon as available. */
+      exchange: string, 
+      specialConditions: string,
     ) => void,
   ): this;
 
