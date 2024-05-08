@@ -16,6 +16,7 @@ import {
   PercentChangeCondition,
   PriceCondition,
   TimeCondition,
+  TimeInForce,
   TriggerMethod,
   VolumeCondition,
 } from "../../../..";
@@ -95,6 +96,7 @@ describe("Place Conditional Orders", () => {
       conditionsIgnoreRth: true,
       conditionsCancelOrder: false,
       conditions: [sample_price_condition],
+      tif: TimeInForce.DAY,
       transmit: true,
     };
 

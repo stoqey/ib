@@ -23,8 +23,8 @@ export const sample_crypto: Contract = new Crypto("ETH");
 // This one will need to be updated sometimes
 export const sample_future: Contract = new Future(
   "ES",
-  "ESH4",
-  "202403",
+  "ESM4",
+  "202406",
   "CME",
   50,
 );
