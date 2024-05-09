@@ -153,6 +153,7 @@ describe("Place Conditional Orders", () => {
       conditionsIgnoreRth: true,
       conditionsCancelOrder: false,
       conditions: [sample_execution_condition],
+      tif: TimeInForce.DAY,
       transmit: true,
     };
 
@@ -209,6 +210,7 @@ describe("Place Conditional Orders", () => {
       conditionsIgnoreRth: true,
       conditionsCancelOrder: false,
       conditions: [sample_margin_condition],
+      tif: TimeInForce.DAY,
       transmit: true,
     };
 
@@ -265,6 +267,7 @@ describe("Place Conditional Orders", () => {
       conditionsIgnoreRth: true,
       conditionsCancelOrder: false,
       conditions: [sample_percent_condition],
+      tif: TimeInForce.DAY,
       transmit: true,
     };
 
@@ -321,6 +324,7 @@ describe("Place Conditional Orders", () => {
       conditionsIgnoreRth: true,
       conditionsCancelOrder: false,
       conditions: [sample_time_condition],
+      tif: TimeInForce.DAY,
       transmit: true,
     };
 
@@ -377,6 +381,7 @@ describe("Place Conditional Orders", () => {
       conditionsIgnoreRth: true,
       conditionsCancelOrder: false,
       conditions: [sample_volume_condition],
+      tif: TimeInForce.DAY,
       transmit: true,
     };
 
@@ -440,6 +445,7 @@ describe("Place Conditional Orders", () => {
         sample_time_condition,
         sample_volume_condition,
       ],
+      tif: TimeInForce.DAY,
       transmit: true,
     };
 
