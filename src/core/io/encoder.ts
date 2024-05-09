@@ -2101,7 +2101,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     durationStr: string,
     barSizeSetting: BarSizeSetting,
     whatToShow: WhatToShow,
-    useRTH: number,
+    useRTH: number | boolean,
     formatDate: number,
     keepUpToDate: boolean,
     chartOptions?: TagValue[],
@@ -2219,7 +2219,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     endDateTime: string,
     numberOfTicks: number,
     whatToShow: WhatToShow,
-    useRth: number,
+    useRth: number | boolean,
     ignoreSize: boolean,
     miscOptions?: TagValue[],
   ): void {
