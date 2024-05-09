@@ -1,7 +1,7 @@
 /**
  * Attributes of a [[HistoricalTickBidAsk]].
  */
-export interface TickAttribBidAsk {
+export interface TickAttribLast {
   /** TODO document */
   pastLimit?: boolean;
 
@@ -19,7 +19,7 @@ export interface HistoricalTickLast {
   time?: number;
 
   /** Tick attribs of historical last tick. */
-  tickAttribBidAsk?: TickAttribBidAsk;
+  tickAttribLast?: TickAttribLast;
 
   /** The last price of the historical tick. */
   price?: number;

@@ -3,15 +3,14 @@
  */
 import {
   BarSizeSetting,
-  Contract,
   EventName,
   IBApi,
   Option,
   OptionType,
-  Stock,
   WhatToShow,
 } from "../../..";
 import configuration from "../../../common/configuration";
+import { sample_etf } from "../sample-data/contracts";
 
 describe("IBApi Historical data Tests", () => {
   jest.setTimeout(10 * 1000);
@@ -41,10 +40,9 @@ describe("IBApi Historical data Tests", () => {
     let counter = 0;
 
     ib.once(EventName.connected, () => {
-      const contract: Contract = new Stock("SPY");
       ib.reqHistoricalData(
         refId,
-        contract,
+        sample_etf,
         "20231006-20:00:00",
         "30 S",
         BarSizeSetting.SECONDS_ONE,
@@ -115,7 +113,7 @@ describe("IBApi Historical data Tests", () => {
       ib.reqHistoricalData(
         refId,
         contract,
-        "20240110-20:00:00",
+        "20240508-17:00:00",
         "30 S",
         BarSizeSetting.SECONDS_FIFTEEN,
         WhatToShow.BID_ASK,
@@ -153,11 +151,11 @@ describe("IBApi Historical data Tests", () => {
             expect(counter).toEqual(2);
             done();
           } else if (counter++ == 1) {
-            expect(time).toEqual("1704916785");
-            expect(open).toEqual(25.65);
-            expect(high).toEqual(25.65);
-            expect(low).toEqual(25.65);
-            expect(close).toEqual(25.65);
+            expect(time).toEqual("1715187585");
+            expect(open).toEqual(25.35);
+            expect(high).toEqual(25.35);
+            expect(low).toEqual(25.35);
+            expect(close).toEqual(25.35);
             expect(volume).toEqual(-1);
             expect(count).toEqual(-1);
             expect(WAP).toEqual(-1);
@@ -176,10 +174,9 @@ describe("IBApi Historical data Tests", () => {
     let counter = 0;
 
     ib.once(EventName.connected, () => {
-      const contract: Contract = new Stock("SPY");
       ib.reqHistoricalData(
         refId,
-        contract,
+        sample_etf,
         "20230904-20:00:00",
         "1 M",
         BarSizeSetting.WEEKS_ONE,
@@ -241,10 +238,9 @@ describe("IBApi Historical data Tests", () => {
     let counter = 0;
 
     ib.once(EventName.connected, () => {
-      const contract: Contract = new Stock("SPY");
       ib.reqHistoricalData(
         refId,
-        contract,
+        sample_etf,
         "20230904-20:00:00",
         "1 Y",
         BarSizeSetting.MONTHS_ONE,
@@ -319,12 +315,10 @@ describe("IBApi Historical data Tests", () => {
         if (reqId == refId) done(`[${reqId}] ${err.message} (#${code})`);
       });
 
-    const contract: Contract = new Stock("SPY");
-
     ib.connect().reqHistoricalTicks(
       refId,
-      contract,
-      "20240102-16:00:00",
+      sample_etf,
+      "20240508-17:00:00",
       null,
       10,
       WhatToShow.TRADES,

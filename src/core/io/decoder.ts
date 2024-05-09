@@ -2405,7 +2405,7 @@ export class Decoder {
       const specialConditions = this.readStr();
       ticks[i] = {
         time: time,
-        tickAttribBidAsk: {
+        tickAttribLast: {
           pastLimit: (mask & (1 << 0)) !== 0,
           unreported: (mask & (1 << 1)) !== 0,
         },

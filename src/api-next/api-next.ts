@@ -1748,7 +1748,7 @@ export class IBApiNext {
    * - OPTION_IMPLIED_VOLATILITY
    * - FEE_RATE
    * - REBATE_RATE
-   * @param useRTH Set to 0 to obtain the data which was also generated outside of the Regular Trading Hours, set to 1 to obtain only the RTH data
+   * @param useRTH Set to false to obtain the data which was also generated outside of the Regular Trading Hours, set to true to obtain only the RTH data
    * @param formatDate Set to 1 to obtain the bars' time as yyyyMMdd HH:mm:ss, set to 2 to obtain it like system time format in seconds
    */
   getHistoricalData(
@@ -1757,7 +1757,7 @@ export class IBApiNext {
     durationStr: string,
     barSizeSetting: BarSizeSetting,
     whatToShow: WhatToShow,
-    useRTH: number,
+    useRTH: number | boolean,
     formatDate: number,
   ): Promise<Bar[]> {
     return lastValueFrom(
@@ -1927,14 +1927,14 @@ export class IBApiNext {
    * @param startDateTime "20170701 12:01:00". Uses TWS timezone specified at login.
    * @param endDateTime "20170701 13:01:00". In TWS timezone. Exactly one of start time and end time has to be defined.
    * @param numberOfTicks Number of distinct data points. Max currently 1000 per request.
-   * @param useRTH Data from regular trading hours (1), or all available hours (0)
+   * @param useRTH Data from regular trading hours (true), or all available hours (false)
    */
   getHistoricalTicksMid(
     contract: Contract,
     startDateTime: string,
     endDateTime: string,
     numberOfTicks: number,
-    useRTH: number,
+    useRTH: number | boolean,
   ): Observable<HistoricalTick[]> {
     return this.subscriptions
       .register<HistoricalTick[]>(
@@ -1995,7 +1995,7 @@ export class IBApiNext {
    * @param startDateTime "20170701 12:01:00". Uses TWS timezone specified at login.
    * @param endDateTime "20170701 13:01:00". In TWS timezone. Exactly one of start time and end time has to be defined.
    * @param numberOfTicks Number of distinct data points. Max currently 1000 per request.
-   * @param useRTH Data from regular trading hours (1), or all available hours (0)
+   * @param useRTH Data from regular trading hours (true), or all available hours (false)
    * @param ignoreSize A filter only used when the source price is Bid_Ask
    */
   getHistoricalTicksBidAsk(
@@ -2003,7 +2003,7 @@ export class IBApiNext {
     startDateTime: string,
     endDateTime: string,
     numberOfTicks: number,
-    useRTH: number,
+    useRTH: number | boolean,
     ignoreSize: boolean,
   ): Observable<HistoricalTickBidAsk[]> {
     return this.subscriptions
@@ -2063,14 +2063,14 @@ export class IBApiNext {
    * @param startDateTime "20170701 12:01:00". Uses TWS timezone specified at login.
    * @param endDateTime "20170701 13:01:00". In TWS timezone. Exactly one of start time and end time has to be defined.
    * @param numberOfTicks Number of distinct data points. Max 1000 per request.
-   * @param useRTH Data from regular trading hours (1), or all available hours (0)
+   * @param useRTH Data from regular trading hours (true), or all available hours (false)
    */
   getHistoricalTicksLast(
     contract: Contract,
     startDateTime: string,
     endDateTime: string,
     numberOfTicks: number,
-    useRTH: number,
+    useRTH: number | boolean,
   ): Observable<HistoricalTickLast[]> {
     return this.subscriptions
       .register<HistoricalTickLast[]>(

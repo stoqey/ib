@@ -25,8 +25,14 @@ import OptionExerciseAction from "./data/enum/option-exercise-action";
 import { BarSizeSetting } from "./historical/bar-size-setting";
 import { HistogramEntry } from "./historical/histogramEntry";
 import { HistoricalTick } from "./historical/historicalTick";
-import { HistoricalTickBidAsk } from "./historical/historicalTickBidAsk";
-import { HistoricalTickLast } from "./historical/historicalTickLast";
+import {
+  HistoricalTickBidAsk,
+  TickAttribBidAsk,
+} from "./historical/historicalTickBidAsk";
+import {
+  HistoricalTickLast,
+  TickAttribLast,
+} from "./historical/historicalTickLast";
 import { ScannerSubscription } from "./market/scannerSubscription";
 import { TickByTickDataType } from "./market/tickByTickDataType";
 import { TickType } from "./market/tickType";
@@ -959,7 +965,7 @@ export class IBApi extends EventEmitter {
    * - OPTION_IMPLIED_VOLATILITY
    * - FEE_RATE
    * - REBATE_RATE
-   * @param useRTH Set to 0 to obtain the data which was also generated outside of the Regular Trading Hours, set to 1
+   * @param useRTH Set to `false` to obtain the data which was also generated outside of the Regular Trading Hours, set to `true`
    *   to obtain only the RTH data
    * @param formatDate Set to 1 to obtain the bars' time as yyyyMMdd HH:mm:ss, set to 2 to obtain it like system time
    *   format in seconds
@@ -973,7 +979,7 @@ export class IBApi extends EventEmitter {
     durationStr: string,
     barSizeSetting: BarSizeSetting,
     whatToShow: WhatToShow,
-    useRTH: number,
+    useRTH: number | boolean,
     formatDate: number,
     keepUpToDate: boolean,
   ): IBApi {
@@ -1045,7 +1051,7 @@ export class IBApi extends EventEmitter {
     endDateTime: string,
     numberOfTicks: number,
     whatToShow: WhatToShow,
-    useRTH: number,
+    useRTH: number | boolean,
     ignoreSize: boolean,
   ): IBApi {
     this.controller.schedule(() =>
@@ -2994,8 +3000,8 @@ export declare interface IBApi {
       time: number,
       price: number,
       size: number,
-      tickAttribLast: unknown, /* TODO: replace with TickAttribLast type as soon as available. */
-      exchange: string, 
+      tickAttribLast: TickAttribLast,
+      exchange: string,
       specialConditions: string,
     ) => void,
   ): this;
@@ -3029,7 +3035,7 @@ export declare interface IBApi {
       askPrice: number,
       bidSize: number,
       askSize: number,
-      tickAttribBidAsk: unknown /* TODO: replace with TickAttribBidAsk type as soon as available. */,
+      tickAttribBidAsk: TickAttribBidAsk,
     ) => void,
   ): this;
 
