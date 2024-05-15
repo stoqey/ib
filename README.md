@@ -65,7 +65,7 @@ ib.on(EventName.pnlSingle, (
   );
 ```
 
-## API Documenation
+## API Documentation
 
 <b>[See API documentation here.](https://stoqey.github.io/ib-doc/)</b>
 
