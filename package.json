@@ -1,6 +1,6 @@
 {
   "name": "@stoqey/ib",
-  "version": "1.3.22",
+  "version": "1.3.23",
   "private": false,
   "description": "Interactive Brokers TWS/IB Gateway API client library for Node.js (TS)",
   "keywords": [
