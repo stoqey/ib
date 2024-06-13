@@ -460,7 +460,7 @@ export class Decoder {
    * Read a token from queue and return it as boolean value.
    */
   readBool(): boolean {
-    return parseInt(this.readStr()) != 0;
+    return parseInt(this.readStr(), 10) != 0;
   }
 
   /**
@@ -510,15 +510,14 @@ export class Decoder {
    * Read a token from queue and return it as integer value.
    *
    * Returns 0 if the token is empty.
-   * Returns undefined is the token is Number.MAX_VALUE.
    */
-  readInt(): number | undefined {
+  readInt(): number {
     const token = this.readStr();
     if (!token || token === "") {
       return 0;
     }
     const val = parseInt(token, 10);
-    return val === Number.MAX_VALUE ? undefined : val;
+    return val;
   }
 
   /**
@@ -527,18 +526,12 @@ export class Decoder {
    * Returns Number.MAX_VALUE if the token is empty.
    * @deprecated readIntOrUndefined is probably what you are looking for
    */
-  readIntMax(): number {
-    const token = this.readStr();
-    if (!token || token === "") {
-      return Number.MAX_VALUE;
-    }
-    return parseInt(token, 10);
-  }
+  readIntMax = this.readIntOrUndefined;
 
   /**
    * Read a token from queue and return it as integer value.
    *
-   * Returns undefined if the token is empty or Number.MAX_VALUE.
+   * Returns undefined if the token is empty or `2147483647`.
    */
   readIntOrUndefined(): number | undefined {
     const token = this.readStr();
@@ -546,7 +539,7 @@ export class Decoder {
       return undefined;
     }
     const val = parseInt(token, 10);
-    return val === Number.MAX_VALUE ? undefined : val;
+    return val === 2147483647 ? undefined : val;
   }
 
   /**
