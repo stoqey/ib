@@ -103,7 +103,7 @@ describe("Place Conditional Orders", () => {
     let isDone = false;
     ib.once(EventName.nextValidId, (orderId: number) => {
       refId = orderId;
-      ib.placeOrder(refId, refContract, refOrder);
+      ib.placeOrder(refId, refContract, refOrder).reqOpenOrders();
     })
       .on(EventName.openOrder, (orderId, contract, order, _orderState) => {
         if (orderId == refId && !isDone) {
@@ -138,7 +138,7 @@ describe("Place Conditional Orders", () => {
         },
       );
 
-    ib.connect().reqOpenOrders();
+    ib.connect();
   });
 
   test("placeOrder with ExecutionCondition", (done) => {
@@ -160,7 +160,7 @@ describe("Place Conditional Orders", () => {
     let isDone = false;
     ib.once(EventName.nextValidId, (orderId: number) => {
       refId = orderId;
-      ib.placeOrder(refId, refContract, refOrder);
+      ib.placeOrder(refId, refContract, refOrder).reqOpenOrders();
     })
       .on(EventName.openOrder, (orderId, contract, order, _orderState) => {
         if (orderId == refId && !isDone) {
@@ -195,7 +195,7 @@ describe("Place Conditional Orders", () => {
         },
       );
 
-    ib.connect().reqOpenOrders();
+    ib.connect();
   });
 
   test("placeOrder with MarginCondition", (done) => {
@@ -217,7 +217,7 @@ describe("Place Conditional Orders", () => {
     let isDone = false;
     ib.once(EventName.nextValidId, (orderId: number) => {
       refId = orderId;
-      ib.placeOrder(refId, refContract, refOrder);
+      ib.placeOrder(refId, refContract, refOrder).reqOpenOrders();
     })
       .on(EventName.openOrder, (orderId, contract, order, _orderState) => {
         if (orderId == refId && !isDone) {
@@ -252,7 +252,7 @@ describe("Place Conditional Orders", () => {
         },
       );
 
-    ib.connect().reqOpenOrders();
+    ib.connect();
   });
 
   test("placeOrder with PercentChangeCondition", (done) => {
@@ -274,7 +274,7 @@ describe("Place Conditional Orders", () => {
     let isDone = false;
     ib.once(EventName.nextValidId, (orderId: number) => {
       refId = orderId;
-      ib.placeOrder(refId, refContract, refOrder);
+      ib.placeOrder(refId, refContract, refOrder).reqOpenOrders();
     })
       .on(EventName.openOrder, (orderId, contract, order, _orderState) => {
         if (orderId == refId && !isDone) {
@@ -309,7 +309,7 @@ describe("Place Conditional Orders", () => {
         },
       );
 
-    ib.connect().reqOpenOrders();
+    ib.connect();
   });
 
   test("placeOrder with TimeCondition", (done) => {
@@ -331,15 +331,18 @@ describe("Place Conditional Orders", () => {
     let isDone = false;
     ib.once(EventName.nextValidId, (orderId: number) => {
       refId = orderId;
-      ib.placeOrder(refId, refContract, refOrder);
+      ib.placeOrder(refId, refContract, refOrder).reqOpenOrders();
     })
       .on(EventName.openOrder, (orderId, contract, order, _orderState) => {
-        if (orderId == refId && !isDone) {
+        if (orderId == refId) {
           isDone = true;
           expect(contract.symbol).toEqual(refContract.symbol);
           expect(order.totalQuantity).toEqual(refOrder.totalQuantity);
-          done();
         }
+      })
+      .on(EventName.openOrderEnd, () => {
+        if (isDone) done();
+        else done("failed");
       })
       .on(
         EventName.error,
@@ -366,7 +369,7 @@ describe("Place Conditional Orders", () => {
         },
       );
 
-    ib.connect().reqOpenOrders();
+    ib.connect();
   });
 
   test("placeOrder with VolumeCondition", (done) => {
@@ -388,7 +391,7 @@ describe("Place Conditional Orders", () => {
     let isDone = false;
     ib.once(EventName.nextValidId, (orderId: number) => {
       refId = orderId;
-      ib.placeOrder(refId, refContract, refOrder);
+      ib.placeOrder(refId, refContract, refOrder).reqOpenOrders();
     })
       .on(EventName.openOrder, (orderId, contract, order, _orderState) => {
         if (orderId == refId && !isDone) {
@@ -423,7 +426,7 @@ describe("Place Conditional Orders", () => {
         },
       );
 
-    ib.connect().reqOpenOrders();
+    ib.connect();
   });
 
   test("placeOrder with all conditions", (done) => {
@@ -452,7 +455,7 @@ describe("Place Conditional Orders", () => {
     let isDone = false;
     ib.once(EventName.nextValidId, (orderId: number) => {
       refId = orderId;
-      ib.placeOrder(refId, refContract, refOrder);
+      ib.placeOrder(refId, refContract, refOrder).reqOpenOrders();
     })
       .on(EventName.openOrder, (orderId, contract, order, _orderState) => {
         if (orderId == refId && !isDone) {
@@ -487,6 +490,6 @@ describe("Place Conditional Orders", () => {
         },
       );
 
-    ib.connect().reqOpenOrders();
+    ib.connect();
   });
 });

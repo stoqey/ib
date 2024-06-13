@@ -460,7 +460,7 @@ export class Decoder {
    * Read a token from queue and return it as boolean value.
    */
   readBool(): boolean {
-    return !!parseInt(this.readStr(), 10);
+    return parseInt(this.readStr()) != 0;
   }
 
   /**
@@ -2665,6 +2665,7 @@ export class Decoder {
 
   /**
    * Decode a [[Contract]] object from data queue.
+   * @deprecated to remove
    */
   private decodeContract(version: number): Contract {
     const contract: Contract = {};
@@ -2693,6 +2694,7 @@ export class Decoder {
 
   /**
    * Decode a [[Order]] object from data queue.
+   * @deprecated to remove
    */
   private decodeOrder(version: number): Order {
     const order: Order = {};
@@ -2804,6 +2806,7 @@ export class Decoder {
 
   /**
    * Decode a [[ComboLeg]] object from data queue.
+   * @deprecated to remove
    */
   private decodeComboLeg(): ComboLeg {
     return {
@@ -2998,7 +3001,8 @@ class OrderDecoder {
       this.order.faGroup = this.decoder.readStr();
       this.order.faMethod = this.decoder.readStr();
       this.order.faPercentage = this.decoder.readStr();
-      this.order.faProfile = this.decoder.readStr();
+      if (this.version < MIN_SERVER_VER.FA_PROFILE_DESUPPORT)
+        this.order.faProfile = this.decoder.readStr();
     }
   }
 
@@ -3278,7 +3282,11 @@ class OrderDecoder {
       this.order.scalePriceIncrement = this.decoder.readDoubleOrUndefined();
     }
 
-    if (this.version >= 28 && this.order.scalePriceIncrement > 0.0) {
+    if (
+      this.version >= 28 &&
+      this.order.scalePriceIncrement &&
+      this.order.scalePriceIncrement > 0.0
+    ) {
       this.order.scalePriceAdjustValue = this.decoder.readDoubleOrUndefined();
       this.order.scalePriceAdjustInterval = this.decoder.readIntOrUndefined();
       this.order.scaleProfitOffset = this.decoder.readDoubleOrUndefined();
