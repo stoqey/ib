@@ -108,6 +108,8 @@ public enum TickType {
     SOCIAL_MARKET_ANALYTICS(100, "socialMarketAnalytics"),
     ESTIMATED_IPO_MIDPOINT(101, "estimatedIPOMidpoint"),
     FINAL_IPO_LAST(102, "finalIPOLast"),
+    DELAYED_YIELD_BID(103, "delayedYieldBid"),
+    DELAYED_YIELD_ASK(104, "delayedYieldAsk"),
 
     UNKNOWN( Integer.MAX_VALUE , "unknown" );
 

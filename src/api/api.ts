@@ -18,7 +18,7 @@ import NewsProvider from "./data/container/news-provider";
 import SoftDollarTier from "./data/container/soft-dollar-tier";
 import TagValue from "./data/container/tag-value";
 import { EventName } from "./data/enum/event-name";
-import FADataType from "./data/enum/fad-data-type";
+import FADataType from "./data/enum/fa-data-type";
 import LogLevel from "./data/enum/log-level";
 import MIN_SERVER_VER from "./data/enum/min-server-version";
 import OptionExerciseAction from "./data/enum/option-exercise-action";
@@ -84,7 +84,7 @@ export interface IBApiCreationOptions {
 
 /** Maximum supported version. */
 export const MAX_SUPPORTED_SERVER_VERSION =
-  MIN_SERVER_VER.PENDING_PRICE_REVISION;
+  MIN_SERVER_VER.PROFESSIONAL_CUSTOMER;
 
 /** Minimum supported version. */
 export const MIN_SERVER_VER_SUPPORTED = 38;
@@ -3349,7 +3349,7 @@ export declare interface IBApi {
    * - FullMaintMarginReq-C: Maintenance Margin of commodity segment's portfolio with no discounts or intraday credits.
    * - FullMaintMarginReq-S: Maintenance Margin of security segment's portfolio with no discounts or intraday credits.
    * - FundValue: Value of funds value (money market funds + mutual funds).
-   * - FutureOptionValue: Real-time market-to-market value of futures options.
+   * - FutureOption: Real-time market-to-market value of futures options.
    * - FuturesPNL: Real-time changes in futures value since last settlement.
    * - FxCashBalance: Cash balance in related IB-UKL account.
    * - GrossPositionValue: Gross Position Value in securities segment.
@@ -3419,6 +3419,7 @@ export declare interface IBApi {
    * - StockMarketValue: Real-time mark-to-market value of stock.
    * - TBondValue: Value of treasury bonds.
    * - TBillValue: Value of treasury bills.
+   * - Cryptocurrency: Total Cash Balance including Future PNL.
    * - TotalCashBalance: Total Cash Balance including Future PNL.
    * - TotalCashValue: Total cash value of stock, commodities and securities.
    * - TotalCashValue-C: CashBalance in commodity segment.

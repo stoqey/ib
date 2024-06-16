@@ -6,7 +6,7 @@ package com.ib.client;
 
 public class EJavaSignal implements EReaderSignal {
     private final Object monitor = new Object();
-    private boolean open = false;
+    private volatile boolean open = false;
 
     @Override
     public void issueSignal() {

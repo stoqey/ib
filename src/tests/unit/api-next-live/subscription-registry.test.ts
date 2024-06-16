@@ -42,9 +42,7 @@ describe("Subscription registry Tests", () => {
   });
 
   it("Twice the same event callback bug", (done) => {
-    // Two active subscriptions for the same Event #193
-    done("Please fix issue #193");
-    return;
+    // Two active subscriptions for the same Event issue #193
     subscription$ = api.getOpenOrders().subscribe({
       next: (data) => {
         console.log(data);
@@ -67,10 +65,5 @@ describe("Subscription registry Tests", () => {
       .catch((err: IBApiNextError) => {
         console.error(`getAllOpenOrders failed with '${err}'`);
       });
-
-    // awaitTimeout(15).then(() => {
-    //   subscription$.unsubscribe();
-    //   done();
-    // });
   });
 });

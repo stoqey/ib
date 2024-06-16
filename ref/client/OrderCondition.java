@@ -1,4 +1,4 @@
-/* Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+/* Copyright (C) 2024 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.client;
@@ -9,6 +9,11 @@ import java.io.ObjectOutput;
 
 
 public abstract class OrderCondition {
+
+    protected static final String SPACE = " ";
+    protected static final String EMPTY = "";
+    private static final String AND = SPACE + "and";
+    private static final String OR = SPACE + "or";
 
     private OrderConditionType m_type;
     private boolean m_isConjunctionConnection;
@@ -24,7 +29,7 @@ public abstract class OrderCondition {
 
     @Override
     public String toString() {
-        return conjunctionConnection() ? "<AND>" : "<OR>";
+        return conjunctionConnection() ? AND : OR;
     }
 
     public boolean conjunctionConnection() {
@@ -71,5 +76,10 @@ public abstract class OrderCondition {
         }
         orderCondition.m_type = type;
         return orderCondition;
+    }
+    
+    public boolean tryToParse(String conditionStr) {
+        m_isConjunctionConnection = conditionStr.equals(AND);
+        return m_isConjunctionConnection || conditionStr.equals(OR);
     }
 }

@@ -63,7 +63,7 @@ export { TagValue } from "./api/data/container/tag-value";
 // export enum types
 
 export { EventName } from "./api/data/enum/event-name";
-export { FADataType } from "./api/data/enum/fad-data-type";
+export { FADataType } from "./api/data/enum/fa-data-type";
 export { LogLevel } from "./api/data/enum/log-level";
 export { MIN_SERVER_VER } from "./api/data/enum/min-server-version";
 export { OptionExerciseAction } from "./api/data/enum/option-exercise-action";

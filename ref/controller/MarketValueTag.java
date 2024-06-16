@@ -11,6 +11,7 @@ public enum MarketValueTag {
     IssuerOptionValue("IssuerOption"),
     NetLiquidationByCurrency("Net Liq"),
     CashBalance("CashBalance"),
+    Cryptocurrency("Cryptocurrency"),
     TotalCashBalance("TotalCashBalance"),
     AccruedCash("AccruedCash"),
     StockMarketValue("Stocks"),

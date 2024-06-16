@@ -1,4 +1,4 @@
-/* Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+/* Copyright (C) 2024 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.client;
@@ -6,6 +6,8 @@ package com.ib.client;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Arrays;
+import java.util.Optional;
 
 public class PriceCondition extends ContractCondition {
 	
@@ -70,4 +72,21 @@ public class PriceCondition extends ContractCondition {
 		out.writeInt(m_triggerMethod);
 	}
 	
+    public static int triggerMethodFromString(String name) {
+        return Arrays.asList(mthdNames).indexOf(name);
+    }
+
+    @Override public boolean tryToParse(final String conditionStr) {
+        Optional<String> triggerMethod = Arrays.stream(mthdNames).filter(name -> !name.isEmpty()).filter(name -> conditionStr.startsWith(name)).sorted((name1, name2) -> name2.length() - name1.length()).findFirst();
+        if (!triggerMethod.isPresent()) {
+            return false;
+        }
+        try {
+            m_triggerMethod = triggerMethodFromString(triggerMethod.get());
+            return super.tryToParse(conditionStr.substring(conditionStr.indexOf(triggerMethod.get()) + triggerMethod.get().length() + 1));
+        }
+        catch (Exception ex) {
+            return false;
+        }
+    }
 }

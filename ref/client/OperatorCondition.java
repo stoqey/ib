@@ -1,4 +1,4 @@
-/* Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+/* Copyright (C) 2024 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.client;
@@ -9,6 +9,10 @@ import java.io.ObjectOutput;
 
 
 public abstract class OperatorCondition extends OrderCondition {
+	
+    private static final String HEADER = SPACE + "is" + SPACE;
+    private static final String IS_MORE = ">=";
+    private static final String IS_LESS = "<=";
 	
 	private boolean m_isMore;
 
@@ -27,7 +31,7 @@ public abstract class OperatorCondition extends OrderCondition {
 	
 	@Override
 	public String toString() {
-		return " is " + (isMore() ? ">= " : "<= ") + valueToString();
+		return HEADER + (isMore() ? IS_MORE + SPACE : IS_LESS + SPACE) + valueToString() + super.toString();
 	}
 	
 	@Override
@@ -44,4 +48,30 @@ public abstract class OperatorCondition extends OrderCondition {
 	public void isMore(boolean m_isMore) {
 		this.m_isMore = m_isMore;
 	}
+	
+    @Override public boolean tryToParse(String conditionStr)
+    {
+        if (!conditionStr.startsWith(HEADER)) {
+            return false;
+        }
+
+        try
+        {
+            conditionStr = conditionStr.replace(HEADER, EMPTY);
+            if (!conditionStr.startsWith(IS_MORE) && !conditionStr.startsWith(IS_LESS)) {
+                return false;
+            }
+            m_isMore = conditionStr.startsWith(IS_MORE);
+            if (super.tryToParse(conditionStr.substring(conditionStr.lastIndexOf(SPACE)))) {
+            	conditionStr = conditionStr.substring(0, conditionStr.lastIndexOf(SPACE));
+            }
+            valueFromString(conditionStr.substring(3));
+        }
+        catch (Exception ex)
+        {
+            return false;
+        }
+
+        return true;
+    }
 }

@@ -1,9 +1,13 @@
-/* Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+/* Copyright (C) 2023 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.client;
 
 import java.util.List;
+
+import com.ib.client.Types.FundAssetType;
+import com.ib.client.Types.FundDistributionPolicyIndicator;
+import com.ib.client.Types.SecType;
 
 public class ContractDetails {
     private Contract m_contract;
@@ -51,6 +55,25 @@ public class ContractDetails {
     private String   m_nextOptionType;
     private boolean  m_nextOptionPartial = false;
     private String   m_notes;
+    
+    // FUND values
+    private String   m_fundName;
+    private String   m_fundFamily;
+    private String   m_fundType;
+    private String   m_fundFrontLoad;
+    private String   m_fundBackLoad;
+    private String   m_fundBackLoadTimeInterval;
+    private String   m_fundManagementFee;
+    private boolean  m_fundClosed = false;
+    private boolean  m_fundClosedForNewInvestors = false;
+    private boolean  m_fundClosedForNewMoney = false;
+    private String   m_fundNotifyAmount;
+    private String   m_fundMinimumInitialPurchase;
+    private String   m_fundSubsequentMinimumPurchase;
+    private String   m_fundBlueSkyStates;
+    private String   m_fundBlueSkyTerritories;
+    private FundDistributionPolicyIndicator m_fundDistributionPolicyIndicator;
+    private FundAssetType m_fundAssetType;
 
     // Get
     public int conid()                  { return m_contract.conid(); }
@@ -99,6 +122,24 @@ public class ContractDetails {
     public boolean nextOptionPartial()  { return m_nextOptionPartial; }
     public String notes()               { return m_notes; }
 
+    public String fundName()                      { return m_fundName; }
+    public String fundFamily()                    { return m_fundFamily; }
+    public String fundType()                      { return m_fundType; }
+    public String fundFrontLoad()                 { return m_fundFrontLoad; }
+    public String fundBackLoad()                  { return m_fundBackLoad; }
+    public String fundBackLoadTimeInterval()      { return m_fundBackLoadTimeInterval; }
+    public String fundManagementFee()             { return m_fundManagementFee; }
+    public boolean fundClosed()                   { return m_fundClosed; }
+    public boolean fundClosedForNewInvestors()    { return m_fundClosedForNewInvestors; }
+    public boolean fundClosedForNewMoney()        { return m_fundClosedForNewMoney; }
+    public String fundNotifyAmount()              { return m_fundNotifyAmount; }
+    public String fundMinimumInitialPurchase()    { return m_fundMinimumInitialPurchase; }
+    public String fundSubsequentMinimumPurchase() { return m_fundSubsequentMinimumPurchase; }
+    public String fundBlueSkyStates()             { return m_fundBlueSkyStates; }
+    public String fundBlueSkyTerritories()        { return m_fundBlueSkyTerritories; }
+    public FundDistributionPolicyIndicator fundDistributionPolicyIndicator() { return m_fundDistributionPolicyIndicator; }
+    public FundAssetType fundAssetType()          { return m_fundAssetType; }
+    
     // Set
     public void contract(Contract contract)         { m_contract = contract; }
     public void marketName(String marketName)       { m_marketName = marketName; }
@@ -145,46 +186,29 @@ public class ContractDetails {
     public void nextOptionPartial(boolean nextOptionPartial) { m_nextOptionPartial = nextOptionPartial; }
     public void notes(String notes)             { m_notes = notes; }
 
+    public void fundName(String fundName)                                     { m_fundName = fundName; }
+    public void fundFamily(String fundFamily)                                 { m_fundFamily = fundFamily; }
+    public void fundType(String fundType)                                     { m_fundType = fundType; }
+    public void fundFrontLoad(String fundFrontLoad)                           { m_fundFrontLoad = fundFrontLoad; }
+    public void fundBackLoad(String fundBackLoad)                             { m_fundBackLoad = fundBackLoad; }
+    public void fundBackLoadTimeInterval(String fundBackLoadTimeInterval)     { m_fundBackLoadTimeInterval = fundBackLoadTimeInterval; }
+    public void fundManagementFee(String fundManagementFee)                   { m_fundManagementFee = fundManagementFee; }
+    public void fundClosed(boolean fundClosed)                                { m_fundClosed = fundClosed; }
+    public void fundClosedForNewInvestors(boolean fundClosedForNewInvestors)  { m_fundClosedForNewInvestors = fundClosedForNewInvestors; }
+    public void fundClosedForNewMoney(boolean fundClosedForNewMoney)          { m_fundClosedForNewMoney = fundClosedForNewMoney; }
+    public void fundNotifyAmount(String fundNotifyAmount)                     { m_fundNotifyAmount = fundNotifyAmount; }
+    public void fundMinimumInitialPurchase(String fundMinimumInitialPurchase) { m_fundMinimumInitialPurchase = fundMinimumInitialPurchase; }
+    public void fundSubsequentMinimumPurchase(String fundSubsequentMinimumPurchase) { m_fundSubsequentMinimumPurchase = fundSubsequentMinimumPurchase; }
+    public void fundBlueSkyStates(String fundBlueSkyStates)                   { m_fundBlueSkyStates = fundBlueSkyStates; }
+    public void fundBlueSkyTerritories(String fundBlueSkyTerritories)         { m_fundBlueSkyTerritories = fundBlueSkyTerritories; }
+    public void fundDistributionPolicyIndicator(FundDistributionPolicyIndicator fundDistributionPolicyIndicator) { m_fundDistributionPolicyIndicator = fundDistributionPolicyIndicator; }
+    public void fundAssetType(FundAssetType fundAssetType)                    { m_fundAssetType = fundAssetType; }
+    
     public ContractDetails() {
         m_contract = new Contract();
         m_minTick = 0;
         m_underConid = 0;
         m_evMultiplier = 0;
-    }
-
-    public ContractDetails( Contract p_contract, String p_marketName, 
-    		double p_minTick, String p_orderTypes, String p_validExchanges, int p_underConId, String p_longName,
-    	    String p_contractMonth, String p_industry, String p_category, String p_subcategory,
-    	    String p_timeZoneId, String	p_tradingHours, String p_liquidHours,
-    	    String p_evRule, double p_evMultiplier, int p_aggGroup,
-    	    String p_underSymbol, String p_underSecType, String p_marketRuleIds, String p_realExpirationDate, String p_lastTradeTime,
-    	    String p_stockType, Decimal p_minSize, Decimal p_sizeIncrement, Decimal p_suggestedSizeIncrement) {
-        m_contract = p_contract;
-    	m_marketName = p_marketName;
-    	m_minTick = p_minTick;
-    	m_orderTypes = p_orderTypes;
-    	m_validExchanges = p_validExchanges;
-    	m_underConid = p_underConId;
-    	m_longName = p_longName;
-        m_contractMonth = p_contractMonth;
-        m_industry = p_industry;
-        m_category = p_category;
-        m_subcategory = p_subcategory;
-        m_timeZoneId = p_timeZoneId;
-        m_tradingHours = p_tradingHours;
-        m_liquidHours = p_liquidHours;
-        m_evRule = p_evRule;
-        m_evMultiplier = p_evMultiplier;
-        m_aggGroup = p_aggGroup;
-        m_underSymbol = p_underSymbol;
-        m_underSecType = p_underSecType;
-        m_marketRuleIds = p_marketRuleIds;
-        m_realExpirationDate = p_realExpirationDate;
-        m_lastTradeTime = p_lastTradeTime;
-        m_stockType = p_stockType;
-        m_minSize = p_minSize;
-        m_sizeIncrement = p_sizeIncrement;
-        m_suggestedSizeIncrement = p_suggestedSizeIncrement;
     }
 
     @Override public String toString() {
@@ -233,6 +257,26 @@ public class ContractDetails {
         add( sb, "nextOptionPartial", m_nextOptionPartial);
         add( sb, "notes", m_notes);
 
+        if (m_contract.secType() == SecType.FUND) {
+            add( sb, "fundName", m_fundName);
+            add( sb, "fundFamily", m_fundFamily);
+            add( sb, "fundType", m_fundType);
+            add( sb, "fundFrontLoad", m_fundFrontLoad);
+            add( sb, "fundBackLoad", m_fundBackLoad);
+            add( sb, "fundBackLoadTimeInterval", m_fundBackLoadTimeInterval);
+            add( sb, "fundManagementFee", m_fundManagementFee);
+            add( sb, "fundClosed", m_fundClosed);
+            add( sb, "fundClosedForNewInvestors", m_fundClosedForNewInvestors);
+            add( sb, "fundClosedForNewMoney", m_fundClosedForNewMoney);
+            add( sb, "fundNotifyAmount", m_fundNotifyAmount);
+            add( sb, "fundMinimumInitialPurchase", m_fundMinimumInitialPurchase);
+            add( sb, "fundSubsequentMinimumPurchase", m_fundSubsequentMinimumPurchase);
+            add( sb, "fundBlueSkyStates", m_fundBlueSkyStates);
+            add( sb, "fundBlueSkyTerritories", m_fundBlueSkyTerritories);
+            add( sb, "fundDistributionPolicyIndicator", m_fundDistributionPolicyIndicator != null ? m_fundDistributionPolicyIndicator.name() : "");
+            add( sb, "fundAssetType", m_fundAssetType != null ? m_fundAssetType.name() : "");
+        }
+        
         return sb.toString();
     }
 

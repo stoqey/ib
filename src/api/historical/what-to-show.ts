@@ -21,5 +21,6 @@ export const WhatToShow = {
   YIELD_LAST: "YIELD_LAST",
   ADJUSTED_LAST: "ADJUSTED_LAST",
   SCHEDULE: "SCHEDULE",
+  AGGTRADES: "AGGTRADES",
 } as const;
 export type WhatToShow = (typeof WhatToShow)[keyof typeof WhatToShow];

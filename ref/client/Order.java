@@ -1,4 +1,4 @@
-/* Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+/* Copyright (C) 2024 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.client;
@@ -80,7 +80,6 @@ public class Order {
     private String m_faGroup;
     private String m_faMethod = ""; // None;
     private String m_faPercentage;
-    private String m_faProfile;
 
     // volatility orders
     private double  m_volatility = Double.MAX_VALUE;  // enter percentage not decimal, e.g. 2 not .02
@@ -225,6 +224,8 @@ public class Order {
     private double  m_competeAgainstBestOffset;
     private double  m_midOffsetAtWhole;
     private double  m_midOffsetAtHalf;
+    private String  m_customerAccount;
+    private boolean m_professionalCustomer;
 	
 	// getters
     public Action  action()                         { return Action.get(m_action); }
@@ -294,7 +295,6 @@ public class Order {
     public String algoId()                          { return m_algoId; }
     public String faGroup()                         { return m_faGroup; }
     public String faPercentage()                    { return m_faPercentage; }
-    public String faProfile()                       { return m_faProfile; }
     public String goodAfterTime()                   { return m_goodAfterTime; }
     public String goodTillDate()                    { return m_goodTillDate; }
     public String hedgeParam()                      { return m_hedgeParam; }
@@ -375,6 +375,8 @@ public class Order {
     public boolean isCompeteAgainstBestOffsetUpToMid() { return m_competeAgainstBestOffset == COMPETE_AGAINST_BEST_OFFSET_UP_TO_MID; }
     public double midOffsetAtWhole()                { return m_midOffsetAtWhole; }
     public double midOffsetAtHalf()                 { return m_midOffsetAtHalf; }
+    public String customerAccount()                 { return m_customerAccount; }
+    public boolean professionalCustomer()           { return m_professionalCustomer; }
   
 	// setters
 	public void referenceContractId(int m_referenceContractId)          { this.m_referenceContractId = m_referenceContractId; }
@@ -407,7 +409,6 @@ public class Order {
     public void faMethod(Method v)                                      { m_faMethod = ( v == null ) ? null : v.getApiString(); }
     public void faMethod(String v)                                      { m_faMethod = v; }
     public void faPercentage(String v)                                  { m_faPercentage = v; }
-    public void faProfile(String v)                                     { m_faProfile = v; }
     public void goodAfterTime(String v)                                 { m_goodAfterTime = v; }
     public void goodTillDate(String v)                                  { m_goodTillDate = v; }
     public void hedgeParam(String v)                                    { m_hedgeParam = v; }
@@ -526,6 +527,8 @@ public class Order {
     public void setCompeteAgainstBestOffsetUpToMid()                    { m_competeAgainstBestOffset = COMPETE_AGAINST_BEST_OFFSET_UP_TO_MID; }
     public void midOffsetAtWhole(double v)                              { m_midOffsetAtWhole = v; }
     public void midOffsetAtHalf(double v)                               { m_midOffsetAtHalf = v; }
+    public void customerAccount(String v)                               { m_customerAccount = v; }
+    public void professionalCustomer(boolean v)                         { m_professionalCustomer = v; }
 
 
     public Order() {
@@ -582,6 +585,8 @@ public class Order {
         m_competeAgainstBestOffset = Double.MAX_VALUE;
         m_midOffsetAtWhole = Double.MAX_VALUE;
         m_midOffsetAtHalf = Double.MAX_VALUE;
+        m_customerAccount = EMPTY_STR;
+        m_professionalCustomer = false;
     }
 
     public List<TagValue> algoParams() {
@@ -690,6 +695,7 @@ public class Order {
             || m_competeAgainstBestOffset != l_theOther.m_competeAgainstBestOffset
             || m_midOffsetAtWhole != l_theOther.m_midOffsetAtWhole
             || m_midOffsetAtHalf != l_theOther.m_midOffsetAtHalf
+            || m_professionalCustomer != l_theOther.m_professionalCustomer
             ) {
         	return false;
         }
@@ -705,7 +711,6 @@ public class Order {
         	|| Util.StringCompare(m_goodTillDate, l_theOther.m_goodTillDate) != 0 
         	|| Util.StringCompare(m_rule80A, l_theOther.m_rule80A) != 0 
         	|| Util.StringCompare(m_faGroup, l_theOther.m_faGroup) != 0 
-        	|| Util.StringCompare(m_faProfile, l_theOther.m_faProfile) != 0 
         	|| Util.StringCompare(m_faMethod, l_theOther.m_faMethod) != 0 
         	|| Util.StringCompare(m_faPercentage, l_theOther.m_faPercentage) != 0 
         	|| Util.StringCompare(m_openClose, l_theOther.m_openClose) != 0
@@ -736,6 +741,7 @@ public class Order {
             || Util.StringCompare(m_shareholder, l_theOther.m_shareholder) != 0 
             || Util.StringCompare(m_advancedErrorOverride, l_theOther.m_advancedErrorOverride) != 0 
             || Util.StringCompare(m_manualOrderTime, l_theOther.m_manualOrderTime) != 0 
+            || Util.StringCompare(m_customerAccount, l_theOther.m_customerAccount) != 0 
             ) {
         	return false;
         }

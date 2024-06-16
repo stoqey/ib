@@ -1,4 +1,4 @@
-/* Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+/* Copyright (C) 2023 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.client;
@@ -235,7 +235,7 @@ public class Types {
 	public enum WhatToShow {
 		TRADES, MIDPOINT, BID, ASK, // << only these are valid for real-time bars
         BID_ASK, HISTORICAL_VOLATILITY, OPTION_IMPLIED_VOLATILITY, YIELD_ASK, YIELD_BID, YIELD_BID_ASK, YIELD_LAST, ADJUSTED_LAST,
-        SCHEDULE
+        SCHEDULE, AGGTRADES
 	}
 
 	public enum BarSize {
@@ -299,13 +299,28 @@ public class Types {
 		}
 	}
 
-	public enum FADataType {
-		UNUSED, GROUPS, PROFILES, ALIASES;
+    public enum FADataType {
+        GROUPS(1), ALIASES(3);
 
-		public static FADataType get( int ordinal) {
-			return getEnum( ordinal, values() );
-		}
-	}
+        private int id;
+
+        FADataType(int id) {
+            this.id = id;
+        }
+
+        public static FADataType getById(int id) {
+            for (FADataType faDataType: values()) {
+                if (faDataType.id == id) {
+                    return faDataType;
+                }
+            }
+            return null;
+        }
+
+        public int id() {
+            return id;
+        }
+    }
 
 	public enum SecIdType implements IApiEnum {
 	    None, CUSIP, SEDOL, ISIN, RIC;
@@ -340,7 +355,7 @@ public class Types {
 	}
 
 	public enum Method implements IApiEnum {
-		None, EqualQuantity, AvailableEquity, NetLiq, PctChange;
+		None, Equal, AvailableEquity, NetLiq, ContractsOrShares, Ratio, Percent, MonetaryAmount;
 
 	    public static Method get( String str) {
             return getValueOf(str, values(), None);
@@ -365,6 +380,72 @@ public class Types {
 	    }
 	}
 
+    public enum FundDistributionPolicyIndicator implements IApiEnum {
+        None ("None", "None"),
+        AccumulationFund("N", "Accumulation Fund"), 
+        IncomeFund ("Y", "Income Fund");
+
+        String m_value;
+        String m_name;
+
+        public String getValue() { return m_value; }
+        public String getName() { return m_name; }
+
+        FundDistributionPolicyIndicator(String value, String name) {
+            m_value = value;
+            m_name = name;
+        }
+
+        public static FundDistributionPolicyIndicator get(String value) {
+            for (FundDistributionPolicyIndicator v : values() ) {
+                if (v.m_value == value) {
+                    return v;
+                }
+            }
+            return None;
+        }
+
+        @Override public String getApiString() {
+            return m_value;
+        }
+    }
+
+    public enum FundAssetType implements IApiEnum {
+        None ("None", "None"),
+        Others("000", "Others"), 
+        MoneyMarket ("001", "Money Market"),
+        FixedIncome ("002", "Fixed Income"),
+        MultiAsset ("003", "Multi-asset"),
+        Equity ("004", "Equity"),
+        Sector ("005", "Sector"),
+        Guaranteed ("006", "Guaranteed"),
+        Alternative ("007", "Alternative");
+
+        String m_value;
+        String m_name;
+
+        public String getValue() { return m_value; }
+        public String getName() { return m_name; }
+
+        FundAssetType(String value, String name) {
+            m_value = value;
+            m_name = name;
+        }
+
+        public static FundAssetType get(String value) {
+            for (FundAssetType v : values() ) {
+                if (v.m_value == value) {
+                    return v;
+                }
+            }
+            return None;
+        }
+
+        @Override public String getApiString() {
+            return m_value;
+        }
+    }
+    
 	public static <T extends Enum<?> & IApiEnum> T getValueOf( String v, T[] values, T defaultValue ) {
         for( T currentEnum : values ) {
             if( currentEnum.getApiString().equals(v) ) {

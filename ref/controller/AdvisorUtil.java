@@ -1,4 +1,4 @@
-/* Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+/* Copyright (C) 2023 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.controller;
@@ -10,8 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.ib.client.Types.Method;
-import com.ib.controller.Profile.Allocation;
-import com.ib.controller.Profile.Type;
 
 
 
@@ -29,6 +27,7 @@ public class AdvisorUtil {
 		List<Group> list = new ArrayList<>();
 
 		Group group = null;
+		Account account = null;
 
 		BufferedReader reader = new BufferedReader( new StringReader( xml) );
 		String line;
@@ -66,6 +65,12 @@ public class AdvisorUtil {
 					else if (line.startsWith( "<defaultMethod>")) {
 						group.defaultMethod( Method.valueOf( getVal( line) ) );
 					}
+					else if (line.startsWith( "<defaultSize>")) {
+						group.defaultSize( getVal( line) );
+					}
+					else if (line.startsWith( "<riskCriteria>")) {
+						group.riskCriteria( getVal( line) );
+					}
 					else if (line.startsWith( "<ListOfAccts")) {
 						state = 3;
 					}
@@ -83,112 +88,26 @@ public class AdvisorUtil {
 					if (line.equals( "</ListOfAccts>")) {
 						state = 2;
 					}
-					else {
-						group.addAccount( getVal( line) );
-					}
-					break;
-
-				// should not happen
-				default:
-					break;
-			}
-		}
-
-		return list;
-	}
-
-	static List<Profile> getProfiles( String xml) {
-		try {
-			return getProfiles_( xml);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-	static List<Profile> getProfiles_( String xml) throws IOException {
-		List<Profile> list = new ArrayList<>();
-
-		Profile profile = null;
-		Allocation alloc = null;
-
-		BufferedReader reader = new BufferedReader( new StringReader( xml) );
-		String line;
-		int state = 0; // 0=none; 1=list of groups; 2=reading group 3=listOfAllocations 4=allocation
-		while ( (line=reader.readLine() ) != null) {
-			line = line.trim();
-
-			switch( state) {
-				// top of file
-				case 0:
-					if (line.equals( "<ListOfAllocationProfiles>")) {
-						state = 1;
-					}
-					break;
-
-				// reading profiles
-				case 1:
-					if (line.equals( "<AllocationProfile>")) {
-						profile = new Profile();
-						state = 2;
-					}
-					else if (line.equals( "</ListOfAllocationProfiles>")) {
-						state = 0;
-					}
-					else {
-						err( line);
-					}
-					break;
-
-				// reading Profile
-				case 2:
-					if (line.startsWith( "<name>") ) {
-						profile.name( getVal( line) );
-					}
-					else if (line.startsWith( "<type>")) {
-						int i = Integer.parseInt( getVal( line) );
-						profile.type( Type.get( i) );
-					}
-					else if (line.startsWith( "<ListOfAllocations")) {
-						state = 3;
-					}
-					else if (line.equals( "</AllocationProfile>")) {
-						list.add( profile);
-						state = 1;
-					}
-					else {
-						err( line);
-					}
-					break;
-
-				// reading list of allocations
-				case 3:
-					if (line.equals( "<Allocation>")) {
-						alloc = new Allocation();
+					else if (line.startsWith( "<Account")) {
+						account = new Account();
 						state = 4;
 					}
-					else if (line.equals( "</ListOfAllocations>")) {
-						state = 2;
-					}
 					else {
 						err( line);
 					}
 					break;
 
-				// reading Allocation
+				// reading account
 				case 4:
-					if (line.startsWith( "<acct>") ) {
-						alloc.account( getVal( line) );
-					}
-					else if (line.startsWith( "<amount>") ) {
-						alloc.amount( getVal( line) );
-					}
-					else if (line.startsWith( "<posEff>") ) {
-						// skip this
-					}
-					else if (line.equals( "</Allocation>") ) {
-						profile.add( alloc);
+					if (line.equals( "</Account>")) {
+						group.addAccount( account);
 						state = 3;
+					}
+					else if (line.startsWith( "<acct>")) {
+						account.acct( getVal( line) );
+					}
+					else if (line.startsWith( "<amount>")) {
+						account.amount( getVal( line) );
 					}
 					else {
 						err( line);
@@ -301,35 +220,18 @@ public class AdvisorUtil {
 			buf.append( String.format( "<name>%s</name>%n", group.name() ) );
 			buf.append( String.format( "<defaultMethod>%s</defaultMethod>%n", group.defaultMethod() ) );
 			buf.append( "<ListOfAccts varName=\"list\"\n>");
-			for( String acct : group.accounts() ) {
-				buf.append( String.format( "<String>%s</String>%n", acct) );
+			for( Account account : group.accounts() ) {
+				buf.append( String.format( "<Account>\n") );
+				buf.append( String.format( "<acct>%s</acct>%n", account.acct()) );
+				if (account.amount() != null && account.amount().length() > 0) {
+					buf.append( String.format( "<amount>%s</amount>%n", account.amount()) );
+				}
+				buf.append( String.format( "</Account>\n") );
 			}
 			buf.append( "</ListOfAccts>\n");
 			buf.append( "</Group>\n");
 		}
 		buf.append( "</ListOfGroups>\n");
-		return buf.toString();
-	}
-
-	public static String getProfilesXml(List<Profile> profiles) {
-		StringBuilder buf = new StringBuilder();
-		buf.append( "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-		buf.append( "<ListOfProfiles>\n");
-		for( Profile profile : profiles) {
-			buf.append( "<Profile>\n");
-			buf.append( String.format( "<name>%s</name>%n", profile.name() ) );
-			buf.append( String.format( "<type>%s</type>%n", profile.type().ordinal() ) );
-			buf.append( "<ListOfAllocations varName=\"listOfAllocations\">\n");
-			for( Allocation alloc : profile.allocations() ) {
-				buf.append( "<Allocation>\n");
-				buf.append( String.format( "<acct>%s</acct>%n", alloc.account() ) );
-				buf.append( String.format( "<amount>%s</amount>%n", alloc.amount() ) );
-				buf.append( "</Allocation>\n");
-			}
-			buf.append( "</ListOfAllocations>\n");
-			buf.append( "</Profile>\n");
-		}
-		buf.append( "</ListOfProfiles>\n");
 		return buf.toString();
 	}
 }

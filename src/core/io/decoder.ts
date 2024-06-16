@@ -1,8 +1,11 @@
-import { ComboLeg } from "../../api/contract/comboLeg";
 import { Contract } from "../../api/contract/contract";
 import { ContractDescription } from "../../api/contract/contractDescription";
 import { ContractDetails } from "../../api/contract/contractDetails";
 import { DeltaNeutralContract } from "../../api/contract/deltaNeutralContract";
+import {
+  FundAssetType,
+  FundDistributionPolicyIndicator,
+} from "../../api/contract/fund";
 import DepthMktDataDescription from "../../api/data/container/depth-mkt-data-description";
 import FamilyCode from "../../api/data/container/family-code";
 import NewsProvider from "../../api/data/container/news-provider";
@@ -822,6 +825,8 @@ export class Decoder {
     orderDecoder.readPostToAts();
     orderDecoder.readAutoCancelParent(MIN_SERVER_VER.AUTO_CANCEL_PARENT);
     orderDecoder.readPegBestPegMidOrderAttributes();
+    orderDecoder.readCustomerAccount();
+    orderDecoder.readProfessionalCustomer();
 
     this.emit(EventName.openOrder, order.orderId, contract, order, orderState);
   }
@@ -946,6 +951,9 @@ export class Decoder {
     contract.contract.symbol = this.readStr();
     contract.contract.secType = this.readStr() as SecType;
     this.readLastTradeDate(contract, false);
+    if (this.serverVersion >= MIN_SERVER_VER.LAST_TRADE_DATE) {
+      contract.contract.lastTradeDate = this.readStr();
+    }
     contract.contract.strike = this.readDouble();
     contract.contract.right = validateOptionType(this.readStr() as OptionType);
     contract.contract.exchange = this.readStr();
@@ -1009,40 +1017,64 @@ export class Decoder {
           contract.secIdList.push(tagValue);
         }
       }
+    }
 
-      if (this.serverVersion >= MIN_SERVER_VER.AGG_GROUP) {
-        contract.aggGroup = this.readInt();
-      }
+    if (this.serverVersion >= MIN_SERVER_VER.AGG_GROUP) {
+      contract.aggGroup = this.readInt();
+    }
 
-      if (this.serverVersion >= MIN_SERVER_VER.UNDERLYING_INFO) {
-        contract.underSymbol = this.readStr();
-        contract.underSecType = this.readStr() as SecType;
-      }
+    if (this.serverVersion >= MIN_SERVER_VER.UNDERLYING_INFO) {
+      contract.underSymbol = this.readStr();
+      contract.underSecType = this.readStr() as SecType;
+    }
 
-      if (this.serverVersion >= MIN_SERVER_VER.MARKET_RULES) {
-        contract.marketRuleIds = this.readStr();
-      }
+    if (this.serverVersion >= MIN_SERVER_VER.MARKET_RULES) {
+      contract.marketRuleIds = this.readStr();
+    }
 
-      if (this.serverVersion >= MIN_SERVER_VER.REAL_EXPIRATION_DATE) {
-        contract.realExpirationDate = this.readStr();
-      }
+    if (this.serverVersion >= MIN_SERVER_VER.REAL_EXPIRATION_DATE) {
+      contract.realExpirationDate = this.readStr();
+    }
 
-      if (this.serverVersion >= MIN_SERVER_VER.STOCK_TYPE) {
-        contract.stockType = this.readStr();
-      }
+    if (this.serverVersion >= MIN_SERVER_VER.STOCK_TYPE) {
+      contract.stockType = this.readStr();
+    }
 
-      if (
-        this.serverVersion >= MIN_SERVER_VER.FRACTIONAL_SIZE_SUPPORT &&
-        this.serverVersion < MIN_SERVER_VER.SIZE_RULES
-      ) {
-        this.readDecimal(); // sizeMinTick - not used anymore
-      }
+    if (
+      this.serverVersion >= MIN_SERVER_VER.FRACTIONAL_SIZE_SUPPORT &&
+      this.serverVersion < MIN_SERVER_VER.SIZE_RULES
+    ) {
+      this.readDecimal(); // sizeMinTick - not used anymore
+    }
 
-      if (this.serverVersion >= MIN_SERVER_VER.SIZE_RULES) {
-        contract.minSize = this.readDecimal();
-        contract.sizeIncrement = this.readDecimal();
-        contract.suggestedSizeIncrement = this.readDecimal();
-      }
+    if (this.serverVersion >= MIN_SERVER_VER.SIZE_RULES) {
+      contract.minSize = this.readDecimal();
+      contract.sizeIncrement = this.readDecimal();
+      contract.suggestedSizeIncrement = this.readDecimal();
+    }
+
+    if (
+      this.serverVersion >= MIN_SERVER_VER.FUND_DATA_FIELDS &&
+      contract.contract.secType == SecType.FUND
+    ) {
+      contract.fundName = this.readStr();
+      contract.fundFamily = this.readStr();
+      contract.fundType = this.readStr();
+      contract.fundFrontLoad = this.readStr();
+      contract.fundBackLoad = this.readStr();
+      contract.fundBackLoadTimeInterval = this.readStr();
+      contract.fundManagementFee = this.readStr();
+      contract.fundClosed = this.readBool();
+      contract.fundClosedForNewInvestors = this.readBool();
+      contract.fundClosedForNewMoney = this.readBool();
+      contract.fundNotifyAmount = this.readStr();
+      contract.fundMinimumInitialPurchase = this.readStr();
+      contract.fundSubsequentMinimumPurchase = this.readStr();
+      contract.fundBlueSkyStates = this.readStr();
+      contract.fundBlueSkyTerritories = this.readStr();
+      contract.fundDistributionPolicyIndicator =
+        this.readStr() as FundDistributionPolicyIndicator;
+      contract.fundAssetType = this.readStr() as FundAssetType;
     }
 
     this.emit(EventName.contractDetails, reqId, contract);
@@ -2575,6 +2607,8 @@ export class Decoder {
     orderDecoder.readCompletedTime();
     orderDecoder.readCompletedStatus();
     orderDecoder.readPegBestPegMidOrderAttributes();
+    orderDecoder.readCustomerAccount();
+    orderDecoder.readProfessionalCustomer();
 
     this.emit(EventName.completedOrder, contract, order, orderState);
   }
@@ -2654,164 +2688,6 @@ export class Decoder {
     const whiteBrandingId = this.readStr();
 
     this.emit(EventName.userInfo, reqId, whiteBrandingId);
-  }
-
-  /**
-   * Decode a [[Contract]] object from data queue.
-   * @deprecated to remove
-   */
-  private decodeContract(version: number): Contract {
-    const contract: Contract = {};
-
-    contract.conId = this.readInt();
-    contract.symbol = this.readStr();
-    contract.secType = this.readStr() as SecType;
-    contract.lastTradeDateOrContractMonth = this.readStr();
-    contract.strike = this.readDouble();
-    contract.right = validateOptionType(this.readStr() as OptionType);
-
-    if (version >= 32) {
-      contract.multiplier = this.readInt();
-    }
-
-    contract.exchange = this.readStr();
-    contract.currency = this.readStr();
-    contract.localSymbol = this.readStr();
-
-    if (version >= 32) {
-      contract.tradingClass = this.readStr();
-    }
-
-    return contract;
-  }
-
-  /**
-   * Decode a [[Order]] object from data queue.
-   * @deprecated to remove
-   */
-  private decodeOrder(version: number): Order {
-    const order: Order = {};
-
-    order.action = this.readStr() as OrderAction;
-
-    if (this.serverVersion >= MIN_SERVER_VER.FRACTIONAL_POSITIONS) {
-      order.totalQuantity = this.readDouble();
-    } else {
-      order.totalQuantity = this.readInt();
-    }
-
-    order.orderType = this.readStr() as OrderType;
-
-    if (version < 29) {
-      order.lmtPrice = this.readDouble();
-    } else {
-      order.lmtPrice = this.readDoubleOrUndefined();
-    }
-
-    if (version < 30) {
-      order.auxPrice = this.readDouble();
-    } else {
-      order.auxPrice = this.readDoubleOrUndefined();
-    }
-
-    order.tif = this.readStr() as TimeInForce;
-    order.ocaGroup = this.readStr();
-    order.account = this.readStr();
-    order.openClose = this.readStr();
-    order.origin = this.readInt();
-    order.orderRef = this.readStr();
-    order.clientId = this.readInt();
-    order.permId = this.readInt();
-    order.outsideRth = this.readBool();
-    order.hidden = this.readBool();
-    order.discretionaryAmt = this.readDouble();
-    order.goodAfterTime = this.readStr();
-    this.readStr(); // skip deprecated sharesAllocation field
-    order.faGroup = this.readStr();
-    order.faMethod = this.readStr();
-    order.faPercentage = this.readStr();
-    order.faProfile = this.readStr();
-    if (this.serverVersion >= MIN_SERVER_VER.MODELS_SUPPORT) {
-      order.modelCode = this.readStr();
-    }
-    order.goodTillDate = this.readStr();
-    order.rule80A = this.readStr();
-    order.percentOffset = this.readDoubleOrUndefined();
-    order.settlingFirm = this.readStr();
-    order.shortSaleSlot = this.readInt();
-    order.designatedLocation = this.readStr();
-
-    if (this.serverVersion === MIN_SERVER_VER.SSHORTX_OLD) {
-      this.readInt(); // exemptCode
-    } else if (version >= 23) {
-      order.exemptCode = this.readInt();
-    }
-
-    order.auctionStrategy = this.readInt();
-    order.startingPrice = this.readDoubleOrUndefined();
-    order.stockRefPrice = this.readDoubleOrUndefined();
-    order.delta = this.readDoubleOrUndefined();
-    order.stockRangeLower = this.readDoubleOrUndefined();
-    order.stockRangeUpper = this.readDoubleOrUndefined();
-    order.displaySize = this.readInt();
-    order.blockOrder = this.readBool();
-    order.sweepToFill = this.readBool();
-    order.allOrNone = this.readBool();
-    order.minQty = this.readIntOrUndefined();
-    order.ocaType = this.readInt();
-    order.eTradeOnly = this.readBool();
-    order.firmQuoteOnly = this.readBool();
-    order.nbboPriceCap = this.readDoubleOrUndefined();
-    order.parentId = this.readInt();
-    order.triggerMethod = this.readInt();
-    order.volatility = this.readDoubleOrUndefined();
-    order.volatilityType = this.readInt();
-    order.deltaNeutralOrderType = this.readStr();
-    order.deltaNeutralAuxPrice = this.readDoubleOrUndefined();
-
-    if (version >= 27 && order?.deltaNeutralOrderType.length) {
-      order.deltaNeutralConId = this.readInt();
-      order.deltaNeutralSettlingFirm = this.readStr();
-      order.deltaNeutralClearingAccount = this.readStr();
-      order.deltaNeutralClearingIntent = this.readStr();
-    }
-
-    if (version >= 31 && order?.deltaNeutralOrderType.length) {
-      order.deltaNeutralOpenClose = this.readStr();
-      order.deltaNeutralShortSale = this.readBool();
-      order.deltaNeutralShortSaleSlot = this.readInt();
-      order.deltaNeutralDesignatedLocation = this.readStr();
-    }
-
-    order.continuousUpdate = this.readInt();
-    order.referencePriceType = this.readInt();
-    order.trailStopPrice = this.readDoubleOrUndefined();
-
-    if (version >= 30) {
-      order.trailingPercent = this.readDoubleOrUndefined();
-    }
-
-    order.basisPoints = this.readDoubleOrUndefined();
-    order.basisPointsType = this.readIntOrUndefined();
-
-    return order;
-  }
-
-  /**
-   * Decode a [[ComboLeg]] object from data queue.
-   * @deprecated to remove
-   */
-  private decodeComboLeg(): ComboLeg {
-    return {
-      conId: this.readInt(),
-      ratio: this.readInt(),
-      action: this.readStr() as OrderAction,
-      exchange: this.readStr(),
-      openClose: this.readInt(),
-      shortSaleSlot: this.readInt(),
-      designatedLocation: this.readStr(),
-      exemptCode: this.readInt(),
-    };
   }
 
   /**
@@ -3659,6 +3535,18 @@ class OrderDecoder {
         this.decoder.readDoubleOrUndefined();
       this.order.midOffsetAtWhole = this.decoder.readDoubleOrUndefined();
       this.order.midOffsetAtHalf = this.decoder.readDoubleOrUndefined();
+    }
+  }
+
+  readCustomerAccount() {
+    if (this.serverVersion >= MIN_SERVER_VER.CUSTOMER_ACCOUNT) {
+      this.order.customerAccount = this.decoder.readStr();
+    }
+  }
+
+  readProfessionalCustomer() {
+    if (this.serverVersion >= MIN_SERVER_VER.PROFESSIONAL_CUSTOMER) {
+      this.order.professionalCustomer = this.decoder.readBool();
     }
   }
 }

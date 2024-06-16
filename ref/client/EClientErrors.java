@@ -1,4 +1,4 @@
-/* Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+/* Copyright (C) 2023 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.client;
@@ -75,22 +75,25 @@ public class EClientErrors {
     static final CodeMsgPair FAIL_SEND_REQNEWSARTICLE = new CodeMsgPair(564, "Request News Article Sending Error - ");
     static final CodeMsgPair FAIL_SEND_REQHISTORICALNEWS = new CodeMsgPair(565, "Request Historical News Sending Error - ");
     static final CodeMsgPair FAIL_SEND_REQHEADTIMESTAMP = new CodeMsgPair(566, "Request Head Time Stamp Sending Error - ");
-    static final CodeMsgPair FAIL_SEND_CANHEADTIMESTAMP = new CodeMsgPair(567, "Cancel Head Time Stamp Sending Error - ");
-    static final CodeMsgPair FAIL_SEND_REQMARKETRULE = new CodeMsgPair(568, "Request Market Rule Sending Error - ");
-    static final CodeMsgPair FAIL_SEND_REQPNL = new CodeMsgPair(566, "Request PnL Sending Error - ");
-    static final CodeMsgPair FAIL_SEND_CANPNL = new CodeMsgPair(567, "Cancel PnL Sending Error - ");
-    static final CodeMsgPair FAIL_SEND_REQPNL_SINGLE = new CodeMsgPair(568, "Request PnL Single Sending Error - ");
-    static final CodeMsgPair FAIL_SEND_CANPNL_SINGLE = new CodeMsgPair(569, "Cancel PnL Single Sending Error - ");
-    static final CodeMsgPair FAIL_SEND_HISTORICAL_TICK = new CodeMsgPair(569, "Request Historical Ticks Sending Error - ");
-    static final CodeMsgPair FAIL_SEND_REQTICKBYTICK = new CodeMsgPair(570, "Request Tick-By-Tick Sending Error - ");
-    static final CodeMsgPair FAIL_SEND_CANTICKBYTICK = new CodeMsgPair(571, "Cancel Tick-By-Tick Sending Error - ");
-    static final CodeMsgPair FAIL_SEND_REQ_COMPLETED_ORDERS = new CodeMsgPair(572, "Request Completed Orders Sending Error - ");
-    static final CodeMsgPair FAIL_SEND_REQ_WSH_META_DATA = new CodeMsgPair(573, "Request WSH Meta Data Sending Error - ");
-    static final CodeMsgPair FAIL_SEND_CAN_WSH_META_DATA = new CodeMsgPair(574, "Cancel WSH Meta Data Sending Error - ");
-    static final CodeMsgPair FAIL_SEND_REQ_WSH_EVENT_DATA = new CodeMsgPair(575, "Request WSH Event Data Sending Error - ");
-    static final CodeMsgPair FAIL_SEND_CAN_WSH_EVENT_DATA = new CodeMsgPair(576, "Cancel WSH Event Data Sending Error - ");
-    static final CodeMsgPair FAIL_SEND_REQUSERINFO = new CodeMsgPair(577, "Request User Info Sending Error - ");
+    static final CodeMsgPair FAIL_SEND_REQHISTOGRAMDATA = new CodeMsgPair(567, "Request Histogram Data Sending Error - ");
+    static final CodeMsgPair FAIL_SEND_CANCELHISTOGRAMDATA = new CodeMsgPair(568, "Cancel Request Histogram Data Sending Error - ");
+    static final CodeMsgPair FAIL_SEND_CANCELHEADTIMESTAMP = new CodeMsgPair(569, "Cancel Head Time Stamp Sending Error - ");
+    static final CodeMsgPair FAIL_SEND_REQMARKETRULE = new CodeMsgPair(570, "Request Market Rule Sending Error - ");
+    static final CodeMsgPair FAIL_SEND_REQPNL = new CodeMsgPair(571, "Request PnL Sending Error - ");
+    static final CodeMsgPair FAIL_SEND_CANCELPNL = new CodeMsgPair(572, "Cancel PnL Sending Error - ");
+    static final CodeMsgPair FAIL_SEND_REQPNLSINGLE = new CodeMsgPair(573, "Request PnL Single Error - ");
+    static final CodeMsgPair FAIL_SEND_CANCELPNLSINGLE = new CodeMsgPair(574, "Cancel PnL Single Sending Error - ");
+    static final CodeMsgPair FAIL_SEND_REQHISTORICALTICKS = new CodeMsgPair(575, "Request Historical Ticks Error - ");
+    static final CodeMsgPair FAIL_SEND_REQTICKBYTICKDATA = new CodeMsgPair(576, "Request Tick-By-Tick Data Sending Error - ");
+    static final CodeMsgPair FAIL_SEND_CANCELTICKBYTICKDATA = new CodeMsgPair(577, "Cancel Tick-By-Tick Data Sending Error - ");
+    static final CodeMsgPair FAIL_SEND_REQCOMPLETEDORDERS = new CodeMsgPair(578, "Request Completed Orders Sending Error - ");
     static final CodeMsgPair INVALID_SYMBOL = new CodeMsgPair(579, "Invalid symbol in string - ");
+    static final CodeMsgPair FAIL_SEND_REQ_WSH_META_DATA = new CodeMsgPair(580, "Request WSH Meta Data Sending Error - ");
+    static final CodeMsgPair FAIL_SEND_CAN_WSH_META_DATA = new CodeMsgPair(581, "Cancel WSH Meta Data Sending Error - ");
+    static final CodeMsgPair FAIL_SEND_REQ_WSH_EVENT_DATA = new CodeMsgPair(582, "Request WSH Event Data Sending Error - ");
+    static final CodeMsgPair FAIL_SEND_CAN_WSH_EVENT_DATA = new CodeMsgPair(583, "Cancel WSH Event Data Sending Error - ");
+    static final CodeMsgPair FAIL_SEND_REQ_USER_INFO = new CodeMsgPair(584, "Request User Info Sending Error - ");
+    static final CodeMsgPair FA_PROFILE_NOT_SUPPORTED = new CodeMsgPair(585, "FA Profile is not supported anymore, use FA Group instead - ");
 
     public EClientErrors() {
     }
