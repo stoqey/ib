@@ -3,7 +3,7 @@ import { ScanCode } from "../../api-next/market-scanner/market-scanner";
 import { Contract } from "../../api/contract/contract";
 import WshEventData from "../../api/contract/wsh";
 import TagValue from "../../api/data/container/tag-value";
-import FADataType from "../../api/data/enum/fad-data-type";
+import FADataType from "../../api/data/enum/fa-data-type";
 import LogLevel from "../../api/data/enum/log-level";
 import MIN_SERVER_VER from "../../api/data/enum/min-server-version";
 import OptionExerciseAction from "../../api/data/enum/option-exercise-action";
@@ -22,10 +22,11 @@ import {
   isPegBenchOrder,
   isPegBestOrder,
   isPegMidOrder,
+  isVolOrder,
 } from "../../api/order/enum/orderType";
 import {
-  COMPETE_AGAINST_BEST_OFFSET_UP_TO_MID,
   Order,
+  isCompeteAgainstBestOffsetUpToMid,
 } from "../../api/order/order";
 import { ExecutionFilter } from "../../api/report/executionFilter";
 import { ErrorCode } from "../../common/errorCode";
@@ -608,6 +609,9 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     exerciseQuantity: number,
     account: string,
     override: number,
+    manualOrderTime: string = "",
+    customerAccount: string = "",
+    professionalCustomer: boolean = false,
   ): void {
     const version = 2;
 
@@ -623,6 +627,37 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       if (!!contract.tradingClass || contract.conId != undefined) {
         return this.emitError(
           "It does not support conId and tradingClass parameters in exerciseOptions.",
+          ErrorCode.UPDATE_TWS,
+          tickerId,
+        );
+      }
+    }
+
+    if (
+      this.serverVersion < MIN_SERVER_VER.MANUAL_ORDER_TIME_EXERCISE_OPTIONS &&
+      manualOrderTime
+    ) {
+      return this.emitError(
+        "It does not support manual order time parameter in exerciseOptions.",
+        ErrorCode.UPDATE_TWS,
+        tickerId,
+      );
+    }
+
+    if (this.serverVersion < MIN_SERVER_VER.CUSTOMER_ACCOUNT) {
+      if (customerAccount) {
+        return this.emitError(
+          "It does not support customer account parameter in exerciseOptions.",
+          ErrorCode.UPDATE_TWS,
+          tickerId,
+        );
+      }
+    }
+
+    if (this.serverVersion < MIN_SERVER_VER.PROFESSIONAL_CUSTOMER) {
+      if (professionalCustomer) {
+        return this.emitError(
+          "It does not support professional customer parameter in exerciseOptions.",
           ErrorCode.UPDATE_TWS,
           tickerId,
         );
@@ -654,6 +689,17 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     tokens.push(exerciseQuantity);
     tokens.push(account);
     tokens.push(override);
+    if (
+      this.serverVersion >= MIN_SERVER_VER.MANUAL_ORDER_TIME_EXERCISE_OPTIONS
+    ) {
+      tokens.push(manualOrderTime);
+    }
+    if (this.serverVersion >= MIN_SERVER_VER.CUSTOMER_ACCOUNT) {
+      tokens.push(customerAccount);
+    }
+    if (this.serverVersion >= MIN_SERVER_VER.PROFESSIONAL_CUSTOMER) {
+      tokens.push(professionalCustomer);
+    }
 
     this.sendMsg(tokens);
   }
@@ -1111,6 +1157,26 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       );
     }
 
+    if (this.serverVersion < MIN_SERVER_VER.CUSTOMER_ACCOUNT) {
+      if (order.customerAccount) {
+        return this.emitError(
+          "It does not support customer account parameter",
+          ErrorCode.UPDATE_TWS,
+          id,
+        );
+      }
+    }
+
+    if (this.serverVersion < MIN_SERVER_VER.PROFESSIONAL_CUSTOMER) {
+      if (order.professionalCustomer) {
+        return this.emitError(
+          "It does not support professional customer parameter",
+          ErrorCode.UPDATE_TWS,
+          id,
+        );
+      }
+    }
+
     const version = this.serverVersion < MIN_SERVER_VER.NOT_HELD ? 27 : 45;
 
     // send place order msg
@@ -1319,11 +1385,11 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
 
       // Volatility orders had specific watermark price attribs in server version 26
       const lower =
-        this.serverVersion === 26 && order.orderType === "VOL"
+        this.serverVersion === 26 && isVolOrder(order.orderType)
           ? undefined
           : order.stockRangeLower;
       const upper =
-        this.serverVersion === 26 && order.orderType === "VOL"
+        this.serverVersion === 26 && isVolOrder(order.orderType)
           ? undefined
           : order.stockRangeUpper;
       tokens.push(lower);
@@ -1370,10 +1436,12 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
 
       if (this.serverVersion === 26) {
         // Volatility orders had specific watermark price attribs in server version 26
-        const lower =
-          order.orderType === "VOL" ? order.stockRangeLower : undefined;
-        const upper =
-          order.orderType === "VOL" ? order.stockRangeUpper : undefined;
+        const lower = isVolOrder(order.orderType)
+          ? order.stockRangeLower
+          : undefined;
+        const upper = isVolOrder(order.orderType)
+          ? order.stockRangeUpper
+          : undefined;
         tokens.push(nullifyMax(lower));
         tokens.push(nullifyMax(upper));
       }
@@ -1642,15 +1710,13 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
 
     if (this.serverVersion >= MIN_SERVER_VER.PEGBEST_PEGMID_OFFSETS) {
       let sendMidOffsets = false;
-      if (contract.exchange == "IBKRATS") tokens.push(order.minTradeQty);
+      if (contract.exchange == "IBKRATS") {
+        tokens.push(order.minTradeQty);
+      }
       if (isPegBestOrder(order.orderType)) {
         tokens.push(order.minCompeteSize);
         tokens.push(order.competeAgainstBestOffset);
-        if (
-          order.competeAgainstBestOffset ==
-          COMPETE_AGAINST_BEST_OFFSET_UP_TO_MID
-        )
-          sendMidOffsets = true;
+        if (isCompeteAgainstBestOffsetUpToMid(order)) sendMidOffsets = true;
       } else if (isPegMidOrder(order.orderType)) {
         sendMidOffsets = true;
       }
@@ -1660,6 +1726,14 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       }
     }
 
+    if (this.serverVersion >= MIN_SERVER_VER.CUSTOMER_ACCOUNT) {
+      tokens.push(order.customerAccount);
+    }
+
+    if (this.serverVersion >= MIN_SERVER_VER.PROFESSIONAL_CUSTOMER) {
+      tokens.push(order.professionalCustomer);
+    }
+
     this.sendMsg(tokens);
   }
 
@@ -1667,22 +1741,15 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
    * Encode a REPLACE_FA message to an array of tokens.
    */
   replaceFA(reqId: number, faDataType: FADataType, xml: string): void {
-    if (this.serverVersion < 13) {
+    if (
+      this.serverVersion >= MIN_SERVER_VER.FA_PROFILE_DESUPPORT &&
+      faDataType == FADataType.PROFILES
+    ) {
       return this.emitError(
-        "This feature is only available for versions of TWS >= 13.",
+        "FA Profile is not supported anymore, use FA Group instead.",
         ErrorCode.UPDATE_TWS,
         reqId,
       );
-    }
-
-    if (this.serverVersion >= MIN_SERVER_VER.FA_PROFILE_DESUPPORT) {
-      if (faDataType == FADataType.PROFILES) {
-        return this.emitError(
-          "FA Profile is not supported anymore, use FA Group instead.",
-          ErrorCode.UPDATE_TWS,
-          reqId,
-        );
-      }
     }
 
     const version = 1;
@@ -2839,22 +2906,15 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
    * Encode a REQ_FA message.
    */
   requestFA(faDataType: FADataType): void {
-    if (this.serverVersion < 13) {
+    if (
+      this.serverVersion >= MIN_SERVER_VER.FA_PROFILE_DESUPPORT &&
+      faDataType == FADataType.PROFILES
+    ) {
       return this.emitError(
-        "This feature is only available for versions of TWS >= 13.",
+        "FA Profile is not supported anymore, use FA Group instead.",
         ErrorCode.UPDATE_TWS,
         -1,
       );
-    }
-
-    if (this.serverVersion >= MIN_SERVER_VER.FA_PROFILE_DESUPPORT) {
-      if (faDataType == FADataType.PROFILES) {
-        return this.emitError(
-          "FA Profile is not supported anymore, use FA Group instead.",
-          ErrorCode.UPDATE_TWS,
-          -1,
-        );
-      }
     }
 
     const version = 1;

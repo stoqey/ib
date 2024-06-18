@@ -1,4 +1,4 @@
-/* Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+/* Copyright (C) 2024 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.client;
@@ -16,6 +16,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import com.ib.client.Types.FundAssetType;
+import com.ib.client.Types.FundDistributionPolicyIndicator;
+import com.ib.client.Types.SecType;
 
 class EDecoder implements ObjectInput {
     // incoming msg id's
@@ -1171,6 +1175,10 @@ class EDecoder implements ObjectInput {
         if (m_serverVersion >= EClient.MIN_SERVER_VER_LAST_LIQUIDITY) {
             exec.lastLiquidity(readInt());
         }
+        
+        if (m_serverVersion >= EClient.MIN_SERVER_VER_PENDING_PRICE_REVISION) {
+        	exec.pendingPriceRevision(readBoolFromInt());
+        }
 
 
 		m_EWrapper.execDetails( reqId, contract, exec);
@@ -1268,6 +1276,9 @@ class EDecoder implements ObjectInput {
 		contract.contract().symbol(readStr());
 		contract.contract().secType(readStr());
 		readLastTradeDate(contract, false);
+		if (m_serverVersion >= EClient.MIN_SERVER_VER_LAST_TRADE_DATE) {
+			contract.contract().lastTradeDate(readStr());
+		}
 		contract.contract().strike(readDouble());
 		contract.contract().right(readStr());
 		contract.contract().exchange(readStr());
@@ -1342,6 +1353,25 @@ class EDecoder implements ObjectInput {
 		    contract.sizeIncrement(readDecimal());
 		    contract.suggestedSizeIncrement(readDecimal());
 		}
+        if (m_serverVersion >= EClient.MIN_SERVER_VER_FUND_DATA_FIELDS && contract.contract().secType() == SecType.FUND) {
+            contract.fundName(readStr());
+            contract.fundFamily(readStr());
+            contract.fundType(readStr());
+            contract.fundFrontLoad(readStr());
+            contract.fundBackLoad(readStr());
+            contract.fundBackLoadTimeInterval(readStr());
+            contract.fundManagementFee(readStr());
+            contract.fundClosed(readBoolFromInt());
+            contract.fundClosedForNewInvestors(readBoolFromInt());
+            contract.fundClosedForNewMoney(readBoolFromInt());
+            contract.fundNotifyAmount(readStr());
+            contract.fundMinimumInitialPurchase(readStr());
+            contract.fundSubsequentMinimumPurchase(readStr());
+            contract.fundBlueSkyStates(readStr());
+            contract.fundBlueSkyTerritories(readStr());
+            contract.fundDistributionPolicyIndicator(FundDistributionPolicyIndicator.get(readStr()));
+            contract.fundAssetType(FundAssetType.get(readStr()));
+        }
 		
 		m_EWrapper.contractDetails( reqId, contract);
 	}
@@ -1470,6 +1500,8 @@ class EDecoder implements ObjectInput {
         eOrderDecoder.readPostToAts();
         eOrderDecoder.readAutoCancelParent(EClient.MIN_SERVER_VER_AUTO_CANCEL_PARENT);
         eOrderDecoder.readPegBestPegMidOrderAttributes();
+        eOrderDecoder.readCustomerAccount();
+        eOrderDecoder.readProfessionalCustomer();
 
         m_EWrapper.openOrder(order.orderId(), contract, order, orderState);
     }
@@ -2001,6 +2033,8 @@ class EDecoder implements ObjectInput {
         eOrderDecoder.readCompletedTime();
         eOrderDecoder.readCompletedStatus();
         eOrderDecoder.readPegBestPegMidOrderAttributes();
+        eOrderDecoder.readCustomerAccount();
+        eOrderDecoder.readProfessionalCustomer();
 
         m_EWrapper.completedOrder(contract, order, orderState);
     }

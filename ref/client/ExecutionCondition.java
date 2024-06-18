@@ -1,4 +1,4 @@
-/* Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+/* Copyright (C) 2024 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.client;
@@ -10,6 +10,11 @@ import java.io.ObjectOutput;
 public class ExecutionCondition extends OrderCondition {
 	
 	public static final OrderConditionType conditionType = OrderConditionType.Execution;
+
+    private static final String HEADER = "trade occurs for" + SPACE;
+    private static final String SYMBOL_SUFFIX = SPACE + "symbol on" + SPACE;
+    private static final String EXCHANGE_SUFFIX = SPACE + "exchange for" + SPACE;
+    private static final String SECTYPE_SUFFIX = SPACE + "security type";
 	
 	protected ExecutionCondition() { }
 	
@@ -24,7 +29,7 @@ public class ExecutionCondition extends OrderCondition {
 
 	@Override
 	public String toString() {
-		return "trade occurs for " + m_symbol + " symbol on " + m_exchange + " exchange for " + m_secType + " security type";
+		return HEADER + m_symbol + SYMBOL_SUFFIX + m_exchange + EXCHANGE_SUFFIX + m_secType + SECTYPE_SUFFIX + super.toString();
 	}
 
 	@Override
@@ -64,4 +69,21 @@ public class ExecutionCondition extends OrderCondition {
 		this.m_symbol = m_symbol;
 	} 
 	
+    @Override public boolean tryToParse(String conditionStr) {
+        if (!conditionStr.startsWith(HEADER)) {
+            return false;
+        }
+
+        try {
+            conditionStr = conditionStr.replace(HEADER, EMPTY);
+            m_symbol = conditionStr.substring(0, conditionStr.indexOf(SYMBOL_SUFFIX));
+            m_exchange = conditionStr.substring(conditionStr.indexOf(SYMBOL_SUFFIX) + SYMBOL_SUFFIX.length(), conditionStr.indexOf(EXCHANGE_SUFFIX));
+            m_secType = conditionStr.substring(conditionStr.indexOf(EXCHANGE_SUFFIX) + EXCHANGE_SUFFIX.length(), conditionStr.indexOf(SECTYPE_SUFFIX));
+            conditionStr = conditionStr.substring(conditionStr.indexOf(SECTYPE_SUFFIX) + SECTYPE_SUFFIX.length());
+            return super.tryToParse(conditionStr);
+        }
+        catch (Exception ex) {
+            return false;
+        }
+    }
 }

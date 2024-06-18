@@ -222,55 +222,70 @@ export enum ErrorCode {
   /** Request Head Time Stamp Sending Error. */
   FAIL_SEND_REQHEADTIMESTAMP = 566,
 
-  /** Cancel Head Time Stamp Sending Error. */
-  FAIL_SEND_CANHEADTIMESTAMP = 567,
+  /** CRequest Histogram Data Sending Error */
+  FAIL_SEND_REQHISTOGRAMDATA = 567,
 
   /** Request Market Rule Sending Error. */
-  FAIL_SEND_REQMARKETRULE = 568,
-
-  /** Request PnL Sending Error. */
-  FAIL_SEND_REQPNL = 566,
-
-  /** Cancel PnL Sending Error. */
-  FAIL_SEND_CANPNL = 567,
-
-  /** Request PnL Single Sending Error. */
-  FAIL_SEND_REQPNL_SINGLE = 568,
+  FAIL_SEND_CANCELHISTOGRAMDATA = 568,
 
   /** Cancel PnL Single Sending Error. */
-  FAIL_SEND_CANPNL_SINGLE = 569,
+  FAIL_SEND_CANCELHEADTIMESTAMP = 569,
 
   /** Request Historical Ticks Sending Error. */
   FAIL_SEND_HISTORICAL_TICK = 569,
 
-  /** Request Tick-By-Tick Sending Error. */
-  FAIL_SEND_REQTICKBYTICK = 570,
+  /** Request Market Rule Sending Error. */
+  FAIL_SEND_REQMARKETRULE = 570,
 
-  /** Cancel Tick-By-Tick Sending Error. */
-  FAIL_SEND_CANTICKBYTICK = 571,
+  /** Request PnL Sending Error. */
+  FAIL_SEND_REQPNL = 571,
 
-  /** Request Completed Orders Sending Error. */
-  FAIL_SEND_REQ_COMPLETED_ORDERS = 572,
+  /** Cancel PnL Sending Error. */
+  FAIL_SEND_CANCELPNL = 572,
 
-  /** Request WSH Meta Data Sending Error. */
-  FAIL_SEND_REQ_WSH_META_DATA = 573,
+  /** Request PnL Single Error. */
+  FAIL_SEND_REQPNLSINGLE = 573,
 
-  /** Cancel WSH Meta Data Sending Error */
-  FAIL_SEND_CAN_WSH_META_DATA = 574,
+  /** Cancel PnL Single Sending Error . */
+  FAIL_SEND_CANCELPNLSINGLE = 574,
 
-  /** Request WSH Event Data Sending Error */
-  FAIL_SEND_REQ_WSH_EVENT_DATA = 575,
+  /** Request Historical Ticks Error. */
+  FAIL_SEND_REQHISTORICALTICKS = 575,
 
-  /** Cancel WSH Event Data Sending Error */
-  FAIL_SEND_CAN_WSH_EVENT_DATA = 576,
+  /** Request Tick-By-Tick Data Sending Error */
+  FAIL_SEND_REQTICKBYTICKDATA = 576,
 
-  /* Invalid symbol in string */
+  /** Cancel Tick-By-Tick Data Sending Error */
+  FAIL_SEND_CANCELTICKBYTICKDATA = 577,
+
+  /** Request Completed Orders Sending Error  */
+  FAIL_SEND_REQCOMPLETEDORDERS = 578,
+
+  /** Invalid symbol in string */
   INVALID_SYMBOL = 579,
 
-  /* Part of requested market data is not subscribed. */
+  /** "Request WSH Meta Data Sending Error */
+  FAIL_SEND_REQ_WSH_META_DATA = 580,
+
+  /** Cancel WSH Meta Data Sending Error */
+  FAIL_SEND_CAN_WSH_META_DATA = 581,
+
+  /** Request WSH Event Data Sending Error */
+  FAIL_SEND_REQ_WSH_EVENT_DATA = 582,
+
+  /** Cancel WSH Event Data Sending Error */
+  FAIL_SEND_CAN_WSH_EVENT_DATA = 583,
+
+  /** Request User Info Sending Error */
+  FAIL_SEND_REQ_USER_INFO = 584,
+
+  /** FA Profile is not supported anymore, use FA Group instead */
+  FA_PROFILE_NOT_SUPPORTED = 585,
+
+  /** Part of requested market data is not subscribed. */
   PART_OF_REQUESTED_DATA_NOT_SUBSCRIBED = 10090,
 
-  /* Requested market data is not subscribed. Displaying delayed market data. */
+  /** Requested market data is not subscribed. Displaying delayed market data. */
   DISPLAYING_DELAYED_DATA = 10167,
 
   /* News feed is not allowed. */

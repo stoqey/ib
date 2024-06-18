@@ -45,6 +45,8 @@ export enum OrderType {
   PEG_SRF_VOL = "PSV",
 }
 
+export const isVolOrder = (orderType: OrderType) => orderType == OrderType.VOL;
+
 export const isPegBenchOrder = (orderType: OrderType): boolean => {
   if (orderType == OrderType.PEG_BENCH || (orderType as string) == "PEGBENCH")
     return true;

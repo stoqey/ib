@@ -1,4 +1,4 @@
-/* Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+/* Copyright (C) 2023 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.client;
@@ -197,5 +197,20 @@ public class Util {
             sb.append(SPACE_SYMBOL).append(name).append(EQUALS_SIGN).append(Util.LongMaxString(value));
         }
     }
-    
+
+    public static boolean IsVolOrder(OrderType orderType) {
+        return orderType == OrderType.VOL;
+    }
+
+    public static boolean IsPegBenchOrder(OrderType orderType) {
+        return orderType == OrderType.PEG_BENCH;
+    }
+
+    public static boolean IsPegMidOrder(OrderType orderType) {
+        return orderType == OrderType.PEG_MID;
+    }
+
+    public static Boolean IsPegBestOrder(OrderType orderType)  {
+        return orderType == OrderType.PEG_BEST;
+    }
 }

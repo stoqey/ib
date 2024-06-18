@@ -757,8 +757,15 @@ export interface Order {
 
   /** This offset is applied when the spread is an odd number of cents wide. This offset must be in half-penny increments. For IBKRATS orders. */
   midOffsetAtHalf?: number;
+
+  customerAccount?: string;
+
+  professionalCustomer?: boolean;
 }
 
 export const COMPETE_AGAINST_BEST_OFFSET_UP_TO_MID = Infinity;
+
+export const isCompeteAgainstBestOffsetUpToMid = (order: Order): boolean =>
+  order.competeAgainstBestOffset === COMPETE_AGAINST_BEST_OFFSET_UP_TO_MID;
 
 export default Order;

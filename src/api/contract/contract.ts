@@ -23,6 +23,9 @@ export interface Contract {
    */
   lastTradeDateOrContractMonth?: string;
 
+  /** The contract's last trading day.   */
+  lastTradeDate?: string;
+
   /** The option's strike price. */
   strike?: number;
 

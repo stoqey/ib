@@ -1,4 +1,4 @@
-/* Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+/* Copyright (C) 2023 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.client;
@@ -56,6 +56,7 @@ public class Execution {
     private double 	m_evMultiplier;
     private String  m_modelCode;
     private Liquidities     m_lastLiquidity;
+    private boolean m_pendingPriceRevision;
 
     // Get
     public int orderId()         { return m_orderId; }
@@ -77,6 +78,7 @@ public class Execution {
     public String modelCode()    { return m_modelCode; }
     public Liquidities lastLiquidity()   { return m_lastLiquidity; }
     public String lastLiquidityStr()     { return m_lastLiquidity.toString(); }
+    public boolean pendingPriceRevision() { return m_pendingPriceRevision; }
     
     // Set 
     public void orderId(int orderId)              { m_orderId = orderId; }
@@ -97,6 +99,7 @@ public class Execution {
     public void evMultiplier(double evMultiplier) { m_evMultiplier = evMultiplier; }
     public void modelCode(String modelCode)       { m_modelCode = modelCode; }
     public void lastLiquidity(int v)              { m_lastLiquidity = Liquidities.fromInt(v); }
+    public void pendingPriceRevision(boolean pendingPriceRevision) { m_pendingPriceRevision = pendingPriceRevision; }
     
     public Execution() {
         m_orderId = 0;
@@ -109,13 +112,14 @@ public class Execution {
         m_avgPrice = 0;
         m_evMultiplier = 0;
         m_lastLiquidity = Liquidities.None;
+        m_pendingPriceRevision = false;
     }
 
     public Execution( int p_orderId, int p_clientId, String p_execId, String p_time,
                       String p_acctNumber, String p_exchange, String p_side, Decimal p_shares,
                       double p_price, int p_permId, int p_liquidation, Decimal p_cumQty,
                       double p_avgPrice, String p_orderRef, String p_evRule, double p_evMultiplier,
-                      String p_modelCode) {
+                      String p_modelCode, Liquidities lastLiquidity, boolean pendingPriceRevision) {
         m_orderId = p_orderId;
         m_clientId = p_clientId;
         m_execId = p_execId;
@@ -133,6 +137,8 @@ public class Execution {
         m_evRule = p_evRule;
         m_evMultiplier = p_evMultiplier;
         m_modelCode = p_modelCode;
+        m_lastLiquidity = lastLiquidity;
+        m_pendingPriceRevision = pendingPriceRevision;
     }
 
     @Override

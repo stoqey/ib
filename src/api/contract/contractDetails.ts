@@ -1,6 +1,7 @@
 import TagValue from "../data/container/tag-value";
 import SecType from "../data/enum/sec-type";
 import { Contract } from "./contract";
+import { FundAssetType, FundDistributionPolicyIndicator } from "./fund";
 
 /**
  * Extended contract details.
@@ -292,6 +293,25 @@ export interface ContractDetails {
    * Order's suggested size increment.
    */
   suggestedSizeIncrement?: number;
+
+  // FUND values
+  fundName?: string;
+  fundFamily?: string;
+  fundType?: string;
+  fundFrontLoad?: string;
+  fundBackLoad?: string;
+  fundBackLoadTimeInterval?: string;
+  fundManagementFee?: string;
+  fundClosed?: boolean;
+  fundClosedForNewInvestors?: boolean;
+  fundClosedForNewMoney?: boolean;
+  fundNotifyAmount?: string;
+  fundMinimumInitialPurchase?: string;
+  fundSubsequentMinimumPurchase?: string;
+  fundBlueSkyStates?: string;
+  fundBlueSkyTerritories?: string;
+  fundDistributionPolicyIndicator?: FundDistributionPolicyIndicator;
+  fundAssetType?: FundAssetType;
 }
 
 export default ContractDetails;

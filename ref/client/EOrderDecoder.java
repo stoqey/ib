@@ -1,4 +1,4 @@
-/* Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+/* Copyright (C) 2024 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.client;
@@ -159,7 +159,9 @@ public class EOrderDecoder {
             m_order.faGroup(m_eDecoder.readStr());
             m_order.faMethod(m_eDecoder.readStr());
             m_order.faPercentage(m_eDecoder.readStr());
-            m_order.faProfile(m_eDecoder.readStr());
+            if ( m_serverVersion < EClient.MIN_SERVER_VER_FA_PROFILE_DESUPPORT ) {
+                m_eDecoder.readStr(); // skip deprecated faProfile field
+            }
         }
     }
 
@@ -540,7 +542,7 @@ public class EOrderDecoder {
 
     public void readPegToBenchParams() throws IOException {
         if (m_serverVersion >= EClient.MIN_SERVER_VER_PEGGED_TO_BENCHMARK) {
-            if (m_order.orderType() == OrderType.PEG_BENCH) {
+            if (Util.IsPegBenchOrder(m_order.orderType())) {
                 m_order.referenceContractId(m_eDecoder.readInt());
                 m_order.isPeggedChangeAmountDecrease(m_eDecoder.readBoolFromInt());
                 m_order.peggedChangeAmount(m_eDecoder.readDouble());
@@ -688,6 +690,18 @@ public class EOrderDecoder {
             m_order.competeAgainstBestOffset(m_eDecoder.readDoubleMax());
             m_order.midOffsetAtWhole(m_eDecoder.readDoubleMax());
             m_order.midOffsetAtHalf(m_eDecoder.readDoubleMax());
+        }
+    }
+
+    public void readCustomerAccount() throws IOException {
+        if (m_serverVersion >= EClient.MIN_SERVER_VER_CUSTOMER_ACCOUNT) {
+            m_order.customerAccount(m_eDecoder.readStr());
+        }
+    }
+
+    public void readProfessionalCustomer() throws IOException {
+        if (m_serverVersion >= EClient.MIN_SERVER_VER_PROFESSIONAL_CUSTOMER) {
+            m_order.professionalCustomer(m_eDecoder.readBoolFromInt());
         }
     }
 }

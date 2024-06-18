@@ -1,4 +1,4 @@
-/* Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+/* Copyright (C) 2024 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.controller;
@@ -121,8 +121,9 @@ public class ApiController implements EWrapper {
         }).start();
 	}
 
-	public void connect( String host, int port, int clientId, String connectionOpts ) {
+	public void connect( String host, int port, int clientId, String connectOptions ) {
 		if(!m_client.isConnected()){
+			m_client.setConnectOptions(connectOptions);
 			m_client.eConnect(host, port, clientId);
 			startMsgProcessingThread();
 	        sendEOM();
@@ -767,21 +768,18 @@ public class ApiController implements EWrapper {
 	// ---------------------------------------- Advisor info ----------------------------------------
 	public interface IAdvisorHandler {
 		void groups(List<Group> groups);
-		void profiles(List<Profile> profiles);
 		void aliases(List<Alias> aliases);
 		void updateGroupsEnd(String text);
-		void updateProfilesEnd(String text);
 	}
 	
 	private static final int REPLACE_FA_GROUPS_REQ_ID = 0;
-	private static final int REPLACE_FA_PROFILES_REQ_ID = 1;
 
 	public void reqAdvisorData( FADataType type, IAdvisorHandler handler) {
 		if (!checkConnection())
 			return;
 
 		m_advisorHandler = handler;
-		m_client.requestFA( type.ordinal() );
+		m_client.requestFA( type.id() );
 		sendEOM();
 	}
 
@@ -789,15 +787,7 @@ public class ApiController implements EWrapper {
 		if (!checkConnection())
 			return;
 
-		m_client.replaceFA( REPLACE_FA_GROUPS_REQ_ID, FADataType.GROUPS.ordinal(), AdvisorUtil.getGroupsXml( groups) );
-		sendEOM();
-	}
-
-	public void updateProfiles(List<Profile> profiles) {
-		if (!checkConnection())
-			return;
-
-		m_client.replaceFA( REPLACE_FA_PROFILES_REQ_ID, FADataType.PROFILES.ordinal(), AdvisorUtil.getProfilesXml( profiles) );
+		m_client.replaceFA( REPLACE_FA_GROUPS_REQ_ID, FADataType.GROUPS.id(), AdvisorUtil.getGroupsXml( groups) );
 		sendEOM();
 	}
 
@@ -806,17 +796,12 @@ public class ApiController implements EWrapper {
 			return;
 		}
 
-		FADataType type = FADataType.get( faDataType);
+		FADataType type = FADataType.getById( faDataType);
 
 		switch( type) {
 			case GROUPS:
 				List<Group> groups = AdvisorUtil.getGroups( xml);
 				m_advisorHandler.groups(groups);
-				break;
-
-			case PROFILES:
-				List<Profile> profiles = AdvisorUtil.getProfiles( xml);
-				m_advisorHandler.profiles(profiles);
 				break;
 
 			case ALIASES:
@@ -834,9 +819,6 @@ public class ApiController implements EWrapper {
 		switch(reqId) {
 		case REPLACE_FA_GROUPS_REQ_ID:
 			m_advisorHandler.updateGroupsEnd(text);	
-			break;
-		case REPLACE_FA_PROFILES_REQ_ID:
-			m_advisorHandler.updateProfilesEnd(text);	
 			break;
 		default:
 			break;
@@ -894,11 +876,11 @@ public class ApiController implements EWrapper {
 		sendEOM();
 	}
 
-	public void exerciseOption( String account, Contract contract, ExerciseType type, int quantity, boolean override) {
+	public void exerciseOption( String account, Contract contract, ExerciseType type, int quantity, boolean override, String manualOrderTime, String customerAccount, boolean professionalCustomer) {
 		if (!checkConnection())
 			return;
 
-		m_client.exerciseOptions( m_reqId++, contract, type.ordinal(), quantity, account, override ? 1 : 0);
+		m_client.exerciseOptions( m_reqId++, contract, type.ordinal(), quantity, account, override ? 1 : 0, manualOrderTime, customerAccount, professionalCustomer);
 		sendEOM();
 	}
 
@@ -1198,6 +1180,8 @@ public class ApiController implements EWrapper {
 	}
 
 	public void cancelBulletins() {
+		m_bulletinHandler = null;
+
 		if (!checkConnection())
 			return;
 
@@ -1205,7 +1189,9 @@ public class ApiController implements EWrapper {
 	}
 
 	@Override public void updateNewsBulletin(int msgId, int msgType, String message, String origExchange) {
-		m_bulletinHandler.bulletin( msgId, NewsType.get( msgType), message, origExchange);
+		if (m_bulletinHandler != null)
+			m_bulletinHandler.bulletin( msgId, NewsType.get( msgType), message, origExchange);
+
 		recEOM();
 	}
 
