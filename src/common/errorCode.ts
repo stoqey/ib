@@ -18,6 +18,7 @@ export enum ErrorCode {
 
   /** No trading permissions. */
   NO_TRADING_PERMISSIONS = 460,
+
   /**
    * Couldn't connect to TWS.
    *
@@ -281,6 +282,9 @@ export enum ErrorCode {
 
   /** FA Profile is not supported anymore, use FA Group instead */
   FA_PROFILE_NOT_SUPPORTED = 585,
+
+  /** Invalid position trade derived value */
+  INVALID_POSITION_TRADE_DERIVATED_VALUE = 2150,
 
   /** Part of requested market data is not subscribed. */
   PART_OF_REQUESTED_DATA_NOT_SUBSCRIBED = 10090,
