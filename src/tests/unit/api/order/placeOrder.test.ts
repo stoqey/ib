@@ -16,6 +16,7 @@ import logger from "../../../../common/logger";
 import {
   sample_crypto,
   sample_etf,
+  sample_future,
   sample_option,
   sample_stock,
 } from "../../sample-data/contracts";
@@ -284,11 +285,7 @@ describe("Place Orders", () => {
   test("Issue #203", (done) => {
     let refId: number;
 
-    const refContract: Contract = {
-      conId: 708846212,
-      exchange: "CME",
-      symbol: "MES",
-    };
+    const refContract: Contract = sample_future;
     const refOrder: Order = {
       action: OrderAction.BUY,
       lmtPrice: 1,

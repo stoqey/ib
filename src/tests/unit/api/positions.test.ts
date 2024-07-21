@@ -35,9 +35,6 @@ describe("IBApi Tests", () => {
     return res;
   }
 
-  let _account: string; // maintain account name for further tests
-  let _conId: number; // maintain for conId for  further tests
-
   it("Test reqPositions / cancelPositions", (done) => {
     let positionsCount = 0;
 
@@ -47,12 +44,6 @@ describe("IBApi Tests", () => {
       .on(
         EventName.position,
         (account: string, contract: Contract, pos: number, avgCost: number) => {
-          if (_account === undefined) {
-            _account = account;
-          }
-          if (_conId === undefined && pos) {
-            _conId = contract.conId;
-          }
           expect(account).toBeTruthy();
           expect(contract).toBeTruthy();
           // expect(pos).toBeTruthy();  pos can be 0 when it has been closed today
@@ -74,6 +65,7 @@ describe("IBApi Tests", () => {
 
   it("Test reqPositionsMulti / cancelPositionsMulti", (done) => {
     let refId = 45;
+    let count = 0;
 
     ib.once(EventName.connected, () => {
       ib.reqPositionsMulti(refId, "", "");
@@ -81,33 +73,41 @@ describe("IBApi Tests", () => {
       .on(
         EventName.positionMulti,
         (reqId, account, modelCode, contract, pos, avgCost) => {
-          console.log(
-            "positionMulti",
-            reqId,
-            account,
-            modelCode,
-            JSON.stringify(contract),
-            pos,
-            avgCost,
-          );
+          //   console.log(
+          //     "positionMulti",
+          //     reqId,
+          //     account,
+          //     modelCode,
+          //     JSON.stringify(contract),
+          //     pos,
+          //     avgCost,
+          //   );
+          expect(account).toBeTruthy();
+          expect(contract).toBeTruthy();
         },
       )
       .on(EventName.positionMultiEnd, (reqId) => {
-        console.log("positionMultiEnd", reqId);
+        count += 1;
+        // console.log("positionMultiEnd", reqId);
         refId = reqId + 1;
         ib.cancelPositionsMulti(refId);
-        console.log("cancelPositionsMulti sent", refId);
-        refId = refId + 1;
-        ib.reqPositionsMulti(refId, "", "");
-        console.log("reqPositionsMulti sent", refId);
+        // console.log("cancelPositionsMulti sent", refId);
+        if (count < 3) {
+          //   console.log("count", count);
+          refId = refId + 1;
+          ib.reqPositionsMulti(refId, "", "");
+          // console.log("reqPositionsMulti sent", refId);
+        } else {
+          done();
+        }
       });
 
-    ib.connect()
+    ib.on(EventName.disconnected, () => done())
+      .on(EventName.info, (msg, code) => console.info("INFO", code, msg))
       .on(EventName.error, (err, code, reqId) => {
         if (reqId > 0) done(`[${reqId}] ${err.message} (#${code})`);
         else console.error("ERROR", err.message, code, reqId);
       })
-      .on(EventName.info, (msg, code) => console.info("INFO", code, msg))
-      .on(EventName.disconnected, () => done());
+      .connect();
   });
 });

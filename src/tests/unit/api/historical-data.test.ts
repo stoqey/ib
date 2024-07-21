@@ -113,7 +113,7 @@ describe("IBApi Historical data Tests", () => {
       ib.reqHistoricalData(
         refId,
         contract,
-        "20240508-17:00:00",
+        "20240719-17:00:00",
         "30 S",
         BarSizeSetting.SECONDS_FIFTEEN,
         WhatToShow.BID_ASK,
@@ -121,52 +121,44 @@ describe("IBApi Historical data Tests", () => {
         2,
         false,
       );
-    })
-      .on(
-        EventName.historicalData,
-        (
-          reqId: number,
-          time: string,
-          open: number,
-          high: number,
-          low: number,
-          close: number,
-          volume: number,
-          count: number | undefined,
-          WAP: number,
-        ) => {
-          // console.log(
-          //   counter,
-          //   time,
-          //   open,
-          //   high,
-          //   low,
-          //   close,
-          //   volume,
-          //   count,
-          //   WAP,
-          // );
-          expect(reqId).toEqual(refId);
-          if (time.startsWith("finished")) {
-            expect(counter).toEqual(2);
-            done();
-          } else if (counter++ == 1) {
-            expect(time).toEqual("1715187585");
-            expect(open).toEqual(25.35);
-            expect(high).toEqual(25.35);
-            expect(low).toEqual(25.35);
-            expect(close).toEqual(25.35);
-            expect(volume).toEqual(-1);
-            expect(count).toEqual(-1);
-            expect(WAP).toEqual(-1);
-          }
-        },
-      )
-      .on(EventName.error, (err, code, reqId) => {
-        if (reqId == refId) done(`[${reqId}] ${err.message} (#${code})`);
-      });
+    }).on(
+      EventName.historicalData,
+      (
+        reqId: number,
+        time: string,
+        open: number,
+        high: number,
+        low: number,
+        close: number,
+        volume: number,
+        count: number | undefined,
+        WAP: number,
+      ) => {
+        // console.log(counter, time, open, high, low, close, volume, count, WAP);
+        expect(reqId).toEqual(refId);
+        if (time.startsWith("finished")) {
+          expect(counter).toEqual(2);
+          done();
+        } else if (counter++ == 1) {
+          expect(time).toEqual("1721408385");
+          expect(open).toEqual(11.95);
+          expect(high).toEqual(11.95);
+          expect(low).toEqual(11.9);
+          expect(close).toEqual(11.95);
+          expect(volume).toEqual(-1);
+          expect(count).toEqual(-1);
+          expect(WAP).toEqual(-1);
+        }
+      },
+    );
 
-    ib.connect();
+    ib.on(EventName.disconnected, () => done())
+      .on(EventName.info, (msg, code) => console.info("INFO", code, msg))
+      .on(EventName.error, (err, code, reqId) => {
+        if (reqId > 0) done(`[${reqId}] ${err.message} (#${code})`);
+        else console.error("ERROR", err.message, code, reqId);
+      })
+      .connect();
   });
 
   it("Weekly market data", (done) => {

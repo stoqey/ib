@@ -45,7 +45,7 @@ describe("Subscription registry Tests", () => {
     // Two active subscriptions for the same Event issue #193
     subscription$ = api.getOpenOrders().subscribe({
       next: (data) => {
-        console.log(data);
+        // console.log(data);
       },
       complete: () => {
         console.log("getOpenOrders completed.");

@@ -51,7 +51,7 @@ const sample_percent_condition: OrderCondition = new PercentChangeCondition(
   ConjunctionConnection.OR,
 );
 const sample_time_condition: OrderCondition = new TimeCondition(
-  "20250101-12:00:00",
+  "20250102-17:00:00",
   true,
   ConjunctionConnection.OR,
 );
@@ -369,7 +369,25 @@ describe("Place Conditional Orders", () => {
         },
       );
 
-    ib.connect();
+    ib.connect()
+      .on(EventName.error, (error, code, reqId) => {
+        if (reqId > 0) {
+          const msg = `[${reqId}] ${error.message} (Error #${code})`;
+          if (
+            error.message.includes("Warning:") ||
+            error.message.includes("Order Message:")
+          ) {
+            logger.warn(msg);
+          } else {
+            ib.disconnect();
+            done(msg);
+          }
+        } else {
+          console.error("ERROR", error.message, code, reqId);
+        }
+      })
+      .on(EventName.info, (msg, code) => console.info("INFO", code, msg))
+      .on(EventName.disconnected, () => done());
   });
 
   test("placeOrder with VolumeCondition", (done) => {
