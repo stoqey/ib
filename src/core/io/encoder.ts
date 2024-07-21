@@ -2735,7 +2735,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
 
     const version = 1;
 
-    this.sendMsg(OUT_MSG_ID.REQ_POSITIONS_MULTI, version, reqId);
+    this.sendMsg(OUT_MSG_ID.CANCEL_POSITIONS_MULTI, version, reqId);
   }
 
   /**
