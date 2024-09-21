@@ -38,7 +38,6 @@ jobs:
       # Publish the package
       - name: "Publishing to Npm registry"
         run: |
-          npm config set //registry.npmjs.com
           npm publish
         env:
           CI: true
