@@ -455,7 +455,7 @@ export class Decoder {
     }
     const val = this.dataQueue.shift();
     if (val === undefined) {
-      throw new UnderrunError("End of message reached.");
+      // throw new UnderrunError("End of message reached.");
     }
     return val;
   }
