@@ -257,3 +257,4 @@ In addition to that, a little demo / example app would be nice, to demonstrate A
 Any kind of bugfixes are welcome as well.
 
 If you want to contribute, read the [Developer Guide](https://github.com/stoqey/ib/wiki/Developer-Guide) and start coding.
+
