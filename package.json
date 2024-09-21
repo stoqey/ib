@@ -1,5 +1,5 @@
 {
-  "name": "@icocoding/ib-node-api",
+  "name": "ib-node-api",
   "version": "1.0.13",
   "private": false,
   "description": "Interactive Brokers TWS/IB Gateway API client library for Node.js (TS)",
