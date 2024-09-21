@@ -31,9 +31,9 @@
     "library",
     "stoqey"
   ],
-  "homepage": "https://github.com/stoqey/ib",
+  "homepage": "https://github.com/icocoding/ib-node-api",
   "bugs": {
-    "url": "https://github.com/stoqey/ib/issues"
+    "url": "https://github.com/icocoding/ib-node-api/issues"
   },
   "repository": {
     "type": "git",
