@@ -38,8 +38,8 @@ jobs:
       # Publish the package
       - name: "Publishing to Npm registry"
         run: |
+          echo "${{ secrets.NPM_AUTH_TOKEN }}"
           npm config set //registry.npmjs.com/:_authToken=$NPM_AUTH_TOKEN
-          npm login --auth-type=legacy --scope=@icocoding
           npm publish
         env:
           CI: true
