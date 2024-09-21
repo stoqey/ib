@@ -450,7 +450,8 @@ export class Decoder {
    */
   readStr(): string {
     if (this.dataQueue.length === 0) {
-      throw new UnderrunError();
+      // throw new UnderrunError();
+      return null;
     }
     const val = this.dataQueue.shift();
     if (val === undefined) {
@@ -463,7 +464,7 @@ export class Decoder {
    * Read a token from queue and return it as boolean value.
    */
   readBool(): boolean {
-    return parseInt(this.readStr(), 10) != 0;
+    return parseInt(this.readStr() || "0", 10) != 0;
   }
 
   /**
