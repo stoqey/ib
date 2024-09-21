@@ -451,7 +451,7 @@ export class Decoder {
   readStr(): string {
     if (this.dataQueue.length === 0) {
       // throw new UnderrunError();
-      return null;
+      return '';
     }
     const val = this.dataQueue.shift();
     if (val === undefined) {
