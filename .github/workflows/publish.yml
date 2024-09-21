@@ -38,7 +38,7 @@ jobs:
       # Publish the package
       - name: "Publishing to Npm registry"
         run: |
-          npm config set //registry.npmjs.org/:_authToken=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
+          npm config set //registry.npmjs.org/:_authToken=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
           npm publish
         env:
           CI: true
