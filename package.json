@@ -1,6 +1,6 @@
 {
   "name": "@icocoding/ib-node-api",
-  "version": "1.0.22",
+  "version": "1.0.23",
   "publishConfig": {
     "access": "public"
   },
