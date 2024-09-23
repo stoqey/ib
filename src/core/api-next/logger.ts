@@ -20,7 +20,9 @@ export class IBApiNextLogger {
   /** Set the current log level. */
   set logLevel(level: LogLevel) {
     this._logLevel = level;
-    this.logger.logLevel = level;
+    if (typeof this.logger.logLevel != 'undefined') {
+     this.logger.logLevel = level;
+    }
   }
 
   /** Log a debug information. */
