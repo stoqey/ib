@@ -1,6 +1,9 @@
 {
-  "name": "@stoqey/ib",
-  "version": "1.3.26",
+  "name": "@icocoding/ib-node-api",
+  "version": "1.0.27",
+  "publishConfig": {
+    "access": "public"
+  },
   "private": false,
   "description": "Interactive Brokers TWS/IB Gateway API client library for Node.js (TS)",
   "keywords": [
@@ -31,19 +34,19 @@
     "library",
     "stoqey"
   ],
-  "homepage": "https://github.com/stoqey/ib",
+  "homepage": "https://github.com/icocoding/ib-node-api",
   "bugs": {
-    "url": "https://github.com/stoqey/ib/issues"
+    "url": "https://github.com/icocoding/ib-node-api/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/stoqey/ib.git"
+    "url": "git://github.com/icocoding/ib-node-api.git"
   },
   "license": "MIT",
   "author": {
-    "name": "Ceddy Muhoza",
-    "email": "ceddymuhoza@gmail.com",
-    "url": "https://ceddy.org"
+    "name": "cocoding",
+    "email": "",
+    "url": "http://blog.cocoding.org"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
