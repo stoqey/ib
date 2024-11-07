@@ -1,10 +1,4 @@
-/**
- * Type describing the liquidity type of an execution
- */
-export interface Liquidities {
-  /** The value of the liquidity type. */
-  value: number;
-}
+import { Liquidities } from "../..";
 
 /**
  * Type describing an order's execution.

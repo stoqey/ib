@@ -1,4 +1,4 @@
-/* Copyright (C) 2023 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+/* Copyright (C) 2024 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.client;
@@ -74,6 +74,7 @@ public class ContractDetails {
     private String   m_fundBlueSkyTerritories;
     private FundDistributionPolicyIndicator m_fundDistributionPolicyIndicator;
     private FundAssetType m_fundAssetType;
+    private List<IneligibilityReason> m_ineligibilityReasonList;
 
     // Get
     public int conid()                  { return m_contract.conid(); }
@@ -139,6 +140,7 @@ public class ContractDetails {
     public String fundBlueSkyTerritories()        { return m_fundBlueSkyTerritories; }
     public FundDistributionPolicyIndicator fundDistributionPolicyIndicator() { return m_fundDistributionPolicyIndicator; }
     public FundAssetType fundAssetType()          { return m_fundAssetType; }
+    public List<IneligibilityReason> ineligibilityReasonList() { return m_ineligibilityReasonList; }
     
     // Set
     public void contract(Contract contract)         { m_contract = contract; }
@@ -203,6 +205,7 @@ public class ContractDetails {
     public void fundBlueSkyTerritories(String fundBlueSkyTerritories)         { m_fundBlueSkyTerritories = fundBlueSkyTerritories; }
     public void fundDistributionPolicyIndicator(FundDistributionPolicyIndicator fundDistributionPolicyIndicator) { m_fundDistributionPolicyIndicator = fundDistributionPolicyIndicator; }
     public void fundAssetType(FundAssetType fundAssetType)                    { m_fundAssetType = fundAssetType; }
+    public void ineligibilityReasonList(List<IneligibilityReason> ineligibilityReasonList) { m_ineligibilityReasonList = ineligibilityReasonList; }
     
     public ContractDetails() {
         m_contract = new Contract();
@@ -276,7 +279,9 @@ public class ContractDetails {
             add( sb, "fundDistributionPolicyIndicator", m_fundDistributionPolicyIndicator != null ? m_fundDistributionPolicyIndicator.name() : "");
             add( sb, "fundAssetType", m_fundAssetType != null ? m_fundAssetType.name() : "");
         }
-        
+
+        add( sb, "ineligibilityReasonList", EWrapperMsgGenerator.contractDetailsIneligibilityReasonList(this));
+
         return sb.toString();
     }
 

@@ -48,6 +48,7 @@ export { FOP } from "./api/contract/fop";
 export { Forex } from "./api/contract/forex";
 export { Future } from "./api/contract/future";
 export { Index } from "./api/contract/ind";
+export { IneligibilityReason } from "./api/contract/ineligibilityReason";
 export { Option } from "./api/contract/option";
 export { Stock } from "./api/contract/stock";
 export { WshEventData } from "./api/contract/wsh";
@@ -111,11 +112,13 @@ export { TriggerMethod } from "./api/order/enum/trigger-method";
 
 // export order types
 
-export { Execution, Liquidities } from "./api/order/execution";
+export { Execution } from "./api/order/execution";
 export { LimitOrder } from "./api/order/limit";
+export { Liquidities } from "./api/order/liquidities";
 export { MarketOrder } from "./api/order/market";
 export { MarketCloseOrder } from "./api/order/marketClose";
 export { Order } from "./api/order/order";
+export { OrderCancel } from "./api/order/orderCancel";
 export { OrderComboLeg } from "./api/order/orderComboLeg";
 export { OrderState } from "./api/order/orderState";
 export { StopOrder } from "./api/order/stop";

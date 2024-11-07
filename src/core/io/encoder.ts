@@ -1,4 +1,4 @@
-import { MarketDataType, WhatToShow } from "../..";
+import { MarketDataType, OrderCancel, WhatToShow } from "../..";
 import { ScanCode } from "../../api-next/market-scanner/market-scanner";
 import { Contract } from "../../api/contract/contract";
 import WshEventData from "../../api/contract/wsh";
@@ -120,7 +120,13 @@ export enum OUT_MSG_ID {
 }
 
 /**
- * @@internal
+ * @internal
+ * Undefined integer value
+ */
+const Integer_MAX_VALUE = 2147483647;
+
+/**
+ * @internal
  *
  * Helper function to nullify a number of Number.MAX_VALUE
  *
@@ -526,12 +532,10 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   /**
    * Encode a CANCEL_ORDER message to an array of tokens.
    */
-  cancelOrder(orderId: number, manualCancelOrderTime?: string): void {
-    const version = 1;
-
+  cancelOrder(orderId: number, orderCancel?: OrderCancel): void {
     if (
       this.serverVersion < MIN_SERVER_VER.MANUAL_ORDER_TIME &&
-      manualCancelOrderTime?.length
+      orderCancel?.manualOrderCancelTime.length
     ) {
       return this.emitError(
         "It does not support manual order cancel time attribute",
@@ -540,10 +544,45 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       );
     }
 
-    const tokens: unknown[] = [OUT_MSG_ID.CANCEL_ORDER, version, orderId];
+    if (this.serverVersion < MIN_SERVER_VER.CME_TAGGING_FIELDS) {
+      if (
+        (orderCancel?.extOperator && orderCancel?.extOperator != "") ||
+        orderCancel?.manualOrderIndicator
+      ) {
+        return this.emitError(
+          "It does not support ext operator and manual order indicator parameters",
+          ErrorCode.UPDATE_TWS,
+          orderId,
+        );
+      }
+    }
+
+    const version = 1;
+
+    // send cancel order msg
+    const tokens: unknown[] = [OUT_MSG_ID.CANCEL_ORDER];
+
+    if (this.serverVersion < MIN_SERVER_VER.CME_TAGGING_FIELDS)
+      tokens.push(version);
+
+    tokens.push(orderId);
 
     if (this.serverVersion >= MIN_SERVER_VER.MANUAL_ORDER_TIME)
-      tokens.push(manualCancelOrderTime);
+      tokens.push(orderCancel?.manualOrderCancelTime);
+
+    if (
+      this.serverVersion >= MIN_SERVER_VER.RFQ_FIELDS &&
+      this.serverVersion < MIN_SERVER_VER.UNDO_RFQ_FIELDS
+    ) {
+      tokens.push("");
+      tokens.push("");
+      tokens.push(Integer_MAX_VALUE);
+    }
+
+    if (this.serverVersion >= MIN_SERVER_VER.CME_TAGGING_FIELDS) {
+      tokens.push(orderCancel.extOperator);
+      tokens.push(orderCancel.manualOrderIndicator);
+    }
 
     this.sendMsg(tokens);
   }
@@ -1177,6 +1216,26 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       }
     }
 
+    if (this.serverVersion < MIN_SERVER_VER.INCLUDE_OVERNIGHT) {
+      if (order.includeOvernight) {
+        return this.emitError(
+          "It does not support include overnight parameter",
+          ErrorCode.UPDATE_TWS,
+          id,
+        );
+      }
+    }
+
+    if (this.serverVersion < MIN_SERVER_VER.CME_TAGGING_FIELDS) {
+      if (order.manualOrderIndicator) {
+        return this.emitError(
+          "It does not support manual order indicator parameter",
+          ErrorCode.UPDATE_TWS,
+          id,
+        );
+      }
+    }
+
     const version = this.serverVersion < MIN_SERVER_VER.NOT_HELD ? 27 : 45;
 
     // send place order msg
@@ -1734,6 +1793,22 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       tokens.push(order.professionalCustomer);
     }
 
+    if (
+      this.serverVersion >= MIN_SERVER_VER.RFQ_FIELDS &&
+      this.serverVersion < MIN_SERVER_VER.UNDO_RFQ_FIELDS
+    ) {
+      tokens.push("");
+      tokens.push(Integer_MAX_VALUE);
+    }
+
+    if (this.serverVersion >= MIN_SERVER_VER.INCLUDE_OVERNIGHT) {
+      tokens.push(order.includeOvernight);
+    }
+
+    if (this.serverVersion >= MIN_SERVER_VER.CME_TAGGING_FIELDS) {
+      tokens.push(order.manualOrderIndicator);
+    }
+
     this.sendMsg(tokens);
   }
 
@@ -2144,18 +2219,43 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   /**
    * Encode a REQ_GLOBAL_CANCEL message.
    */
-  reqGlobalCancel(): void {
+  reqGlobalCancel(orderCancel?: OrderCancel): void {
     if (this.serverVersion < MIN_SERVER_VER.REQ_GLOBAL_CANCEL) {
       return this.emitError(
         "It does not support globalCancel requests.",
         ErrorCode.UPDATE_TWS,
-        -1,
+        ErrorCode.NO_VALID_ID,
       );
+    }
+
+    if (this.serverVersion < MIN_SERVER_VER.CME_TAGGING_FIELDS) {
+      if (
+        (orderCancel?.extOperator && orderCancel?.extOperator != "") ||
+        orderCancel?.manualOrderIndicator
+      ) {
+        return this.emitError(
+          "It does not support ext operator and manual order indicator parameters",
+          ErrorCode.UPDATE_TWS,
+          ErrorCode.NO_VALID_ID,
+        );
+      }
     }
 
     const version = 1;
 
-    this.sendMsg(OUT_MSG_ID.REQ_GLOBAL_CANCEL, version);
+    // send request global cancel msg
+    const tokens: unknown[] = [OUT_MSG_ID.REQ_GLOBAL_CANCEL];
+
+    if (this.serverVersion < MIN_SERVER_VER.CME_TAGGING_FIELDS) {
+      tokens.push(version);
+    }
+
+    if (this.serverVersion >= MIN_SERVER_VER.CME_TAGGING_FIELDS) {
+      tokens.push(orderCancel?.extOperator);
+      tokens.push(orderCancel?.manualOrderIndicator);
+    }
+
+    this.sendMsg(tokens);
   }
 
   /**
@@ -2423,7 +2523,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support marketDataType requests.",
         ErrorCode.UPDATE_TWS,
-        -1,
+        ErrorCode.NO_VALID_ID,
       );
     }
 
@@ -2685,7 +2785,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support position requests.",
         ErrorCode.UPDATE_TWS,
-        -1,
+        ErrorCode.NO_VALID_ID,
       );
     }
 
@@ -2816,7 +2916,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support API scanner subscription.",
         ErrorCode.UPDATE_TWS,
-        -1,
+        ErrorCode.NO_VALID_ID,
       );
     }
 
@@ -2913,7 +3013,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "FA Profile is not supported anymore, use FA Group instead.",
         ErrorCode.UPDATE_TWS,
-        -1,
+        ErrorCode.NO_VALID_ID,
       );
     }
 
@@ -3018,7 +3118,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support family codes request.",
         ErrorCode.UPDATE_TWS,
-        -1,
+        ErrorCode.NO_VALID_ID,
       );
     }
 
@@ -3048,7 +3148,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support market depth exchanges request.",
         ErrorCode.UPDATE_TWS,
-        -1,
+        ErrorCode.NO_VALID_ID,
       );
     }
 
@@ -3109,7 +3209,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support smart components request.",
         ErrorCode.UPDATE_TWS,
-        -1,
+        ErrorCode.NO_VALID_ID,
       );
     }
 
@@ -3234,7 +3334,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support completed orders requests.",
         ErrorCode.UPDATE_TWS,
-        -1,
+        ErrorCode.NO_VALID_ID,
       );
     }
 
@@ -3246,7 +3346,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support WSHE Calendar API.",
         ErrorCode.UPDATE_TWS,
-        -1,
+        reqId,
       );
     }
 
@@ -3258,7 +3358,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support WSHE Calendar API.",
         ErrorCode.UPDATE_TWS,
-        -1,
+        reqId,
       );
     }
 
@@ -3270,7 +3370,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support WSHE Calendar API.",
         ErrorCode.UPDATE_TWS,
-        -1,
+        reqId,
       );
     }
     if (
@@ -3326,7 +3426,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support WSHE Calendar API.",
         ErrorCode.UPDATE_TWS,
-        -1,
+        reqId,
       );
     }
 
@@ -3338,7 +3438,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support user info requests.",
         ErrorCode.UPDATE_TWS,
-        -1,
+        reqId,
       );
     }
 

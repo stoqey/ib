@@ -26,8 +26,8 @@ describe("IBApi Tests", () => {
     }
   });
 
-  async function delay(secs) {
-    const res = await new Promise((resolve, reject) => {
+  async function _delay(secs) {
+    const res = await new Promise((resolve, _reject) => {
       setTimeout(() => {
         return resolve(true);
       }, secs * 1_000);
@@ -72,7 +72,7 @@ describe("IBApi Tests", () => {
     })
       .on(
         EventName.positionMulti,
-        (reqId, account, modelCode, contract, pos, avgCost) => {
+        (reqId, account, modelCode, contract, _pos, _avgCost) => {
           //   console.log(
           //     "positionMulti",
           //     reqId,

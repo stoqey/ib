@@ -44,7 +44,7 @@ describe("Subscription registry Tests", () => {
   it("Twice the same event callback bug", (done) => {
     // Two active subscriptions for the same Event issue #193
     subscription$ = api.getOpenOrders().subscribe({
-      next: (data) => {
+      next: (_data) => {
         // console.log(data);
       },
       complete: () => {

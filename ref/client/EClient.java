@@ -309,9 +309,18 @@ public abstract class EClient {
     protected static final int MIN_SERVER_VER_LAST_TRADE_DATE = 182;
     protected static final int MIN_SERVER_VER_CUSTOMER_ACCOUNT = 183;
     protected static final int MIN_SERVER_VER_PROFESSIONAL_CUSTOMER = 184;
+    protected static final int MIN_SERVER_VER_BOND_ACCRUED_INTEREST = 185;
+    protected static final int MIN_SERVER_VER_INELIGIBILITY_REASONS = 186;
+    protected static final int MIN_SERVER_VER_RFQ_FIELDS = 187;
+    protected static final int MIN_SERVER_VER_BOND_TRADING_HOURS = 188;
+    protected static final int MIN_SERVER_VER_INCLUDE_OVERNIGHT = 189;
+    protected static final int MIN_SERVER_VER_UNDO_RFQ_FIELDS = 190;
+    protected static final int MIN_SERVER_VER_PERM_ID_AS_LONG = 191;
+    protected static final int MIN_SERVER_VER_CME_TAGGING_FIELDS = 192;
+    protected static final int MIN_SERVER_VER_CME_TAGGING_FIELDS_IN_OPEN_ORDER = 193;
     
     public static final int MIN_VERSION = 100; // envelope encoding, applicable to useV100Plus mode only
-    public static final int MAX_VERSION = MIN_SERVER_VER_PROFESSIONAL_CUSTOMER; // ditto
+    public static final int MAX_VERSION = MIN_SERVER_VER_CME_TAGGING_FIELDS_IN_OPEN_ORDER; // ditto
 
     protected EReaderSignal m_signal;
     protected EWrapper m_eWrapper;    // msg handler
@@ -1602,8 +1611,9 @@ public abstract class EClient {
         }
         
         if (m_serverVersion < MIN_SERVER_VER_ALGO_ID && !IsEmpty(order.algoId()) ) {
-        		  error(id, EClientErrors.UPDATE_TWS, " It does not support algoId parameter");
-        	}
+            error(id, EClientErrors.UPDATE_TWS, " It does not support algoId parameter");
+            return;
+        }
 
         if (m_serverVersion < MIN_SERVER_VER_SCALE_TABLE) {
             if (!IsEmpty(order.scaleTable()) || !IsEmpty(order.activeStartTime()) || !IsEmpty(order.activeStopTime())) {
@@ -1630,12 +1640,14 @@ public abstract class EClient {
         }
         
         if (m_serverVersion < MIN_SERVER_VER_EXT_OPERATOR && !IsEmpty(order.extOperator()) ) {
-        	error(id, EClientErrors.UPDATE_TWS, " It does not support ext operator");
+            error(id, EClientErrors.UPDATE_TWS, " It does not support ext operator");
+            return;
         }
 
         if (m_serverVersion < MIN_SERVER_VER_SOFT_DOLLAR_TIER && 
-        		(!IsEmpty(order.softDollarTier().name()) || !IsEmpty(order.softDollarTier().value()))) {
-        	error(id, EClientErrors.UPDATE_TWS, " It does not support soft dollar tier");
+                (!IsEmpty(order.softDollarTier().name()) || !IsEmpty(order.softDollarTier().value()))) {
+            error(id, EClientErrors.UPDATE_TWS, " It does not support soft dollar tier");
+            return;
         }
         
 
@@ -1745,6 +1757,20 @@ public abstract class EClient {
         if (m_serverVersion < MIN_SERVER_VER_PROFESSIONAL_CUSTOMER) {
             if (order.professionalCustomer()) {
                 error(id, EClientErrors.UPDATE_TWS, "  It does not support professional customer parameter");
+                return;
+            }
+        }
+
+        if (m_serverVersion < MIN_SERVER_VER_INCLUDE_OVERNIGHT) {
+            if (order.includeOvernight()) {
+                error(id, EClientErrors.UPDATE_TWS, "  It does not support include overnight parameter");
+                return;
+            }
+        }
+
+        if (m_serverVersion < MIN_SERVER_VER_CME_TAGGING_FIELDS) {
+            if (order.manualOrderIndicator() != Integer.MAX_VALUE) {
+                error(id, EClientErrors.UPDATE_TWS, "  It does not support manual order indicator parameter");
                 return;
             }
         }
@@ -2223,6 +2249,19 @@ public abstract class EClient {
                b.send(order.professionalCustomer());
            }
 
+           if (m_serverVersion >= MIN_SERVER_VER_RFQ_FIELDS && m_serverVersion < MIN_SERVER_VER_UNDO_RFQ_FIELDS) {
+               b.send("");
+               b.send(Integer.MAX_VALUE);
+           }
+
+           if (m_serverVersion >= MIN_SERVER_VER_INCLUDE_OVERNIGHT) {
+               b.send(order.includeOvernight());
+           }
+
+           if (m_serverVersion >= MIN_SERVER_VER_CME_TAGGING_FIELDS) {
+               b.send(order.manualOrderIndicator());
+           }
+
            closeAndSend(b);
         }
         catch(EClientException e) {
@@ -2309,7 +2348,7 @@ public abstract class EClient {
         }
     }
 
-    public synchronized void cancelOrder( int id, String manualOrderCancelTime) {
+    public synchronized void cancelOrder( int id, OrderCancel orderCancel) {
         // not connected?
         if( !isConnected()) {
             notConnected();
@@ -2317,8 +2356,15 @@ public abstract class EClient {
         }
 
         if (m_serverVersion < MIN_SERVER_VER_MANUAL_ORDER_TIME) {
-            if (!IsEmpty(manualOrderCancelTime)) {
+            if (!IsEmpty(orderCancel.manualOrderCancelTime())) {
                 error(id, EClientErrors.UPDATE_TWS, "  It does not support manual order cancel time attribute");
+                return;
+            }
+        }
+
+        if (m_serverVersion < MIN_SERVER_VER_CME_TAGGING_FIELDS) {
+            if (!IsEmpty(orderCancel.extOperator()) || orderCancel.manualOrderIndicator() != Integer.MAX_VALUE) {
+                error(id, EClientErrors.UPDATE_TWS, "  It does not support ext operator and manual order indicator parameters");
                 return;
             }
         }
@@ -2330,14 +2376,30 @@ public abstract class EClient {
             Builder b = prepareBuffer(); 
 
             b.send( CANCEL_ORDER);
-            b.send( VERSION);
+            if (m_serverVersion < MIN_SERVER_VER_CME_TAGGING_FIELDS) {
+                b.send( VERSION);
+            }
             b.send( id);
 
             if (m_serverVersion >= MIN_SERVER_VER_MANUAL_ORDER_TIME) {
-                b.send(manualOrderCancelTime);
+                b.send(orderCancel.manualOrderCancelTime());
+            }
+
+            if (m_serverVersion >= MIN_SERVER_VER_RFQ_FIELDS && m_serverVersion < MIN_SERVER_VER_UNDO_RFQ_FIELDS) {
+                b.send("");
+                b.send("");
+                b.send(Integer.MAX_VALUE);
+            }
+
+            if (m_serverVersion >= MIN_SERVER_VER_CME_TAGGING_FIELDS) {
+                b.send(orderCancel.extOperator());
+                b.send(orderCancel.manualOrderIndicator());
             }
 
             closeAndSend(b);
+        }
+        catch( EClientException e) {
+            error( id, e.error(), e.text());
         }
         catch( Exception e) {
             error( id, EClientErrors.FAIL_SEND_CORDER, e.toString());
@@ -2941,7 +3003,7 @@ public abstract class EClient {
         }
     }
 
-    public synchronized void reqGlobalCancel() {
+    public synchronized void reqGlobalCancel(OrderCancel orderCancel) {
         // not connected?
         if( !isConnected()) {
             notConnected();
@@ -2954,6 +3016,13 @@ public abstract class EClient {
             return;
         }
 
+        if (m_serverVersion < MIN_SERVER_VER_CME_TAGGING_FIELDS) {
+            if (!IsEmpty(orderCancel.extOperator()) || orderCancel.manualOrderIndicator() != Integer.MAX_VALUE) {
+                error(EClientErrors.NO_VALID_ID, EClientErrors.UPDATE_TWS, "  It does not support ext operator and manual order indicator parameters");
+                return;
+            }
+        }
+
         final int VERSION = 1;
 
         // send request global cancel msg
@@ -2961,7 +3030,14 @@ public abstract class EClient {
             Builder b = prepareBuffer(); 
 
             b.send( REQ_GLOBAL_CANCEL);
-            b.send( VERSION);
+            if (m_serverVersion < MIN_SERVER_VER_CME_TAGGING_FIELDS) {
+                b.send( VERSION);
+            }
+
+            if (m_serverVersion >= MIN_SERVER_VER_CME_TAGGING_FIELDS) {
+                b.send(orderCancel.extOperator());
+                b.send(orderCancel.manualOrderIndicator());
+            }
 
             closeAndSend(b);
         }
@@ -4231,6 +4307,9 @@ public abstract class EClient {
             
             closeAndSend(b);
         }
+        catch( EClientException e) {
+            error( reqId, e.error(), e.text());
+        }
         catch( Exception e) {
             error( EClientErrors.NO_VALID_ID,
                    EClientErrors.FAIL_SEND_REQ_WSH_EVENT_DATA, e.toString());
@@ -4318,6 +4397,21 @@ public abstract class EClient {
     
     protected abstract void closeAndSend(Builder buf) throws IOException;
     
+    
+    protected void validateInvalidSymbols(String host) throws EClientException {
+        if (host != null && !Builder.isAsciiPrintable(host)) {
+            throw new EClientException(EClientErrors.INVALID_SYMBOL, host);
+        }
+
+        if (m_connectOptions != null && !Builder.isAsciiPrintable(m_connectOptions)) {
+            throw new EClientException(EClientErrors.INVALID_SYMBOL, m_connectOptions);
+        }
+
+        if (m_optionalCapabilities != null && !Builder.isAsciiPrintable(m_optionalCapabilities)) {
+            throw new EClientException(EClientErrors.INVALID_SYMBOL, m_optionalCapabilities);
+        }
+    }
+
     private void sendV100APIHeader() throws IOException {
     	try (Builder builder = new Builder(1024)) {
             builder.send("API\0".getBytes(StandardCharsets.UTF_8));

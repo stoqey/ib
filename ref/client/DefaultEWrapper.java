@@ -1,4 +1,4 @@
-/* Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+/* Copyright (C) 2024 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.client;
@@ -54,7 +54,7 @@ public class DefaultEWrapper implements EWrapper {
 
 	@Override
 	public void orderStatus(int orderId, String status, Decimal filled,
-			Decimal remaining, double avgFillPrice, int permId, int parentId,
+			Decimal remaining, double avgFillPrice, long permId, int parentId,
 			double lastFillPrice, int clientId, String whyHeld, double mktCapPrice) {
 		// TODO Auto-generated method stub
 		
@@ -525,7 +525,7 @@ public class DefaultEWrapper implements EWrapper {
     }
 
     @Override
-    public void orderBound(long orderId, int apiClientId, int apiOrderId) {
+    public void orderBound(long permId, int clientId, int orderId) {
         // TODO Auto-generated method stub
     }
 

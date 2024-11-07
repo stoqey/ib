@@ -416,14 +416,14 @@ public class ApiController implements EWrapper {
 		m_orderHandlers.put(reqId, new IOrderHandler() { public void handle(int errorCode, String errorMsg) { processor.contractDetailsEnd();}
 
 		@Override
-		public void orderState(OrderState orderState) {
+		public void orderState(OrderState orderState, Order order) {
 			// TODO Auto-generated method stub
 			
 		}
 
 		@Override
 		public void orderStatus(OrderStatus status, Decimal filled,
-				Decimal remaining, double avgFillPrice, int permId,
+				Decimal remaining, double avgFillPrice, long permId,
 				int parentId, double lastFillPrice, int clientId, String whyHeld, double mktCapPrice) {
 			// TODO Auto-generated method stub
 			
@@ -830,8 +830,8 @@ public class ApiController implements EWrapper {
 	/** This interface is for receiving events for a specific order placed from the API.
 	 *  Compare to ILiveOrderHandler. */
 	public interface IOrderHandler {
-		void orderState(OrderState orderState);
-		void orderStatus(OrderStatus status, Decimal filled, Decimal remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld, double mktCapPrice);
+		void orderState(OrderState orderState, Order order);
+		void orderStatus(OrderStatus status, Decimal filled, Decimal remaining, double avgFillPrice, long permId, int parentId, double lastFillPrice, int clientId, String whyHeld, double mktCapPrice);
 		void handle(int errorCode, String errorMsg);
 	}
 
@@ -847,16 +847,16 @@ public class ApiController implements EWrapper {
 		// when placing new order, assign new order id
 		if (order.orderId() == 0) {
 			order.orderId( m_orderId++);
-			if (handler != null) {
-				m_orderHandlers.put( order.orderId(), handler);
-			}
+		}
+		if (handler != null) {
+			m_orderHandlers.put( order.orderId(), handler);
 		}
 
 		m_client.placeOrder( contract, order);
 		sendEOM();
 	}
 
-    public void cancelOrder(int orderId, String manualOrderCancelTime, final IOrderCancelHandler orderCancelHandler) {
+    public void cancelOrder(int orderId, OrderCancel orderCancel, final IOrderCancelHandler orderCancelHandler) {
 		if (!checkConnection())
 			return;
 
@@ -864,15 +864,15 @@ public class ApiController implements EWrapper {
             m_orderCancelHandlers.put( orderId, orderCancelHandler);
         }
 
-        m_client.cancelOrder( orderId, manualOrderCancelTime);
+        m_client.cancelOrder( orderId, orderCancel);
 		sendEOM();
 	}
 
-	public void cancelAllOrders() {
+	public void cancelAllOrders(OrderCancel orderCancel) {
 		if (!checkConnection())
 			return;
 		
-		m_client.reqGlobalCancel();
+		m_client.reqGlobalCancel(orderCancel);
 		sendEOM();
 	}
 
@@ -898,7 +898,7 @@ public class ApiController implements EWrapper {
 	public interface ILiveOrderHandler {
 		void openOrder(Contract contract, Order order, OrderState orderState);
 		void openOrderEnd();
-		void orderStatus(int orderId, OrderStatus status, Decimal filled, Decimal remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld, double mktCapPrice);
+		void orderStatus(int orderId, OrderStatus status, Decimal filled, Decimal remaining, double avgFillPrice, long permId, int parentId, double lastFillPrice, int clientId, String whyHeld, double mktCapPrice);
 		void handle(int orderId, int errorCode, String errorMsg);  // add permId?
 	}
 
@@ -936,7 +936,7 @@ public class ApiController implements EWrapper {
 	@Override public void openOrder(int orderId, Contract contract, Order order, OrderState orderState) {
 		IOrderHandler handler = m_orderHandlers.get( orderId);
 		if (handler != null) {
-			handler.orderState(orderState);
+			handler.orderState(orderState, order);
 		}
 
 		if (!order.whatIf() ) {
@@ -954,7 +954,7 @@ public class ApiController implements EWrapper {
 		recEOM();
 	}
 
-	@Override public void orderStatus(int orderId, String status, Decimal filled, Decimal remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld, double mktCapPrice) {
+	@Override public void orderStatus(int orderId, String status, Decimal filled, Decimal remaining, double avgFillPrice, long permId, int parentId, double lastFillPrice, int clientId, String whyHeld, double mktCapPrice) {
 		IOrderHandler handler = m_orderHandlers.get( orderId);
 		if (handler != null) {
 			handler.orderStatus( OrderStatus.valueOf( status), filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld, mktCapPrice);
@@ -1927,8 +1927,8 @@ public class ApiController implements EWrapper {
     }
 
     @Override
-    public void orderBound(long orderId, int apiClientId, int apiOrderId) {
-        show( "Order bound. OrderId: " + orderId + ", apiClientId: " + apiClientId + ", apiOrderId: " + apiOrderId);
+    public void orderBound(long permId, int clientId, int orderId) {
+        show( "Order bound. PermId: " + permId + ", clientId: " + clientId + ", orderId: " + orderId);
     }
 
     // ---------------------------------------- Completed orders ----------------------------------------

@@ -113,7 +113,7 @@ describe("IBApi Historical data Tests", () => {
       ib.reqHistoricalData(
         refId,
         contract,
-        "20240719-17:00:00",
+        "20241110-17:00:00",
         "30 S",
         BarSizeSetting.SECONDS_FIFTEEN,
         WhatToShow.BID_ASK,
@@ -134,7 +134,7 @@ describe("IBApi Historical data Tests", () => {
         count: number | undefined,
         WAP: number,
       ) => {
-        // console.log(counter, time, open, high, low, close, volume, count, WAP);
+        console.log(counter, time, open, high, low, close, volume, count, WAP);
         expect(reqId).toEqual(refId);
         if (time.startsWith("finished")) {
           expect(counter).toEqual(2);

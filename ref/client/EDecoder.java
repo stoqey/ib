@@ -1149,7 +1149,7 @@ class EDecoder implements ObjectInput {
 		exec.shares(readDecimal());
 		exec.price(readDouble());
 		if ( version >= 2 ) {
-		    exec.permId(readInt());
+		    exec.permId(readLong());
 		}
 		if ( version >= 3) {
 		    exec.clientId(readInt());
@@ -1229,6 +1229,11 @@ class EDecoder implements ObjectInput {
 		}
 		if( version >= 4) {
 		   contract.longName(readStr());
+		}
+		if (m_serverVersion >= EClient.MIN_SERVER_VER_BOND_TRADING_HOURS) {
+		    contract.timeZoneId(readStr());
+		    contract.tradingHours(readStr());
+		    contract.liquidHours(readStr());
 		}
 		if ( version >= 6) {
 		    contract.evRule(readStr());
@@ -1372,7 +1377,19 @@ class EDecoder implements ObjectInput {
             contract.fundDistributionPolicyIndicator(FundDistributionPolicyIndicator.get(readStr()));
             contract.fundAssetType(FundAssetType.get(readStr()));
         }
-		
+        
+        if (m_serverVersion >= EClient.MIN_SERVER_VER_INELIGIBILITY_REASONS) {
+            int ineligibilityReasonCount = readInt();
+            List<IneligibilityReason> ineligibilityReasonList = new ArrayList<>();
+
+            for (int i = 0; i < ineligibilityReasonCount; i++) {
+                String id = readStr();
+                String description = readStr();
+                ineligibilityReasonList.add(new IneligibilityReason(id, description));
+            }
+            contract.ineligibilityReasonList(ineligibilityReasonList);
+        }
+
 		m_EWrapper.contractDetails( reqId, contract);
 	}
 
@@ -1502,6 +1519,9 @@ class EDecoder implements ObjectInput {
         eOrderDecoder.readPegBestPegMidOrderAttributes();
         eOrderDecoder.readCustomerAccount();
         eOrderDecoder.readProfessionalCustomer();
+        eOrderDecoder.readBondAccruedInterest();
+        eOrderDecoder.readIncludeOvernight();
+        eOrderDecoder.readCMETaggingFields();
 
         m_EWrapper.openOrder(order.orderId(), contract, order, orderState);
     }
@@ -1597,9 +1617,9 @@ class EDecoder implements ObjectInput {
 		Decimal remaining = readDecimal();
 		double avgFillPrice = readDouble();
 
-		int permId = 0;
+		long permId = 0;
 		if( version >= 2) {
-		    permId = readInt();
+		    permId = readLong();
 		}
 
 		int parentId = 0;
@@ -1955,10 +1975,10 @@ class EDecoder implements ObjectInput {
     }
 
     private void processOrderBoundMsg() throws IOException {
-        long orderId = readLong();
-        int apiClientId = readInt();
-        int apiOrderId = readInt();
-        m_EWrapper.orderBound(orderId, apiClientId, apiOrderId);
+        long permId = readLong();
+        int clientId = readInt();
+        int orderId = readInt();
+        m_EWrapper.orderBound(permId, clientId, orderId);
     }
     
     private void processCompletedOrderMsg() throws IOException {
@@ -2092,19 +2112,19 @@ class EDecoder implements ObjectInput {
     private void readLastTradeDate(ContractDetails contract, boolean isBond) throws IOException {
         String lastTradeDateOrContractMonth = readStr();
         if (lastTradeDateOrContractMonth != null) {
-            String[] splitted = lastTradeDateOrContractMonth.contains("-") ? lastTradeDateOrContractMonth.split("-") : lastTradeDateOrContractMonth.split("\\s+");
-            if (splitted.length > 0) {
+            String[] split = lastTradeDateOrContractMonth.contains("-") ? lastTradeDateOrContractMonth.split("-") : lastTradeDateOrContractMonth.split("\\s+");
+            if (split.length > 0) {
                 if (isBond) {
-                    contract.maturity(splitted[0]);
+                    contract.maturity(split[0]);
                 } else {
-                    contract.contract().lastTradeDateOrContractMonth(splitted[0]);
+                    contract.contract().lastTradeDateOrContractMonth(split[0]);
                 }
             }
-            if (splitted.length > 1) {
-                contract.lastTradeTime(splitted[1]);
+            if (split.length > 1) {
+                contract.lastTradeTime(split[1]);
             }
-            if (isBond && splitted.length > 2) {
-                contract.timeZoneId(splitted[2]);
+            if (isBond && split.length > 2) {
+                contract.timeZoneId(split[2]);
             }
         }
     }
