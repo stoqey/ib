@@ -51,7 +51,7 @@ const sample_percent_condition: OrderCondition = new PercentChangeCondition(
   ConjunctionConnection.OR,
 );
 const sample_time_condition: OrderCondition = new TimeCondition(
-  "20250102-17:00:00",
+  "20260102-18:00:00",
   true,
   ConjunctionConnection.OR,
 );
@@ -342,8 +342,31 @@ describe("Place Conditional Orders", () => {
       })
       .on(EventName.openOrderEnd, () => {
         if (isDone) done();
-        else done("failed");
       })
+      .on(
+        EventName.orderStatus,
+        (
+          orderId,
+          status,
+          filled,
+          remaining,
+          _avgFillPrice,
+          _permId,
+          _parentId,
+          _lastFillPrice,
+          _clientId,
+          _whyHeld,
+          _mktCapPrice,
+        ) => {
+          if (!isDone && orderId == refId) {
+            isDone = true;
+            expect(status).toMatch(/Pending/);
+            expect(filled).toEqual(0);
+            expect(remaining).toEqual(refOrder.totalQuantity);
+            done();
+          }
+        },
+      )
       .on(
         EventName.error,
         (

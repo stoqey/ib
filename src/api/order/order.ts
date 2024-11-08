@@ -763,7 +763,9 @@ export interface Order {
   professionalCustomer?: boolean;
 
   bondAccruedInterest?: string;
+
   includeOvernight?: boolean;
+
   manualOrderIndicator?: number;
 }
 
