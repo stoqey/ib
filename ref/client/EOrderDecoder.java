@@ -113,7 +113,7 @@ public class EOrderDecoder {
 
     public void readPermId() throws IOException {
         if( m_version >= 4 ) {
-            m_order.permId(m_eDecoder.readInt());
+            m_order.permId(m_eDecoder.readLong());
         }
     }
 
@@ -702,6 +702,25 @@ public class EOrderDecoder {
     public void readProfessionalCustomer() throws IOException {
         if (m_serverVersion >= EClient.MIN_SERVER_VER_PROFESSIONAL_CUSTOMER) {
             m_order.professionalCustomer(m_eDecoder.readBoolFromInt());
+        }
+    }
+
+    public void readBondAccruedInterest() throws IOException {
+        if (m_serverVersion >= EClient.MIN_SERVER_VER_BOND_ACCRUED_INTEREST) {
+            m_order.bondAccruedInterest(m_eDecoder.readStr());
+        }
+    }
+
+    public void readIncludeOvernight() throws IOException {
+        if (m_serverVersion >= EClient.MIN_SERVER_VER_INCLUDE_OVERNIGHT) {
+            m_order.includeOvernight(m_eDecoder.readBoolFromInt());
+        }
+    }
+
+    public void readCMETaggingFields() throws IOException {
+        if (m_serverVersion >= EClient.MIN_SERVER_VER_CME_TAGGING_FIELDS_IN_OPEN_ORDER) {
+            m_order.extOperator(m_eDecoder.readStr());
+            m_order.manualOrderIndicator(m_eDecoder.readIntMax());
         }
     }
 }

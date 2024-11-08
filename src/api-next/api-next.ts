@@ -23,6 +23,7 @@ import {
   OrderBook,
   OrderBookRow,
   OrderBookUpdate,
+  OrderCancel,
   OrderState,
   ScannerSubscription,
   SecType,
@@ -2887,10 +2888,14 @@ export class IBApiNext {
    * Use [[cancelAllOrders]] instead.
    *
    * @param orderId Specify which order should be cancelled by its identifier.
-   * @param manualOrderCancelTime Specify the time the order should be cancelled. An empty string will cancel the order immediately.
+   * @param orderCancel Specify the time the order should be cancelled. An empty string will cancel the order immediately.
    */
-  cancelOrder(orderId: number, manualOrderCancelTime?: string): void {
-    this.api.cancelOrder(orderId, manualOrderCancelTime);
+  cancelOrder(orderId: number, orderCancelParam?: string | OrderCancel): void {
+    let orderCancel: OrderCancel;
+    if (typeof orderCancelParam == "string")
+      orderCancel = { manualOrderCancelTime: orderCancelParam };
+    else orderCancel = orderCancelParam;
+    this.api.cancelOrder(orderId, orderCancel);
   }
 
   /**

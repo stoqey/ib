@@ -3,7 +3,13 @@
  */
 /* eslint @typescript-eslint/no-unsafe-declaration-merging:warn */
 import { EventEmitter } from "eventemitter3";
-import { DurationUnit, MarketDataType, OrderStatus, WhatToShow } from "..";
+import {
+  DurationUnit,
+  MarketDataType,
+  OrderCancel,
+  OrderStatus,
+  WhatToShow,
+} from "..";
 
 import { ErrorCode } from "../common/errorCode";
 import { Controller } from "../core/io/controller";
@@ -83,8 +89,7 @@ export interface IBApiCreationOptions {
 }
 
 /** Maximum supported version. */
-export const MAX_SUPPORTED_SERVER_VERSION =
-  MIN_SERVER_VER.PROFESSIONAL_CUSTOMER;
+export const MAX_SUPPORTED_SERVER_VERSION = MIN_SERVER_VER.MAX_VERSION;
 
 /** Minimum supported version. */
 export const MIN_SERVER_VER_SUPPORTED = 38;
@@ -372,13 +377,13 @@ export class IBApi extends EventEmitter {
    * Use [[reqGlobalCancel]] instead.
    *
    * @param orderId Specify which order should be cancelled by its identifier.
-   * @param manualOrderCancelTime Specify the time the order should be cancelled. An empty string will cancel the order immediately.
+   * @param orderCancel Specify the time the order should be cancelled. An empty string will cancel the order immediately.
    *
    * @see [[placeOrder]], [[reqGlobalCancel]]
    */
-  cancelOrder(orderId: number, manualOrderCancelTime?: string): IBApi {
+  cancelOrder(orderId: number, orderCancel?: OrderCancel): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.cancelOrder(orderId, manualOrderCancelTime),
+      this.controller.encoder.cancelOrder(orderId, orderCancel),
     );
     return this;
   }
@@ -2528,11 +2533,7 @@ export declare interface IBApi {
    */
   on(
     event: EventName.orderBound,
-    listener: (
-      orderId: number,
-      apiClientId: number,
-      apiOrderId: number,
-    ) => void,
+    listener: (permId: number, clientId: number, orderId: number) => void,
   ): this;
 
   /**

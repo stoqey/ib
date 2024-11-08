@@ -4,6 +4,9 @@
 /* eslint-disable @typescript-eslint/no-duplicate-enum-values */
 
 export enum ErrorCode {
+  /** No request id associated to this error */
+  NO_VALID_ID = -1,
+
   /** Order Canceled - reason: */
   ORDER_CANCELLED = 202,
 
@@ -282,6 +285,9 @@ export enum ErrorCode {
 
   /** FA Profile is not supported anymore, use FA Group instead */
   FA_PROFILE_NOT_SUPPORTED = 585,
+
+  /** Failed to read message because not connected */
+  FAIL_READ_MESSAGE = 586,
 
   /** Invalid position trade derived value */
   INVALID_POSITION_TRADE_DERIVATED_VALUE = 2150,

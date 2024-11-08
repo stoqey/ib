@@ -761,6 +761,12 @@ export interface Order {
   customerAccount?: string;
 
   professionalCustomer?: boolean;
+
+  bondAccruedInterest?: string;
+
+  includeOvernight?: boolean;
+
+  manualOrderIndicator?: number;
 }
 
 export const COMPETE_AGAINST_BEST_OFFSET_UP_TO_MID = Infinity;

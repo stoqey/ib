@@ -1,4 +1,4 @@
-import IBApi, { ExecutionFilter, IBApiNext } from "../../..";
+import IBApi, { ExecutionFilter, IBApiNext, Liquidities } from "../../..";
 import { ExecutionDetail } from "../../../api-next/order/execution-detail";
 import { EventName } from "../../../api/data/enum/event-name";
 import SecType from "../../../api/data/enum/sec-type";
@@ -42,9 +42,7 @@ describe("RxJS Wrapper: getExecutionDetails", () => {
           evRule: "",
           evMultiplier: 0,
           modelCode: "",
-          lastLiquidity: {
-            value: 2,
-          },
+          lastLiquidity: Liquidities.Removed,
         },
       },
     ];

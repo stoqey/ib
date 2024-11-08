@@ -2,6 +2,7 @@ import TagValue from "../data/container/tag-value";
 import SecType from "../data/enum/sec-type";
 import { Contract } from "./contract";
 import { FundAssetType, FundDistributionPolicyIndicator } from "./fund";
+import { IneligibilityReason } from "./ineligibilityReason";
 
 /**
  * Extended contract details.
@@ -312,6 +313,7 @@ export interface ContractDetails {
   fundBlueSkyTerritories?: string;
   fundDistributionPolicyIndicator?: FundDistributionPolicyIndicator;
   fundAssetType?: FundAssetType;
+  ineligibilityReasonList?: Array<IneligibilityReason>;
 }
 
 export default ContractDetails;

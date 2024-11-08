@@ -59,9 +59,9 @@ public class EWrapperMsgGenerator {
     }
     
     public static String orderStatus( int orderId, String status, Decimal filled, Decimal remaining,
-            double avgFillPrice, int permId, int parentId, double lastFillPrice,
+            double avgFillPrice, long permId, int parentId, double lastFillPrice,
             int clientId, String whyHeld, double mktCapPrice) {
-    	return "order status: orderId=" + orderId + " clientId=" + Util.IntMaxString(clientId) + " permId=" + Util.IntMaxString(permId) +
+    	return "order status: orderId=" + orderId + " clientId=" + Util.IntMaxString(clientId) + " permId=" + Util.LongMaxString(permId) +
         " status=" + status + " filled=" + filled + " remaining=" + remaining +
         " avgFillPrice=" + Util.DoubleMaxString(avgFillPrice) + " lastFillPrice=" + Util.DoubleMaxString(lastFillPrice) +
         " parent Id=" + Util.IntMaxString(parentId) + " whyHeld=" + whyHeld + " mktCapPrice=" + Util.DoubleMaxString(mktCapPrice);
@@ -140,7 +140,8 @@ public class EWrapperMsgGenerator {
         + "sizeIncrement = " + contractDetails.sizeIncrement() + "\n"
         + "suggestedSizeIncrement = " + contractDetails.suggestedSizeIncrement() + "\n"
         + contractDetailsFundData(contractDetails)
-        + contractDetailsSecIdList(contractDetails);
+        + contractDetailsSecIdList(contractDetails) 
+        + contractDetailsIneligibilityReasons(contractDetails);
     }
 
     private static String contractDetailsFundData(ContractDetails contractDetails) {
@@ -219,11 +220,13 @@ public class EWrapperMsgGenerator {
         + "nextOptionPartial = " + contractDetails.nextOptionPartial() + "\n"
         + "notes = " + contractDetails.notes() + "\n"
         + "longName = " + contractDetails.longName() + "\n"
+        + "timeZoneId = " + contractDetails.timeZoneId() + "\n"
+        + "tradingHours = " + contractDetails.tradingHours() + "\n"
+        + "liquidHours = " + contractDetails.liquidHours() + "\n"
         + "evRule = " + contractDetails.evRule() + "\n"
         + "evMultiplier = " + Util.DoubleMaxString(contractDetails.evMultiplier()) + "\n"
         + "aggGroup = " + Util.IntMaxString(contractDetails.aggGroup()) + "\n"
         + "marketRuleIds = " + contractDetails.marketRuleIds() + "\n"
-        + "timeZoneId = " + contractDetails.timeZoneId() + "\n"
         + "lastTradeTime = " + contractDetails.lastTradeTime() + "\n"
         + "minSize = " + contractDetails.minSize() + "\n"
         + "sizeIncrement = " + contractDetails.sizeIncrement() + "\n"
@@ -246,7 +249,25 @@ public class EWrapperMsgGenerator {
         sb.append("}\n");
         return sb.toString();
     }
+    
+    public static String contractDetailsIneligibilityReasons(ContractDetails contractDetails) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("ineligibilityReasonList={");
+        sb.append(contractDetailsIneligibilityReasonList(contractDetails));
+        sb.append("}\n");
+        return sb.toString();
+    }
 
+    public static String contractDetailsIneligibilityReasonList(ContractDetails contractDetails) {
+        final StringBuilder sb = new StringBuilder();
+        if (contractDetails.ineligibilityReasonList() != null) {
+            for (IneligibilityReason ineligibilityReason : contractDetails.ineligibilityReasonList()) {
+                sb.append(ineligibilityReason).append(";");
+            }
+        }
+        return sb.toString();
+    }
+    
     public static String contractDetailsEnd(int reqId) {
     	return "reqId = " + reqId + " =============== end ===============";
     }
@@ -264,7 +285,7 @@ public class EWrapperMsgGenerator {
         + "side = " + execution.side() + "\n"
         + "shares = " + execution.shares() + "\n"
         + "price = " + Util.DoubleMaxString(execution.price()) + "\n"
-        + "permId = " + Util.IntMaxString(execution.permId()) + "\n"
+        + "permId = " + Util.LongMaxString(execution.permId()) + "\n"
         + "liquidation = " + Util.IntMaxString(execution.liquidation()) + "\n"
         + "cumQty = " + execution.cumQty() + "\n"
         + "avgPrice = " + Util.DoubleMaxString(execution.avgPrice()) + "\n"
@@ -700,8 +721,8 @@ public class EWrapperMsgGenerator {
         return "MidPoint. Req Id: " + reqId + " Time: " + Util.UnixSecondsToString(time, "yyyyMMdd-HH:mm:ss") + " MidPoint: " + Util.DoubleMaxString(midPoint);
     }
     
-    public static String orderBound(long orderId, int apiClientId, int apiOrderId){
-        return "order bound: apiOrderId=" + Util.IntMaxString(apiOrderId) + " apiClientId=" + Util.IntMaxString(apiClientId) + " permId=" + Util.LongMaxString(orderId);
+    public static String orderBound(long permId, int clientId, int orderId){
+        return "order bound: orderId=" + Util.IntMaxString(orderId) + " clientId=" + Util.IntMaxString(clientId) + " permId=" + Util.LongMaxString(permId);
     }
     
     public static String completedOrder( Contract contract, Order order, OrderState orderState) {
@@ -777,7 +798,7 @@ public class EWrapperMsgGenerator {
         Util.appendNonEmptyString(sb, "orderRef", order.orderRef());
         Util.appendValidIntValue(sb, "clientId", order.clientId());
         Util.appendValidIntValue(sb, "parentId", order.parentId());
-        Util.appendValidIntValue(sb, "permId", order.permId());
+        Util.appendValidLongValue(sb, "permId", order.permId());
         Util.appendBooleanFlag(sb, "outsideRth", order.outsideRth());
         Util.appendBooleanFlag(sb, "hidden", order.hidden());
         Util.appendValidDoubleValue(sb, "discretionaryAmt", order.discretionaryAmt());
@@ -961,6 +982,10 @@ public class EWrapperMsgGenerator {
         Util.appendValidDoubleValue(sb, "midOffsetAtHalf", order.midOffsetAtHalf());
         Util.appendNonEmptyString(sb, "customerAccount", order.customerAccount());
         Util.appendBooleanFlag(sb, "professionalCustomer", order.professionalCustomer());
+        Util.appendNonEmptyString(sb, "bondAccruedInterest", order.bondAccruedInterest());
+        Util.appendBooleanFlag(sb, "includeOvernight", order.includeOvernight());
+        Util.appendNonEmptyString(sb, "extOperator", order.extOperator());
+        Util.appendValidIntValue(sb, "manualOrderIndicator", order.manualOrderIndicator());
         
         Util.appendNonEmptyString(sb, "status", orderState.getStatus());
         Util.appendNonEmptyString(sb, "completedTime", orderState.completedTime());

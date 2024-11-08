@@ -1,4 +1,4 @@
-/* Copyright (C) 2019 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+/* Copyright (C) 2024 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.client;
@@ -84,6 +84,14 @@ public class EClientSocket extends EClient implements EClientMsgSink  {
 	}
 
 	public synchronized void eConnect( String host, int port, int clientId, boolean extraAuth) {
+        try {
+            validateInvalidSymbols(host);
+        }
+        catch(EClientException e) {
+            error(EClientErrors.NO_VALID_ID, e.error(), e.text());
+            return;
+        }
+
 	    // already connected?
 	    m_host = checkConnected(host);
 	
@@ -229,10 +237,16 @@ public class EClientSocket extends EClient implements EClientMsgSink  {
 	}
 
 	public int read(byte[] buf, int off, int len) throws IOException {
+        if (m_dis == null) {
+            throw new EClientException(EClientErrors.FAIL_READ_MESSAGE, "");
+        }
 		return m_dis.read(buf, off, len);
 	}
 
 	public int readInt() throws IOException {
+        if (m_dis == null) {
+            throw new EClientException(EClientErrors.FAIL_READ_MESSAGE, "");
+        }
 		return m_dis.readInt();
 	}
 

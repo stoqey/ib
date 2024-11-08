@@ -1,3 +1,4 @@
+import { IneligibilityReason } from "../..";
 import { Contract } from "../../api/contract/contract";
 import { ContractDescription } from "../../api/contract/contractDescription";
 import { ContractDetails } from "../../api/contract/contractDetails";
@@ -467,6 +468,13 @@ export class Decoder {
   }
 
   /**
+   * Read a token from queue and return it as boolean value.
+   *
+   * @deprecated readBool is probably what you are looking for
+   */
+  readBoolFromInt = this.readBool;
+
+  /**
    * Read a token from queue and return it as floating point value.
    *
    * Returns 0 if the token is empty.
@@ -474,7 +482,7 @@ export class Decoder {
    */
   readDouble(): number | undefined {
     const token = this.readStr();
-    if (!token || token === "") {
+    if (token === "") {
       return 0;
     }
     const val = parseFloat(token);
@@ -488,7 +496,7 @@ export class Decoder {
    */
   readDecimal(): number | undefined {
     const token = this.readStr();
-    if (!token || token === "") {
+    if (token === "") {
       return undefined;
     }
     const val = parseFloat(token.replaceAll(",", ""));
@@ -502,7 +510,7 @@ export class Decoder {
    */
   readDoubleOrUndefined(): number | undefined {
     const token = this.readStr();
-    if (!token) {
+    if (token === "") {
       return undefined;
     }
     const val = parseFloat(token);
@@ -516,7 +524,7 @@ export class Decoder {
    */
   readInt(): number {
     const token = this.readStr();
-    if (!token || token === "") {
+    if (token === "") {
       return 0;
     }
     const val = parseInt(token, 10);
@@ -538,7 +546,7 @@ export class Decoder {
    */
   readIntOrUndefined(): number | undefined {
     const token = this.readStr();
-    if (!token || token === "") {
+    if (token === "") {
       return undefined;
     }
     const val = parseInt(token, 10);
@@ -827,6 +835,9 @@ export class Decoder {
     orderDecoder.readPegBestPegMidOrderAttributes();
     orderDecoder.readCustomerAccount();
     orderDecoder.readProfessionalCustomer();
+    orderDecoder.readBondAccruedInterest();
+    orderDecoder.readIncludeOvernight();
+    orderDecoder.readCMETaggingFields();
 
     this.emit(EventName.openOrder, order.orderId, contract, order, orderState);
   }
@@ -1077,6 +1088,18 @@ export class Decoder {
       contract.fundAssetType = this.readStr() as FundAssetType;
     }
 
+    if (this.serverVersion >= MIN_SERVER_VER.INELIGIBILITY_REASONS) {
+      const ineligibilityReasonCount = this.readInt();
+      const ineligibilityReasonList = new Array<IneligibilityReason>();
+
+      for (let i = 0; i < ineligibilityReasonCount; i++) {
+        const id = this.readStr();
+        const description = this.readStr();
+        ineligibilityReasonList.push({ id, description });
+      }
+      contract.ineligibilityReasonList = ineligibilityReasonList;
+    }
+
     this.emit(EventName.contractDetails, reqId, contract);
   }
 
@@ -1163,7 +1186,7 @@ export class Decoder {
     }
 
     if (this.serverVersion >= MIN_SERVER_VER.LAST_LIQUIDITY) {
-      exec.lastLiquidity = { value: this.readInt() };
+      exec.lastLiquidity = this.readInt();
     }
 
     if (this.serverVersion >= MIN_SERVER_VER.PENDING_PRICE_REVISION) {
@@ -1459,6 +1482,12 @@ export class Decoder {
 
     if (version >= 4) {
       contract.longName = this.readStr();
+    }
+
+    if (this.serverVersion >= MIN_SERVER_VER.BOND_TRADING_HOURS) {
+      contract.timeZoneId = this.readStr();
+      contract.tradingHours = this.readStr();
+      contract.liquidHours = this.readStr();
     }
 
     if (version >= 6) {
@@ -2519,11 +2548,11 @@ export class Decoder {
    * Decode a ORDER_BOUND message from data queue and a emit orderBound event.
    */
   private decodeMsg_ORDER_BOUND(): void {
+    const permId = this.readInt();
+    const clientId = this.readDouble();
     const orderId = this.readInt();
-    const apiClientId = this.readDouble();
-    const apiOrderId = this.readInt();
 
-    this.emit(EventName.orderBound, orderId, apiClientId, apiOrderId);
+    this.emit(EventName.orderBound, permId, clientId, orderId);
   }
 
   /**
@@ -2695,26 +2724,26 @@ export class Decoder {
    */
   private readLastTradeDate(contract: ContractDetails, isBond: boolean): void {
     const lastTradeDateOrContractMonth = this.readStr();
-    if (lastTradeDateOrContractMonth?.length) {
-      const tokens =
+    if (lastTradeDateOrContractMonth.length) {
+      const split =
         lastTradeDateOrContractMonth.indexOf("-") > 0
           ? lastTradeDateOrContractMonth.split("-")
           : lastTradeDateOrContractMonth.split("\\s+");
 
-      if (tokens.length > 0) {
+      if (split.length > 0) {
         if (isBond) {
-          contract.maturity = tokens[0];
+          contract.maturity = split[0];
         } else {
-          contract.contract.lastTradeDateOrContractMonth = tokens[0];
+          contract.contract.lastTradeDateOrContractMonth = split[0];
         }
       }
 
-      if (tokens.length > 1) {
-        contract.lastTradeTime = tokens[1];
+      if (split.length > 1) {
+        contract.lastTradeTime = split[1];
       }
 
-      if (isBond && tokens.length > 2) {
-        contract.timeZoneId = tokens[2];
+      if (isBond && split.length > 2) {
+        contract.timeZoneId = split[2];
       }
     }
   }
@@ -3547,6 +3576,25 @@ class OrderDecoder {
   readProfessionalCustomer() {
     if (this.serverVersion >= MIN_SERVER_VER.PROFESSIONAL_CUSTOMER) {
       this.order.professionalCustomer = this.decoder.readBool();
+    }
+  }
+
+  readBondAccruedInterest() {
+    if (this.serverVersion >= MIN_SERVER_VER.BOND_ACCRUED_INTEREST) {
+      this.order.bondAccruedInterest = this.decoder.readStr();
+    }
+  }
+
+  readIncludeOvernight() {
+    if (this.serverVersion >= MIN_SERVER_VER.INCLUDE_OVERNIGHT) {
+      this.order.includeOvernight = this.decoder.readBool();
+    }
+  }
+
+  readCMETaggingFields() {
+    if (this.serverVersion >= MIN_SERVER_VER.CME_TAGGING_FIELDS_IN_OPEN_ORDER) {
+      this.order.extOperator = this.decoder.readStr();
+      this.order.manualOrderIndicator = this.decoder.readIntOrUndefined();
     }
   }
 }

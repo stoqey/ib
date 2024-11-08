@@ -113,7 +113,7 @@ describe("IBApi Historical data Tests", () => {
       ib.reqHistoricalData(
         refId,
         contract,
-        "20240719-17:00:00",
+        "20241107-17:00:00",
         "30 S",
         BarSizeSetting.SECONDS_FIFTEEN,
         WhatToShow.BID_ASK,
@@ -140,11 +140,11 @@ describe("IBApi Historical data Tests", () => {
           expect(counter).toEqual(2);
           done();
         } else if (counter++ == 1) {
-          expect(time).toEqual("1721408385");
-          expect(open).toEqual(11.95);
-          expect(high).toEqual(11.95);
-          expect(low).toEqual(11.9);
-          expect(close).toEqual(11.95);
+          expect(time).toEqual("1730998785");
+          expect(open).toEqual(8.77);
+          expect(high).toEqual(8.77);
+          expect(low).toEqual(8.75);
+          expect(close).toEqual(8.77);
           expect(volume).toEqual(-1);
           expect(count).toEqual(-1);
           expect(WAP).toEqual(-1);
