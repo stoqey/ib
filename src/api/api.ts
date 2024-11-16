@@ -387,13 +387,13 @@ export class IBApi extends EventEmitter {
       orderCancel = {
         manualOrderCancelTime: "",
         extOperator: "",
-        manualOrderIndicator: 0,
+        manualOrderIndicator: undefined,
       };
     else if (typeof orderCancelParam == "string")
       orderCancel = {
         manualOrderCancelTime: orderCancelParam,
         extOperator: "",
-        manualOrderIndicator: 0,
+        manualOrderIndicator: undefined,
       };
     else orderCancel = orderCancelParam;
     this.controller.schedule(() =>
@@ -883,7 +883,7 @@ export class IBApi extends EventEmitter {
         orderCancel || {
           manualOrderCancelTime: "",
           extOperator: "",
-          manualOrderIndicator: 0,
+          manualOrderIndicator: undefined,
         },
       ),
     );
