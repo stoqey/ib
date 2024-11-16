@@ -464,7 +464,7 @@ export class Decoder {
    * Read a token from queue and return it as boolean value.
    */
   readBool(): boolean {
-    return parseInt(this.readStr(), 10) != 0;
+    return !!parseInt(this.readStr());
   }
 
   /**

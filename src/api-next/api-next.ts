@@ -2890,11 +2890,7 @@ export class IBApiNext {
    * @param orderId Specify which order should be cancelled by its identifier.
    * @param orderCancel Specify the time the order should be cancelled. An empty string will cancel the order immediately.
    */
-  cancelOrder(orderId: number, orderCancelParam?: string | OrderCancel): void {
-    let orderCancel: OrderCancel;
-    if (typeof orderCancelParam == "string")
-      orderCancel = { manualOrderCancelTime: orderCancelParam };
-    else orderCancel = orderCancelParam;
+  cancelOrder(orderId: number, orderCancel?: string | OrderCancel): void {
     this.api.cancelOrder(orderId, orderCancel);
   }
 
@@ -2904,8 +2900,8 @@ export class IBApiNext {
    *
    * @see [[cancelOrder]]
    */
-  cancelAllOrders(): void {
-    this.api.reqGlobalCancel();
+  cancelAllOrders(orderCancel?: OrderCancel): void {
+    this.api.reqGlobalCancel(orderCancel);
   }
 
   /**

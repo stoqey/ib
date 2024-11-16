@@ -3,6 +3,6 @@
  */
 export interface OrderCancel {
   manualOrderCancelTime: string;
-  extOperator?: string;
-  manualOrderIndicator?: number;
+  extOperator: string;
+  manualOrderIndicator: number;
 }

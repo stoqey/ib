@@ -381,7 +381,21 @@ export class IBApi extends EventEmitter {
    *
    * @see [[placeOrder]], [[reqGlobalCancel]]
    */
-  cancelOrder(orderId: number, orderCancel?: OrderCancel): IBApi {
+  cancelOrder(orderId: number, orderCancelParam?: string | OrderCancel): IBApi {
+    let orderCancel: OrderCancel;
+    if (orderCancelParam == undefined)
+      orderCancel = {
+        manualOrderCancelTime: "",
+        extOperator: "",
+        manualOrderIndicator: 0,
+      };
+    else if (typeof orderCancelParam == "string")
+      orderCancel = {
+        manualOrderCancelTime: orderCancelParam,
+        extOperator: "",
+        manualOrderIndicator: 0,
+      };
+    else orderCancel = orderCancelParam;
     this.controller.schedule(() =>
       this.controller.encoder.cancelOrder(orderId, orderCancel),
     );
@@ -863,8 +877,16 @@ export class IBApi extends EventEmitter {
    *
    * @see [[cancelOrder]]
    */
-  reqGlobalCancel(): IBApi {
-    this.controller.schedule(() => this.controller.encoder.reqGlobalCancel());
+  reqGlobalCancel(orderCancel?: OrderCancel): IBApi {
+    this.controller.schedule(() =>
+      this.controller.encoder.reqGlobalCancel(
+        orderCancel || {
+          manualOrderCancelTime: "",
+          extOperator: "",
+          manualOrderIndicator: 0,
+        },
+      ),
+    );
     return this;
   }
 
