@@ -535,7 +535,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   cancelOrder(orderId: number, orderCancel: OrderCancel): void {
     if (
       this.serverVersion < MIN_SERVER_VER.MANUAL_ORDER_TIME &&
-      orderCancel.manualOrderCancelTime.length
+      orderCancel.manualOrderCancelTime?.length
     ) {
       return this.emitError(
         "It does not support manual order cancel time attribute",
@@ -568,7 +568,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     tokens.push(orderId);
 
     if (this.serverVersion >= MIN_SERVER_VER.MANUAL_ORDER_TIME)
-      tokens.push(orderCancel.manualOrderCancelTime);
+      tokens.push(orderCancel.manualOrderCancelTime ?? "");
 
     if (
       this.serverVersion >= MIN_SERVER_VER.RFQ_FIELDS &&
@@ -580,7 +580,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     if (this.serverVersion >= MIN_SERVER_VER.CME_TAGGING_FIELDS) {
-      tokens.push(orderCancel.extOperator);
+      tokens.push(orderCancel.extOperator ?? "");
       tokens.push(orderCancel.manualOrderIndicator ?? Integer_MAX_VALUE);
     }
 
@@ -2251,7 +2251,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     if (this.serverVersion >= MIN_SERVER_VER.CME_TAGGING_FIELDS) {
-      tokens.push(orderCancel.extOperator);
+      tokens.push(orderCancel.extOperator ?? "");
       tokens.push(orderCancel.manualOrderIndicator ?? Integer_MAX_VALUE);
     }
 

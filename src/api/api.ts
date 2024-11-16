@@ -385,7 +385,7 @@ export class IBApi extends EventEmitter {
     let orderCancel: OrderCancel;
     if (orderCancelParam == undefined)
       orderCancel = {
-        manualOrderCancelTime: "",
+        manualOrderCancelTime: undefined,
         extOperator: "",
         manualOrderIndicator: undefined,
       };
@@ -881,7 +881,7 @@ export class IBApi extends EventEmitter {
     this.controller.schedule(() =>
       this.controller.encoder.reqGlobalCancel(
         orderCancel || {
-          manualOrderCancelTime: "",
+          manualOrderCancelTime: undefined,
           extOperator: "",
           manualOrderIndicator: undefined,
         },
