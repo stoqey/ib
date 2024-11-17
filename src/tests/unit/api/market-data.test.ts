@@ -20,7 +20,7 @@ import {
 } from "../sample-data/contracts";
 
 describe("IBApi Market data Tests", () => {
-  jest.setTimeout(15 * 1000);
+  jest.setTimeout(10_000);
 
   let ib: IBApi;
   const clientId = Math.floor(Math.random() * 32766) + 1; // ensure unique client

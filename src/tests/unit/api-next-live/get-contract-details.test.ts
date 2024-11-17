@@ -7,12 +7,13 @@ import { IBApiNext, IBApiNextError } from "../../..";
 import {
   sample_bond,
   sample_crypto,
+  sample_future,
   sample_option,
   sample_stock,
 } from "../sample-data/contracts";
 
 describe("ApiNext: getContractDetails()", () => {
-  jest.setTimeout(10 * 1000);
+  jest.setTimeout(5_000);
 
   const clientId = Math.floor(Math.random() * 32766) + 1; // ensure unique client
 
@@ -51,15 +52,14 @@ describe("ApiNext: getContractDetails()", () => {
   });
 
   test("Stock contract details", (done) => {
+    const ref_contract = sample_stock;
+
     api
-      .getContractDetails(sample_stock)
+      .getContractDetails(ref_contract)
       .then((result) => {
-        // console.log(result);
         expect(result.length).toBeGreaterThan(0);
-        if (result.length) {
-          expect(result[0].contract.symbol).toEqual(sample_stock.symbol);
-          expect(result[0].contract.secType).toEqual(sample_stock.secType);
-        }
+        expect(result[0].contract.symbol).toEqual(ref_contract.symbol);
+        expect(result[0].contract.secType).toEqual(ref_contract.secType);
         done();
       })
       .catch((err: IBApiNextError) => {
@@ -70,52 +70,14 @@ describe("ApiNext: getContractDetails()", () => {
   });
 
   test("Future contract details", (done) => {
-    api
-      .getContractDetails(sample_crypto)
-      .then((result) => {
-        // console.log(result);
-        expect(result.length).toBeGreaterThan(0);
-        if (result.length) {
-          expect(result[0].contract.symbol).toEqual(sample_crypto.symbol);
-          expect(result[0].contract.secType).toEqual(sample_crypto.secType);
-        }
-        done();
-      })
-      .catch((err: IBApiNextError) => {
-        done(
-          `getContractDetails failed with '${err.error.message}' (Error #${err.code})`,
-        );
-      });
-  });
+    const ref_contract = sample_future;
 
-  test("Option contract details", (done) => {
     api
-      .getContractDetails(sample_option)
+      .getContractDetails(ref_contract)
       .then((result) => {
-        // console.log(result);
         expect(result.length).toBeGreaterThan(0);
-        if (result.length) {
-          expect(result[0].contract.symbol).toEqual(sample_option.symbol);
-          expect(result[0].contract.secType).toEqual(sample_option.secType);
-        }
-        done();
-      })
-      .catch((err: IBApiNextError) => {
-        done(
-          `getContractDetails failed with '${err.error.message}' (Error #${err.code})`,
-        );
-      });
-  });
-
-  test("Bond contract details", (done) => {
-    api
-      .getContractDetails(sample_bond)
-      .then((result) => {
-        // console.log(result);
-        expect(result.length).toBeGreaterThan(0);
-        if (result.length) {
-          expect(result[0].contract.secType).toEqual(sample_bond.secType);
-        }
+        expect(result[0].contract.symbol).toEqual(ref_contract.symbol);
+        expect(result[0].contract.secType).toEqual(ref_contract.secType);
         done();
       })
       .catch((err: IBApiNextError) => {
@@ -126,15 +88,68 @@ describe("ApiNext: getContractDetails()", () => {
   });
 
   test("Crypto contract details", (done) => {
+    const ref_contract = sample_crypto;
+
     api
-      .getContractDetails(sample_crypto)
+      .getContractDetails(ref_contract)
       .then((result) => {
-        // console.log(result);
         expect(result.length).toBeGreaterThan(0);
-        if (result.length) {
-          expect(result[0].contract.symbol).toEqual(sample_crypto.symbol);
-          expect(result[0].contract.secType).toEqual(sample_crypto.secType);
-        }
+        expect(result[0].contract.symbol).toEqual(ref_contract.symbol);
+        expect(result[0].contract.secType).toEqual(ref_contract.secType);
+        done();
+      })
+      .catch((err: IBApiNextError) => {
+        done(
+          `getContractDetails failed with '${err.error.message}' (Error #${err.code})`,
+        );
+      });
+  });
+
+  test("Option contract details", (done) => {
+    const ref_contract = sample_option;
+
+    api
+      .getContractDetails(ref_contract)
+      .then((result) => {
+        expect(result.length).toBeGreaterThan(0);
+        expect(result[0].contract.symbol).toEqual(ref_contract.symbol);
+        expect(result[0].contract.secType).toEqual(ref_contract.secType);
+        done();
+      })
+      .catch((err: IBApiNextError) => {
+        done(
+          `getContractDetails failed with '${err.error.message}' (Error #${err.code})`,
+        );
+      });
+  });
+
+  test("Bond contract details", (done) => {
+    const ref_contract = sample_bond;
+
+    api
+      .getContractDetails(ref_contract)
+      .then((result) => {
+        expect(result.length).toBeGreaterThan(0);
+        // expect(result[0].contract.symbol).toEqual(ref_contract.symbol);
+        expect(result[0].contract.secType).toEqual(ref_contract.secType);
+        done();
+      })
+      .catch((err: IBApiNextError) => {
+        done(
+          `getContractDetails failed with '${err.error.message}' (Error #${err.code})`,
+        );
+      });
+  });
+
+  test("Crypto contract details", (done) => {
+    const ref_contract = sample_crypto;
+
+    api
+      .getContractDetails(ref_contract)
+      .then((result) => {
+        expect(result.length).toBeGreaterThan(0);
+        expect(result[0].contract.symbol).toEqual(ref_contract.symbol);
+        expect(result[0].contract.secType).toEqual(ref_contract.secType);
         done();
       })
       .catch((err: IBApiNextError) => {

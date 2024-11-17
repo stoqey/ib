@@ -111,7 +111,7 @@ describe("Issue #203", () => {
     const refOrder: Order = {
       orderType: OrderType.LMT,
       action: OrderAction.BUY,
-      lmtPrice: 5400,
+      lmtPrice: 2400,
       orderId,
       totalQuantity: 1,
       transmit: true,

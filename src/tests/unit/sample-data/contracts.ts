@@ -15,7 +15,7 @@ import Crypto from "../../../api/contract/crypto";
 
 export const sample_stock: Contract = new Stock("AAPL");
 export const sample_etf: Contract = new Stock("SPY");
-export const sample_bond: Contract = new Bond("US279158AE95");
+export const sample_bond: Contract = new Bond("US064159KJ44");
 export const sample_index: Contract = new Index("ES", "USD");
 export const sample_dax_index: Contract = new Index("DAX", "EUR", "EUREX");
 export const sample_crypto: Contract = new Crypto("ETH");
