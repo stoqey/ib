@@ -1,4 +1,4 @@
-import { Order, OrderAction, OrderType, TimeInForce } from "../../../..";
+import { Order, OrderAction, OrderType, TimeInForce } from "../../..";
 
 export const sample_order: Order = {
   orderType: OrderType.LMT,
