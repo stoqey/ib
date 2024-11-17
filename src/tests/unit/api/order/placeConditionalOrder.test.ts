@@ -10,19 +10,20 @@ import {
   IBApi,
   MarginCondition,
   Order,
-  OrderAction,
   OrderCondition,
-  OrderType,
   PercentChangeCondition,
   PriceCondition,
   TimeCondition,
-  TimeInForce,
   TriggerMethod,
   VolumeCondition,
 } from "../../../..";
 import configuration from "../../../../common/configuration";
 import logger from "../../../../common/logger";
 import { aapl_contract, sample_stock } from "../../sample-data/contracts";
+import { sample_order } from "../../sample-data/orders";
+
+const refContract: Contract = sample_stock;
+const refOrder: Order = sample_order;
 
 const sample_price_condition: OrderCondition = new PriceCondition(
   29,
@@ -87,450 +88,315 @@ describe("Place Conditional Orders", () => {
   test("placeOrder with PriceCondition", (done) => {
     let refId: number;
 
-    const refContract: Contract = sample_stock;
-    const refOrder: Order = {
-      orderType: OrderType.LMT,
-      action: OrderAction.BUY,
-      lmtPrice: 0.01,
-      totalQuantity: 1,
-      conditionsIgnoreRth: true,
-      conditionsCancelOrder: false,
-      conditions: [sample_price_condition],
-      tif: TimeInForce.DAY,
-      transmit: true,
-    };
+    refOrder.conditions = [sample_price_condition];
 
-    let isDone = false;
+    let isSuccess = false;
     ib.once(EventName.nextValidId, (orderId: number) => {
       refId = orderId;
-      ib.placeOrder(refId, refContract, refOrder).reqOpenOrders();
+      ib.reqOpenOrders().placeOrder(refId, refContract, refOrder);
     })
       .on(EventName.openOrder, (orderId, contract, order, _orderState) => {
-        if (orderId == refId && !isDone) {
-          isDone = true;
+        if (orderId == refId) {
           expect(contract.symbol).toEqual(refContract.symbol);
           expect(order.totalQuantity).toEqual(refOrder.totalQuantity);
-          done();
         }
       })
-      .on(
-        EventName.error,
-        (
-          error: Error,
-          code: ErrorCode,
-          reqId: number,
-          _advancedOrderReject?: unknown,
-        ) => {
-          if (reqId === -1) {
-            logger.info(error.message);
-          } else {
-            const msg = `[${reqId}] ${error.message} (Error #${code})`;
-            if (
-              error.message.includes("Warning:") ||
-              error.message.includes("Order Message:")
-            ) {
-              logger.warn(msg);
-            } else {
-              ib.disconnect();
-              done(msg);
-            }
-          }
-        },
-      );
+      .on(EventName.orderStatus, (orderId, _status, filled, remaining) => {
+        if (!isSuccess && orderId == refId) {
+          expect(filled).toEqual(0);
+          expect(remaining).toEqual(refOrder.totalQuantity);
+          isSuccess = true;
+          ib.cancelOrder(orderId);
+          done();
+        }
+      });
 
-    ib.connect();
+    ib.connect().on(EventName.error, (error, code, reqId) => {
+      if (reqId === ErrorCode.NO_VALID_ID) {
+        done(error.message);
+      } else {
+        const msg = `[${reqId}] ${error.message} (Error #${code})`;
+        if (
+          error.message.includes("Warning:") ||
+          error.message.includes("Order Message:")
+        ) {
+          logger.warn(msg);
+        } else {
+          ib.disconnect();
+          done(msg);
+        }
+      }
+    });
   });
 
   test("placeOrder with ExecutionCondition", (done) => {
     let refId: number;
 
-    const refContract: Contract = sample_stock;
-    const refOrder: Order = {
-      orderType: OrderType.LMT,
-      action: OrderAction.BUY,
-      lmtPrice: 0.01,
-      totalQuantity: 1,
-      conditionsIgnoreRth: true,
-      conditionsCancelOrder: false,
-      conditions: [sample_execution_condition],
-      tif: TimeInForce.DAY,
-      transmit: true,
-    };
+    refOrder.conditions = [sample_execution_condition];
 
-    let isDone = false;
+    let isSuccess = false;
     ib.once(EventName.nextValidId, (orderId: number) => {
       refId = orderId;
-      ib.placeOrder(refId, refContract, refOrder).reqOpenOrders();
+      ib.reqOpenOrders().placeOrder(refId, refContract, refOrder);
     })
       .on(EventName.openOrder, (orderId, contract, order, _orderState) => {
-        if (orderId == refId && !isDone) {
-          isDone = true;
+        if (orderId == refId) {
           expect(contract.symbol).toEqual(refContract.symbol);
           expect(order.totalQuantity).toEqual(refOrder.totalQuantity);
-          done();
         }
       })
-      .on(
-        EventName.error,
-        (
-          error: Error,
-          code: ErrorCode,
-          reqId: number,
-          _advancedOrderReject?: unknown,
-        ) => {
-          if (reqId === -1) {
-            logger.info(error.message);
-          } else {
-            const msg = `[${reqId}] ${error.message} (Error #${code})`;
-            if (
-              error.message.includes("Warning:") ||
-              error.message.includes("Order Message:")
-            ) {
-              logger.warn(msg);
-            } else {
-              ib.disconnect();
-              done(msg);
-            }
-          }
-        },
-      );
+      .on(EventName.orderStatus, (orderId, _status, filled, remaining) => {
+        if (!isSuccess && orderId == refId) {
+          expect(filled).toEqual(0);
+          expect(remaining).toEqual(refOrder.totalQuantity);
+          isSuccess = true;
+          ib.cancelOrder(orderId);
+          done();
+        }
+      });
 
-    ib.connect();
+    ib.connect().on(EventName.error, (error, code, reqId) => {
+      if (reqId === ErrorCode.NO_VALID_ID) {
+        done(error.message);
+      } else {
+        const msg = `[${reqId}] ${error.message} (Error #${code})`;
+        if (
+          error.message.includes("Warning:") ||
+          error.message.includes("Order Message:")
+        ) {
+          logger.warn(msg);
+        } else {
+          ib.disconnect();
+          done(msg);
+        }
+      }
+    });
   });
 
   test("placeOrder with MarginCondition", (done) => {
     let refId: number;
 
-    const refContract: Contract = sample_stock;
-    const refOrder: Order = {
-      orderType: OrderType.LMT,
-      action: OrderAction.BUY,
-      lmtPrice: 0.01,
-      totalQuantity: 1,
-      conditionsIgnoreRth: true,
-      conditionsCancelOrder: false,
-      conditions: [sample_margin_condition],
-      tif: TimeInForce.DAY,
-      transmit: true,
-    };
+    refOrder.conditions = [sample_margin_condition];
 
-    let isDone = false;
+    let isSuccess = false;
     ib.once(EventName.nextValidId, (orderId: number) => {
       refId = orderId;
-      ib.placeOrder(refId, refContract, refOrder).reqOpenOrders();
+      ib.reqOpenOrders().placeOrder(refId, refContract, refOrder);
     })
       .on(EventName.openOrder, (orderId, contract, order, _orderState) => {
-        if (orderId == refId && !isDone) {
-          isDone = true;
+        if (orderId == refId) {
           expect(contract.symbol).toEqual(refContract.symbol);
           expect(order.totalQuantity).toEqual(refOrder.totalQuantity);
-          done();
         }
       })
-      .on(
-        EventName.error,
-        (
-          error: Error,
-          code: ErrorCode,
-          reqId: number,
-          _advancedOrderReject?: unknown,
-        ) => {
-          if (reqId === -1) {
-            logger.info(error.message);
-          } else {
-            const msg = `[${reqId}] ${error.message} (Error #${code})`;
-            if (
-              error.message.includes("Warning:") ||
-              error.message.includes("Order Message:")
-            ) {
-              logger.warn(msg);
-            } else {
-              ib.disconnect();
-              done(msg);
-            }
-          }
-        },
-      );
+      .on(EventName.orderStatus, (orderId, _status, filled, remaining) => {
+        if (!isSuccess && orderId == refId) {
+          expect(filled).toEqual(0);
+          expect(remaining).toEqual(refOrder.totalQuantity);
+          isSuccess = true;
+          ib.cancelOrder(orderId);
+          done();
+        }
+      });
 
-    ib.connect();
+    ib.connect().on(EventName.error, (error, code, reqId) => {
+      if (reqId === ErrorCode.NO_VALID_ID) {
+        done(error.message);
+      } else {
+        const msg = `[${reqId}] ${error.message} (Error #${code})`;
+        if (
+          error.message.includes("Warning:") ||
+          error.message.includes("Order Message:")
+        ) {
+          logger.warn(msg);
+        } else {
+          ib.disconnect();
+          done(msg);
+        }
+      }
+    });
   });
 
   test("placeOrder with PercentChangeCondition", (done) => {
     let refId: number;
 
-    const refContract: Contract = sample_stock;
-    const refOrder: Order = {
-      orderType: OrderType.LMT,
-      action: OrderAction.BUY,
-      lmtPrice: 0.01,
-      totalQuantity: 1,
-      conditionsIgnoreRth: true,
-      conditionsCancelOrder: false,
-      conditions: [sample_percent_condition],
-      tif: TimeInForce.DAY,
-      transmit: true,
-    };
+    refOrder.conditions = [sample_percent_condition];
 
-    let isDone = false;
+    let isSuccess = false;
     ib.once(EventName.nextValidId, (orderId: number) => {
       refId = orderId;
-      ib.placeOrder(refId, refContract, refOrder).reqOpenOrders();
+      ib.reqOpenOrders().placeOrder(refId, refContract, refOrder);
     })
       .on(EventName.openOrder, (orderId, contract, order, _orderState) => {
-        if (orderId == refId && !isDone) {
-          isDone = true;
+        if (orderId == refId) {
           expect(contract.symbol).toEqual(refContract.symbol);
           expect(order.totalQuantity).toEqual(refOrder.totalQuantity);
-          done();
         }
       })
-      .on(
-        EventName.error,
-        (
-          error: Error,
-          code: ErrorCode,
-          reqId: number,
-          _advancedOrderReject?: unknown,
-        ) => {
-          if (reqId === -1) {
-            logger.info(error.message);
-          } else {
-            const msg = `[${reqId}] ${error.message} (Error #${code})`;
-            if (
-              error.message.includes("Warning:") ||
-              error.message.includes("Order Message:")
-            ) {
-              logger.warn(msg);
-            } else {
-              ib.disconnect();
-              done(msg);
-            }
-          }
-        },
-      );
+      .on(EventName.orderStatus, (orderId, _status, filled, remaining) => {
+        if (!isSuccess && orderId == refId) {
+          expect(filled).toEqual(0);
+          expect(remaining).toEqual(refOrder.totalQuantity);
+          isSuccess = true;
+          ib.cancelOrder(orderId);
+          done();
+        }
+      });
 
-    ib.connect();
+    ib.connect().on(EventName.error, (error, code, reqId) => {
+      if (reqId === ErrorCode.NO_VALID_ID) {
+        done(error.message);
+      } else {
+        const msg = `[${reqId}] ${error.message} (Error #${code})`;
+        if (
+          error.message.includes("Warning:") ||
+          error.message.includes("Order Message:")
+        ) {
+          logger.warn(msg);
+        } else {
+          ib.disconnect();
+          done(msg);
+        }
+      }
+    });
   });
 
   test("placeOrder with TimeCondition", (done) => {
     let refId: number;
 
-    const refContract: Contract = sample_stock;
-    const refOrder: Order = {
-      orderType: OrderType.LMT,
-      action: OrderAction.BUY,
-      lmtPrice: 0.01,
-      totalQuantity: 1,
-      conditionsIgnoreRth: true,
-      conditionsCancelOrder: false,
-      conditions: [sample_time_condition],
-      tif: TimeInForce.DAY,
-      transmit: true,
-    };
+    refOrder.conditions = [sample_time_condition];
 
-    let isDone = false;
+    let isSuccess = false;
     ib.once(EventName.nextValidId, (orderId: number) => {
       refId = orderId;
-      ib.placeOrder(refId, refContract, refOrder).reqOpenOrders();
+      ib.reqOpenOrders().placeOrder(refId, refContract, refOrder);
     })
       .on(EventName.openOrder, (orderId, contract, order, _orderState) => {
         if (orderId == refId) {
-          isDone = true;
           expect(contract.symbol).toEqual(refContract.symbol);
           expect(order.totalQuantity).toEqual(refOrder.totalQuantity);
         }
       })
-      .on(EventName.openOrderEnd, () => {
-        if (isDone) done();
-      })
-      .on(
-        EventName.orderStatus,
-        (
-          orderId,
-          status,
-          filled,
-          remaining,
-          _avgFillPrice,
-          _permId,
-          _parentId,
-          _lastFillPrice,
-          _clientId,
-          _whyHeld,
-          _mktCapPrice,
-        ) => {
-          if (!isDone && orderId == refId) {
-            isDone = true;
-            expect(status).toMatch(/Pending/);
-            expect(filled).toEqual(0);
-            expect(remaining).toEqual(refOrder.totalQuantity);
-            done();
-          }
-        },
-      )
-      .on(
-        EventName.error,
-        (
-          error: Error,
-          code: ErrorCode,
-          reqId: number,
-          _advancedOrderReject?: unknown,
-        ) => {
-          if (reqId === -1) {
-            logger.info(error.message);
-          } else {
-            const msg = `[${reqId}] ${error.message} (Error #${code})`;
-            if (
-              error.message.includes("Warning:") ||
-              error.message.includes("Order Message:")
-            ) {
-              logger.warn(msg);
-            } else {
-              ib.disconnect();
-              done(msg);
-            }
-          }
-        },
-      );
-
-    ib.connect()
-      .on(EventName.error, (error, code, reqId) => {
-        if (reqId > 0) {
-          const msg = `[${reqId}] ${error.message} (Error #${code})`;
-          if (
-            error.message.includes("Warning:") ||
-            error.message.includes("Order Message:")
-          ) {
-            logger.warn(msg);
-          } else {
-            ib.disconnect();
-            done(msg);
-          }
-        } else {
-          console.error("ERROR", error.message, code, reqId);
+      .on(EventName.orderStatus, (orderId, _status, filled, remaining) => {
+        if (!isSuccess && orderId == refId) {
+          expect(filled).toEqual(0);
+          expect(remaining).toEqual(refOrder.totalQuantity);
+          isSuccess = true;
+          ib.cancelOrder(orderId);
+          done();
         }
-      })
-      .on(EventName.info, (msg, code) => console.info("INFO", code, msg))
-      .on(EventName.disconnected, () => done());
+      });
+
+    ib.connect().on(EventName.error, (error, code, reqId) => {
+      if (reqId === ErrorCode.NO_VALID_ID) {
+        done(error.message);
+      } else {
+        const msg = `[${reqId}] ${error.message} (Error #${code})`;
+        if (
+          error.message.includes("Warning:") ||
+          error.message.includes("Order Message:")
+        ) {
+          logger.warn(msg);
+        } else {
+          ib.disconnect();
+          done(msg);
+        }
+      }
+    });
   });
 
   test("placeOrder with VolumeCondition", (done) => {
     let refId: number;
 
-    const refContract: Contract = sample_stock;
-    const refOrder: Order = {
-      orderType: OrderType.LMT,
-      action: OrderAction.BUY,
-      lmtPrice: 0.01,
-      totalQuantity: 1,
-      conditionsIgnoreRth: true,
-      conditionsCancelOrder: false,
-      conditions: [sample_volume_condition],
-      tif: TimeInForce.DAY,
-      transmit: true,
-    };
+    refOrder.conditions = [sample_volume_condition];
 
-    let isDone = false;
+    let isSuccess = false;
     ib.once(EventName.nextValidId, (orderId: number) => {
       refId = orderId;
-      ib.placeOrder(refId, refContract, refOrder).reqOpenOrders();
+      ib.reqOpenOrders().placeOrder(refId, refContract, refOrder);
     })
       .on(EventName.openOrder, (orderId, contract, order, _orderState) => {
-        if (orderId == refId && !isDone) {
-          isDone = true;
+        if (orderId == refId) {
           expect(contract.symbol).toEqual(refContract.symbol);
           expect(order.totalQuantity).toEqual(refOrder.totalQuantity);
-          done();
         }
       })
-      .on(
-        EventName.error,
-        (
-          error: Error,
-          code: ErrorCode,
-          reqId: number,
-          _advancedOrderReject?: unknown,
-        ) => {
-          if (reqId === -1) {
-            logger.info(error.message);
-          } else {
-            const msg = `[${reqId}] ${error.message} (Error #${code})`;
-            if (
-              error.message.includes("Warning:") ||
-              error.message.includes("Order Message:")
-            ) {
-              logger.warn(msg);
-            } else {
-              ib.disconnect();
-              done(msg);
-            }
-          }
-        },
-      );
+      .on(EventName.orderStatus, (orderId, _status, filled, remaining) => {
+        if (!isSuccess && orderId == refId) {
+          expect(filled).toEqual(0);
+          expect(remaining).toEqual(refOrder.totalQuantity);
+          isSuccess = true;
+          ib.cancelOrder(orderId);
+          done();
+        }
+      });
 
-    ib.connect();
+    ib.connect().on(EventName.error, (error, code, reqId) => {
+      if (reqId === ErrorCode.NO_VALID_ID) {
+        done(error.message);
+      } else {
+        const msg = `[${reqId}] ${error.message} (Error #${code})`;
+        if (
+          error.message.includes("Warning:") ||
+          error.message.includes("Order Message:")
+        ) {
+          logger.warn(msg);
+        } else {
+          ib.disconnect();
+          done(msg);
+        }
+      }
+    });
   });
 
   test("placeOrder with all conditions", (done) => {
     let refId: number;
 
-    const refContract: Contract = sample_stock;
-    const refOrder: Order = {
-      orderType: OrderType.LMT,
-      action: OrderAction.BUY,
-      lmtPrice: 0.01,
-      totalQuantity: 1,
-      conditionsIgnoreRth: true,
-      conditionsCancelOrder: false,
-      conditions: [
-        sample_price_condition,
-        sample_execution_condition,
-        sample_margin_condition,
-        sample_percent_condition,
-        sample_time_condition,
-        sample_volume_condition,
-      ],
-      tif: TimeInForce.DAY,
-      transmit: true,
-    };
+    refOrder.conditions = [
+      sample_price_condition,
+      sample_execution_condition,
+      sample_margin_condition,
+      sample_percent_condition,
+      sample_time_condition,
+      sample_volume_condition,
+    ];
 
-    let isDone = false;
+    let isSuccess = false;
     ib.once(EventName.nextValidId, (orderId: number) => {
       refId = orderId;
-      ib.placeOrder(refId, refContract, refOrder).reqOpenOrders();
+      ib.reqOpenOrders().placeOrder(refId, refContract, refOrder);
     })
       .on(EventName.openOrder, (orderId, contract, order, _orderState) => {
-        if (orderId == refId && !isDone) {
-          isDone = true;
+        if (orderId == refId) {
           expect(contract.symbol).toEqual(refContract.symbol);
           expect(order.totalQuantity).toEqual(refOrder.totalQuantity);
-          done();
         }
       })
-      .on(
-        EventName.error,
-        (
-          error: Error,
-          code: ErrorCode,
-          reqId: number,
-          _advancedOrderReject?: unknown,
-        ) => {
-          if (reqId === -1) {
-            logger.info(error.message);
-          } else {
-            const msg = `[${reqId}] ${error.message} (Error #${code})`;
-            if (
-              error.message.includes("Warning:") ||
-              error.message.includes("Order Message:")
-            ) {
-              logger.warn(msg);
-            } else {
-              ib.disconnect();
-              done(msg);
-            }
-          }
-        },
-      );
+      .on(EventName.orderStatus, (orderId, _status, filled, remaining) => {
+        if (!isSuccess && orderId == refId) {
+          expect(filled).toEqual(0);
+          expect(remaining).toEqual(refOrder.totalQuantity);
+          isSuccess = true;
+          ib.cancelOrder(orderId);
+          done();
+        }
+      });
 
-    ib.connect();
+    ib.connect().on(EventName.error, (error, code, reqId) => {
+      if (reqId === ErrorCode.NO_VALID_ID) {
+        done(error.message);
+      } else {
+        const msg = `[${reqId}] ${error.message} (Error #${code})`;
+        if (
+          error.message.includes("Warning:") ||
+          error.message.includes("Order Message:")
+        ) {
+          logger.warn(msg);
+        } else {
+          ib.disconnect();
+          done(msg);
+        }
+      }
+    });
   });
 });

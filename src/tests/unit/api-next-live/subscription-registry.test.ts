@@ -2,7 +2,7 @@ import { Subscription } from "rxjs";
 import { IBApiNext, IBApiNextError } from "../../..";
 
 describe("Subscription registry Tests", () => {
-  jest.setTimeout(20000);
+  jest.setTimeout(2_000);
 
   const clientId = Math.floor(Math.random() * 32766) + 1; // ensure unique client
 
