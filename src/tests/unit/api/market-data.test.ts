@@ -20,7 +20,7 @@ import {
 } from "../sample-data/contracts";
 
 describe("IBApi Market data Tests", () => {
-  jest.setTimeout(10_000);
+  jest.setTimeout(20_000); // reqMktData requires up te 11 secs to run
 
   let ib: IBApi;
   const clientId = Math.floor(Math.random() * 32766) + 1; // ensure unique client
