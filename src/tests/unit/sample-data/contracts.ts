@@ -18,7 +18,7 @@ export const sample_etf: Contract = new Stock("SPY");
 export const sample_bond: Contract = new Bond("US064159KJ44");
 export const sample_index: Contract = new Index("ES", "USD");
 export const sample_dax_index: Contract = new Index("DAX", "EUR", "EUREX");
-export const sample_crypto: Contract = new Crypto("ETH");
+export const sample_crypto: Contract = new Crypto("BTC");
 
 // This one will need to be updated sometimes
 export const sample_future: Contract = new Future(

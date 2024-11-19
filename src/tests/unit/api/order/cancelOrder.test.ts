@@ -193,7 +193,7 @@ describe("CancelOrder", () => {
     let isDone = false;
     ib.once(EventName.nextValidId, (orderId: number) => {
       refId = orderId;
-      ib.placeOrder(refId, contract, order);
+      ib.placeOrder(refId, contract, { ...order, goodAfterTime: undefined });
     })
       .on(EventName.orderStatus, (orderId, status) => {
         if (orderId === refId) {
