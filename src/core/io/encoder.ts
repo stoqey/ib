@@ -532,10 +532,10 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   /**
    * Encode a CANCEL_ORDER message to an array of tokens.
    */
-  cancelOrder(orderId: number, orderCancel?: OrderCancel): void {
+  cancelOrder(orderId: number, orderCancel: OrderCancel): void {
     if (
       this.serverVersion < MIN_SERVER_VER.MANUAL_ORDER_TIME &&
-      orderCancel?.manualOrderCancelTime.length
+      orderCancel.manualOrderCancelTime?.length
     ) {
       return this.emitError(
         "It does not support manual order cancel time attribute",
@@ -546,8 +546,8 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
 
     if (this.serverVersion < MIN_SERVER_VER.CME_TAGGING_FIELDS) {
       if (
-        (orderCancel?.extOperator && orderCancel?.extOperator != "") ||
-        orderCancel?.manualOrderIndicator
+        orderCancel.extOperator?.length ||
+        orderCancel.manualOrderIndicator != undefined
       ) {
         return this.emitError(
           "It does not support ext operator and manual order indicator parameters",
@@ -568,7 +568,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     tokens.push(orderId);
 
     if (this.serverVersion >= MIN_SERVER_VER.MANUAL_ORDER_TIME)
-      tokens.push(orderCancel?.manualOrderCancelTime);
+      tokens.push(orderCancel.manualOrderCancelTime);
 
     if (
       this.serverVersion >= MIN_SERVER_VER.RFQ_FIELDS &&
@@ -581,7 +581,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
 
     if (this.serverVersion >= MIN_SERVER_VER.CME_TAGGING_FIELDS) {
       tokens.push(orderCancel.extOperator);
-      tokens.push(orderCancel.manualOrderIndicator);
+      tokens.push(orderCancel.manualOrderIndicator ?? Integer_MAX_VALUE);
     }
 
     this.sendMsg(tokens);
@@ -2219,7 +2219,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   /**
    * Encode a REQ_GLOBAL_CANCEL message.
    */
-  reqGlobalCancel(orderCancel?: OrderCancel): void {
+  reqGlobalCancel(orderCancel: OrderCancel): void {
     if (this.serverVersion < MIN_SERVER_VER.REQ_GLOBAL_CANCEL) {
       return this.emitError(
         "It does not support globalCancel requests.",
@@ -2230,8 +2230,8 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
 
     if (this.serverVersion < MIN_SERVER_VER.CME_TAGGING_FIELDS) {
       if (
-        (orderCancel?.extOperator && orderCancel?.extOperator != "") ||
-        orderCancel?.manualOrderIndicator
+        orderCancel.extOperator?.length ||
+        orderCancel.manualOrderIndicator != undefined
       ) {
         return this.emitError(
           "It does not support ext operator and manual order indicator parameters",
@@ -2251,8 +2251,8 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     if (this.serverVersion >= MIN_SERVER_VER.CME_TAGGING_FIELDS) {
-      tokens.push(orderCancel?.extOperator);
-      tokens.push(orderCancel?.manualOrderIndicator);
+      tokens.push(orderCancel.extOperator);
+      tokens.push(orderCancel.manualOrderIndicator ?? Integer_MAX_VALUE);
     }
 
     this.sendMsg(tokens);

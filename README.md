@@ -13,7 +13,7 @@
 
 `@stoqey/ib` is an [Interactive Brokers](http://interactivebrokers.com/) TWS (or IB Gateway) Typescript API client library for [Node.js](http://nodejs.org/). It is a port of Interactive Brokers' Java Client Version 10.32.01 ("latest" relased on Oct 9, 2024).
 
-Refer to the [Trader Workstation API](https://interactivebrokers.github.io/tws-api/) for the official documentation and the C#/Java/VB/C++/Python client.
+Refer to [IBKRCampus](https://ibkrcampus.com/campus/ibkr-api-page/twsapi-doc/) for the official documentation and the C#/Java/VB/C++/Python client.
 
 The module makes a socket connection to TWS (or IB Gateway) using the [net](http://nodejs.org/api/net.html) module and all messages are entirely processed in Typescript. It uses [EventEmitter](http://nodejs.org/api/events.html) to pass the result back to user.
 

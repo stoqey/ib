@@ -1,16 +1,7 @@
 /**
  * This file implement test code for the placeOrder function .
  */
-import {
-  Contract,
-  ErrorCode,
-  EventName,
-  IBApi,
-  Order,
-  OrderAction,
-  OrderType,
-  TimeInForce,
-} from "../../../..";
+import { Contract, ErrorCode, EventName, IBApi, Order } from "../../../..";
 import configuration from "../../../../common/configuration";
 import logger from "../../../../common/logger";
 import {
@@ -19,6 +10,7 @@ import {
   sample_option,
   sample_stock,
 } from "../../sample-data/contracts";
+import { sample_order } from "../../sample-data/orders";
 
 describe("Place Orders", () => {
   jest.setTimeout(20 * 1000);
@@ -45,239 +37,186 @@ describe("Place Orders", () => {
     let refId: number;
 
     const refContract: Contract = sample_stock;
-    const refOrder: Order = {
-      orderType: OrderType.LMT,
-      action: OrderAction.BUY,
-      lmtPrice: 1,
-      orderId: refId,
-      totalQuantity: 2,
-      tif: TimeInForce.DAY,
-      transmit: true,
-    };
+    const refOrder: Order = sample_order;
 
-    let isDone = false;
+    let isSuccess = false;
     ib.once(EventName.nextValidId, (orderId: number) => {
       refId = orderId;
-      ib.placeOrder(refId, refContract, refOrder);
+      ib.reqOpenOrders().placeOrder(refId, refContract, refOrder);
     })
       .on(EventName.openOrder, (orderId, contract, order, _orderState) => {
-        if (orderId == refId && !isDone) {
-          isDone = true;
+        if (orderId == refId) {
           expect(contract.symbol).toEqual(refContract.symbol);
           expect(order.totalQuantity).toEqual(refOrder.totalQuantity);
-          done();
         }
       })
-      .on(
-        EventName.error,
-        (
-          error: Error,
-          code: ErrorCode,
-          reqId: number,
-          _advancedOrderReject?: unknown,
-        ) => {
-          if (reqId === -1) {
-            logger.info(error.message);
-          } else {
-            const msg = `[${reqId}] ${error.message} (Error #${code})`;
-            if (
-              error.message.includes("Warning:") ||
-              error.message.includes("Order Message:")
-            ) {
-              logger.warn(msg);
-            } else if (code == ErrorCode.NO_TRADING_PERMISSIONS) {
-              // Ignore this error for tests
-              logger.warn(msg);
-              done();
-            } else {
-              ib.disconnect();
-              done(msg);
-            }
-          }
-        },
-      );
+      .on(EventName.orderStatus, (orderId, _status, filled, remaining) => {
+        if (!isSuccess && orderId == refId) {
+          expect(filled).toEqual(0);
+          expect(remaining).toEqual(refOrder.totalQuantity);
+          isSuccess = true;
+          ib.cancelOrder(orderId);
+          done();
+        }
+      });
 
-    ib.connect().reqOpenOrders();
+    ib.connect().on(EventName.error, (error, code, reqId) => {
+      if (reqId === ErrorCode.NO_VALID_ID) {
+        done(error.message);
+      } else {
+        const msg = `[${reqId}] ${error.message} (Error #${code})`;
+        if (
+          error.message.includes("Warning:") ||
+          error.message.includes("Order Message:")
+        ) {
+          logger.warn(msg);
+        } else {
+          ib.disconnect();
+          done(msg);
+        }
+      }
+    });
   });
 
   test("What if Order", (done) => {
     let refId: number;
 
     const refContract: Contract = sample_etf;
+    // const refOrder: Order = {
+    //   orderType: OrderType.LMT,
+    //   action: OrderAction.BUY,
+    //   lmtPrice: 1,
+    //   orderId: refId,
+    //   totalQuantity: 2,
+    //   tif: TimeInForce.DAY,
+    //   transmit: true,
+    //   whatIf: true,
+    // };
     const refOrder: Order = {
-      orderType: OrderType.LMT,
-      action: OrderAction.BUY,
-      lmtPrice: 1,
-      orderId: refId,
-      totalQuantity: 2,
-      tif: TimeInForce.DAY,
-      transmit: true,
+      ...sample_order,
+      goodAfterTime: undefined,
       whatIf: true,
     };
 
-    let isDone = false;
     ib.once(EventName.nextValidId, (orderId: number) => {
       refId = orderId;
-      ib.placeOrder(refId, refContract, refOrder);
-    })
-      .on(EventName.openOrder, (orderId, contract, order, orderState) => {
-        if (orderId == refId && !isDone) {
-          expect(contract.symbol).toEqual(refContract.symbol);
-          expect(order.totalQuantity).toEqual(refOrder.totalQuantity);
-          if (orderState.minCommission || orderState.maxCommission) {
-            expect(orderState.commissionCurrency).toEqual(refContract.currency);
-            isDone = true;
-            done();
-          }
+      ib.reqOpenOrders().placeOrder(refId, refContract, refOrder);
+    }).on(EventName.openOrder, (orderId, contract, order, orderState) => {
+      if (orderId == refId) {
+        expect(contract.symbol).toEqual(refContract.symbol);
+        expect(order.totalQuantity).toEqual(refOrder.totalQuantity);
+        if (orderState.minCommission || orderState.maxCommission) {
+          expect(orderState.commissionCurrency).toEqual(refContract.currency);
+          done();
         }
-      })
-      .on(
-        EventName.error,
-        (
-          error: Error,
-          code: ErrorCode,
-          reqId: number,
-          _advancedOrderReject?: unknown,
-        ) => {
-          if (reqId === -1) {
-            logger.info(error.message);
-          } else {
-            const msg = `[${reqId}] ${error.message} (Error #${code})`;
-            if (
-              error.message.includes("Warning:") ||
-              error.message.includes("Order Message:")
-            ) {
-              logger.warn(msg);
-            } else if (code == ErrorCode.NO_TRADING_PERMISSIONS) {
-              // Ignore this error for tests
-              logger.warn(msg);
-              done();
-            } else {
-              ib.disconnect();
-              done(msg);
-            }
-          }
-        },
-      );
+      }
+    });
 
-    ib.connect().reqOpenOrders();
+    ib.connect().on(EventName.error, (error, code, reqId) => {
+      if (reqId === ErrorCode.NO_VALID_ID) {
+        done(error.message);
+      } else {
+        const msg = `[${reqId}] ${error.message} (Error #${code})`;
+        if (
+          error.message.includes("Warning:") ||
+          error.message.includes("Order Message:")
+        ) {
+          logger.warn(msg);
+        } else {
+          ib.disconnect();
+          done(msg);
+        }
+      }
+    });
   });
 
   test("Crypto placeOrder", (done) => {
     let refId: number;
 
     const refContract: Contract = sample_crypto;
-    const refOrder: Order = {
-      orderType: OrderType.LMT,
-      action: OrderAction.BUY,
-      lmtPrice: 1,
-      orderId: refId,
-      totalQuantity: 2,
-      tif: TimeInForce.DAY,
-      transmit: true,
-    };
+    const refOrder: Order = sample_order;
 
-    let isDone = false;
+    let isSuccess = false;
     ib.once(EventName.nextValidId, (orderId: number) => {
       refId = orderId;
-      ib.placeOrder(refId, refContract, refOrder);
+      ib.reqOpenOrders().placeOrder(refId, refContract, refOrder);
     })
       .on(EventName.openOrder, (orderId, contract, order, _orderState) => {
-        if (orderId == refId && !isDone) {
-          isDone = true;
+        if (orderId == refId) {
           expect(contract.symbol).toEqual(refContract.symbol);
           expect(order.totalQuantity).toEqual(refOrder.totalQuantity);
-          done();
         }
       })
-      .on(
-        EventName.error,
-        (
-          error: Error,
-          code: ErrorCode,
-          reqId: number,
-          _advancedOrderReject?: unknown,
-        ) => {
-          if (reqId === -1) {
-            logger.info(error.message);
-          } else {
-            const msg = `[${reqId}] ${error.message} (Error #${code})`;
-            if (
-              error.message.includes("Warning:") ||
-              error.message.includes("Order Message:")
-            ) {
-              logger.warn(msg);
-            } else if (code == ErrorCode.NO_TRADING_PERMISSIONS) {
-              // Ignore this error for tests
-              logger.warn(msg);
-              done();
-            } else {
-              ib.disconnect();
-              done(msg);
-            }
-          }
-        },
-      );
+      .on(EventName.orderStatus, (orderId, _status, filled, remaining) => {
+        if (!isSuccess && orderId == refId) {
+          expect(filled).toEqual(0);
+          expect(remaining).toEqual(refOrder.totalQuantity);
+          isSuccess = true;
+          ib.cancelOrder(orderId);
+          done();
+        }
+      });
 
-    ib.connect().reqOpenOrders();
+    ib.connect().on(EventName.error, (error, code, reqId) => {
+      if (reqId === ErrorCode.NO_VALID_ID) {
+        done(error.message);
+      } else {
+        const msg = `[${reqId}] ${error.message} (Error #${code})`;
+        if (
+          error.message.includes("Warning:") ||
+          error.message.includes("Order Message:")
+        ) {
+          logger.warn(msg);
+        } else {
+          ib.disconnect();
+          done(msg);
+        }
+      }
+    });
   });
 
   test("Option placeOrder", (done) => {
     let refId: number;
 
     const refContract: Contract = sample_option;
-    const refOrder: Order = {
-      orderType: OrderType.LMT,
-      action: OrderAction.BUY,
-      lmtPrice: 1,
-      orderId: refId,
-      totalQuantity: 2,
-      tif: TimeInForce.DAY,
-      transmit: true,
-    };
+    const refOrder: Order = sample_order;
 
-    let isDone = false;
+    let isSuccess = false;
     ib.once(EventName.nextValidId, (orderId: number) => {
       refId = orderId;
-      ib.placeOrder(refId, refContract, refOrder);
+      ib.reqOpenOrders().placeOrder(refId, refContract, refOrder);
     })
       .on(EventName.openOrder, (orderId, contract, order, _orderState) => {
-        if (orderId == refId && !isDone) {
-          isDone = true;
+        if (orderId == refId) {
           expect(contract.symbol).toEqual(refContract.symbol);
           expect(order.totalQuantity).toEqual(refOrder.totalQuantity);
-          done();
         }
       })
-      .on(
-        EventName.error,
-        (
-          error: Error,
-          code: ErrorCode,
-          reqId: number,
-          _advancedOrderReject?: unknown,
-        ) => {
-          if (reqId === -1) {
-            logger.info(error.message);
-          } else {
-            const msg = `[${reqId}] ${error.message} (Error #${code})`;
-            if (
-              error.message.includes("Warning:") ||
-              error.message.includes("Order Message:")
-            ) {
-              logger.warn(msg);
-            } else if (code == ErrorCode.NO_TRADING_PERMISSIONS) {
-              // Ignore this error for tests
-              logger.warn(msg);
-              done();
-            } else {
-              ib.disconnect();
-              done(msg);
-            }
-          }
-        },
-      );
+      .on(EventName.orderStatus, (orderId, _status, filled, remaining) => {
+        if (!isSuccess && orderId == refId) {
+          expect(filled).toEqual(0);
+          expect(remaining).toEqual(refOrder.totalQuantity);
+          isSuccess = true;
+          ib.cancelOrder(orderId);
+          done();
+        }
+      });
 
-    ib.connect().reqOpenOrders();
+    ib.connect().on(EventName.error, (error, code, reqId) => {
+      if (reqId === ErrorCode.NO_VALID_ID) {
+        done(error.message);
+      } else {
+        const msg = `[${reqId}] ${error.message} (Error #${code})`;
+        if (
+          error.message.includes("Warning:") ||
+          error.message.includes("Order Message:")
+        ) {
+          logger.warn(msg);
+        } else {
+          ib.disconnect();
+          done(msg);
+        }
+      }
+    });
   });
 });
