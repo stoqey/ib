@@ -25,6 +25,7 @@ import {
   OrderBookUpdate,
   OrderCancel,
   OrderState,
+  PriceIncrement,
   ScannerSubscription,
   SecType,
   TagValue,
@@ -32,6 +33,7 @@ import {
 } from "../";
 import LogLevel from "../api/data/enum/log-level";
 import OrderStatus from "../api/order/enum/order-status";
+import { isNonFatalError } from "../common/errorCode";
 import {
   MutableAccountSummaries,
   MutableAccountSummaryTagValues,
@@ -76,13 +78,6 @@ import {
 /**
  * @internal
  *
- * An invalid request id.
- */
-const INVALID_REQ_ID = -1;
-
-/**
- * @internal
- *
  * Log tag used on messages created by IBApiNext.
  */
 const LOG_TAG = "IBApiNext";
@@ -93,6 +88,19 @@ const LOG_TAG = "IBApiNext";
  * Log tag used on messages that have been received from TWS / IB Gateway.
  */
 const TWS_LOG_TAG = "TWS";
+
+function filterMap(
+  map: Map<number, any>, // eslint-disable-line @typescript-eslint/no-explicit-any
+  pred: (k: number, v: any) => boolean, // eslint-disable-line @typescript-eslint/no-explicit-any
+) {
+  const result = new Map();
+  for (const [k, v] of map) {
+    if (pred(k, v)) {
+      result.set(k, v);
+    }
+  }
+  return result;
+}
 
 /**
  * Input arguments on the [[IBApiNext]] constructor.
@@ -205,22 +213,9 @@ export class IBApiNext {
           reqId,
           advancedOrderReject,
         };
-        // handle warnings - they are also reported on TWS error callback, but we DO NOT want to emit
-        // it as error into the subject (and cancel the subscription).
-        if (
-          (code >= 2100 && code < 3000) ||
-          code === ErrorCode.PART_OF_REQUESTED_DATA_NOT_SUBSCRIBED ||
-          code === ErrorCode.DISPLAYING_DELAYED_DATA
-        ) {
-          this.logger.warn(
-            TWS_LOG_TAG,
-            `${error.message} - Code: ${code} - ReqId: ${reqId}`,
-          );
-          return;
-        }
         // emit to the subscription subject
-        if (reqId !== INVALID_REQ_ID) {
-          this.subscriptions.dispatchError(reqId, apiError);
+        if (reqId !== ErrorCode.NO_VALID_ID && !isNonFatalError(code, error)) {
+          this.subscriptions.dispatchError(apiError);
         }
         // emit to global error subject
         this.errorSubject.next(apiError);
@@ -353,7 +348,7 @@ export class IBApiNext {
           },
           undefined,
           [[EventName.currentTime, this.onCurrentTime]],
-          "getCurrentTime", // use same instance id each time, to make sure there is only 1 pending request at time
+          "getCurrentTime", // Use the same instance ID each time to ensure there is only one pending request at a time.
         )
         .pipe(map((v: { all: number }) => v.all)),
       {
@@ -386,7 +381,7 @@ export class IBApiNext {
           },
           undefined,
           [[EventName.managedAccounts, this.onManagedAccts]],
-          "getManagedAccounts", // use same instance id each time, to make sure there is only 1 pending request at time
+          "getManagedAccounts", // Use the same instance ID each time to ensure there is only one pending request at a time.
         )
         .pipe(map((v: { all: string[] }) => v.all)),
       {
@@ -534,7 +529,7 @@ export class IBApiNext {
         [EventName.accountSummary, this.onAccountSummary],
         [EventName.accountSummaryEnd, this.onAccountSummaryEnd],
       ],
-      `${group}:${tags}`,
+      `getAccountSummary+${group}:${tags}`, // Use the same instance ID each time to ensure there is only one pending request at a time.
     );
   }
 
@@ -548,6 +543,8 @@ export class IBApiNext {
    * @param currency the currency of the value.
    *
    * @see [[reqAccountUpdates]]
+   *
+   * @todo Filter subscriptions notifications in callbacks using instanceId to finish this implementation
    */
   private readonly onUpdateAccountValue = (
     subscriptions: Map<number, IBApiNextSubscription<AccountUpdate>>,
@@ -556,11 +553,12 @@ export class IBApiNext {
     currency: string,
     account: string,
   ): void => {
-    this.logger.debug(
-      LOG_TAG,
-      `onUpdateAccountValue(${tag}, ${value}, ${currency}, ${account})`,
-    );
-    subscriptions.forEach((subscription) => {
+    filterMap(
+      subscriptions,
+      (_k: number, v: IBApiNextSubscription<PriceIncrement[]>) =>
+        v.instanceId === "getAccountUpdates" ||
+        v.instanceId === `getAccountUpdates+${account}`,
+    ).forEach((subscription) => {
       // update latest value on cache
       const all: AccountUpdate = subscription.lastAllValue ?? {};
       const cached = all?.value ?? new MutableAccountSummaries();
@@ -617,6 +615,8 @@ export class IBApiNext {
    * @param account The IBKR account Id.
    *
    * @see [[reqAccountUpdates]]
+   *
+   * @todo Filter subscriptions notifications in callbacks using instanceId to finish this implementation
    */
   private readonly onUpdatePortfolio = (
     subscriptions: Map<number, IBApiNextSubscription<AccountUpdate>>,
@@ -629,10 +629,6 @@ export class IBApiNext {
     realizedPNL: number,
     account: string,
   ): void => {
-    this.logger.debug(
-      LOG_TAG,
-      `onUpdatePortfolio(${contract.symbol}, ${pos}, ${marketPrice}, ${marketValue}, ${avgCost}, ${unrealizedPNL}, ${realizedPNL}, ${account})`,
-    );
     const updatedPosition: Position = {
       account,
       contract,
@@ -644,7 +640,12 @@ export class IBApiNext {
       realizedPNL,
     };
     // notify all subscribers
-    subscriptions.forEach((subscription) => {
+    filterMap(
+      subscriptions,
+      (_k: number, v: IBApiNextSubscription<PriceIncrement[]>) =>
+        v.instanceId === "getAccountUpdates" ||
+        v.instanceId === `getAccountUpdates+${account}`,
+    ).forEach((subscription) => {
       // update latest value on cache
 
       let hasAdded = false;
@@ -714,7 +715,6 @@ export class IBApiNext {
     subscriptions: Map<number, IBApiNextSubscription<AccountUpdate>>,
     timeStamp: string,
   ): void => {
-    this.logger.debug(LOG_TAG, `onUpdateAccountTime(${timeStamp})`);
     subscriptions.forEach((sub) => {
       const changed: AccountUpdate = { timestamp: timeStamp };
       const all: AccountUpdate = sub.lastAllValue ?? {};
@@ -733,14 +733,20 @@ export class IBApiNext {
    * @param accountName the account name
    *
    * @see [[reqAccountUpdates]]
+   *
+   * @todo Filter subscriptions notifications in callbacks using instanceId to finish this implementation
    */
   private readonly onAccountDownloadEnd = (
     subscriptions: Map<number, IBApiNextSubscription<AccountUpdate>>,
     accountName: string,
   ): void => {
-    this.logger.debug(LOG_TAG, `onAccountDownloadEnd(${accountName})`);
     // notify all subscribers
-    subscriptions.forEach((subscription) => {
+    filterMap(
+      subscriptions,
+      (_k: number, v: IBApiNextSubscription<PriceIncrement[]>) =>
+        v.instanceId === "getAccountUpdates" ||
+        v.instanceId === `getAccountUpdates+${accountName}`,
+    ).forEach((subscription) => {
       const all: AccountUpdate = subscription.lastAllValue ?? {};
       subscription.endEventReceived = true;
       subscription.next({ all });
@@ -756,9 +762,10 @@ export class IBApiNext {
    * @param acctCode the specific account to retrieve.
    *
    * @see [[reqAccountUpdates]], [[reqGlobalCancel]]
+   *
+   * @todo Filter subscriptions notifications in callbacks using instanceId to finish this implementation
    */
   getAccountUpdates(acctCode?: string): Observable<AccountUpdatesUpdate> {
-    this.logger.debug(LOG_TAG, `getAccountUpdates(${acctCode})`);
     return this.subscriptions.register<AccountUpdate>(
       () => {
         this.api.reqAccountUpdates(true, acctCode);
@@ -769,10 +776,10 @@ export class IBApiNext {
       [
         [EventName.updateAccountValue, this.onUpdateAccountValue],
         [EventName.updatePortfolio, this.onUpdatePortfolio],
-        [EventName.updateAccountTime, this.onUpdateAccountTime],
         [EventName.accountDownloadEnd, this.onAccountDownloadEnd],
+        [EventName.updateAccountTime, this.onUpdateAccountTime],
       ],
-      acctCode ? `getAccountUpdates+${acctCode}` : "getAccountUpdates", // use same instance id each time, to make sure there is only 1 pending request at time
+      acctCode ? `getAccountUpdates+${acctCode}` : "getAccountUpdates", // Use the same instance ID each time to ensure there is only one pending request at a time.
     );
   }
 
@@ -864,7 +871,7 @@ export class IBApiNext {
         [EventName.position, this.onPosition],
         [EventName.positionEnd, this.onPositionEnd],
       ],
-      "getPositions",
+      "getPositions", // Use the same instance ID each time to ensure there is only one pending request at a time.
     );
   }
 
@@ -1071,7 +1078,7 @@ export class IBApiNext {
           this.api.cancelPnL(reqId);
         },
         [[EventName.pnl, this.onPnL]],
-        `${account}:${modelCode}`,
+        `getPnl+${account}:${modelCode}`, // Use the same instance ID each time to ensure there is only one pending request at a time.
       )
       .pipe(map((v: { all: PnL }) => v.all));
   }
@@ -1127,7 +1134,7 @@ export class IBApiNext {
           this.api.cancelPnLSingle(reqId);
         },
         [[EventName.pnlSingle, this.onPnLSingle]],
-        `${account}:${modelCode}:${conId}`,
+        `getPnLSingle+${account}:${modelCode}:${conId}`, // Use the same instance ID each time to ensure there is only one pending request at a time.
       )
       .pipe(map((v: { all: PnLSingle }) => v.all));
   }
@@ -1551,9 +1558,9 @@ export class IBApiNext {
         [EventName.tickOptionComputation, this.onTickOptionComputation],
         [EventName.tickSnapshotEnd, this.onTickSnapshotEnd],
       ],
-      snapshot || regulatorySnapshot
-        ? undefined
-        : `${JSON.stringify(contract)}:${genericTickList}`,
+      `getMarketData+${JSON.stringify(
+        contract,
+      )}:${genericTickList}:${snapshot}:${regulatorySnapshot}`, // Use the same instance ID each time to ensure there is only one pending request at a time.
     );
   }
 
@@ -1640,7 +1647,9 @@ export class IBApiNext {
             this.api.cancelHeadTimestamp(reqId);
           },
           [[EventName.headTimestamp, this.onHeadTimestamp]],
-          `${JSON.stringify(contract)}:${whatToShow}:${useRTH}:${formatDate}`,
+          `getHeadTimestamp+${JSON.stringify(
+            contract,
+          )}:${whatToShow}:${useRTH}:${formatDate}`, // Use the same instance ID each time to ensure there is only one pending request at a time.
         )
         .pipe(map((v: { all: string }) => v.all)),
       {
@@ -1779,7 +1788,6 @@ export class IBApiNext {
           },
           undefined,
           [[EventName.historicalData, this.onHistoricalData]],
-          undefined,
         )
         .pipe(map((v: { all: Bar[] }) => v.all)),
       {
@@ -1885,7 +1893,7 @@ export class IBApiNext {
         [[EventName.historicalDataUpdate, this.onHistoricalDataUpdate]],
         `${JSON.stringify(
           contract,
-        )}:${barSizeSetting}:${whatToShow}:${formatDate}`,
+        )}:${barSizeSetting}:${whatToShow}:${formatDate}`, // Use the same instance ID each time to ensure there is only one pending request at a time.
       )
       .pipe(map((v: { all: Bar }) => v.all));
   }
@@ -1953,7 +1961,6 @@ export class IBApiNext {
         },
         undefined,
         [[EventName.historicalTicks, this.onHistoricalTicks]],
-        undefined,
       )
       .pipe(map((v: { all: HistoricalTick[] }) => v.all));
   }
@@ -2023,7 +2030,6 @@ export class IBApiNext {
         },
         undefined,
         [[EventName.historicalTicksBidAsk, this.onHistoricalTicksBidAsk]],
-        undefined,
       )
       .pipe(map((v: { all: HistoricalTickBidAsk[] }) => v.all));
   }
@@ -2089,7 +2095,6 @@ export class IBApiNext {
         },
         undefined,
         [[EventName.historicalTicksLast, this.onHistoricalTicksLast]],
-        undefined,
       )
       .pipe(map((v: { all: HistoricalTickLast[] }) => v.all));
   }
@@ -2122,7 +2127,7 @@ export class IBApiNext {
           },
           undefined,
           [[EventName.mktDepthExchanges, this.onMktDepthExchanges]],
-          "getMarketDepthExchanges", // use same instance id each time, to make sure there is only 1 pending request at time
+          "getMarketDepthExchanges", // Use the same instance ID each time to ensure there is only one pending request at a time.
         )
         .pipe(map((v: { all: DepthMktDataDescription[] }) => v.all)),
       {
@@ -2339,7 +2344,7 @@ export class IBApiNext {
       ],
       `${JSON.stringify(
         contract,
-      )}:${numRows}:${isSmartDepth}:${mktDepthOptions}`,
+      )}:${numRows}:${isSmartDepth}:${mktDepthOptions}`, // Use the same instance ID each time to ensure there is only one pending request at a time.
     );
   }
 
@@ -2365,7 +2370,7 @@ export class IBApiNext {
           },
           undefined,
           [[EventName.scannerParameters, this.onScannerParameters]],
-          "getScannerParameters", // use same instance id each time, to make sure there is only 1 pending request at time
+          "getScannerParameters", // Use the same instance ID each time to ensure there is only one pending request at a time.
         )
         .pipe(map((v: { all: string }) => v.all)),
       {
@@ -2486,7 +2491,6 @@ export class IBApiNext {
         [EventName.scannerData, this.onScannerData],
         [EventName.scannerDataEnd, this.onScannerDataEnd],
       ],
-      `getMarketScanner-${JSON.stringify(scannerSubscription)}`,
     );
   }
 
@@ -2537,7 +2541,9 @@ export class IBApiNext {
             this.api.cancelHistogramData(reqId);
           },
           [[EventName.histogramData, this.onHistogramData]],
-          `${JSON.stringify(contract)}:${useRTH}:${duration}:${durationUnit}`,
+          `getHistogramData+${JSON.stringify(
+            contract,
+          )}:${useRTH}:${duration}:${durationUnit}`, // Use the same instance ID each time to ensure there is only one pending request at a time.
         )
         .pipe(map((v: { all: HistogramEntry[] }) => v.all)),
       {
@@ -2754,7 +2760,7 @@ export class IBApiNext {
             [EventName.orderBound, this.onOrderBound],
             [EventName.openOrderEnd, this.onOpenOrderComplete],
           ],
-          "getAllOpenOrders", // use same instance id each time, to make sure there is only 1 pending request at time
+          "getAllOpenOrders", // Use the same instance ID each time to ensure there is only one pending request at a time.
         )
         .pipe(map((v: { all: OpenOrder[] }) => v.all)),
       {
@@ -2779,7 +2785,7 @@ export class IBApiNext {
         [EventName.orderBound, this.onOrderBound],
         [EventName.openOrderEnd, this.onOpenOrderEnd],
       ],
-      "getOpenOrders", // use same instance id each time, to make sure there is only 1 pending request at time
+      "getOpenOrders", // Use the same instance ID each time to ensure there is only one pending request at a time.
     );
   }
 
@@ -2803,7 +2809,7 @@ export class IBApiNext {
         [EventName.orderBound, this.onOrderBound],
         [EventName.openOrderEnd, this.onOpenOrderEnd],
       ],
-      "getAutoOpenOrders", // use same instance id each time, to make sure there is only 1 pending request at time
+      "getAutoOpenOrders", // Use the same instance ID each time to ensure there is only one pending request at a time.
     );
   }
 
@@ -2986,7 +2992,7 @@ export class IBApiNext {
   }
 
   /**
-   * Get commication reports details of all executed trades.
+   * Get commissions reports details of all executed trades.
    * @param filter  filter trade data on [[ExecutionFilter]]
    */
   getCommissionReport(filter: ExecutionFilter): Promise<CommissionReport[]> {
@@ -2998,8 +3004,8 @@ export class IBApiNext {
           },
           undefined,
           [
-            [EventName.execDetailsEnd, this.onExecDetailsEnd],
             [EventName.commissionReport, this.onComissionReport],
+            [EventName.execDetailsEnd, this.onExecDetailsEnd],
           ],
         )
         .pipe(map((v: { all: CommissionReport[] }) => v.all)),
@@ -3070,9 +3076,52 @@ export class IBApiNext {
           },
           undefined,
           [[EventName.userInfo, this.onUserInfo]],
-          "getUserInfo", // use same instance id each time, to make sure there is only 1 pending request at time
+          "getUserInfo",
         )
         .pipe(map((v: { all: string }) => v.all)),
+      {
+        defaultValue: undefined,
+      },
+    );
+  }
+
+  /** marketRule event handler. */
+  private readonly onMarketRule = (
+    subscriptions: Map<number, IBApiNextSubscription<PriceIncrement[]>>,
+    marketRuleId: number,
+    priceIncrements: PriceIncrement[],
+  ): void => {
+    filterMap(
+      subscriptions,
+      (_k: number, v: IBApiNextSubscription<PriceIncrement[]>) =>
+        v.instanceId === `getMarketRule+${marketRuleId}`,
+    ).forEach((sub) => {
+      sub.next({ all: priceIncrements });
+      sub.complete();
+    });
+  };
+
+  /**
+   * Get details about a given market rule.
+   * The market rule for an instrument on a particular exchange provides details about how the minimum price increment
+   * changes with price. A list of market rule ids can be obtained by invoking reqContractDetails on a particular
+   * contract. The returned market rule ID list will provide the market rule ID for the instrument in the correspond
+   * valid exchange list in contractDetails.
+   *
+   * @param marketRuleId The id of market rule.
+   */
+  getMarketRule(marketRuleId: number): Promise<PriceIncrement[]> {
+    return lastValueFrom(
+      this.subscriptions
+        .register<PriceIncrement[]>(
+          () => {
+            this.api.reqMarketRule(marketRuleId);
+          },
+          undefined,
+          [[EventName.marketRule, this.onMarketRule]],
+          `getMarketRule+${marketRuleId}`,
+        )
+        .pipe(map((v: { all: PriceIncrement[] }) => v.all)),
       {
         defaultValue: undefined,
       },

@@ -2,7 +2,7 @@
  * This file implements tests for the [[IBApiNext.getCurrentTime]] function.
  */
 
-import { IBApi, IBApiNext, IBApiNextError, EventName } from "../../..";
+import { EventName, IBApi, IBApiNext, IBApiNextError } from "../../..";
 
 describe("RxJS Wrapper: getNextValidOrderId()", () => {
   test("Promise result", (done) => {
@@ -13,7 +13,7 @@ describe("RxJS Wrapper: getNextValidOrderId()", () => {
 
     // emit a EventName.nextValidId and verify RxJS result
 
-    const testValue = Math.random();
+    const testValue = Math.ceil(Math.random() * 10_000);
 
     apiNext
       .getNextValidOrderId()

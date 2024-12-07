@@ -219,15 +219,14 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
   emitError(
     errMsg: string,
     code: number,
-    reqId: number,
+    reqId?: number,
     advancedOrderReject?: unknown,
   ): void {
-    // if (advancedOrderReject) errMsg += ", advancedOrderReject: " + JSON.stringify(advancedOrderReject);
     this.emitEvent(
       EventName.error,
       new Error(errMsg),
       code,
-      reqId,
+      reqId ?? ErrorCode.NO_VALID_ID,
       advancedOrderReject,
     );
   }
@@ -254,10 +253,9 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
     if (!this.socket.connected) {
       this.socket.connect(clientId);
     } else {
-      this.emitError(
+      this.emitInfo(
         "Cannot connect if already connected.",
-        ErrorCode.CONNECT_FAIL,
-        -1,
+        ErrorCode.ALREADY_CONNECTED,
       );
     }
   }
@@ -292,7 +290,7 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
       this.emitError(
         "Cannot send data when disconnected.",
         ErrorCode.NOT_CONNECTED,
-        -1,
+        ErrorCode.NO_VALID_ID,
       );
     }
   }

@@ -1,8 +1,8 @@
 /**
  * [[IBApi]] error event codes.
  */
-/* eslint-disable @typescript-eslint/no-duplicate-enum-values */
 
+/* eslint-disable @typescript-eslint/no-duplicate-enum-values */
 export enum ErrorCode {
   /** No request id associated to this error */
   NO_VALID_ID = -1,
@@ -10,17 +10,20 @@ export enum ErrorCode {
   /** Order Canceled - reason: */
   ORDER_CANCELLED = 202,
 
-  /** ou must subscribe for additional permissions to obtain precise results for scanner.Parameter:Most Active,Filter:Price;Real-Time Market Data:Pink Sheets */
-  SCANNER_LOW_PRECISION = 492,
+  /** Order Message: BUY 1 SPY ARCA Warning: your order will not be placed at the exchange until 2024-12-02 04:00:00 US/Eastern (#399) */
+  ORDER_MESSAGE = 399,
 
-  /** Already connected. */
-  ALREADY_CONNECTED = 501,
+  /** You must subscribe for additional permissions to obtain precise results for scanner.Parameter:Most Active,Filter:Price;Real-Time Market Data:Pink Sheets */
+  SCANNER_LOW_PRECISION = 492,
 
   /** Requested market data is not subscribed. Delayed market data is not available. */
   REQ_MKT_DATA_NOT_AVAIL = 354,
 
   /** No trading permissions. */
   NO_TRADING_PERMISSIONS = 460,
+
+  /** Already connected. */
+  ALREADY_CONNECTED = 501,
 
   /**
    * Couldn't connect to TWS.
@@ -301,3 +304,20 @@ export enum ErrorCode {
   /* News feed is not allowed. */
   NEWS_FEED_NOT_ALLOWED = 10276,
 }
+
+/**
+ * Check if an error message is fatal (to the request execution) or only a warning/information message
+ */
+export const isNonFatalError = (code: ErrorCode, error: Error): boolean => {
+  if (code >= 2100 && code < 3000) return true;
+  if (error.message.includes("Warning:")) return true;
+  switch (code) {
+    case ErrorCode.PART_OF_REQUESTED_DATA_NOT_SUBSCRIBED:
+    case ErrorCode.DISPLAYING_DELAYED_DATA:
+    case ErrorCode.ORDER_MESSAGE:
+    case ErrorCode.SCANNER_LOW_PRECISION:
+      return true;
+    default:
+      return false;
+  }
+};

@@ -87,7 +87,7 @@ export class IBApiNextSubscription<T> {
    */
   error(error: IBApiNextError): void {
     delete this._lastAllValue;
-    this.endEventReceived = false;
+    // this.endEventReceived = false;
     this.hasError = true;
     this.subject.error(error);
     this.cancelTwsSubscription();
@@ -124,17 +124,17 @@ export class IBApiNextSubscription<T> {
 
       // request from TWS if first subscriber
 
-      if (this.observersCount === 0) {
+      if (this.observersCount++ === 0) {
         this.requestTwsSubscription();
       }
-      this.observersCount++;
+      // this.observersCount++; moved into "if" condition above
 
       // handle unsubscribe
 
       return (): void => {
         subscription$.unsubscribe();
-        this.observersCount--;
-        if (this.observersCount <= 0) {
+        // this.observersCount--; moved into "if" condition below
+        if (--this.observersCount <= 0) {
           this.cancelTwsSubscription();
           this.cleanupFunction();
         }

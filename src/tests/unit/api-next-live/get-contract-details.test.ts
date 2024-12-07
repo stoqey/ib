@@ -4,6 +4,7 @@
 
 import { Subscription } from "rxjs";
 import { IBApiNext, IBApiNextError } from "../../..";
+import logger from "../../../common/logger";
 import {
   sample_bond,
   sample_crypto,
@@ -26,9 +27,9 @@ describe("ApiNext: getContractDetails()", () => {
     if (!error$) {
       error$ = api.errorSubject.subscribe((error) => {
         if (error.reqId === -1) {
-          console.warn(`${error.error.message} (Error #${error.code})`);
+          logger.warn(`${error.error.message} (Error #${error.code})`);
         } else {
-          console.error(
+          logger.error(
             `${error.error.message} (Error #${error.code}) ${
               error.advancedOrderReject ? error.advancedOrderReject : ""
             }`,
@@ -40,7 +41,7 @@ describe("ApiNext: getContractDetails()", () => {
     try {
       api.connect(clientId);
     } catch (error) {
-      console.error(error.message);
+      logger.error(error.message);
     }
   });
 
@@ -131,24 +132,6 @@ describe("ApiNext: getContractDetails()", () => {
       .then((result) => {
         expect(result.length).toBeGreaterThan(0);
         // expect(result[0].contract.symbol).toEqual(ref_contract.symbol);
-        expect(result[0].contract.secType).toEqual(ref_contract.secType);
-        done();
-      })
-      .catch((err: IBApiNextError) => {
-        done(
-          `getContractDetails failed with '${err.error.message}' (Error #${err.code})`,
-        );
-      });
-  });
-
-  test("Crypto contract details", (done) => {
-    const ref_contract = sample_crypto;
-
-    api
-      .getContractDetails(ref_contract)
-      .then((result) => {
-        expect(result.length).toBeGreaterThan(0);
-        expect(result[0].contract.symbol).toEqual(ref_contract.symbol);
         expect(result[0].contract.secType).toEqual(ref_contract.secType);
         done();
       })

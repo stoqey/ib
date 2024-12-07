@@ -5,11 +5,13 @@ import {
   BarSizeSetting,
   EventName,
   IBApi,
+  isNonFatalError,
   Option,
   OptionType,
   WhatToShow,
 } from "../../..";
 import configuration from "../../../common/configuration";
+import logger from "../../../common/logger";
 import { sample_etf } from "../sample-data/contracts";
 
 describe("IBApi Historical data Tests", () => {
@@ -24,7 +26,6 @@ describe("IBApi Historical data Tests", () => {
       port: configuration.ib_port,
       clientId,
     });
-    // logger.info("IBApi created");
   });
 
   afterEach(() => {
@@ -32,7 +33,6 @@ describe("IBApi Historical data Tests", () => {
       ib.disconnect();
       ib = undefined;
     }
-    // logger.info("IBApi disconnected");
   });
 
   it("Stock market data", (done) => {
@@ -51,52 +51,53 @@ describe("IBApi Historical data Tests", () => {
         2,
         false,
       );
-    })
-      .on(
-        EventName.historicalData,
-        (
-          reqId: number,
-          time: string,
-          open: number,
-          high: number,
-          low: number,
-          close: number,
-          volume: number,
-          count: number | undefined,
-          WAP: number,
-        ) => {
-          //   console.log(
-          //     counter,
-          //     time,
-          //     open,
-          //     high,
-          //     low,
-          //     close,
-          //     volume,
-          //     count,
-          //     WAP,
-          //   );
-          expect(reqId).toEqual(refId);
-          if (time.startsWith("finished")) {
-            expect(counter).toEqual(30);
-            done();
-          } else if (counter++ == 29) {
-            expect(time).toEqual("1696622399");
-            expect(open).toEqual(429.5);
-            expect(high).toEqual(429.6);
-            expect(low).toEqual(429.47);
-            expect(close).toEqual(429.51);
-            expect(volume).toEqual(3487.38);
-            expect(count).toEqual(1090);
-            expect(WAP).toEqual(429.532);
-          }
-        },
-      )
-      .on(EventName.error, (err, code, reqId) => {
-        if (reqId == refId) done(`[${reqId}] ${err.message} (#${code})`);
-      });
+    }).on(
+      EventName.historicalData,
+      (
+        reqId: number,
+        time: string,
+        open: number,
+        high: number,
+        low: number,
+        close: number,
+        volume: number,
+        count: number | undefined,
+        WAP: number,
+      ) => {
+        //   console.log(
+        //     counter,
+        //     time,
+        //     open,
+        //     high,
+        //     low,
+        //     close,
+        //     volume,
+        //     count,
+        //     WAP,
+        //   );
+        expect(reqId).toEqual(refId);
+        if (time.startsWith("finished")) {
+          expect(counter).toEqual(30);
+          done();
+        } else if (counter++ == 29) {
+          expect(time).toEqual("1696622399");
+          expect(open).toEqual(429.5);
+          expect(high).toEqual(429.6);
+          expect(low).toEqual(429.47);
+          expect(close).toEqual(429.51);
+          expect(volume).toEqual(3487.38);
+          expect(count).toEqual(1090);
+          expect(WAP).toEqual(429.532);
+        }
+      },
+    );
 
-    ib.connect();
+    ib.on(EventName.info, (msg, code) => logger.info(code, msg))
+      .on(EventName.error, (error, code, reqId) => {
+        const msg = `[${reqId}] ${error.message} (Error #${code})`;
+        isNonFatalError(code, error) ? logger.warn(msg) : done(msg);
+      })
+      .connect();
   });
 
   test("Option market data", (done) => {
@@ -152,11 +153,10 @@ describe("IBApi Historical data Tests", () => {
       },
     );
 
-    ib.on(EventName.disconnected, () => done())
-      .on(EventName.info, (msg, code) => console.info("INFO", code, msg))
-      .on(EventName.error, (err, code, reqId) => {
-        if (reqId > 0) done(`[${reqId}] ${err.message} (#${code})`);
-        else console.error("ERROR", err.message, code, reqId);
+    ib.on(EventName.info, (msg, code) => logger.info(code, msg))
+      .on(EventName.error, (error, code, reqId) => {
+        const msg = `[${reqId}] ${error.message} (Error #${code})`;
+        isNonFatalError(code, error) ? logger.warn(msg) : done(msg);
       })
       .connect();
   });
@@ -177,52 +177,53 @@ describe("IBApi Historical data Tests", () => {
         2,
         false,
       );
-    })
-      .on(
-        EventName.historicalData,
-        (
-          reqId: number,
-          time: string,
-          open: number,
-          high: number,
-          low: number,
-          close: number,
-          volume: number,
-          count: number | undefined,
-          WAP: number,
-        ) => {
-          // console.log(
-          //   counter,
-          //   time,
-          //   open,
-          //   high,
-          //   low,
-          //   close,
-          //   volume,
-          //   count,
-          //   WAP,
-          // );
-          expect(reqId).toEqual(refId);
-          if (time.startsWith("finished")) {
-            expect(counter).toEqual(5);
-            done();
-          } else if (counter++ == 4) {
-            expect(time).toEqual("20230901");
-            expect(open).toEqual(437.3);
-            expect(high).toEqual(453.67);
-            expect(low).toEqual(437.3);
-            expect(close).toEqual(450.92);
-            expect(volume).toEqual(2771783.24);
-            expect(count).toEqual(1393264);
-            expect(WAP).toEqual(448.476);
-          }
-        },
-      )
-      .on(EventName.error, (err, code, reqId) => {
-        if (reqId == refId) done(`[${reqId}] ${err.message} (#${code})`);
-      });
+    }).on(
+      EventName.historicalData,
+      (
+        reqId: number,
+        time: string,
+        open: number,
+        high: number,
+        low: number,
+        close: number,
+        volume: number,
+        count: number | undefined,
+        WAP: number,
+      ) => {
+        // console.log(
+        //   counter,
+        //   time,
+        //   open,
+        //   high,
+        //   low,
+        //   close,
+        //   volume,
+        //   count,
+        //   WAP,
+        // );
+        expect(reqId).toEqual(refId);
+        if (time.startsWith("finished")) {
+          expect(counter).toEqual(5);
+          done();
+        } else if (counter++ == 4) {
+          expect(time).toEqual("20230901");
+          expect(open).toEqual(437.3);
+          expect(high).toEqual(453.67);
+          expect(low).toEqual(437.3);
+          expect(close).toEqual(450.92);
+          expect(volume).toEqual(2771783.24);
+          expect(count).toEqual(1393264);
+          expect(WAP).toEqual(448.476);
+        }
+      },
+    );
 
-    ib.connect();
+    ib.on(EventName.info, (msg, code) => logger.info(code, msg))
+      .on(EventName.error, (error, code, reqId) => {
+        const msg = `[${reqId}] ${error.message} (Error #${code})`;
+        isNonFatalError(code, error) ? logger.warn(msg) : done(msg);
+      })
+      .connect();
   });
 
   it("Monthly market data", (done) => {
@@ -241,81 +242,79 @@ describe("IBApi Historical data Tests", () => {
         2,
         false,
       );
-    })
-      .on(
-        EventName.historicalData,
-        (
-          reqId: number,
-          time: string,
-          open: number,
-          high: number,
-          low: number,
-          close: number,
-          volume: number,
-          count: number | undefined,
-          WAP: number,
-        ) => {
-          // console.log(
-          //   counter,
-          //   time,
-          //   open,
-          //   high,
-          //   low,
-          //   close,
-          //   volume,
-          //   count,
-          //   WAP,
-          // );
-          expect(reqId).toEqual(refId);
-          if (time.startsWith("finished")) {
-            expect(counter).toEqual(13);
-            done();
-          } else if (counter++ == 12) {
-            expect(time).toEqual("20230901");
-            expect(open).toEqual(451.53);
-            expect(high).toEqual(453.67);
-            expect(low).toEqual(449.68);
-            expect(close).toEqual(450.92);
-            expect(volume).toEqual(474058.9);
-            expect(count).toEqual(248346);
-            expect(WAP).toEqual(451.3);
-          }
-        },
-      )
-      .on(EventName.error, (err, code, reqId) => {
-        if (reqId == refId) done(`[${reqId}] ${err.message} (#${code})`);
-      });
+    }).on(
+      EventName.historicalData,
+      (
+        reqId: number,
+        time: string,
+        open: number,
+        high: number,
+        low: number,
+        close: number,
+        volume: number,
+        count: number | undefined,
+        WAP: number,
+      ) => {
+        // console.log(
+        //   counter,
+        //   time,
+        //   open,
+        //   high,
+        //   low,
+        //   close,
+        //   volume,
+        //   count,
+        //   WAP,
+        // );
+        expect(reqId).toEqual(refId);
+        if (time.startsWith("finished")) {
+          expect(counter).toEqual(13);
+          done();
+        } else if (counter++ == 12) {
+          expect(time).toEqual("20230901");
+          expect(open).toEqual(451.53);
+          expect(high).toEqual(453.67);
+          expect(low).toEqual(449.68);
+          expect(close).toEqual(450.92);
+          expect(volume).toEqual(474058.9);
+          expect(count).toEqual(248346);
+          expect(WAP).toEqual(451.3);
+        }
+      },
+    );
 
-    ib.connect();
+    ib.on(EventName.info, (msg, code) => logger.info(code, msg))
+      .on(EventName.error, (error, code, reqId) => {
+        const msg = `[${reqId}] ${error.message} (Error #${code})`;
+        isNonFatalError(code, error) ? logger.warn(msg) : done(msg);
+      })
+      .connect();
   });
 
   it("Test request tick history", (done) => {
     const refId = 45;
-    let isConnected = false;
 
     ib.on(EventName.connected, () => {
-      isConnected = true;
-    })
-      .on(EventName.historicalTicksLast, (reqId: number, ticks: []) => {
-        expect(ticks.length).toBeGreaterThan(0);
-        if (isConnected) {
-          ib.disconnect();
-        }
-        done();
-      })
-      .on(EventName.error, (err, code, reqId) => {
-        if (reqId == refId) done(`[${reqId}] ${err.message} (#${code})`);
-      });
+      ib.reqHistoricalTicks(
+        refId,
+        sample_etf,
+        "20240508-17:00:00",
+        null,
+        10,
+        WhatToShow.TRADES,
+        0,
+        true,
+      );
+    }).on(EventName.historicalTicksLast, (reqId: number, ticks: []) => {
+      expect(ticks.length).toBeGreaterThan(0);
+      done();
+    });
 
-    ib.connect().reqHistoricalTicks(
-      refId,
-      sample_etf,
-      "20240508-17:00:00",
-      null,
-      10,
-      WhatToShow.TRADES,
-      0,
-      true,
-    );
+    ib.on(EventName.info, (msg, code) => logger.info(code, msg))
+      .on(EventName.error, (error, code, reqId) => {
+        const msg = `[${reqId}] ${error.message} (Error #${code})`;
+        isNonFatalError(code, error) ? logger.warn(msg) : done(msg);
+      })
+      .connect();
   });
 });

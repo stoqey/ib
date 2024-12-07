@@ -15,4 +15,7 @@ export interface IBApiNextError {
 
   /** Additional information in case of order rejection */
   advancedOrderReject?: unknown;
+
+  /** Warning/information only message, not an error */
+  // isWarning: boolean;
 }
