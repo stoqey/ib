@@ -1,16 +1,17 @@
 import {
   ContractDetails,
-  ErrorCode,
   EventName,
   IBApi,
   Instrument,
+  isNonFatalError,
   LocationCode,
   ScanCode,
 } from "../../..";
 import configuration from "../../../common/configuration";
+import logger from "../../../common/logger";
 
 describe("IBApi market scanner tests", () => {
-  jest.setTimeout(10 * 1000);
+  jest.setTimeout(10_000);
 
   let ib: IBApi;
   const clientId = Math.floor(Math.random() * 32766) + 1; // ensure unique client
@@ -24,31 +25,29 @@ describe("IBApi market scanner tests", () => {
   });
 
   afterEach(() => {
-    if (ib) {
-      ib.disconnect();
-      ib = undefined;
-    }
+    ib.disconnect();
   });
 
   test("Scanner parameters", (done) => {
-    ib.on(EventName.scannerParameters, (xml: string) => {
+    ib.once(EventName.connected, () => {
+      ib.reqScannerParameters();
+    }).on(EventName.scannerParameters, (xml: string) => {
       const match = '<?xml version="1.0" encoding="UTF-8"?>'; // eslint-disable-line quotes
       expect(xml.substring(0, match.length)).toEqual(match);
-      ib.disconnect();
-    })
-      .on(EventName.disconnected, () => {
-        done();
-      })
-      .on(EventName.error, (err, code: ErrorCode, reqId) => {
-        if (reqId !== -1) done(`[${reqId}] ${err.message} (#${code})`);
-      });
+      done();
+    });
 
-    ib.connect().reqScannerParameters();
+    ib.on(EventName.info, (msg, code) => logger.info(code, msg))
+      .on(EventName.error, (error, code, reqId) => {
+        const msg = `[${reqId}] ${error.message} (Error #${code})`;
+        isNonFatalError(code, error) ? logger.warn(msg) : logger.error(msg);
+      })
+      .connect();
   });
 
   test("Most active US stocks", (done) => {
     const refId = 1;
-    ib.once(EventName.nextValidId, (_reqId) => {
+    ib.once(EventName.connected, () => {
       ib.reqScannerSubscription(refId, {
         abovePrice: 1,
         scanCode: ScanCode.MOST_ACTIVE,
@@ -73,18 +72,14 @@ describe("IBApi market scanner tests", () => {
       )
       .on(EventName.scannerDataEnd, (reqId) => {
         expect(reqId).toEqual(refId);
-        if (ib) ib.disconnect();
-      })
-      .on(EventName.disconnected, () => {
         done();
-      })
-      .on(EventName.error, (err, code, reqId) => {
-        if (reqId == refId) {
-          if (code == ErrorCode.SCANNER_LOW_PRECISION) return;
-          done(`[${reqId}] ${err.message} (#${code})`);
-        }
       });
 
-    ib.connect();
+    ib.on(EventName.info, (msg, code) => logger.info(code, msg))
+      .on(EventName.error, (error, code, reqId) => {
+        const msg = `[${reqId}] ${error.message} (Error #${code})`;
+        isNonFatalError(code, error) ? logger.warn(msg) : logger.error(msg);
+      })
+      .connect();
   });
 });

@@ -4,6 +4,7 @@
 
 import {
   Bar,
+  ErrorCode,
   EventName,
   IBApi,
   IBApiNext,
@@ -135,6 +136,6 @@ describe("RxJS Wrapper: getHistoricalData()", () => {
         done();
       });
 
-    api.emit(EventName.error, {}, -1, 1);
+    api.emit(EventName.error, new Error(), ErrorCode.UNSUPPORTED_VERSION, 1);
   });
 });

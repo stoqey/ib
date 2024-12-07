@@ -6,6 +6,7 @@ import {
   ErrorCode,
   EventName,
   IBApi,
+  isNonFatalError,
   Order,
   OrderAction,
   OrderStatus,
@@ -58,7 +59,7 @@ describe("CancelOrder", () => {
     let isDone = false;
     ib.once(EventName.nextValidId, (orderId: number) => {
       refId = orderId;
-      ib.placeOrder(refId, contract, order);
+      ib.reqOpenOrders().placeOrder(refId, contract, order);
     })
       .on(
         EventName.orderStatus,
@@ -100,37 +101,30 @@ describe("CancelOrder", () => {
           }
         },
       )
-      .on(
-        EventName.error,
-        (
-          error: Error,
-          code: ErrorCode,
-          reqId: number,
-          _advancedOrderReject?: unknown,
-        ) => {
-          if (reqId === -1) {
-            logger.info(error.message);
-          } else {
-            const msg = `[${reqId}] ${error.message} (Error #${code})`;
-            if (error.message.includes("Warning:")) {
-              logger.warn(msg);
-            } else if (
-              code == ErrorCode.ORDER_CANCELLED &&
-              reqId == refId &&
-              isCancelling
-            ) {
-              // isDone = true;
-              logger.info(msg);
-              // done();
-            } else {
-              isDone = true;
-              done(msg);
-            }
-          }
-        },
-      );
+      .on(EventName.error, (error: Error, code: ErrorCode, reqId: number) => {
+        if (
+          code == ErrorCode.ORDER_CANCELLED &&
+          reqId == refId &&
+          isCancelling
+        ) {
+          // Alright, we can safely ignore
+        } else {
+          const msg = `[${reqId}] ${error.message} (Error #${code})`;
+          isDone = true;
+          done(msg);
+        }
+      });
 
-    ib.connect().reqOpenOrders();
+    ib.on(EventName.info, (msg, code) => logger.info(code, msg))
+      .on(EventName.error, (error, code, reqId) => {
+        const msg = `[${reqId}] ${error.message} (Error #${code})`;
+        isNonFatalError(code, error)
+          ? logger.warn(msg)
+          : isCancelling
+          ? logger.info(msg)
+          : logger.error(msg);
+      })
+      .connect();
   });
 
   test("cancelOrder immediate", (done) => {
@@ -140,68 +134,20 @@ describe("CancelOrder", () => {
     let isDone = false;
     ib.once(EventName.nextValidId, (orderId: number) => {
       refId = orderId;
-      ib.placeOrder(refId, contract, order);
-    })
-      .on(EventName.orderStatus, (orderId) => {
-        if (orderId === refId) {
-          if (isDone) {
-            // ignore any message
-          } else if (!isCancelling) {
-            isCancelling = true;
-            ib.cancelOrder(orderId, "");
-          }
-        }
-      })
-      .on(
-        EventName.error,
-        (
-          error: Error,
-          code: ErrorCode,
-          reqId: number,
-          _advancedOrderReject?: unknown,
-        ) => {
-          if (reqId === -1) {
-            logger.info(error.message);
-          } else {
-            const msg = `[${reqId}] ${error.message} (Error #${code})`;
-            if (error.message.includes("Warning:")) {
-              logger.warn(msg);
-            } else if (
-              code == ErrorCode.ORDER_CANCELLED &&
-              reqId == refId &&
-              isCancelling
-            ) {
-              isDone = true;
-              logger.info(msg);
-              done();
-            } else {
-              isDone = true;
-              done(msg);
-            }
-          }
-        },
-      );
-
-    ib.connect().reqOpenOrders();
-  });
-
-  test("cancelOrder later", (done) => {
-    // NOTE: this test is not correctly written, but the API doesn't behave as expected neither
-    let refId: number;
-
-    let isCancelling = false;
-    let isDone = false;
-    ib.once(EventName.nextValidId, (orderId: number) => {
-      refId = orderId;
-      ib.placeOrder(refId, contract, { ...order, goodAfterTime: undefined });
+      ib.reqOpenOrders().placeOrder(refId, contract, order);
     })
       .on(EventName.orderStatus, (orderId, status) => {
+        // console.log(orderId, status, isCancelling, isDone);
         if (orderId === refId) {
+          // console.log(orderId, status);
           if (isDone) {
             // ignore any message
           } else if (!isCancelling) {
+            // [OrderStatus.PreSubmitted, OrderStatus.Submitted].includes(
+            //   status as OrderStatus,
+            // )
             isCancelling = true;
-            ib.cancelOrder(orderId, "20260101-23:59:59");
+            ib.cancelOrder(orderId, "");
           } else {
             if (
               [
@@ -216,34 +162,90 @@ describe("CancelOrder", () => {
           }
         }
       })
-      .on(
-        EventName.error,
-        (
-          error: Error,
-          code: ErrorCode,
-          reqId: number,
-          _advancedOrderReject?: unknown,
-        ) => {
-          if (reqId === -1) {
-            logger.info(error.message);
-          } else {
-            const msg = `[${reqId}] ${error.message} (Error #${code})`;
-            if (error.message.includes("Warning:")) {
-              logger.warn(msg);
-            } else if (
-              code == ErrorCode.ORDER_CANCELLED &&
-              reqId == refId &&
-              isCancelling
-            ) {
-              logger.info(msg);
-            } else {
-              isDone = true;
-              done(msg);
-            }
-          }
-        },
-      );
+      .on(EventName.error, (error: Error, code: ErrorCode, reqId: number) => {
+        if (
+          code == ErrorCode.ORDER_CANCELLED &&
+          reqId == refId &&
+          isCancelling
+        ) {
+          // Alright, we can safely ignore
+        } else {
+          const msg = `[${reqId}] ${error.message} (Error #${code})`;
+          isDone = true;
+          done(msg);
+        }
+      });
 
-    ib.connect().reqOpenOrders();
+    ib.on(EventName.info, (msg, code) => logger.info(code, msg))
+      .on(EventName.error, (error, code, reqId) => {
+        const msg = `[${reqId}] ${error.message} (Error #${code})`;
+        isNonFatalError(code, error)
+          ? logger.warn(msg)
+          : isCancelling
+          ? logger.info(msg)
+          : logger.error(msg);
+      })
+      .connect();
+  });
+
+  test("cancelOrder later", (done) => {
+    // NOTE: this test is not correctly written, but the API doesn't behave as *I* expected neither
+    let refId: number;
+
+    let isCancelling = false;
+    let isDone = false;
+    ib.once(EventName.nextValidId, (orderId: number) => {
+      refId = orderId;
+      ib.reqOpenOrders().placeOrder(refId, contract, order);
+    })
+      .on(EventName.orderStatus, (orderId, status) => {
+        // console.log(orderId, status, isCancelling, isDone);
+        if (orderId === refId) {
+          if (isDone) {
+            // ignore any message
+          } else if (!isCancelling) {
+            isCancelling = true;
+            ib.cancelOrder(orderId, "20310101-23:59:59");
+          } else if (
+            [
+              OrderStatus.PendingCancel,
+              OrderStatus.ApiCancelled,
+              OrderStatus.Cancelled,
+            ].includes(status as OrderStatus)
+          ) {
+            isDone = true;
+            done();
+          }
+        }
+      })
+      .on(EventName.error, (error: Error, code: ErrorCode, reqId: number) => {
+        if (isDone) {
+          // ignore any message
+        } else if (
+          code == ErrorCode.ORDER_CANCELLED &&
+          reqId == refId &&
+          isCancelling
+        ) {
+          if (!isDone) {
+            isDone = true;
+            done();
+          }
+        } else if (!isNonFatalError(code, error)) {
+          const msg = `[${reqId}] ${error.message} (Error #${code})`;
+          isDone = true;
+          done(msg);
+        }
+      });
+
+    ib.on(EventName.info, (msg, code) => logger.info(code, msg))
+      .on(EventName.error, (error, code, reqId) => {
+        const msg = `[${reqId}] ${error.message} (Error #${code})`;
+        isNonFatalError(code, error)
+          ? logger.warn(msg)
+          : isCancelling
+          ? logger.info(msg)
+          : logger.error(msg);
+      })
+      .connect();
   });
 });

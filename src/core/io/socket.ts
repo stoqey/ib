@@ -188,6 +188,7 @@ export class Socket {
     // disconnect TCP socket.
 
     this.client?.end();
+    this.client?.destroy();
   }
 
   /**
@@ -246,46 +247,31 @@ export class Socket {
    */
   private onData(data: Buffer): void {
     if (this.useV100Plus) {
-      let dataToParse = data;
-      if (this._v100MessageBuffer.length > 0) {
-        dataToParse = Buffer.concat([this._v100MessageBuffer, data]);
-      }
-      if (dataToParse.length > MAX_V100_MESSAGE_LENGTH) {
+      this._v100MessageBuffer = Buffer.concat([this._v100MessageBuffer, data]);
+      if (this._v100MessageBuffer.length > MAX_V100_MESSAGE_LENGTH) {
         // At this point we have buffered enough data that we have exceeded the max known message length,
         // at which point this is likely an unrecoverable state and we should discard all prior data,
         // and disconnect the socket
+        const size = this._v100MessageBuffer.length;
         this._v100MessageBuffer = Buffer.alloc(0);
         this.onError(
           new Error(
-            `Message of size ${dataToParse.length} exceeded max message length ${MAX_V100_MESSAGE_LENGTH}`,
+            `Message of size ${size} exceeded max message length ${MAX_V100_MESSAGE_LENGTH}`,
           ),
         );
         this.disconnect();
         return;
       }
-      let messageBufferOffset = 0;
-      while (messageBufferOffset + 4 < dataToParse.length) {
-        let currentMessageOffset = messageBufferOffset;
-        const msgSize = dataToParse.readInt32BE(currentMessageOffset);
-        currentMessageOffset += 4;
-        if (currentMessageOffset + msgSize <= dataToParse.length) {
-          const segment = dataToParse.slice(
-            currentMessageOffset,
-            currentMessageOffset + msgSize,
-          );
-          currentMessageOffset += msgSize;
+      while (this._v100MessageBuffer.length > 4) {
+        const msgSize = this._v100MessageBuffer.readInt32BE();
+        if (this._v100MessageBuffer.length >= 4 + msgSize) {
+          const segment = this._v100MessageBuffer.slice(4, 4 + msgSize);
+          this._v100MessageBuffer = this._v100MessageBuffer.slice(4 + msgSize);
           this.onMessage(segment.toString("utf8"));
-          messageBufferOffset = currentMessageOffset;
         } else {
-          // We can't parse further, the message is incomplete
-          break;
+          // else keep data for later
+          return;
         }
-      }
-      if (messageBufferOffset != dataToParse.length) {
-        // There is data left in the buffer, save it for the next data packet
-        this._v100MessageBuffer = dataToParse.slice(messageBufferOffset);
-      } else {
-        this._v100MessageBuffer = Buffer.alloc(0);
       }
     } else {
       this.onMessage(data.toString());
@@ -356,9 +342,8 @@ export class Socket {
     ) {
       this.disconnect();
       this.controller.emitError(
-        "Unsupported Version",
+        `Unsupported Version ${this._serverVersion}`,
         ErrorCode.UNSUPPORTED_VERSION,
-        -1,
       );
       return;
     }
@@ -368,7 +353,6 @@ export class Socket {
       this.controller.emitError(
         "The TWS is out of date and must be upgraded.",
         ErrorCode.UPDATE_TWS,
-        -1,
       );
       return;
     }
@@ -447,7 +431,7 @@ export class Socket {
    * Called when an error occurred on the TCP socket connection.
    */
   private onError(err: Error): void {
-    this.controller.emitError(err.message, ErrorCode.CONNECT_FAIL, -1);
+    this.controller.emitError(err.message, ErrorCode.CONNECT_FAIL);
   }
 
   /**

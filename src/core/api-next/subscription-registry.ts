@@ -69,7 +69,7 @@ export class IBApiNextSubscriptionRegistry {
   ) {}
 
   /** A Map containing the subscription registry, with event name as key. */
-  private readonly entires = new IBApiNextMap<EventName, RegistryEntry>();
+  private readonly entries = new IBApiNextMap<EventName, RegistryEntry>();
 
   /**
    * Register a subscription.
@@ -81,8 +81,7 @@ export class IBApiNextSubscriptionRegistry {
    * the subscription instance. This can be used to avoid creation of multiple subscriptions,
    * that will end up on same TWS request (i.e. request same market data multiple times), but an
    * existing subscription instance will be re-used if same instanceId does already exist.
-   * As a general rule: don't use instanceId when there is no reqId or when you want to return
-   * a Promise (single emitted value). Use it everywhere else.
+   * As a general rule: don't use instanceId when there is a reqId. Use it everywhere else.
    */
   register<T>(
     requestFunction: (reqId: number) => void,
@@ -102,7 +101,7 @@ export class IBApiNextSubscriptionRegistry {
     eventHandler.forEach((handler) => {
       const eventName = handler[0];
       const callback = handler[1];
-      const entry = this.entires.getOrAdd(eventName, () => {
+      const entry = this.entries.getOrAdd(eventName, () => {
         const entry = new RegistryEntry(eventName, callback);
         this.apiNext.logger.debug(
           LOG_TAG,
@@ -156,7 +155,7 @@ export class IBApiNextSubscriptionRegistry {
                 LOG_TAG,
                 `Remove RegistryEntry for EventName.${entry.eventName}.`,
               );
-              this.entires.delete(entry.eventName);
+              this.entries.delete(entry.eventName);
             }
           });
 
@@ -185,9 +184,9 @@ export class IBApiNextSubscriptionRegistry {
   /**
    * Dispatch an error into the subscription that owns the given request id.
    */
-  dispatchError(reqId: number, error: IBApiNextError): void {
-    this.entires.forEach((entry) => {
-      entry.subscriptions.get(reqId)?.error(error);
+  dispatchError(error: IBApiNextError): void {
+    this.entries.forEach((entry) => {
+      entry.subscriptions.get(error.reqId)?.error(error);
     });
   }
 }

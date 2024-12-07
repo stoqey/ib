@@ -32,7 +32,7 @@ import { IBApi } from "./api/api";
 
 export { IBApi, IBApiCreationOptions } from "./api/api";
 
-export { ErrorCode } from "./common/errorCode";
+export { ErrorCode, isNonFatalError } from "./common/errorCode";
 
 // export contract types
 
@@ -50,6 +50,7 @@ export { Future } from "./api/contract/future";
 export { Index } from "./api/contract/ind";
 export { IneligibilityReason } from "./api/contract/ineligibilityReason";
 export { Option } from "./api/contract/option";
+export { PriceIncrement } from "./api/contract/priceIncrement";
 export { Stock } from "./api/contract/stock";
 export { WshEventData } from "./api/contract/wsh";
 

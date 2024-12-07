@@ -37,7 +37,7 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
     // testing values
 
     const accountId1 = "DU123456";
-    const accountId2 = "DU123456";
+    const accountId2 = "DU654321";
     const currency = "USD";
     const testValueReqId1 = "1111111";
 
