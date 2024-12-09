@@ -202,11 +202,11 @@ export class Encoder {
    * @param errMsg The error test message.
    * @param data Additional error data (optional).
    */
-  private emitError(errMsg: string, code: ErrorCode, reqId: number): void {
+  private emitError(errMsg: string, code: ErrorCode, reqId?: number): void {
     this.callback.emitError(
       `Server Version ${this.serverVersion}: ${errMsg}`,
       code,
-      reqId,
+      reqId ?? ErrorCode.NO_VALID_ID,
     );
   }
 
@@ -466,38 +466,38 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   /**
    * Encode a CANCEL_HISTORICAL_DATA message to an array of tokens.
    */
-  cancelHistoricalData(tickerId: number): void {
+  cancelHistoricalData(reqId: number): void {
     if (this.serverVersion < 24) {
       return this.emitError(
         "It does not support historical data query cancellation.",
         ErrorCode.UPDATE_TWS,
-        tickerId,
+        reqId,
       );
     }
 
     const version = 1;
 
-    this.sendMsg(OUT_MSG_ID.CANCEL_HISTORICAL_DATA, version, tickerId);
+    this.sendMsg(OUT_MSG_ID.CANCEL_HISTORICAL_DATA, version, reqId);
   }
 
   /**
    * Encode a CANCEL_MKT_DATA message to an array of tokens.
    */
-  cancelMktData(tickerId: number): void {
+  cancelMktData(reqId: number): void {
     const version = 1;
 
-    this.sendMsg(OUT_MSG_ID.CANCEL_MKT_DATA, version, tickerId);
+    this.sendMsg(OUT_MSG_ID.CANCEL_MKT_DATA, version, reqId);
   }
 
   /**
    * Encode a CANCEL_MKT_DEPTH message to an array of tokens.
    */
-  cancelMktDepth(tickerId: number, isSmartDepth: boolean): void {
+  cancelMktDepth(reqId: number, isSmartDepth: boolean): void {
     if (this.serverVersion < 6) {
       return this.emitError(
         "This feature is only available for versions of TWS >=6.",
         ErrorCode.UPDATE_TWS,
-        tickerId,
+        reqId,
       );
     }
 
@@ -505,13 +505,13 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support SMART depth cancel.",
         ErrorCode.UPDATE_TWS,
-        tickerId,
+        reqId,
       );
     }
 
     const version = 1;
 
-    const tokens: unknown[] = [OUT_MSG_ID.CANCEL_MKT_DEPTH, version, tickerId];
+    const tokens: unknown[] = [OUT_MSG_ID.CANCEL_MKT_DEPTH, version, reqId];
 
     if (this.serverVersion >= MIN_SERVER_VER.SMART_DEPTH) {
       tokens.push(isSmartDepth);
@@ -595,7 +595,6 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support position cancellation.",
         ErrorCode.UPDATE_TWS,
-        -1,
       );
     }
 
@@ -607,42 +606,42 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   /**
    * Encode a CANCEL_REAL_TIME_BARS message to an array of tokens.
    */
-  cancelRealTimeBars(tickerId: number): void {
+  cancelRealTimeBars(reqId: number): void {
     if (this.serverVersion < MIN_SERVER_VER.REAL_TIME_BARS) {
       return this.emitError(
         "It does not support realtime bar data query cancellation.",
         ErrorCode.UPDATE_TWS,
-        tickerId,
+        reqId,
       );
     }
 
     const version = 1;
 
-    this.sendMsg(OUT_MSG_ID.CANCEL_REAL_TIME_BARS, version, tickerId);
+    this.sendMsg(OUT_MSG_ID.CANCEL_REAL_TIME_BARS, version, reqId);
   }
 
   /**
    * Encode a CANCEL_SCANNER_SUBSCRIPTION message to an array of tokens.
    */
-  cancelScannerSubscription(tickerId: number): void {
+  cancelScannerSubscription(reqId: number): void {
     if (this.serverVersion < 24) {
       return this.emitError(
         "It does not support API scanner subscription.",
         ErrorCode.UPDATE_TWS,
-        tickerId,
+        reqId,
       );
     }
 
     const version = 1;
 
-    this.sendMsg(OUT_MSG_ID.CANCEL_SCANNER_SUBSCRIPTION, version, tickerId);
+    this.sendMsg(OUT_MSG_ID.CANCEL_SCANNER_SUBSCRIPTION, version, reqId);
   }
 
   /**
    * Encode a EXERCISE_OPTIONS message to an array of tokens.
    */
   exerciseOptions(
-    tickerId: number,
+    reqId: number,
     contract: Contract,
     exerciseAction: OptionExerciseAction,
     exerciseQuantity: number,
@@ -658,7 +657,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support options exercise from the API.",
         ErrorCode.UPDATE_TWS,
-        tickerId,
+        reqId,
       );
     }
 
@@ -667,7 +666,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support conId and tradingClass parameters in exerciseOptions.",
           ErrorCode.UPDATE_TWS,
-          tickerId,
+          reqId,
         );
       }
     }
@@ -679,7 +678,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support manual order time parameter in exerciseOptions.",
         ErrorCode.UPDATE_TWS,
-        tickerId,
+        reqId,
       );
     }
 
@@ -688,7 +687,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support customer account parameter in exerciseOptions.",
           ErrorCode.UPDATE_TWS,
-          tickerId,
+          reqId,
         );
       }
     }
@@ -698,12 +697,12 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support professional customer parameter in exerciseOptions.",
           ErrorCode.UPDATE_TWS,
-          tickerId,
+          reqId,
         );
       }
     }
 
-    const tokens: unknown[] = [OUT_MSG_ID.EXERCISE_OPTIONS, version, tickerId];
+    const tokens: unknown[] = [OUT_MSG_ID.EXERCISE_OPTIONS, version, reqId];
 
     // send contract fields
     if (this.serverVersion >= MIN_SERVER_VER.TRADING_CLASS) {
@@ -2123,7 +2122,6 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support current time requests.",
         ErrorCode.UPDATE_TWS,
-        -1,
       );
     }
 
@@ -2224,7 +2222,6 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support globalCancel requests.",
         ErrorCode.UPDATE_TWS,
-        ErrorCode.NO_VALID_ID,
       );
     }
 
@@ -2236,7 +2233,6 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support ext operator and manual order indicator parameters",
           ErrorCode.UPDATE_TWS,
-          ErrorCode.NO_VALID_ID,
         );
       }
     }
@@ -2262,7 +2258,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
    * Encode a REQ_HISTORICAL_DATA message.
    */
   reqHistoricalData(
-    tickerId: number,
+    reqId: number,
     contract: Contract,
     endDateTime: string,
     durationStr: string,
@@ -2279,7 +2275,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support historical data backfill.",
         ErrorCode.UPDATE_TWS,
-        tickerId,
+        reqId,
       );
     }
 
@@ -2288,7 +2284,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support conId and tradingClass parameters in reqHistoricalData.",
           ErrorCode.UPDATE_TWS,
-          tickerId,
+          reqId,
         );
       }
     }
@@ -2301,7 +2297,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support requesting of historical schedule.",
           ErrorCode.UPDATE_TWS,
-          tickerId,
+          reqId,
         );
       }
     }
@@ -2312,7 +2308,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       tokens.push(version);
     }
 
-    tokens.push(tickerId);
+    tokens.push(reqId);
 
     // send contract fields
     if (this.serverVersion >= MIN_SERVER_VER.TRADING_CLASS) {
@@ -2380,7 +2376,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
    * Encode a REQ_HISTORICAL_TICKS message.
    */
   reqHistoricalTicks(
-    tickerId: number,
+    reqId: number,
     contract: Contract,
     startDateTime: string,
     endDateTime: string,
@@ -2394,13 +2390,13 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support historical ticks request.",
         ErrorCode.UPDATE_TWS,
-        tickerId,
+        reqId,
       );
     }
 
     const args: unknown[] = [
       OUT_MSG_ID.REQ_HISTORICAL_TICKS,
-      tickerId,
+      reqId,
       ...this.encodeContract(contract),
     ];
     args.push(startDateTime);
@@ -2523,7 +2519,6 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support marketDataType requests.",
         ErrorCode.UPDATE_TWS,
-        ErrorCode.NO_VALID_ID,
       );
     }
 
@@ -2536,7 +2531,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
    * Encode a REQ_MKT_DATA message.
    */
   reqMktData(
-    tickerId: number,
+    reqId: number,
     contract: Contract,
     genericTickList: string,
     snapshot: boolean,
@@ -2546,7 +2541,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support snapshot market data requests.",
         ErrorCode.UPDATE_TWS,
-        tickerId,
+        reqId,
       );
     }
 
@@ -2554,7 +2549,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support delta-neutral orders.",
         ErrorCode.UPDATE_TWS,
-        tickerId,
+        reqId,
       );
     }
 
@@ -2562,7 +2557,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support conId parameter.",
         ErrorCode.UPDATE_TWS,
-        tickerId,
+        reqId,
       );
     }
 
@@ -2571,14 +2566,14 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support tradingClass parameter in reqMarketData.",
           ErrorCode.UPDATE_TWS,
-          tickerId,
+          reqId,
         );
       }
     }
 
     const version = 11;
 
-    const args: unknown[] = [OUT_MSG_ID.REQ_MKT_DATA, version, tickerId];
+    const args: unknown[] = [OUT_MSG_ID.REQ_MKT_DATA, version, reqId];
 
     // send contract fields
     if (this.serverVersion >= MIN_SERVER_VER.REQ_MKT_DATA_CONID) {
@@ -2668,7 +2663,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
    * Encode a REQ_MKT_DEPTH message.
    */
   reqMktDepth(
-    tickerId: number,
+    reqId: number,
     contract: Contract,
     numRows: number,
     isSmartDepth: boolean,
@@ -2678,7 +2673,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "This feature is only available for versions of TWS >=6",
         ErrorCode.UPDATE_TWS,
-        tickerId,
+        reqId,
       );
     }
 
@@ -2687,7 +2682,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support conId and tradingClass parameters in reqMktDepth.",
           ErrorCode.UPDATE_TWS,
-          tickerId,
+          reqId,
         );
       }
     }
@@ -2696,7 +2691,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support SMART depth request.",
         ErrorCode.UPDATE_TWS,
-        tickerId,
+        reqId,
       );
     }
 
@@ -2707,14 +2702,14 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support primaryExch parameter in reqMktDepth.",
         ErrorCode.UPDATE_TWS,
-        tickerId,
+        reqId,
       );
     }
 
     const version = 5;
 
     // send req mkt data msg
-    const tokens: unknown[] = [OUT_MSG_ID.REQ_MKT_DEPTH, version, tickerId];
+    const tokens: unknown[] = [OUT_MSG_ID.REQ_MKT_DEPTH, version, reqId];
 
     // send contract fields
     if (this.serverVersion >= MIN_SERVER_VER.TRADING_CLASS) {
@@ -2785,7 +2780,6 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support position requests.",
         ErrorCode.UPDATE_TWS,
-        ErrorCode.NO_VALID_ID,
       );
     }
 
@@ -2842,7 +2836,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
    * Encode a REQ_REAL_TIME_BARS message.
    */
   reqRealTimeBars(
-    tickerId: number,
+    reqId: number,
     contract: Contract,
     barSize: number,
     whatToShow: WhatToShow,
@@ -2853,7 +2847,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support real time bars.",
         ErrorCode.UPDATE_TWS,
-        tickerId,
+        reqId,
       );
     }
 
@@ -2862,7 +2856,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
         return this.emitError(
           "It does not support conId and tradingClass parameters in reqRealTimeBars.",
           ErrorCode.UPDATE_TWS,
-          tickerId,
+          reqId,
         );
       }
     }
@@ -2870,11 +2864,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     const version = 3;
 
     // send req mkt data msg
-    const tokens: unknown[] = [
-      OUT_MSG_ID.REQ_REAL_TIME_BARS,
-      version,
-      tickerId,
-    ];
+    const tokens: unknown[] = [OUT_MSG_ID.REQ_REAL_TIME_BARS, version, reqId];
 
     // send contract fields
     if (this.serverVersion >= MIN_SERVER_VER.TRADING_CLASS) {
@@ -2916,7 +2906,6 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support API scanner subscription.",
         ErrorCode.UPDATE_TWS,
-        ErrorCode.NO_VALID_ID,
       );
     }
 
@@ -3013,7 +3002,6 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "FA Profile is not supported anymore, use FA Group instead.",
         ErrorCode.UPDATE_TWS,
-        ErrorCode.NO_VALID_ID,
       );
     }
 
@@ -3118,7 +3106,6 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support family codes request.",
         ErrorCode.UPDATE_TWS,
-        ErrorCode.NO_VALID_ID,
       );
     }
 
@@ -3148,7 +3135,6 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support market depth exchanges request.",
         ErrorCode.UPDATE_TWS,
-        ErrorCode.NO_VALID_ID,
       );
     }
 
@@ -3209,7 +3195,6 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support smart components request.",
         ErrorCode.UPDATE_TWS,
-        ErrorCode.NO_VALID_ID,
       );
     }
 
@@ -3259,7 +3244,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
    * Encode a REQ_HISTOGRAM_DATA message.
    */
   reqHistogramData(
-    tickerId: number,
+    reqId: number,
     contract: Contract,
     useRTH: boolean,
     timePeriod: string,
@@ -3268,13 +3253,13 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support histogram requests.",
         ErrorCode.UPDATE_TWS,
-        tickerId,
+        reqId,
       );
     }
 
     this.sendMsg(
       OUT_MSG_ID.REQ_HISTOGRAM_DATA,
-      tickerId,
+      reqId,
       this.encodeContract(contract),
       useRTH ? 1 : 0,
       timePeriod,
@@ -3284,31 +3269,31 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   /**
    * Encode a CANCEL_HISTOGRAM_DATA message.
    */
-  cancelHistogramData(tickerId: number): void {
+  cancelHistogramData(reqId: number): void {
     if (this.serverVersion < MIN_SERVER_VER.REQ_HISTOGRAM) {
       return this.emitError(
         "It does not support head time stamp requests.",
         ErrorCode.UPDATE_TWS,
-        tickerId,
+        reqId,
       );
     }
 
-    this.sendMsg(OUT_MSG_ID.CANCEL_HISTOGRAM_DATA, tickerId);
+    this.sendMsg(OUT_MSG_ID.CANCEL_HISTOGRAM_DATA, reqId);
   }
 
   /**
    * Encode a CANCEL_HISTOGRAM_DATA message.
    */
-  cancelHeadTimestamp(tickerId: number): void {
+  cancelHeadTimestamp(reqId: number): void {
     if (this.serverVersion < MIN_SERVER_VER.CANCEL_HEADTIMESTAMP) {
       return this.emitError(
         "It does not support head time stamp requests canceling.",
         ErrorCode.UPDATE_TWS,
-        tickerId,
+        reqId,
       );
     }
 
-    this.sendMsg(OUT_MSG_ID.CANCEL_HEAD_TIMESTAMP, tickerId);
+    this.sendMsg(OUT_MSG_ID.CANCEL_HEAD_TIMESTAMP, reqId);
   }
 
   /**
@@ -3319,7 +3304,6 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support market rule requests.",
         ErrorCode.UPDATE_TWS,
-        marketRuleId,
       );
     }
 
@@ -3334,7 +3318,6 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       return this.emitError(
         "It does not support completed orders requests.",
         ErrorCode.UPDATE_TWS,
-        ErrorCode.NO_VALID_ID,
       );
     }
 

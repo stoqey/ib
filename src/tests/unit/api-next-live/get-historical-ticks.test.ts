@@ -4,6 +4,7 @@
 
 import { Subscription } from "rxjs";
 import { IBApiNext } from "../../..";
+import logger from "../../../common/logger";
 import { sample_etf } from "../sample-data/contracts";
 
 describe("ApiNext: getContractDetails()", () => {
@@ -20,9 +21,9 @@ describe("ApiNext: getContractDetails()", () => {
     if (!error$) {
       error$ = api.errorSubject.subscribe((error) => {
         if (error.reqId === -1) {
-          console.warn(`${error.error.message} (Error #${error.code})`);
+          logger.warn(`${error.error.message} (Error #${error.code})`);
         } else {
-          console.error(
+          logger.error(
             `${error.error.message} (Error #${error.code}) ${
               error.advancedOrderReject ? error.advancedOrderReject : ""
             }`,
@@ -34,7 +35,7 @@ describe("ApiNext: getContractDetails()", () => {
     try {
       api.connect(clientId);
     } catch (error) {
-      console.error(error.message);
+      logger.error(error.message);
     }
   });
 

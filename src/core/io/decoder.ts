@@ -1,4 +1,4 @@
-import { IneligibilityReason } from "../..";
+import { IneligibilityReason, PriceIncrement } from "../..";
 import { Contract } from "../../api/contract/contract";
 import { ContractDescription } from "../../api/contract/contractDescription";
 import { ContractDetails } from "../../api/contract/contractDetails";
@@ -107,7 +107,7 @@ export interface DecoderCallbacks {
   emitError(
     errMsg: string,
     code: number,
-    reqId: number,
+    reqId?: number,
     advancedOrderReject?: unknown,
   ): void;
 
@@ -339,7 +339,6 @@ export class Decoder {
         this.callback.emitError(
           `No parser implementation found for token: ${IN_MSG_ID[msgId]} (${msgId}).`,
           ErrorCode.UNKNOWN_ID,
-          -1,
         );
     }
   }
@@ -386,7 +385,6 @@ export class Decoder {
                 this.dataQueue,
               )}). Please report to https://github.com/stoqey/ib`,
               ErrorCode.UNKNOWN_ID,
-              -1,
             );
           }
 
@@ -401,7 +399,6 @@ export class Decoder {
           this.callback.emitError(
             `Underrun error on ${IN_MSG_ID[msgId]}: ${e.message} Please report to https://github.com/stoqey/ib`,
             ErrorCode.UNKNOWN_ID,
-            -1,
           );
         }
 
@@ -710,7 +707,7 @@ export class Decoder {
     const version = this.readInt();
     if (version < 2) {
       const errorMsg = this.readStr();
-      this.callback.emitError(errorMsg, -1, -1);
+      this.callback.emitError(errorMsg, ErrorCode.UNKNOWN_ID);
     } else {
       const id = this.readInt();
       const code = this.readInt();
@@ -728,7 +725,7 @@ export class Decoder {
         }
       }
 
-      if (id === -1) {
+      if (id === ErrorCode.NO_VALID_ID) {
         this.callback.emitInfo(msg, code);
       } else {
         this.callback.emitError(msg, code, id, advancedOrderReject);
@@ -1415,7 +1412,7 @@ export class Decoder {
   private decodeMsg_MARKET_RULE(): void {
     const marketRuleId = this.readInt();
     const nPriceIncrements = this.readInt();
-    const priceIncrements = new Array(nPriceIncrements);
+    const priceIncrements = new Array<PriceIncrement>(nPriceIncrements);
 
     for (let i = 0; i < nPriceIncrements; i++) {
       priceIncrements[i] = {
@@ -1529,7 +1526,7 @@ export class Decoder {
    * Decode a SCANNER_PARAMETERS message from data queue and emit a scannerParameters event.
    */
   private decodeMsg_SCANNER_PARAMETERS(): void {
-    this.readInt(); // version
+    const _version = this.readInt();
     const xml = this.readStr();
 
     this.emit(EventName.scannerParameters, xml);
