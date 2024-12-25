@@ -21,7 +21,10 @@ export class Controller implements EncoderCallbacks, DecoderCallbacks {
    * @param ib The [[IBApi]] object.
    * @param _options The [[IBApi]] creation options.
    */
-  constructor(private ib: IBApi, private options?: IBApiCreationOptions) {
+  constructor(
+    private ib: IBApi,
+    private options?: IBApiCreationOptions,
+  ) {
     this.socket = new Socket(this, this.options);
     this.commands.pause();
     const rate =

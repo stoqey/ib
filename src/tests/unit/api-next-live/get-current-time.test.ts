@@ -37,7 +37,7 @@ describe("ApiNext: getCurrentTime()", () => {
     api
       .getCurrentTime()
       .then((result) => {
-        logger.info(result);
+        // logger.info(result);
         done();
       })
       .catch((err: IBApiNextError) => {
@@ -53,7 +53,7 @@ describe("ApiNext: getCurrentTime()", () => {
 
     Promise.all([p1, p2])
       .then((result) => {
-        logger.info(result[0], result[1]);
+        // logger.info(result[0], result[1]);
         done();
       })
       .catch((err: IBApiNextError) => {
@@ -69,7 +69,7 @@ describe("ApiNext: getCurrentTime()", () => {
     for (let i = 0; i < n; i++) p.push(api.getCurrentTime());
 
     Promise.all(p).then((result) => {
-      logger.info(result);
+      // logger.info(result);
       expect(result.length).toBe(n);
       done();
     });

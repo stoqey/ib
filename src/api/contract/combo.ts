@@ -10,7 +10,7 @@ export class Combo implements Contract {
     public symbol: string,
     public comboLegs: ComboLeg[],
     public currency?: string,
-    public exchange?: string
+    public exchange?: string,
   ) {
     this.currency = this.currency ?? "USD";
     this.exchange = this.exchange ?? "SMART";

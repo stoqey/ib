@@ -342,7 +342,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     if (this.serverVersion < MIN_SERVER_VER.TRADING_CLASS) {
-      if (!!contract.tradingClass) {
+      if (contract.tradingClass) {
         return this.emitError(
           "It does not support tradingClass parameter in calculateOptionPrice.",
           ErrorCode.UPDATE_TWS,
@@ -802,7 +802,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     if (this.serverVersion < MIN_SERVER_VER.ALGO_ORDERS) {
-      if (!!order.algoStrategy) {
+      if (order.algoStrategy) {
         return this.emitError(
           "It does not support algo orders.",
           ErrorCode.UPDATE_TWS,
@@ -864,7 +864,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     if (this.serverVersion < MIN_SERVER_VER.HEDGE_ORDERS) {
-      if (!!order.hedgeType) {
+      if (order.hedgeType) {
         return this.emitError(
           "It does not support hedge orders.",
           ErrorCode.UPDATE_TWS,
@@ -962,7 +962,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     if (this.serverVersion < MIN_SERVER_VER.TRADING_CLASS) {
-      if (!!contract.tradingClass) {
+      if (contract.tradingClass) {
         return this.emitError(
           "It does not support tradingClass parameters in placeOrder.",
           ErrorCode.UPDATE_TWS,
@@ -1018,7 +1018,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     if (this.serverVersion < MIN_SERVER_VER.MODELS_SUPPORT) {
-      if (!!order.modelCode) {
+      if (order.modelCode) {
         return this.emitError(
           "It does not support model code parameter.",
           ErrorCode.UPDATE_TWS,
@@ -1548,7 +1548,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
 
     if (this.serverVersion >= MIN_SERVER_VER.HEDGE_ORDERS) {
       tokens.push(order.hedgeType);
-      if (!!order.hedgeType) {
+      if (order.hedgeType) {
         tokens.push(order.hedgeParam);
       }
     }
@@ -1579,7 +1579,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
 
     if (this.serverVersion >= MIN_SERVER_VER.ALGO_ORDERS) {
       tokens.push(order.algoStrategy);
-      if (!!order.algoStrategy) {
+      if (order.algoStrategy) {
         const algoParamsCount = order.algoParams?.length
           ? order.algoParams.length
           : 0;
@@ -2025,7 +2025,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     if (this.serverVersion < MIN_SERVER_VER.TRADING_CLASS) {
-      if (!!contract.tradingClass) {
+      if (contract.tradingClass) {
         return this.emitError(
           "It does not support tradingClass parameter in reqContractDetails.",
           ErrorCode.UPDATE_TWS,
@@ -2035,7 +2035,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     if (this.serverVersion < MIN_SERVER_VER.LINKING) {
-      if (!!contract.primaryExch) {
+      if (contract.primaryExch) {
         return this.emitError(
           "It does not support primaryExchange parameter in reqContractDetails.",
           ErrorCode.UPDATE_TWS,
@@ -2562,7 +2562,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     if (this.serverVersion < MIN_SERVER_VER.TRADING_CLASS) {
-      if (!!contract.tradingClass) {
+      if (contract.tradingClass) {
         return this.emitError(
           "It does not support tradingClass parameter in reqMarketData.",
           ErrorCode.UPDATE_TWS,

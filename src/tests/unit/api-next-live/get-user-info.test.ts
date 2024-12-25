@@ -40,7 +40,7 @@ describe("ApiNext: getManagedAccounts()", () => {
 
     Promise.all(p).then((result) => {
       expect(result.length).toBeGreaterThan(0);
-      logger.info(result);
+      // logger.info(result);
       done();
     });
   });
@@ -51,7 +51,7 @@ describe("ApiNext: getManagedAccounts()", () => {
     for (let i = 0; i < n; i++) p.push(api.getUserInfo());
 
     Promise.all(p).then((result) => {
-      logger.info(result);
+      // logger.info(result);
       expect(result.length).toBe(n);
       done();
     });

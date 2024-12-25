@@ -438,7 +438,9 @@ export class Decoder {
 
         v = v.replace(escapeString, String.fromCharCode(hexVal));
       }
-    } catch (e) {}
+    } catch (_e) {
+      /* TODO: handle error? */
+    }
 
     return v;
   }

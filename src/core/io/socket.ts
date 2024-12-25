@@ -64,8 +64,8 @@ export class Socket {
       this.options.clientId !== undefined
         ? Math.floor(this.options.clientId)
         : configuration.default_client_id;
-    this.options.host = this.options.host;
-    this.options.port = this.options.port;
+    // this.options.host = this.options.host;
+    // this.options.port = this.options.port;
   }
 
   /** The TCP client socket. */

@@ -10,7 +10,7 @@ export class MarketOrder {
     public totalQuantity: number,
     public transmit?: boolean,
     public goodAfterTime?: string,
-    public goodTillDate?: string
+    public goodTillDate?: string,
   ) {
     this.transmit = this.transmit ?? true;
     this.goodAfterTime = this.goodAfterTime ?? "";

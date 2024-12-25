@@ -11,7 +11,7 @@ export type IBApiNextOrderStatus = {
   clientId?: number;
   whyHeld?: string;
   mktCapPrice?: number;
-}
+};
 
 export interface OpenOrder {
   orderId: number;

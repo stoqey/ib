@@ -2285,16 +2285,17 @@ export class IBApiNext {
 
       case 2:
         // it's a delete
-        const deletedRow = cachedRows.get(position);
+        {
+          const deletedRow = cachedRows.get(position);
 
-        cachedRows.delete(position);
-        changedRows.set(position, deletedRow);
+          cachedRows.delete(position);
+          changedRows.set(position, deletedRow);
 
-        subscription.next({
-          all: cached,
-          removed: changed,
-        });
-
+          subscription.next({
+            all: cached,
+            removed: changed,
+          });
+        }
         break;
 
       default:

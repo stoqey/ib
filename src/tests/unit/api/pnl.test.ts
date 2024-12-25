@@ -92,7 +92,7 @@ describe("IBApi Tests", () => {
     let received = false;
 
     ib.once(EventName.connected, () => {
-      console.log("reqPnLSingle", refId);
+      // console.log("reqPnLSingle", refId);
       ib.reqPnLSingle(refId, _account, "", _conId);
     }).on(
       EventName.pnlSingle,
@@ -104,15 +104,15 @@ describe("IBApi Tests", () => {
         _realizedPnL: number,
         value: number,
       ) => {
-        console.log(
-          "pnlSingle",
-          reqId,
-          pos,
-          _dailyPnL,
-          unrealizedPnL,
-          _realizedPnL,
-          value,
-        );
+        // console.log(
+        //   "pnlSingle",
+        //   reqId,
+        //   pos,
+        //   _dailyPnL,
+        //   unrealizedPnL,
+        //   _realizedPnL,
+        //   value,
+        // );
         expect(reqId).toEqual(refId);
         expect(pos).toBeTruthy();
         // expect(dailyPnL).toBeTruthy(); We may have no daily PnL (on week-ends)
@@ -129,7 +129,7 @@ describe("IBApi Tests", () => {
     );
 
     ib.on(EventName.disconnected, () => done())
-      .on(EventName.info, (msg, code) => console.info("INFO", code, msg))
+      // .on(EventName.info, (msg, code) => console.info("INFO", code, msg))
       .on(EventName.error, (err, code, reqId) => {
         const msg = `[${reqId}] ${err.message} (#${code})`;
         if (
@@ -138,7 +138,7 @@ describe("IBApi Tests", () => {
         ) {
           done(msg);
         } else {
-          console.error("ERROR", msg);
+          logger.error(msg);
         }
       })
       .connect();

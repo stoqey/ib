@@ -239,7 +239,7 @@ export class IBApiNextApp {
         console.error("ERROR: Unknown argument " + pair[0]);
         this.exit(1);
       }
-      this.cmdLineArgs[name] = pair.length > 1 ? pair[1] ?? "1" : "1";
+      this.cmdLineArgs[name] = pair.length > 1 ? (pair[1] ?? "1") : "1";
     });
 
     if (this.cmdLineArgs.h || this.cmdLineArgs.help) {

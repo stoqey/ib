@@ -9,7 +9,7 @@ export class LimitOrder {
     public action: OrderAction,
     public lmtPrice: number,
     public totalQuantity: number,
-    public transmit: boolean = true
+    public transmit: boolean = true,
   ) {}
 
   public orderType = OrderType.LMT;

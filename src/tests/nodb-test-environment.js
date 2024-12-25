@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable */
 const NodeEnvironment = require("jest-environment-node");
 
 require("dotenv").config();

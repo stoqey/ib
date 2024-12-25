@@ -85,7 +85,7 @@ export class IBApiNextSubscriptionRegistry {
    */
   register<T>(
     requestFunction: (reqId: number) => void,
-    cancelFunction: (reqId: number) => void | null | undefined,
+    cancelFunction: (reqId: number) => void | null | undefined, // eslint-disable-line @typescript-eslint/no-invalid-void-type
     eventHandler: [
       EventName,
       (

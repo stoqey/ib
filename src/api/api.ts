@@ -1,7 +1,7 @@
 /*
  * Typescript implementation of the Interactive Brokers TWS (or IB Gateway) API.
  */
-/* eslint @typescript-eslint/no-unsafe-declaration-merging:warn */
+/* eslint @typescript-eslint/no-unsafe-declaration-merging:warn,@typescript-eslint/unified-signatures:warn */
 import { EventEmitter } from "eventemitter3";
 import {
   DurationUnit,
@@ -89,7 +89,8 @@ export interface IBApiCreationOptions {
 }
 
 /** Maximum supported version. */
-export const MAX_SUPPORTED_SERVER_VERSION = MIN_SERVER_VER.MAX_VERSION;
+export const MAX_SUPPORTED_SERVER_VERSION =
+  MIN_SERVER_VER.CME_TAGGING_FIELDS_IN_OPEN_ORDER;
 
 /** Minimum supported version. */
 export const MIN_SERVER_VER_SUPPORTED = 38;

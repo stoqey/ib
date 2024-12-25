@@ -13,7 +13,7 @@ export class FOP implements Contract {
     public right: OptionType,
     public multiplier?: number,
     public exchange?: string,
-    public currency?: string
+    public currency?: string,
   ) {
     this.currency = this.currency ?? "USD";
     this.exchange = this.exchange ?? "GLOBEX";

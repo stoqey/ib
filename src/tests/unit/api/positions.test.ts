@@ -1,7 +1,13 @@
 /**
  * This file implement test code for the public API interfaces.
  */
-import { Contract, ErrorCode, EventName, IBApi } from "../../..";
+import {
+  Contract,
+  ErrorCode,
+  EventName,
+  IBApi,
+  isNonFatalError,
+} from "../../..";
 import configuration from "../../../common/configuration";
 import logger from "../../../common/logger";
 
@@ -103,10 +109,9 @@ describe("IBApi Tests", () => {
       });
 
     ib.on(EventName.disconnected, () => done())
-      .on(EventName.info, (msg, code) => console.info("INFO", code, msg))
-      .on(EventName.error, (err, code, reqId) => {
-        if (reqId > 0) done(`[${reqId}] ${err.message} (#${code})`);
-        else console.error("ERROR", err.message, code, reqId);
+      .on(EventName.error, (error, code, reqId) => {
+        const msg = `[${reqId}] ${error.message} (Error #${code})`;
+        isNonFatalError(code, error) ? logger.warn(msg) : logger.error(msg);
       })
       .connect();
   });
