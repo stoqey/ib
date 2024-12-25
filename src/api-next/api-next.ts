@@ -207,12 +207,12 @@ export class IBApiNext {
         reqId: number,
         advancedOrderReject?: unknown,
       ) => {
-        const apiError: IBApiNextError = {
+        const apiError = new IBApiNextError(
           error,
           code,
           reqId,
           advancedOrderReject,
-        };
+        );
         // emit to the subscription subject
         if (reqId !== ErrorCode.NO_VALID_ID && !isNonFatalError(code, error)) {
           this.subscriptions.dispatchError(apiError);
