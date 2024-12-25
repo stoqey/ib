@@ -2219,7 +2219,10 @@ export class Decoder {
     const reqId = this.readInt();
     const nCount = this.readInt();
 
-    const theMap: Map<number, [string, string]> = new Map();
+    const theMap: Map<number, [string, string]> = new Map<
+      number,
+      [string, string]
+    >();
     for (let i = 0; i < nCount; i++) {
       const bitNumber = this.readInt();
       const exchange = this.readStr();

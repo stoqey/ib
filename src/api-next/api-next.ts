@@ -2209,12 +2209,12 @@ export class IBApiNext {
 
     if (side == 0) {
       // ask side
-      cachedRows = <Map<OrderBookRowPosition, OrderBookRow>>cached.asks;
-      changedRows = <Map<OrderBookRowPosition, OrderBookRow>>changed.asks;
+      cachedRows = <Map<OrderBookRowPosition, OrderBookRow>>cached.asks; // eslint-disable-line @typescript-eslint/consistent-type-assertions
+      changedRows = <Map<OrderBookRowPosition, OrderBookRow>>changed.asks; // eslint-disable-line @typescript-eslint/consistent-type-assertions
     } else if (side == 1) {
       // bid side
-      cachedRows = <Map<OrderBookRowPosition, OrderBookRow>>cached.bids;
-      changedRows = <Map<OrderBookRowPosition, OrderBookRow>>changed.bids;
+      cachedRows = <Map<OrderBookRowPosition, OrderBookRow>>cached.bids; // eslint-disable-line @typescript-eslint/consistent-type-assertions
+      changedRows = <Map<OrderBookRowPosition, OrderBookRow>>changed.bids; // eslint-disable-line @typescript-eslint/consistent-type-assertions
     }
 
     if (cachedRows === undefined || changedRows === undefined) {

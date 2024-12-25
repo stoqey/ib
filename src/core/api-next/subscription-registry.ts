@@ -43,7 +43,7 @@ class RegistryEntry {
 
   /** Map of all active subscriptions, with reqId as key. */
   public readonly subscriptions: Map<number, IBApiNextSubscription<unknown>> =
-    new Map();
+    new Map<number, IBApiNextSubscription<unknown>>();
 }
 
 /**

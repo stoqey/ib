@@ -1,7 +1,7 @@
 /*
  * Typescript implementation of the Interactive Brokers TWS (or IB Gateway) API.
  */
-/* eslint @typescript-eslint/no-unsafe-declaration-merging:warn,@typescript-eslint/unified-signatures:warn */
+/* eslint @typescript-eslint/no-unsafe-declaration-merging:warn,@typescript-eslint/unified-signatures:off */
 import { EventEmitter } from "eventemitter3";
 import {
   DurationUnit,

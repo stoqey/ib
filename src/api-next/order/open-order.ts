@@ -1,6 +1,6 @@
 import { Contract, Order, OrderState, OrderStatus } from "../..";
 
-export type IBApiNextOrderStatus = {
+export interface IBApiNextOrderStatus {
   status: OrderStatus;
   filled: number;
   remaining: number;
@@ -11,7 +11,7 @@ export type IBApiNextOrderStatus = {
   clientId?: number;
   whyHeld?: string;
   mktCapPrice?: number;
-};
+}
 
 export interface OpenOrder {
   orderId: number;
