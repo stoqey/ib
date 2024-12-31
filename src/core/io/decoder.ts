@@ -1593,17 +1593,17 @@ export class Decoder {
    * Decode a TICK_OPTION_COMPUTATION message from data queue and emit a tickOptionComputation event.
    */
   private decodeMsg_TICK_OPTION_COMPUTATION(): void {
-    let version;
-    if (this.serverVersion >= MIN_SERVER_VER.PRICE_BASED_VOLATILITY)
-      version = Number.MAX_VALUE;
-    else version = this.readInt();
+    const version =
+      this.serverVersion >= MIN_SERVER_VER.PRICE_BASED_VOLATILITY
+        ? Number.MAX_VALUE
+        : this.readInt();
 
     const tickerId = this.readInt();
     const tickType = this.readInt();
 
-    let tickAttrib = Number.MAX_VALUE;
+    let _tickAttrib;
     if (this.serverVersion >= MIN_SERVER_VER.PRICE_BASED_VOLATILITY) {
-      tickAttrib = this.readInt();
+      _tickAttrib = this.readInt();
     }
 
     let impliedVol = this.readDouble();
@@ -1673,7 +1673,7 @@ export class Decoder {
       EventName.tickOptionComputation,
       tickerId,
       tickType,
-      tickAttrib,
+      // tickAttrib,	0 - return based, 1- price based. Ignored
       impliedVol,
       delta,
       optPrice,

@@ -35,14 +35,16 @@ export default tseslint.config(
           varsIgnorePattern: "^_",
         },
       ],
+
       quotes: ["error", "double"],
+      semi: ["error", "always"],
+      strict: "error",
+
       "rxjs/no-async-subscribe": "error",
       "rxjs/no-ignored-observable": "error",
       "rxjs/no-ignored-subscription": "error",
       "rxjs/no-unbound-methods": "error",
       "rxjs/throw-error": "error",
-      semi: ["error", "always"],
-      strict: "error",
     },
   },
   {
