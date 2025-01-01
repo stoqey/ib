@@ -313,7 +313,7 @@ export interface ContractDetails {
   fundBlueSkyTerritories?: string;
   fundDistributionPolicyIndicator?: FundDistributionPolicyIndicator;
   fundAssetType?: FundAssetType;
-  ineligibilityReasonList?: Array<IneligibilityReason>;
+  ineligibilityReasonList?: IneligibilityReason[];
 }
 
 export default ContractDetails;

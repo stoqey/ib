@@ -8,7 +8,7 @@ export class MarketCloseOrder {
   constructor(
     public action: OrderAction,
     public totalQuantity: number,
-    public transmit: boolean = true
+    public transmit: boolean = true,
   ) {}
 
   public orderType = OrderType.MOC;

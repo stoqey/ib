@@ -86,5 +86,5 @@ export enum IN_MSG_ID {
   WSH_META_DATA = 104,
   WSH_EVENT_DATA = 105,
   HISTORICAL_SCHEDULE = 106,
-  USER_INFO                 = 107,
+  USER_INFO = 107,
 }

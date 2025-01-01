@@ -28,7 +28,10 @@ export class Forex implements Contract {
     "RUB",
   ];
 
-  constructor(public symbol: string, public currency: string) {
+  constructor(
+    public symbol: string,
+    public currency: string,
+  ) {
     // Swap between symbol and currency if the ordering is incorrect.
 
     let temp: string;

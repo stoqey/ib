@@ -14,6 +14,7 @@ export enum OrderType {
   LIT = "LIT",
   LMT_PLUS_MKT = "LMT + MKT",
   LOC = "LOC",
+  MIDPRICE = "MIDPRICE",
   MIT = "MIT",
   MKT_PRT = "MKT PRT",
   MOC = "MOC",

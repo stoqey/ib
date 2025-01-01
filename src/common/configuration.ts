@@ -1,8 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-var-requires */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { readFileSync } from "fs";
 import * as path from "path";
 
-require("dotenv").config();
+import dotenv from "dotenv";
+dotenv.config();
 
 export interface Configuration {
   ci: string;
@@ -61,7 +62,7 @@ function read(file: string): Configuration {
     "..",
     "..",
     "config",
-    `${file}.json`
+    `${file}.json`,
   );
   return readJson(filePath);
 }
@@ -92,7 +93,7 @@ function loadEnvironmentSpecific(config: Configuration, environment: string) {
 
 const ensureInteger = (
   fields: (keyof Configuration)[],
-  config: Configuration
+  config: Configuration,
 ) =>
   fields.forEach((field) => {
     const value = config[field];

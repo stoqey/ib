@@ -207,12 +207,12 @@ export class IBApiNext {
         reqId: number,
         advancedOrderReject?: unknown,
       ) => {
-        const apiError: IBApiNextError = {
+        const apiError = new IBApiNextError(
           error,
           code,
           reqId,
           advancedOrderReject,
-        };
+        );
         // emit to the subscription subject
         if (reqId !== ErrorCode.NO_VALID_ID && !isNonFatalError(code, error)) {
           this.subscriptions.dispatchError(apiError);
@@ -2209,12 +2209,12 @@ export class IBApiNext {
 
     if (side == 0) {
       // ask side
-      cachedRows = <Map<OrderBookRowPosition, OrderBookRow>>cached.asks;
-      changedRows = <Map<OrderBookRowPosition, OrderBookRow>>changed.asks;
+      cachedRows = <Map<OrderBookRowPosition, OrderBookRow>>cached.asks; // eslint-disable-line @typescript-eslint/consistent-type-assertions
+      changedRows = <Map<OrderBookRowPosition, OrderBookRow>>changed.asks; // eslint-disable-line @typescript-eslint/consistent-type-assertions
     } else if (side == 1) {
       // bid side
-      cachedRows = <Map<OrderBookRowPosition, OrderBookRow>>cached.bids;
-      changedRows = <Map<OrderBookRowPosition, OrderBookRow>>changed.bids;
+      cachedRows = <Map<OrderBookRowPosition, OrderBookRow>>cached.bids; // eslint-disable-line @typescript-eslint/consistent-type-assertions
+      changedRows = <Map<OrderBookRowPosition, OrderBookRow>>changed.bids; // eslint-disable-line @typescript-eslint/consistent-type-assertions
     }
 
     if (cachedRows === undefined || changedRows === undefined) {
@@ -2285,16 +2285,17 @@ export class IBApiNext {
 
       case 2:
         // it's a delete
-        const deletedRow = cachedRows.get(position);
+        {
+          const deletedRow = cachedRows.get(position);
 
-        cachedRows.delete(position);
-        changedRows.set(position, deletedRow);
+          cachedRows.delete(position);
+          changedRows.set(position, deletedRow);
 
-        subscription.next({
-          all: cached,
-          removed: changed,
-        });
-
+          subscription.next({
+            all: cached,
+            removed: changed,
+          });
+        }
         break;
 
       default:

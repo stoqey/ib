@@ -5,7 +5,7 @@ export enum OrderAction {
   BUY = "BUY",
   SELL = "SELL",
   SSHORT = "SSHORT",
-  SLONG = "SLONG"
+  SLONG = "SLONG",
 }
 
 export default OrderAction;

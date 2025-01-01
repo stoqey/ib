@@ -8,7 +8,7 @@ export class CFD implements Contract {
   constructor(
     public symbol: string,
     public currency?: string,
-    public exchange?: string
+    public exchange?: string,
   ) {
     this.currency = this.currency ?? "USD";
     this.exchange = this.exchange ?? "SMART";

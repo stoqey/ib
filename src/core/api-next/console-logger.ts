@@ -26,7 +26,7 @@ export class ConsoleLogger implements Logger {
     if (this._logLevel >= LogLevel.DETAIL) {
       console.debug(
         `[${new Date().toLocaleTimeString()}] [DEBUG] [${tag}]: `,
-        args
+        args,
       );
     }
   }
@@ -36,7 +36,7 @@ export class ConsoleLogger implements Logger {
     if (this._logLevel >= LogLevel.INFO) {
       console.log(
         `[${new Date().toLocaleTimeString()}] [INFO] [${tag}]: `,
-        args
+        args,
       );
     }
   }
@@ -48,9 +48,9 @@ export class ConsoleLogger implements Logger {
       if (Array.isArray(args)) newArgs = args.map(colors.yellow);
       console.warn(
         colors.bold.yellow(
-          `[${new Date().toLocaleTimeString()}] [WARN] [${tag}]: `
+          `[${new Date().toLocaleTimeString()}] [WARN] [${tag}]: `,
         ),
-        newArgs
+        newArgs,
       );
     }
   }
@@ -61,14 +61,14 @@ export class ConsoleLogger implements Logger {
       let newArgs = args;
       if (Array.isArray(args))
         newArgs = args.map((x) =>
-          colors.bold.red(util.inspect(x, { showHidden: false, depth: null }))
+          colors.bold.red(util.inspect(x, { showHidden: false, depth: null })),
         );
 
       console.error(
         colors.bold.red(
-          `[${new Date().toLocaleTimeString()}] [ERROR] [${tag}]:`
+          `[${new Date().toLocaleTimeString()}] [ERROR] [${tag}]:`,
         ),
-        newArgs
+        newArgs,
       );
     }
   }

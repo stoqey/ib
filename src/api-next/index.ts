@@ -32,10 +32,11 @@ export {
   MarketDataUpdate,
 } from "./market/market-data";
 export { MarketDataType } from "./market/market-data-type";
-export { IBApiTickType };
-import { TickType as IBApiTickType } from "../api/market/tickType";
-import { TickType as IBApiNextTickType } from "./market/tick-type";
-export { IBApiNextTickType };
+// export { IBApiTickType };
+export { TickType as IBApiTickType } from "../api/market/tickType";
+export { TickType as IBApiNextTickType } from "./market/tick-type";
+// export { IBApiNextTickType };
+export { MutableMarketData } from "../core/api-next/api/market/mutable-market-data";
 
 // pnl
 

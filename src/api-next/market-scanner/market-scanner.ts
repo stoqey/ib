@@ -3,14 +3,14 @@ import { ItemListUpdate } from "../common/item-list-update";
 
 export type MarketScannerItemRank = number;
 
-export type MarketScannerItem = {
+export interface MarketScannerItem {
   rank: MarketScannerItemRank;
   contract: ContractDetails;
   distance: string;
   benchmark: string;
   projection: string;
   legStr: string;
-};
+}
 
 export type MarketScannerRows = Map<MarketScannerItemRank, MarketScannerItem>;
 

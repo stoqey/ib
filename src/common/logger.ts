@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import colors from "colors";
@@ -26,7 +25,11 @@ const warn = (...args: any[]) => {
 const error = (...args: any[]) => {
   // Prevent hiding of any stack traces
   const newArgs = [timeStamp(), "Error:", ...args].map((x) =>
-    colors.bold.red(typeof x == "string" ? x : util.inspect(x, { showHidden: false, depth: null })),
+    colors.bold.red(
+      typeof x == "string"
+        ? x
+        : util.inspect(x, { showHidden: false, depth: null }),
+    ),
   );
 
   console.error(...newArgs);
@@ -34,7 +37,9 @@ const error = (...args: any[]) => {
 
 const testError = (...args: any[]) => {
   // Prevent hiding of any stack traces
-  const newArgs = args.map((x) => colors.bold.red(util.inspect(x, { showHidden: false, depth: 3 })));
+  const newArgs = args.map((x) =>
+    colors.bold.red(util.inspect(x, { showHidden: false, depth: 3 })),
+  );
 
   console.error(...newArgs);
 };

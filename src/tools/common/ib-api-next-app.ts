@@ -7,6 +7,7 @@ import LogLevel from "../../api/data/enum/log-level";
 import OptionType from "../../api/data/enum/option-type";
 import SecType from "../../api/data/enum/sec-type";
 import configuration from "../../common/configuration";
+import { isNonFatalError } from "../../common/errorCode";
 import logger from "../../common/logger";
 
 /**
@@ -150,7 +151,7 @@ export class IBApiNextApp {
 
     if (!this.error$) {
       this.error$ = this.api.errorSubject.subscribe((error) => {
-        if (error.reqId === -1) {
+        if (isNonFatalError(error.code, error.error)) {
           this.warn(`${error.error.message} (Error #${error.code})`);
         } else {
           this.error(
@@ -238,7 +239,7 @@ export class IBApiNextApp {
         console.error("ERROR: Unknown argument " + pair[0]);
         this.exit(1);
       }
-      this.cmdLineArgs[name] = pair.length > 1 ? pair[1] ?? "1" : "1";
+      this.cmdLineArgs[name] = pair.length > 1 ? (pair[1] ?? "1") : "1";
     });
 
     if (this.cmdLineArgs.h || this.cmdLineArgs.help) {

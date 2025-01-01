@@ -54,7 +54,7 @@ describe("ApiNext: getMarketRule()", () => {
       expect(result[3][0].increment).toBe(0.0001);
       expect(result[4][0].lowEdge).toBe(0);
       expect(result[4][0].increment).toBe(0.25);
-      logger.info(result);
+      // logger.info(result);
       done();
     });
   });
@@ -65,7 +65,7 @@ describe("ApiNext: getMarketRule()", () => {
     for (let i = 0; i < n; i++) p.push(api.getMarketRule(26));
 
     Promise.all(p).then((result) => {
-      logger.info(result);
+      // logger.info(result);
       expect(result.length).toBe(n);
       done();
     });
