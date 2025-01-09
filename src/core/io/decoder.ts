@@ -132,7 +132,7 @@ export class Decoder {
    *
    * @param callback A [[DecoderCallbacks]] implementation.
    */
-  constructor(private callback: DecoderCallbacks) { }
+  constructor(private callback: DecoderCallbacks) {}
 
   /**
    * Input data queue.
@@ -379,7 +379,8 @@ export class Decoder {
         if (verifyMessageBoundary) {
           if (this.dataQueue[0] !== undefined) {
             this.callback.emitError(
-              `Decoding error on ${IN_MSG_ID[msgId]
+              `Decoding error on ${
+                IN_MSG_ID[msgId]
               }: unprocessed data left on queue (${JSON.stringify(
                 this.dataQueue,
               )}). Please report to https://github.com/stoqey/ib`,
@@ -2765,7 +2766,7 @@ class OrderDecoder {
     private orderState: OrderState,
     private version: number,
     private serverVersion: number,
-  ) { }
+  ) {}
 
   readOrderId(): void {
     this.order.orderId = this.decoder.readInt();
