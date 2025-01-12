@@ -70,8 +70,6 @@ export class IBApiAutoConnection extends IBApi {
 
   /** Ingress timestamp of last received message data from TWS. */
   private lastDataIngressTm?: number;
-  private lastDataWatchdogTm?: number;
-  private lastDataWatchdogTmCount?: number = 0;
 
   /** The connection-state [[BehaviorSubject]]. */
   private readonly _connectionState = new BehaviorSubject<ConnectionState>(
@@ -250,27 +248,7 @@ export class IBApiAutoConnection extends IBApi {
           "Connection watchdog timeout. Dropping connection.",
         );
         this.onDisconnected();
-      } else {
-        if (this.lastDataWatchdogTm === this.lastDataIngressTm) {
-          if (this.lastDataWatchdogTmCount <= 10) {
-            this.lastDataWatchdogTmCount++;
-            this.logger.debug(
-              LOG_TAG,
-              `Connection watchdog: last data ingress time ${this.lastDataIngressTm}`,
-            );
-          } else {
-            this.logger.debug(
-              LOG_TAG,
-              "Connection watchdog: no new data. Dropping connection.",
-            );
-            this.onDisconnected();
-          }
-        } else {
-          this.lastDataWatchdogTmCount = 0;
-        }
       }
-
-      this.lastDataWatchdogTm = this.lastDataIngressTm;
       // trigger at least some message if connection is idle
       this.reqCurrentTime();
     }, this.watchdogInterval / 2);
@@ -295,7 +273,7 @@ export class IBApiAutoConnection extends IBApi {
    * Called when an [[EventName.disconnected]] event has been received,
    * or the connection-watchdog has detected a dead connection.
    */
-  private onDisconnected(): void {
+  public onDisconnected(): void {
     this.logger.debug(LOG_TAG, "onDisconnected()");
 
     // verify state and update state

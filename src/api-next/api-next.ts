@@ -232,8 +232,13 @@ export class IBApiNext {
     });
 
     // setup TWS info message event handler  (bound to lifetime of IBApiAutoConnection so we never unregister)
-
     this.api.on(EventName.info, (message: string, code: number) => {
+      if (
+        code === ErrorCode.FAIL_CONNECTION_LOST_BETWEEN_SERVER_AND_TWS ||
+        code === ErrorCode.FAIL_CONNECTION_LOST_BETWEEN_TWS_AND_SERVER
+      ) {
+        this.api.onDisconnected();
+      }
       this.logger.info(TWS_LOG_TAG, `${message} - Code: ${code}`);
     });
   }
