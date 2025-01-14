@@ -292,6 +292,17 @@ export enum ErrorCode {
   /** Failed to read message because not connected */
   FAIL_READ_MESSAGE = 586,
 
+  /** Connectivity between IBKR and Trader Workstation has been lost.
+   * @When client is connected to TWS and server but TWS losses connection to server.
+   * 🗣️🗣️🗣️ "Market data connection lost".
+   */
+  FAIL_CONNECTION_LOST_BETWEEN_SERVER_AND_TWS = 1100,
+
+  /** Connectivity between Trader Workstation and server is broken. It will be restored automatically.
+   * @When client connects to TWS but TWS isn't connected to server.
+   */
+  FAIL_CONNECTION_LOST_BETWEEN_TWS_AND_SERVER = 2110,
+
   /** Invalid position trade derived value */
   INVALID_POSITION_TRADE_DERIVATED_VALUE = 2150,
 

@@ -242,7 +242,7 @@ export class IBApiAutoConnection extends IBApi {
           triggerReconnect = true;
         }
       }
-      if (triggerReconnect) {
+      if (triggerReconnect && !this.isConnected) {
         this.logger.debug(
           LOG_TAG,
           "Connection watchdog timeout. Dropping connection.",
@@ -273,7 +273,7 @@ export class IBApiAutoConnection extends IBApi {
    * Called when an [[EventName.disconnected]] event has been received,
    * or the connection-watchdog has detected a dead connection.
    */
-  private onDisconnected(): void {
+  public onDisconnected(): void {
     this.logger.debug(LOG_TAG, "onDisconnected()");
 
     // verify state and update state
