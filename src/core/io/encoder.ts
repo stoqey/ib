@@ -3222,12 +3222,11 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     const tokens: unknown[] = [
-      OUT_MSG_ID.REQ_NEWS_PROVIDERS,
+      OUT_MSG_ID.REQ_HISTORICAL_NEWS,
       reqId,
       conId,
       providerCodes,
       startDateTime,
-      endDateTime,
       endDateTime,
       totalResults,
     ];
