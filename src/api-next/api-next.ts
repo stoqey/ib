@@ -29,9 +29,12 @@ import {
   ScannerSubscription,
   SecType,
   TagValue,
+  TickByTickDataType,
   WhatToShow,
 } from "../";
 import LogLevel from "../api/data/enum/log-level";
+import { TickAttribLast } from "../api/historical/historicalTickLast";
+import { TickByTickAllLast } from "../api/market/tickByTickAllLast";
 import OrderStatus from "../api/order/enum/order-status";
 import { isNonFatalError } from "../common/errorCode";
 import {
@@ -3132,5 +3135,74 @@ export class IBApiNext {
         defaultValue: undefined,
       },
     );
+  }
+
+  /** TickByTickAllLastDataUpdates event handler */
+  private readonly onTickByTickAllLastDataUpdates = (
+    subscriptions: Map<number, IBApiNextSubscription<TickByTickAllLast>>,
+    reqId: number,
+    time: number,
+    price: number,
+    size: number,
+    tickAttribLast: TickAttribLast,
+    exchange: string,
+    specialConditions: string,
+  ): void => {
+    // get subscription
+
+    const subscription = subscriptions.get(reqId);
+    if (!subscription) {
+      return;
+    }
+
+    // update tick by tick all last
+
+    const current = subscription.lastAllValue ?? ({} as TickByTickAllLast);
+    current.time = time;
+    current.price = price !== -1 ? price : undefined;
+    current.size = size !== -1 ? size : undefined;
+    current.tickAttribLast = tickAttribLast;
+    current.exchange = exchange;
+    current.specialConditions = specialConditions;
+    subscription.next({
+      all: current,
+    });
+  };
+
+  /**
+   * Create a subscription to receive tick-by-tick last or all last price data updates.
+   *
+   * Use {@link IBApiNext.getHistoricalTicksLast} to receive historical last tick data and this function if you
+   * want to receive real-time tick-by-tick last or all last price data updates.
+   *
+   * @see https://interactivebrokers.github.io/tws-api/tick_data.html for details
+   *
+   * @param contract The contract for which we want to retrieve the data.
+   * @param numberOfTicks The number of ticks to retrieve.
+   * @param ignoreSize If true, the size of the tick will be ignored.
+   */
+  getTickByTickAllLastDataUpdates(
+    contract: Contract,
+    numberOfTicks: number,
+    ignoreSize: boolean,
+  ): Observable<TickByTickAllLast> {
+    return this.subscriptions
+      .register<TickByTickAllLast>(
+        (reqId) => {
+          this.api.reqTickByTickData(
+            reqId,
+            contract,
+            TickByTickDataType.Last,
+            numberOfTicks,
+            ignoreSize,
+          );
+        },
+        (reqId) => {
+          this.api.cancelTickByTickData(reqId);
+        },
+        [[EventName.tickByTickAllLast, this.onTickByTickAllLastDataUpdates]],
+        `${JSON.stringify(contract)}:${numberOfTicks}:${ignoreSize}`, // Use the same instance ID each time to ensure there is only one pending request at a time.
+      )
+      .pipe(map((v: { all: TickByTickAllLast }) => v.all));
   }
 }
