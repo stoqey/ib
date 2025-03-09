@@ -3138,36 +3138,39 @@ export class IBApiNext {
   }
 
   /** TickByTickAllLastDataUpdates event handler */
-  private readonly onTickByTickAllLastDataUpdates = (
-    subscriptions: Map<number, IBApiNextSubscription<TickByTickAllLast>>,
-    reqId: number,
-    time: number,
-    price: number,
-    size: number,
-    tickAttribLast: TickAttribLast,
-    exchange: string,
-    specialConditions: string,
-  ): void => {
-    // get subscription
+  private readonly onTickByTickAllLastDataUpdates =
+    (contract: Contract) =>
+    (
+      subscriptions: Map<number, IBApiNextSubscription<TickByTickAllLast>>,
+      reqId: number,
+      time: number,
+      price: number,
+      size: number,
+      tickAttribLast: TickAttribLast,
+      exchange: string,
+      specialConditions: string,
+    ): void => {
+      // get subscription
 
-    const subscription = subscriptions.get(reqId);
-    if (!subscription) {
-      return;
-    }
+      const subscription = subscriptions.get(reqId);
+      if (!subscription) {
+        return;
+      }
 
-    // update tick by tick all last
+      // update tick by tick all last
 
-    const current = subscription.lastAllValue ?? ({} as TickByTickAllLast);
-    current.time = time;
-    current.price = price !== -1 ? price : undefined;
-    current.size = size !== -1 ? size : undefined;
-    current.tickAttribLast = tickAttribLast;
-    current.exchange = exchange;
-    current.specialConditions = specialConditions;
-    subscription.next({
-      all: current,
-    });
-  };
+      const current = subscription.lastAllValue ?? ({} as TickByTickAllLast);
+      current.time = time;
+      current.price = price !== -1 ? price : undefined;
+      current.size = size !== -1 ? size : undefined;
+      current.tickAttribLast = tickAttribLast;
+      current.exchange = exchange;
+      current.specialConditions = specialConditions;
+      current.contract = contract;
+      subscription.next({
+        all: current,
+      });
+    };
 
   /**
    * Create a subscription to receive tick-by-tick last or all last price data updates.
@@ -3200,7 +3203,12 @@ export class IBApiNext {
         (reqId) => {
           this.api.cancelTickByTickData(reqId);
         },
-        [[EventName.tickByTickAllLast, this.onTickByTickAllLastDataUpdates]],
+        [
+          [
+            EventName.tickByTickAllLast,
+            this.onTickByTickAllLastDataUpdates(contract),
+          ],
+        ],
         `${JSON.stringify(contract)}:${numberOfTicks}:${ignoreSize}`, // Use the same instance ID each time to ensure there is only one pending request at a time.
       )
       .pipe(map((v: { all: TickByTickAllLast }) => v.all));

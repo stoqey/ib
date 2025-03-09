@@ -3,10 +3,12 @@
  */
 
 import {
+  Contract,
   EventName,
   IBApi,
   IBApiNext,
   IBApiNextError,
+  SecType,
 } from "../../..";
 import { TickByTickAllLast } from "../../../api/market/tickByTickAllLast";
 
@@ -19,8 +21,16 @@ describe("RxJS Wrapper: getTickByTickAllLastDataUpdates()", () => {
 
     // emit EventName.tickByTickAllLast events and verify RxJS result
 
+    const contract: Contract = {
+      symbol: "AMZN",
+      exchange: "SMART",
+      currency: "USD",
+      secType: SecType.STK,
+    };
+
     const REF_TICKS: TickByTickAllLast[] = [
       {
+        contract,
         time: 1675228123,
         price: 1,
         size: 2,
@@ -32,6 +42,7 @@ describe("RxJS Wrapper: getTickByTickAllLastDataUpdates()", () => {
         specialConditions: "SPECIAL_CONDITIONS",
       },
       {
+        contract,
         time: 1675228124,
         price: 11,
         size: 12,
@@ -43,6 +54,7 @@ describe("RxJS Wrapper: getTickByTickAllLastDataUpdates()", () => {
         specialConditions: "SPECIAL_CONDITIONS",
       },
       {
+        contract,
         time: 1675228125,
         price: 21,
         size: 22,
@@ -58,10 +70,11 @@ describe("RxJS Wrapper: getTickByTickAllLastDataUpdates()", () => {
     let updateCount = 0;
 
     apiNext
-      .getTickByTickAllLastDataUpdates({}, 0, false)
+      .getTickByTickAllLastDataUpdates(contract, 0, false)
       // eslint-disable-next-line rxjs/no-ignored-subscription
       .subscribe({
         next: (update) => {
+          expect(update.contract).toEqual(REF_TICKS[updateCount].contract);
           expect(update.time).toEqual(REF_TICKS[updateCount].time);
           expect(update.price).toEqual(REF_TICKS[updateCount].price);
           expect(update.size).toEqual(REF_TICKS[updateCount].size);

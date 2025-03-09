@@ -1,3 +1,4 @@
+import { Contract } from "../contract/contract";
 import { TickAttribLast } from "../historical/historicalTickLast";
 
 /**
@@ -23,4 +24,7 @@ export interface TickByTickAllLast {
 
   /** The special conditions of the tick. */
   specialConditions: string;
+
+  /** The contract of the tick. */
+  contract: Contract;
 }
