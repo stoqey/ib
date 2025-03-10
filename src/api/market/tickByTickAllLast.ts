@@ -7,6 +7,9 @@ import { TickAttribLast } from "../historical/historicalTickLast";
  * Used when requesting tick-by-tick data with tickType = LAST or ALL_LAST.
  */
 export interface TickByTickAllLast {
+  /** The tick type. */
+  tickType?: number;
+
   /** The UNIX timestamp of the tick. */
   time: number;
 

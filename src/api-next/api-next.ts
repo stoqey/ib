@@ -3143,7 +3143,8 @@ export class IBApiNext {
     (
       subscriptions: Map<number, IBApiNextSubscription<TickByTickAllLast>>,
       reqId: number,
-      time: number,
+      tickType: number,
+      time: string,
       price: number,
       size: number,
       tickAttribLast: TickAttribLast,
@@ -3160,7 +3161,8 @@ export class IBApiNext {
       // update tick by tick all last
 
       const current = subscription.lastAllValue ?? ({} as TickByTickAllLast);
-      current.time = time;
+      current.tickType = tickType;
+      current.time = !time ? undefined : +time;
       current.price = price !== -1 ? price : undefined;
       current.size = size !== -1 ? size : undefined;
       current.tickAttribLast = tickAttribLast;
@@ -3186,8 +3188,8 @@ export class IBApiNext {
    */
   getTickByTickAllLastDataUpdates(
     contract: Contract,
-    numberOfTicks: number,
-    ignoreSize: boolean,
+    numberOfTicks: number = 0,
+    ignoreSize: boolean = false,
   ): Observable<TickByTickAllLast> {
     return this.subscriptions
       .register<TickByTickAllLast>(
