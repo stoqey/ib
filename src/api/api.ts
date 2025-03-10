@@ -3021,7 +3021,7 @@ export declare interface IBApi {
     listener: (
       reqId: number,
       tickType: number,
-      time: number,
+      time: string,
       price: number,
       size: number,
       tickAttribLast: TickAttribLast,
