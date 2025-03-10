@@ -96,6 +96,7 @@ describe("RxJS Wrapper: getTickByTickAllLastDataUpdates()", () => {
       api.emit(
         EventName.tickByTickAllLast,
         1,
+        1,
         REF_TICKS[i].time,
         REF_TICKS[i].price,
         REF_TICKS[i].size,
