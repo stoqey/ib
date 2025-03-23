@@ -4,11 +4,12 @@
     <h1 align="center">Typescript API</h1>
   </p>
   <div style="display: flex;justify-content:center;">
+    <a href="https://discord.gg/T4VjBrqGtK" aria-label="Join Stoqey #welcome"><img src="https://img.shields.io/badge/discord-join%20chat-blue.svg" alt="Join Stoqey #welcome"></a>
     <img src="https://img.shields.io/github/package-json/v/stoqey/ib"></img>
     <img src="https://circleci.com/gh/stoqey/ib.svg?style=svg"></img>
     <img src="https://img.shields.io/badge/License-MIT-blue.svg"/> 
     <img src="https://img.shields.io/npm/dt/@stoqey/ib.svg"></img>
-    <a href="https://discord.gg/T4VjBrqGtK"><img src="https://img.shields.io/discord/1234567890?color=7289da&label=Discord&logo=discord&logoColor=white"></img></a>
+
   </div>
 </div>
 
@@ -276,7 +277,7 @@ If you want to contribute, read the [Developer Guide](https://github.com/stoqey/
 
 Join our Discord community to get help, share ideas, and connect with other developers:
 
-[![Join our Discord server](https://img.shields.io/discord/1234567890?color=7289da&label=Discord&logo=discord&logoColor=white)](https://discord.gg/T4VjBrqGtK)
+[![Join our Discord server](https://img.shields.io/badge/discord-join%20chat-blue.svg)](https://discord.gg/T4VjBrqGtK)
 
 - Get help with implementation
 - Share your projects
