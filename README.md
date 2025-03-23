@@ -4,10 +4,12 @@
     <h1 align="center">Typescript API</h1>
   </p>
   <div style="display: flex;justify-content:center;">
+    <a href="https://discord.gg/T4VjBrqGtK" aria-label="Join Stoqey #welcome"><img src="https://img.shields.io/badge/discord-join%20chat-blue.svg" alt="Join Stoqey #welcome"></a>
     <img src="https://img.shields.io/github/package-json/v/stoqey/ib"></img>
     <img src="https://circleci.com/gh/stoqey/ib.svg?style=svg"></img>
     <img src="https://img.shields.io/badge/License-MIT-blue.svg"/> 
     <img src="https://img.shields.io/npm/dt/@stoqey/ib.svg"></img>
+
   </div>
 </div>
 
@@ -16,6 +18,19 @@
 Refer to [IBKRCampus](https://ibkrcampus.com/campus/ibkr-api-page/twsapi-doc/) for the official documentation and the C#/Java/VB/C++/Python client.
 
 The module makes a socket connection to TWS (or IB Gateway) using the [net](http://nodejs.org/api/net.html) module and all messages are entirely processed in Typescript. It uses [EventEmitter](http://nodejs.org/api/events.html) to pass the result back to user.
+
+## Simpler Alternative
+
+If you're looking for a more straightforward implementation with ready-to-use examples, check out [@stoqey/ibkr](https://github.com/stoqey/ibkr). This wrapper library provides:
+
+- 🚀 Simplified API interface
+- 📝 Full working examples for common operations
+- 🔄 Built-in connection management
+- 📊 Easy market data handling
+- 💼 Streamlined portfolio management
+- 🤖 Trading automation helpers
+
+The wrapper is built on top of this library but offers a more developer-friendly experience for common use cases.
 
 ## Installation
 
@@ -257,3 +272,15 @@ In addition to that, a little demo / example app would be nice, to demonstrate A
 Any kind of bugfixes are welcome as well.
 
 If you want to contribute, read the [Developer Guide](https://github.com/stoqey/ib/wiki/Developer-Guide) and start coding.
+
+## Community
+
+Join our Discord community to get help, share ideas, and connect with other developers:
+
+[![Join our Discord server](https://img.shields.io/badge/discord-join%20chat-blue.svg)](https://discord.gg/T4VjBrqGtK)
+
+- Get help with implementation
+- Share your projects
+- Connect with other developers
+- Stay updated on new releases
+- Contribute to discussions
