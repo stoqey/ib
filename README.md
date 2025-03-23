@@ -17,6 +17,19 @@ Refer to [IBKRCampus](https://ibkrcampus.com/campus/ibkr-api-page/twsapi-doc/) f
 
 The module makes a socket connection to TWS (or IB Gateway) using the [net](http://nodejs.org/api/net.html) module and all messages are entirely processed in Typescript. It uses [EventEmitter](http://nodejs.org/api/events.html) to pass the result back to user.
 
+## Simpler Alternative
+
+If you're looking for a more straightforward implementation with ready-to-use examples, check out [@stoqey/ibkr](https://github.com/stoqey/ibkr). This wrapper library provides:
+
+- 🚀 Simplified API interface
+- 📝 Full working examples for common operations
+- 🔄 Built-in connection management
+- 📊 Easy market data handling
+- 💼 Streamlined portfolio management
+- 🤖 Trading automation helpers
+
+The wrapper is built on top of this library but offers a more developer-friendly experience for common use cases.
+
 ## Installation
 
     $ npm install @stoqey/ib
