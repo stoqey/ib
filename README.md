@@ -8,6 +8,7 @@
     <img src="https://circleci.com/gh/stoqey/ib.svg?style=svg"></img>
     <img src="https://img.shields.io/badge/License-MIT-blue.svg"/> 
     <img src="https://img.shields.io/npm/dt/@stoqey/ib.svg"></img>
+    <a href="https://discord.gg/T4VjBrqGtK"><img src="https://img.shields.io/discord/1234567890?color=7289da&label=Discord&logo=discord&logoColor=white"></img></a>
   </div>
 </div>
 
@@ -270,3 +271,15 @@ In addition to that, a little demo / example app would be nice, to demonstrate A
 Any kind of bugfixes are welcome as well.
 
 If you want to contribute, read the [Developer Guide](https://github.com/stoqey/ib/wiki/Developer-Guide) and start coding.
+
+## Community
+
+Join our Discord community to get help, share ideas, and connect with other developers:
+
+[![Join our Discord server](https://img.shields.io/discord/1234567890?color=7289da&label=Discord&logo=discord&logoColor=white)](https://discord.gg/T4VjBrqGtK)
+
+- Get help with implementation
+- Share your projects
+- Connect with other developers
+- Stay updated on new releases
+- Contribute to discussions
