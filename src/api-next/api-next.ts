@@ -2082,8 +2082,8 @@ export class IBApiNext {
    */
   getHistoricalTicksLast(
     contract: Contract,
-    startDateTime: string,
-    endDateTime: string,
+    startDateTime: string | null,
+    endDateTime: string | null,
     numberOfTicks: number,
     useRTH: number | boolean,
   ): Observable<HistoricalTickLast[]> {
