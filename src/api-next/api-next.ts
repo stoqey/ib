@@ -3140,39 +3140,37 @@ export class IBApiNext {
   /** TickByTickAllLastDataUpdates event handler */
   private readonly onTickByTickAllLastDataUpdates =
     (contract: Contract) =>
-      (
-        subscriptions: Map<number, IBApiNextSubscription<TickByTickAllLast>>,
-        reqId: number,
-        tickType: number,
-        time: string,
-        price: number,
-        size: number,
-        tickAttribLast: TickAttribLast,
-        exchange: string,
-        specialConditions: string,
-      ): void => {
-        // get subscription
+    (
+      subscriptions: Map<number, IBApiNextSubscription<TickByTickAllLast>>,
+      reqId: number,
+      tickType: number,
+      time: string,
+      price: number,
+      size: number,
+      tickAttribLast: TickAttribLast,
+      exchange: string,
+      specialConditions: string,
+    ): void => {
+      // get subscription
 
-        const subscription = subscriptions.get(reqId);
-        if (!subscription) {
-          return;
-        }
+      const subscription = subscriptions.get(reqId);
+      if (!subscription) {
+        return;
+      }
 
-        // update tick by tick all last
+      // update tick by tick all last
 
-        const current = subscription.lastAllValue ?? ({} as TickByTickAllLast);
-        current.tickType = tickType;
-        current.time = !time ? undefined : +time;
-        current.price = price !== -1 ? price : undefined;
-        current.size = size !== -1 ? size : undefined;
-        current.tickAttribLast = tickAttribLast;
-        current.exchange = exchange;
-        current.specialConditions = specialConditions;
-        current.contract = contract;
-        subscription.next({
-          all: current,
-        });
-      };
+      const current = subscription.lastAllValue ?? ({} as TickByTickAllLast);
+      current.tickType = tickType;
+      current.time = !time ? undefined : +time;
+      current.price = price !== -1 ? price : undefined;
+      current.size = size !== -1 ? size : undefined;
+      current.tickAttribLast = tickAttribLast;
+      current.exchange = exchange;
+      current.specialConditions = specialConditions;
+      current.contract = contract;
+      subscription.next({ all: current });
+    };
 
   /**
    * Create a subscription to receive tick-by-tick last or all last price data updates.
