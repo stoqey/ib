@@ -3169,9 +3169,7 @@ export class IBApiNext {
       current.exchange = exchange;
       current.specialConditions = specialConditions;
       current.contract = contract;
-      subscription.next({
-        all: current,
-      });
+      subscription.next({ all: current });
     };
 
   /**
@@ -3214,5 +3212,55 @@ export class IBApiNext {
         `${JSON.stringify(contract)}:${numberOfTicks}:${ignoreSize}`, // Use the same instance ID each time to ensure there is only one pending request at a time.
       )
       .pipe(map((v: { all: TickByTickAllLast }) => v.all));
+  }
+
+  private readonly onFundamentalData = (
+    subscriptions: Map<number, IBApiNextSubscription<string>>,
+    reqId: number,
+    data: string,
+  ): void => {
+    const sub = subscriptions.get(reqId);
+    subscriptions.delete(reqId);
+    sub?.next({ all: data });
+    sub?.complete();
+  };
+
+  /**
+   * Get the fundamental data of a contract.
+   * @param contract The contract's description for which the data will be returned.
+   * @param reportType there are three available report types:
+   * - ReportSnapshot: Company overview.
+   * - ReportsFinSummary: Financial summary.
+   * - ReportRatios: Financial ratios.
+   * - ReportsFinStatements: Financial statements.
+   * - RESC: Analyst estimates.
+   * @param fundamentalDataOptions The fundamental data options for which we want to retrieve the data.
+   */
+  getFundamentalData(
+    contract: Contract,
+    reportType: string,
+    fundamentalDataOptions: TagValue[] = [],
+  ): Promise<string> {
+    return lastValueFrom(
+      this.subscriptions
+        .register<string>(
+          (reqId) => {
+            this.api.reqFundamentalData(
+              reqId,
+              contract,
+              reportType,
+              fundamentalDataOptions,
+            );
+          },
+          (reqId) => {
+            this.api.cancelFundamentalData(reqId);
+          },
+          [[EventName.fundamentalData, this.onFundamentalData]],
+        )
+        .pipe(map((v: { all: string }) => v.all)),
+      {
+        defaultValue: undefined,
+      },
+    );
   }
 }
