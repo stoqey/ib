@@ -180,7 +180,7 @@ export class Encoder {
    *
    * @param callback A [[EncoderCallbacks]] implementation.
    */
-  constructor(private callback: EncoderCallbacks) {}
+  constructor(private callback: EncoderCallbacks) { }
 
   /** Get the API server version. */
   private get serverVersion(): number {
@@ -295,6 +295,14 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       reqId,
     ];
 
+    if (!contract?.conId) {
+      return this.emitError(
+        "No security definition has been found for the conId requested in calculateImpliedVolatility.",
+        ErrorCode.UPDATE_TWS,
+        reqId,
+      );
+    }
+
     // send contract fields
     tokens.push(contract.conId);
     tokens.push(contract.symbol);
@@ -358,6 +366,14 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
       version,
       reqId,
     ];
+
+    if (!contract?.conId) {
+      return this.emitError(
+        "No security definition has been found for the conId requested in calculateOptionPrice.",
+        ErrorCode.UPDATE_TWS,
+        reqId,
+      );
+    }
 
     // send contract fields
     tokens.push(contract.conId);
@@ -703,6 +719,14 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     const tokens: unknown[] = [OUT_MSG_ID.EXERCISE_OPTIONS, version, reqId];
+
+    if (!contract?.conId) {
+      return this.emitError(
+        "No security definition has been found for the conId requested in exerciseOptions.",
+        ErrorCode.UPDATE_TWS,
+        reqId,
+      );
+    }
 
     // send contract fields
     if (this.serverVersion >= MIN_SERVER_VER.TRADING_CLASS) {
@@ -2064,6 +2088,14 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     }
 
     // send contract fields
+    if (!contract?.conId) {
+      return this.emitError(
+        "No security definition has been found for the conId requested in reqContractDetails.",
+        ErrorCode.UPDATE_TWS,
+        reqId,
+      );
+    }
+
     if (this.serverVersion >= MIN_SERVER_VER.CONTRACT_CONID) {
       args.push(contract.conId);
     }
@@ -2194,6 +2226,14 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     const tokens: unknown[] = [OUT_MSG_ID.REQ_FUNDAMENTAL_DATA, version, reqId];
 
     // send contract fields
+    if (!contract?.conId) {
+      return this.emitError(
+        "No security definition has been found for the conId requested in reqFundamentalData.",
+        ErrorCode.UPDATE_TWS,
+        reqId,
+      );
+    }
+
     if (this.serverVersion >= MIN_SERVER_VER.TRADING_CLASS) {
       tokens.push(contract.conId);
     }
@@ -2311,6 +2351,14 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     tokens.push(reqId);
 
     // send contract fields
+    if (!contract?.conId) {
+      return this.emitError(
+        "No security definition has been found for the conId requested in reqHistoricalData.",
+        ErrorCode.UPDATE_TWS,
+        reqId,
+      );
+    }
+
     if (this.serverVersion >= MIN_SERVER_VER.TRADING_CLASS) {
       tokens.push(contract.conId);
     }
@@ -2712,6 +2760,14 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     const tokens: unknown[] = [OUT_MSG_ID.REQ_MKT_DEPTH, version, reqId];
 
     // send contract fields
+    if (!contract?.conId) {
+      return this.emitError(
+        "No security definition has been found for the conId requested in reqContractDetails.",
+        ErrorCode.UPDATE_TWS,
+        reqId,
+      );
+    }
+
     if (this.serverVersion >= MIN_SERVER_VER.TRADING_CLASS) {
       tokens.push(contract.conId);
     }
@@ -2867,6 +2923,14 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     const tokens: unknown[] = [OUT_MSG_ID.REQ_REAL_TIME_BARS, version, reqId];
 
     // send contract fields
+    if (!contract?.conId) {
+      return this.emitError(
+        "No security definition has been found for the conId requested in reqContractDetails.",
+        ErrorCode.UPDATE_TWS,
+        reqId,
+      );
+    }
+
     if (this.serverVersion >= MIN_SERVER_VER.TRADING_CLASS) {
       tokens.push(contract.conId);
     }
