@@ -137,10 +137,10 @@ jobs:
       #     command: |
       #       ./cc-test-reporter format-coverage -t lcov -o "coverage/codeclimate.$CIRCLE_NODE_INDEX.json"
 
-      - persist_to_workspace:
-          root: coverage
-          paths:
-            - codeclimate.*.json
+      # - persist_to_workspace:
+      #     root: coverage
+      #     paths:
+      #       - codeclimate.*.json
 
       #- run:
       #    name: Send coverage report to Code Climate
