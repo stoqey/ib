@@ -3236,12 +3236,21 @@ export class IBApiNext {
    * - RESC: Analyst estimates.
    * @param fundamentalDataOptions The fundamental data options for which we want to retrieve the data.
    */
-  getFundamentalData(contract: Contract, reportType: string, fundamentalDataOptions: TagValue[] = []): Promise<string> {
+  getFundamentalData(
+    contract: Contract,
+    reportType: string,
+    fundamentalDataOptions: TagValue[] = [],
+  ): Promise<string> {
     return lastValueFrom(
       this.subscriptions
         .register<string>(
           (reqId) => {
-            this.api.reqFundamentalData(reqId, contract, reportType, fundamentalDataOptions);
+            this.api.reqFundamentalData(
+              reqId,
+              contract,
+              reportType,
+              fundamentalDataOptions,
+            );
           },
           (reqId) => {
             this.api.cancelFundamentalData(reqId);
