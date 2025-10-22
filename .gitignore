@@ -9,7 +9,7 @@ dist/
 doc-dev/
 junit.xml
 reports/
-
+/samples/
 docker/ibc/config.ini
 
 docker/ibc/jts.ini

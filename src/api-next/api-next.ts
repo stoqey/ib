@@ -3140,39 +3140,39 @@ export class IBApiNext {
   /** TickByTickAllLastDataUpdates event handler */
   private readonly onTickByTickAllLastDataUpdates =
     (contract: Contract) =>
-    (
-      subscriptions: Map<number, IBApiNextSubscription<TickByTickAllLast>>,
-      reqId: number,
-      tickType: number,
-      time: string,
-      price: number,
-      size: number,
-      tickAttribLast: TickAttribLast,
-      exchange: string,
-      specialConditions: string,
-    ): void => {
-      // get subscription
+      (
+        subscriptions: Map<number, IBApiNextSubscription<TickByTickAllLast>>,
+        reqId: number,
+        tickType: number,
+        time: string,
+        price: number,
+        size: number,
+        tickAttribLast: TickAttribLast,
+        exchange: string,
+        specialConditions: string,
+      ): void => {
+        // get subscription
 
-      const subscription = subscriptions.get(reqId);
-      if (!subscription) {
-        return;
-      }
+        const subscription = subscriptions.get(reqId);
+        if (!subscription) {
+          return;
+        }
 
-      // update tick by tick all last
+        // update tick by tick all last
 
-      const current = subscription.lastAllValue ?? ({} as TickByTickAllLast);
-      current.tickType = tickType;
-      current.time = !time ? undefined : +time;
-      current.price = price !== -1 ? price : undefined;
-      current.size = size !== -1 ? size : undefined;
-      current.tickAttribLast = tickAttribLast;
-      current.exchange = exchange;
-      current.specialConditions = specialConditions;
-      current.contract = contract;
-      subscription.next({
-        all: current,
-      });
-    };
+        const current = subscription.lastAllValue ?? ({} as TickByTickAllLast);
+        current.tickType = tickType;
+        current.time = !time ? undefined : +time;
+        current.price = price !== -1 ? price : undefined;
+        current.size = size !== -1 ? size : undefined;
+        current.tickAttribLast = tickAttribLast;
+        current.exchange = exchange;
+        current.specialConditions = specialConditions;
+        current.contract = contract;
+        subscription.next({
+          all: current,
+        });
+      };
 
   /**
    * Create a subscription to receive tick-by-tick last or all last price data updates.
@@ -3214,5 +3214,46 @@ export class IBApiNext {
         `${JSON.stringify(contract)}:${numberOfTicks}:${ignoreSize}`, // Use the same instance ID each time to ensure there is only one pending request at a time.
       )
       .pipe(map((v: { all: TickByTickAllLast }) => v.all));
+  }
+
+  private readonly onFundamentalData = (
+    subscriptions: Map<number, IBApiNextSubscription<string>>,
+    reqId: number,
+    data: string,
+  ): void => {
+    const sub = subscriptions.get(reqId);
+    subscriptions.delete(reqId);
+    sub?.next({ all: data });
+    sub?.complete();
+  };
+
+  /**
+   * Get the fundamental data of a contract.
+   * @param contract The contract's description for which the data will be returned.
+   * @param reportType there are three available report types:
+   * - ReportSnapshot: Company overview.
+   * - ReportsFinSummary: Financial summary.
+   * - ReportRatios: Financial ratios.
+   * - ReportsFinStatements: Financial statements.
+   * - RESC: Analyst estimates.
+   * @param fundamentalDataOptions The fundamental data options for which we want to retrieve the data.
+   */
+  getFundamentalData(contract: Contract, reportType: string, fundamentalDataOptions: TagValue[] = []): Promise<string> {
+    return lastValueFrom(
+      this.subscriptions
+        .register<string>(
+          (reqId) => {
+            this.api.reqFundamentalData(reqId, contract, reportType, fundamentalDataOptions);
+          },
+          (reqId) => {
+            this.api.cancelFundamentalData(reqId);
+          },
+          [[EventName.fundamentalData, this.onFundamentalData]],
+        )
+        .pipe(map((v: { all: string }) => v.all)),
+      {
+        defaultValue: undefined,
+      },
+    );
   }
 }
