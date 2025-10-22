@@ -33,14 +33,14 @@ jobs:
           name: Build dist
           command: yarn build
 
-      - run:
-          name: Setup Code Climate test reporter
-          command: |
-            # download test reporter as a static binary
-            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-            chmod +x ./cc-test-reporter
-            ./cc-test-reporter before-build
-          when: always
+      # - run:
+      #     name: Setup Code Climate test reporter
+      #     command: |
+      #       # download test reporter as a static binary
+      #       curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+      #       chmod +x ./cc-test-reporter
+      #       ./cc-test-reporter before-build
+      #     when: always
 
       - save_cache:
           paths:
@@ -132,10 +132,10 @@ jobs:
             JEST_JUNIT_OUTPUT: "reports/junit/js-unit-$CIRCLE_NODE_INDEX-test-results.xml"
           when: always
 
-      - run:
-          name: Code Climate Test Coverage
-          command: |
-            ./cc-test-reporter format-coverage -t lcov -o "coverage/codeclimate.$CIRCLE_NODE_INDEX.json"
+      # - run:
+      #     name: Code Climate Test Coverage
+      #     command: |
+      #       ./cc-test-reporter format-coverage -t lcov -o "coverage/codeclimate.$CIRCLE_NODE_INDEX.json"
 
       - persist_to_workspace:
           root: coverage
