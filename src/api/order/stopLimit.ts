@@ -10,7 +10,7 @@ export class StopLimitOrder {
     public action: OrderAction,
     public lmtPrice: number,
     public auxPrice: number,
-    public totalQuantity?: boolean,
+    public totalQuantity?: number,
     public transmit?: boolean,
     public parentId?: number,
     public tif?: TimeInForce,
