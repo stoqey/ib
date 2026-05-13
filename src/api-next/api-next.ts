@@ -1887,7 +1887,7 @@ export class IBApiNext {
             reqId,
             contract,
             "",
-            "1 D",
+            "60 S",
             barSizeSetting,
             whatToShow,
             0,
