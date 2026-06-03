@@ -229,13 +229,13 @@ export enum ErrorCode {
   /** Request Head Time Stamp Sending Error. */
   FAIL_SEND_REQHEADTIMESTAMP = 566,
 
-  /** CRequest Histogram Data Sending Error */
+  /** Request Histogram Data Sending Error. */
   FAIL_SEND_REQHISTOGRAMDATA = 567,
 
-  /** Request Market Rule Sending Error. */
+  /** Cancel Histogram Data Sending Error. */
   FAIL_SEND_CANCELHISTOGRAMDATA = 568,
 
-  /** Cancel PnL Single Sending Error. */
+  /** Cancel Head Timestamp Sending Error. */
   FAIL_SEND_CANCELHEADTIMESTAMP = 569,
 
   /** Request Historical Ticks Sending Error. */

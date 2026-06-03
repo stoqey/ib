@@ -2,7 +2,7 @@
  * Emitted event names.
  */
 export enum EventName {
-  /** Notifies when an event has been received (called for the any type for event). */
+  /** Notifies when an event has been received (called for any type of event). */
   all = "all",
 
   /** Notifies when the connection to TWS/IB Gateway has been established successfully. */
@@ -113,10 +113,10 @@ export enum EventName {
   /** Receives bars in real time if keepUpToDate is `true` in reqHistoricalData. */
   historicalDataUpdate = "historicalDataUpdate",
 
-  /** Returns news headline */
+  /** Returns historical news headlines. */
   historicalNews = "historicalNews",
 
-  /** Returns news headline. */
+  /** Signals the end of historical news reception. */
   historicalNewsEnd = "historicalNewsEnd",
 
   /** Returns historical price tick data. */
