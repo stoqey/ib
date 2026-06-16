@@ -68,8 +68,8 @@ export class IBApiNextSubscriptionRegistry {
     private readonly apiNext: IBApiNext,
   ) {}
 
-  /** A Map containing the subscription registry, with event name as key. */
-  private readonly entries = new IBApiNextMap<EventName, RegistryEntry>();
+  /** A Map containing the subscription registry entries, grouped by event name. */
+  private readonly entries = new IBApiNextMap<EventName, RegistryEntry[]>();
 
   /**
    * Register a subscription.
@@ -101,15 +101,21 @@ export class IBApiNextSubscriptionRegistry {
     eventHandler.forEach((handler) => {
       const eventName = handler[0];
       const callback = handler[1];
-      const entry = this.entries.getOrAdd(eventName, () => {
-        const entry = new RegistryEntry(eventName, callback);
+      const eventEntries = this.entries.getOrAdd(eventName, () => []);
+      let entry = eventEntries.find(
+        (eventEntry) => eventEntry.callback === callback,
+      );
+
+      if (!entry) {
+        entry = new RegistryEntry(eventName, callback);
         this.apiNext.logger.debug(
           LOG_TAG,
           `Add RegistryEntry for EventName.${eventName}`,
         );
         this.api.addListener(eventName, entry.listener);
-        return entry;
-      });
+        eventEntries.push(entry);
+      }
+
       entries.push(entry);
     });
 
@@ -155,7 +161,14 @@ export class IBApiNextSubscriptionRegistry {
                 LOG_TAG,
                 `Remove RegistryEntry for EventName.${entry.eventName}.`,
               );
-              this.entries.delete(entry.eventName);
+              const eventEntries = this.entries.get(entry.eventName);
+              const entryIndex = eventEntries?.indexOf(entry) ?? -1;
+              if (entryIndex !== -1) {
+                eventEntries?.splice(entryIndex, 1);
+              }
+              if (!eventEntries?.length) {
+                this.entries.delete(entry.eventName);
+              }
             }
           });
 
@@ -185,8 +198,10 @@ export class IBApiNextSubscriptionRegistry {
    * Dispatch an error into the subscription that owns the given request id.
    */
   dispatchError(error: IBApiNextError): void {
-    this.entries.forEach((entry) => {
-      entry.subscriptions.get(error.reqId)?.error(error);
+    this.entries.forEach((eventEntries) => {
+      eventEntries.forEach((entry) => {
+        entry.subscriptions.get(error.reqId)?.error(error);
+      });
     });
   }
 }
