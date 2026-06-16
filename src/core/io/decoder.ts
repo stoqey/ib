@@ -1673,7 +1673,7 @@ export class Decoder {
       EventName.tickOptionComputation,
       tickerId,
       tickType,
-      // tickAttrib,	0 - return based, 1- price based. Ignored
+      _tickAttrib,
       impliedVol,
       delta,
       optPrice,

@@ -1223,6 +1223,7 @@ export class IBApiNext {
     subscriptions: Map<number, IBApiNextSubscription<MutableMarketData>>,
     reqId: number,
     field: number,
+    _tickAttrib: number | undefined,
     impliedVolatility: number,
     delta: number,
     optPrice: number,
