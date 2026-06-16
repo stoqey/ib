@@ -7,8 +7,8 @@ import { Contract } from "./contract";
 export class Index implements Contract {
   constructor(
     public symbol: string,
-    public currency?: string,
     public exchange?: string,
+    public currency?: string,
   ) {
     this.currency = this.currency ?? "USD";
     this.exchange = this.exchange ?? "CME";

@@ -40,6 +40,7 @@ export { Bond } from "./api/contract/bond";
 export { CFD } from "./api/contract/cfd";
 export { Combo } from "./api/contract/combo";
 export { ComboLeg } from "./api/contract/comboLeg";
+export { Crypto } from "./api/contract/crypto";
 export { Contract } from "./api/contract/contract";
 export { ContractDescription } from "./api/contract/contractDescription";
 export { ContractDetails } from "./api/contract/contractDetails";
