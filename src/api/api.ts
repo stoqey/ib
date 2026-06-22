@@ -3172,6 +3172,8 @@ export declare interface IBApi {
    * Pass the field value into [[TickType.getField]] to retrieve the field description.
    * For example, a field value of 13 will map to modelOptComp, etc. 10 = Bid 11 = Ask 12 = Last
    *
+   * tickAttrib: 0 - return based, 1 - price based.
+   *
    * impliedVolatility: The implied volatility calculated by the TWS option modeler, using the specified tick type
    *   value.
    *
@@ -3198,6 +3200,7 @@ export declare interface IBApi {
     listener: (
       reqId: number,
       field: TickType,
+      tickAttrib: number | undefined,
       impliedVolatility?: number,
       delta?: number,
       optPrice?: number,

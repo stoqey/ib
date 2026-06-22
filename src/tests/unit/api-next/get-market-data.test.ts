@@ -152,6 +152,7 @@ describe("RxJS Wrapper: getMarketData()", () => {
 
     // emit a tickOptionComputationHandler events and verify RxJS result
 
+    const tickAttrib = 1;
     const impliedVolatility = 1;
     const delta = 2;
     const optPrice = 3;
@@ -213,6 +214,7 @@ describe("RxJS Wrapper: getMarketData()", () => {
       EventName.tickOptionComputation,
       1,
       IBApiTickType.BID_OPTION,
+      tickAttrib,
       impliedVolatility,
       delta,
       optPrice,
