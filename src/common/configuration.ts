@@ -27,6 +27,7 @@ export interface Configuration {
 }
 
 let configuration: Configuration = null;
+let dotenvConfigured = false;
 
 const envsToInclude = [
   "ci",
@@ -100,6 +101,14 @@ const ensureInteger = (
   });
 
 function load() {
+  if (!dotenvConfigured) {
+    dotenvConfigured = true;
+    // Keep dotenv lazy so importing the package does not touch process.env or the filesystem.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const dotenv = require("dotenv") as typeof import("dotenv");
+    dotenv.config();
+  }
+
   const nodeEnvironment = process.env.NODE_ENV;
 
   // load default config
