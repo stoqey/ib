@@ -2,8 +2,11 @@ import { TickType, ItemListUpdate } from "../..";
 
 /**  A market data tick on [[IBApiNext]]. */
 export interface MarketDataTick {
-  /** The tick value. */
+  /** The numeric tick value. */
   readonly value?: number;
+
+  /** The raw string tick value, for ticks delivered through `tickString`. */
+  readonly stringValue?: string;
 
   /**
    * The ingress timestamp (UNIX) of the value.

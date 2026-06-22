@@ -1245,6 +1245,49 @@ export class IBApiNext {
     }
   };
 
+  /** tickString event handler */
+  private readonly onTickString = (
+    subscriptions: Map<number, IBApiNextSubscription<MutableMarketData>>,
+    reqId: number,
+    tickType: IBApiTickType,
+    value: string,
+  ): void => {
+    // get subscription
+
+    const subscription = subscriptions.get(reqId);
+    if (!subscription) {
+      return;
+    }
+
+    // update latest value on cache
+
+    const cached = subscription.lastAllValue ?? new MutableMarketData();
+    const hasChanged = cached.has(tickType);
+    const numericValue = value.trim() ? Number(value) : undefined;
+
+    const updatedValue: MarketDataTick = {
+      value: Number.isFinite(numericValue) ? numericValue : undefined,
+      stringValue: value,
+      ingressTm: Date.now(),
+    };
+
+    cached.set(tickType, updatedValue);
+
+    // deliver to subject
+
+    if (hasChanged) {
+      subscription.next({
+        all: cached,
+        changed: new MutableMarketData([[tickType, updatedValue]]),
+      });
+    } else {
+      subscription.next({
+        all: cached,
+        added: new MutableMarketData([[tickType, updatedValue]]),
+      });
+    }
+  };
+
   /** tickOptionComputationHandler event handler */
   private readonly onTickOptionComputation = (
     subscriptions: Map<number, IBApiNextSubscription<MutableMarketData>>,
@@ -1591,6 +1634,7 @@ export class IBApiNext {
         [EventName.tickPrice, this.onTick],
         [EventName.tickSize, this.onTick],
         [EventName.tickGeneric, this.onTick],
+        [EventName.tickString, this.onTickString],
         [EventName.tickOptionComputation, this.onTickOptionComputation],
         [EventName.tickSnapshotEnd, this.onTickSnapshotEnd],
       ],
@@ -3239,6 +3283,87 @@ export class IBApiNext {
         `${JSON.stringify(contract)}:${numberOfTicks}:${ignoreSize}`, // Use the same instance ID each time to ensure there is only one pending request at a time.
       )
       .pipe(map((v: { all: TickByTickAllLast }) => v.all));
+  }
+
+  /** realtimeBar event handler */
+  private readonly onRealTimeBar = (
+    subscriptions: Map<number, IBApiNextSubscription<Bar>>,
+    reqId: number,
+    time: number,
+    open: number,
+    high: number,
+    low: number,
+    close: number,
+    volume: number,
+    WAP: number,
+    count: number,
+  ): void => {
+    // get subscription
+
+    const subscription = subscriptions.get(reqId);
+    if (!subscription) {
+      return;
+    }
+
+    // update bar
+
+    const current: Bar = {
+      time: time.toString(),
+    };
+    if (open !== -1) {
+      current.open = open;
+    }
+    if (high !== -1) {
+      current.high = high;
+    }
+    if (low !== -1) {
+      current.low = low;
+    }
+    if (close !== -1) {
+      current.close = close;
+    }
+    if (volume !== -1) {
+      current.volume = volume;
+    }
+    if (WAP !== -1) {
+      current.WAP = WAP;
+    }
+    if (count !== -1) {
+      current.count = count;
+    }
+    subscription.next({ all: current });
+  };
+
+  /**
+   * Create a subscription to receive real-time 5-second bars.
+   *
+   * IB real-time bars are always aggregated server-side into 5-second bars.
+   *
+   * @param contract The contract for which we want to receive bars.
+   * @param whatToShow the kind of information being retrieved:
+   * - TRADES
+   * - MIDPOINT
+   * - BID
+   * - ASK
+   * @param useRTH Set to false to obtain the data which was also generated outside of the Regular Trading Hours, set to true to obtain only the RTH data.
+   */
+  getRealTimeBars(
+    contract: Contract,
+    whatToShow: WhatToShow = WhatToShow.TRADES,
+    useRTH: boolean = false,
+  ): Observable<Bar> {
+    return this.subscriptions
+      .register<Bar>(
+        (reqId) => {
+          this.api.reqRealTimeBars(reqId, contract, 5, whatToShow, useRTH);
+        },
+        (reqId) => {
+          this.api.cancelRealTimeBars(reqId);
+        },
+        [[EventName.realtimeBar, this.onRealTimeBar]],
+        `getRealTimeBars+${JSON.stringify(contract)}:${whatToShow}:${useRTH}`, // Use the same instance ID each time to ensure there is only one pending request at a time.
+      )
+      .pipe(map((v: { all: Bar }) => v.all));
   }
 
   private readonly onFundamentalData = (

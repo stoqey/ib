@@ -146,6 +146,86 @@ describe("RxJS Wrapper: getMarketData()", () => {
     api.emit(EventName.tickGeneric, 1, TickType.NEWS_TICK, testValue1);
   });
 
+  test("tickString numeric events", (done) => {
+    const apiNext = new IBApiNext();
+    const api = (apiNext as unknown as Record<string, unknown>).api as IBApi;
+
+    const testValue0 = "1718995200";
+    const testValue1 = "1718995205";
+
+    let received = 0;
+
+    const subscription = apiNext
+      .getMarketData({ conId: 12345 }, null, false, false)
+      .subscribe({
+        next: (data) => {
+          if (received == 0) {
+            expect(data.added).toBeDefined();
+            expect(data.changed).toBeUndefined();
+            expect(data.added.get(TickType.LAST_TIMESTAMP).value).toEqual(
+              Number(testValue0),
+            );
+          } else {
+            expect(data.added).toBeUndefined();
+            expect(data.changed).toBeDefined();
+            expect(data.changed.get(TickType.LAST_TIMESTAMP).value).toEqual(
+              Number(testValue1),
+            );
+          }
+          expect(data.all.get(TickType.LAST_TIMESTAMP).value).toEqual(
+            Number(received ? testValue1 : testValue0),
+          );
+          expect(data.all.get(TickType.LAST_TIMESTAMP).stringValue).toEqual(
+            received ? testValue1 : testValue0,
+          );
+          expect(data.all.get(TickType.LAST_TIMESTAMP).ingressTm).toEqual(
+            expect.any(Number),
+          );
+          received++;
+          if (received == 2) {
+            subscription.unsubscribe();
+            done();
+          }
+        },
+        error: (error: IBApiNextError) => {
+          fail(error.error.message);
+        },
+      });
+
+    api.emit(EventName.tickString, 1, TickType.LAST_TIMESTAMP, testValue0);
+    api.emit(EventName.tickString, 1, TickType.LAST_TIMESTAMP, testValue1);
+  });
+
+  test("tickString structured events", (done) => {
+    const apiNext = new IBApiNext();
+    const api = (apiNext as unknown as Record<string, unknown>).api as IBApi;
+
+    const rtVolume = "184.84;2;1718995200000;100;184.80;true";
+
+    const subscription = apiNext
+      .getMarketData({ conId: 12345 }, "233", false, false)
+      .subscribe({
+        next: (data) => {
+          expect(data.added).toBeDefined();
+          expect(data.changed).toBeUndefined();
+          expect(data.all.get(TickType.RT_VOLUME).value).toBeUndefined();
+          expect(data.all.get(TickType.RT_VOLUME).stringValue).toEqual(
+            rtVolume,
+          );
+          expect(data.added.get(TickType.RT_VOLUME).stringValue).toEqual(
+            rtVolume,
+          );
+          subscription.unsubscribe();
+          done();
+        },
+        error: (error: IBApiNextError) => {
+          fail(error.error.message);
+        },
+      });
+
+    api.emit(EventName.tickString, 1, TickType.RT_VOLUME, rtVolume);
+  });
+
   test("tickOptionComputationHandler events", (done) => {
     const apiNext = new IBApiNext();
     const api = (apiNext as unknown as Record<string, unknown>).api as IBApi;
