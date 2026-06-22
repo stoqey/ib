@@ -13,6 +13,52 @@ import {
 import { BarSizeSetting } from "../../../api/historical/bar-size-setting";
 
 describe("RxJS Wrapper: getHistoricalDataUpdates()", () => {
+  test.each([
+    [BarSizeSetting.SECONDS_FIVE, "60 S"],
+    [BarSizeSetting.MINUTES_ONE, "60 S"],
+    [BarSizeSetting.MINUTES_TWO, "120 S"],
+    [BarSizeSetting.MINUTES_FIFTEEN, "1800 S"],
+    [BarSizeSetting.HOURS_ONE, "3600 S"],
+    [BarSizeSetting.HOURS_TWO, "14400 S"],
+    [BarSizeSetting.HOURS_EIGHT, "28800 S"],
+    [BarSizeSetting.DAYS_ONE, "1 D"],
+  ])(
+    "uses a compatible seed duration for %s bars",
+    (barSizeSetting, expectedDuration) => {
+      const apiNext = new IBApiNext();
+      const api = (apiNext as unknown as Record<string, unknown>)
+        .api as IBApi;
+      const reqHistoricalData = jest
+        .spyOn(api, "reqHistoricalData")
+        .mockReturnValue(api);
+
+      const subscription = apiNext
+        .getHistoricalDataUpdates({}, barSizeSetting, WhatToShow.TRADES, 1)
+        .subscribe({
+          error: (err: IBApiNextError) => {
+            fail(err.error.message);
+          },
+        });
+
+      api.emit(EventName.connected);
+
+      expect(reqHistoricalData).toHaveBeenCalledWith(
+        expect.any(Number),
+        {},
+        "",
+        expectedDuration,
+        barSizeSetting,
+        WhatToShow.TRADES,
+        0,
+        1,
+        true,
+      );
+
+      subscription.unsubscribe();
+      apiNext.disconnect();
+    },
+  );
+
   test("Observable updates", (done) => {
     // create IBApiNext
 

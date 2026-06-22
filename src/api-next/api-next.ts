@@ -92,6 +92,33 @@ const LOG_TAG = "IBApiNext";
  */
 const TWS_LOG_TAG = "TWS";
 
+const historicalDataUpdateDurations: Partial<Record<BarSizeSetting, string>> = {
+  [BarSizeSetting.SECONDS_FIVE]: "60 S",
+  [BarSizeSetting.SECONDS_TEN]: "60 S",
+  [BarSizeSetting.SECONDS_FIFTEEN]: "60 S",
+  [BarSizeSetting.SECONDS_THIRTY]: "60 S",
+  [BarSizeSetting.MINUTES_ONE]: "60 S",
+  [BarSizeSetting.MINUTES_TWO]: "120 S",
+  [BarSizeSetting.MINUTES_THREE]: "1800 S",
+  [BarSizeSetting.MINUTES_FIVE]: "1800 S",
+  [BarSizeSetting.MINUTES_TEN]: "1800 S",
+  [BarSizeSetting.MINUTES_FIFTEEN]: "1800 S",
+  [BarSizeSetting.MINUTES_TWENTY]: "1800 S",
+  [BarSizeSetting.MINUTES_THIRTY]: "1800 S",
+  [BarSizeSetting.HOURS_ONE]: "3600 S",
+  [BarSizeSetting.HOURS_TWO]: "14400 S",
+  [BarSizeSetting.HOURS_THREE]: "14400 S",
+  [BarSizeSetting.HOURS_FOUR]: "28800 S",
+  [BarSizeSetting.HOURS_EIGHT]: "28800 S",
+  [BarSizeSetting.DAYS_ONE]: "1 D",
+  [BarSizeSetting.WEEKS_ONE]: "1 W",
+  [BarSizeSetting.MONTHS_ONE]: "1 M",
+};
+
+const getHistoricalDataUpdateDuration = (
+  barSizeSetting: BarSizeSetting,
+): string => historicalDataUpdateDurations[barSizeSetting] ?? "1 D";
+
 function filterMap(
   map: Map<number, any>, // eslint-disable-line @typescript-eslint/no-explicit-any
   pred: (k: number, v: any) => boolean, // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -1850,8 +1877,7 @@ export class IBApiNext {
    * @see https://interactivebrokers.github.io/tws-api/historical_bars.html for details.
    *
    * @param contract The contract for which we want to retrieve the data.
-   * @param barSizeSetting the size of the bar:
-   * - 1 secs
+   * @param barSizeSetting the size of the bar. IB only supports keep-up-to-date historical bars for 5 seconds or greater:
    * - 5 secs
    * - 15 secs
    * - 30 secs
@@ -1888,7 +1914,7 @@ export class IBApiNext {
             reqId,
             contract,
             "",
-            "1 D",
+            getHistoricalDataUpdateDuration(barSizeSetting),
             barSizeSetting,
             whatToShow,
             0,
