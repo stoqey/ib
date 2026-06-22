@@ -142,4 +142,24 @@ describe("RxJS Wrapper: getAllOpenOrders", () => {
     api.emit(EventName.openOrder, openOrders);
     api.emit(EventName.openOrderEnd);
   });
+
+  test("Promise result while getOpenOrders is subscribed", async () => {
+    const apiNext = new IBApiNext();
+    const api = (apiNext as unknown as Record<string, unknown>).api as IBApi;
+    const openOrdersUpdates: unknown[] = [];
+
+    const openOrdersSubscription = apiNext.getOpenOrders().subscribe((data) => {
+      openOrdersUpdates.push(data);
+    });
+
+    const allOpenOrdersPromise = apiNext.getAllOpenOrders();
+
+    api.emit(EventName.openOrderEnd);
+
+    await expect(allOpenOrdersPromise).resolves.toEqual([]);
+    expect(openOrdersUpdates).toEqual([{ all: [], added: [] }]);
+
+    openOrdersSubscription.unsubscribe();
+  });
+
 });

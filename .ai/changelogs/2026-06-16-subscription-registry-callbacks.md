@@ -1,0 +1,4 @@
+- summary: Allow api-next subscription registry to keep separate handlers for the same event when callbacks differ.
+- notable files or areas changed: `src/core/api-next/subscription-registry.ts`, `src/tests/unit/api-next/get-all-open-orders.test.ts`
+- tests run: `yarn jest src/tests/unit/api-next/get-all-open-orders.test.ts --runInBand --reporters=default --useStderr --detectOpenHandles`
+- risks or follow-ups: Existing local package manager file changes were left untouched.
