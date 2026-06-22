@@ -23,8 +23,8 @@ export const sample_crypto: Contract = new Crypto("BTC");
 // This one will need to be updated sometimes
 export const sample_future: Contract = new Future(
   "ES",
-  "ESH5",
-  "202503",
+  "ESZ6",
+  "202612",
   "CME",
   50,
 );
@@ -32,8 +32,8 @@ export const sample_future: Contract = new Future(
 // This one may need to be updated from times to times
 export const sample_option: Contract = new Option(
   "SPY",
-  "20260116",
-  440,
+  "20281215",
+  750,
   OptionType.Call,
 );
 

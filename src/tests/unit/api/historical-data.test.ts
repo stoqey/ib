@@ -31,7 +31,6 @@ describe("IBApi Historical data Tests", () => {
   afterEach(() => {
     if (ib) {
       ib.disconnect();
-      ib = undefined;
     }
   });
 
@@ -64,17 +63,18 @@ describe("IBApi Historical data Tests", () => {
         count: number | undefined,
         WAP: number,
       ) => {
-        //   console.log(
-        //     counter,
-        //     time,
-        //     open,
-        //     high,
-        //     low,
-        //     close,
-        //     volume,
-        //     count,
-        //     WAP,
-        //   );
+        console.log(
+          "Stock market data",
+          counter,
+          time,
+          open,
+          high,
+          low,
+          close,
+          volume,
+          count,
+          WAP,
+        );
         expect(reqId).toEqual(refId);
         if (time.startsWith("finished")) {
           expect(counter).toEqual(30);
@@ -85,7 +85,7 @@ describe("IBApi Historical data Tests", () => {
           expect(high).toEqual(429.6);
           expect(low).toEqual(429.47);
           expect(close).toEqual(429.51);
-          expect(volume).toEqual(3487.38);
+          expect(volume).toEqual(8718);
           expect(count).toEqual(1090);
           expect(WAP).toEqual(429.532);
         }
@@ -107,14 +107,14 @@ describe("IBApi Historical data Tests", () => {
     ib.once(EventName.connected, () => {
       const contract: Option = new Option(
         "AAPL",
-        "20251219",
-        200,
-        OptionType.Put,
+        "20260717",
+        300,
+        OptionType.Call,
       );
       ib.reqHistoricalData(
         refId,
         contract,
-        "20241107-17:00:00",
+        "20260622-14:00:00",
         "30 S",
         BarSizeSetting.SECONDS_FIFTEEN,
         WhatToShow.BID_ASK,
@@ -135,17 +135,28 @@ describe("IBApi Historical data Tests", () => {
         count: number | undefined,
         WAP: number,
       ) => {
-        // console.log(counter, time, open, high, low, close, volume, count, WAP);
+        // console.debug(
+        //   "Option market data",
+        //   counter,
+        //   time,
+        //   open,
+        //   high,
+        //   low,
+        //   close,
+        //   volume,
+        //   count,
+        //   WAP,
+        // );
         expect(reqId).toEqual(refId);
         if (time.startsWith("finished")) {
           expect(counter).toEqual(2);
           done();
         } else if (counter++ == 1) {
-          expect(time).toEqual("1730998785");
-          expect(open).toEqual(8.77);
-          expect(high).toEqual(8.77);
-          expect(low).toEqual(8.75);
-          expect(close).toEqual(8.77);
+          expect(time).toEqual("1782136785");
+          expect(open).toEqual(8.42);
+          expect(high).toEqual(8.42);
+          expect(low).toEqual(8.3);
+          expect(close).toEqual(8.42);
           expect(volume).toEqual(-1);
           expect(count).toEqual(-1);
           expect(WAP).toEqual(-1);
@@ -190,7 +201,8 @@ describe("IBApi Historical data Tests", () => {
         count: number | undefined,
         WAP: number,
       ) => {
-        // console.log(
+        // console.debug(
+        //   "Weekly market data",
         //   counter,
         //   time,
         //   open,
@@ -211,7 +223,7 @@ describe("IBApi Historical data Tests", () => {
           expect(high).toEqual(453.67);
           expect(low).toEqual(437.3);
           expect(close).toEqual(450.92);
-          expect(volume).toEqual(2771783.24);
+          expect(volume).toEqual(6929458);
           expect(count).toEqual(1393264);
           expect(WAP).toEqual(448.476);
         }
@@ -276,7 +288,7 @@ describe("IBApi Historical data Tests", () => {
           expect(high).toEqual(453.67);
           expect(low).toEqual(449.68);
           expect(close).toEqual(450.92);
-          expect(volume).toEqual(474058.9);
+          expect(volume).toEqual(1185147);
           expect(count).toEqual(248346);
           expect(WAP).toEqual(451.3);
         }
@@ -299,7 +311,7 @@ describe("IBApi Historical data Tests", () => {
         refId,
         sample_etf,
         "20240508-17:00:00",
-        null,
+        "",
         10,
         WhatToShow.TRADES,
         0,
