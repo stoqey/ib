@@ -1,0 +1,4 @@
+- summary: Added regression coverage that verifies attached child orders encode their own totalQuantity before transmit and parentId fields.
+- notable files or areas changed: src/tests/unit/core/io/encoder-place-order.test.ts
+- tests run: yarn jest src/tests/unit/core/io/encoder-place-order.test.ts --runInBand --reporters=default --useStderr --detectOpenHandles
+- risks or follow-ups: This is protocol encoder coverage only; live TWS behavior can still depend on order type and attachment semantics.
