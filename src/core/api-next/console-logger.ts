@@ -1,4 +1,4 @@
-import colors from "colors";
+import { bold, red, yellow } from "../../common/ansi-colors";
 import * as util from "util";
 import { Logger, LogLevel } from "../..";
 
@@ -45,11 +45,9 @@ export class ConsoleLogger implements Logger {
   warn(tag: string, args: unknown[] | string): void {
     if (this._logLevel >= LogLevel.WARN) {
       let newArgs = args;
-      if (Array.isArray(args)) newArgs = args.map(colors.yellow);
+      if (Array.isArray(args)) newArgs = args.map(yellow);
       console.warn(
-        colors.bold.yellow(
-          `[${new Date().toLocaleTimeString()}] [WARN] [${tag}]: `,
-        ),
+        bold(yellow(`[${new Date().toLocaleTimeString()}] [WARN] [${tag}]: `)),
         newArgs,
       );
     }
@@ -61,13 +59,11 @@ export class ConsoleLogger implements Logger {
       let newArgs = args;
       if (Array.isArray(args))
         newArgs = args.map((x) =>
-          colors.bold.red(util.inspect(x, { showHidden: false, depth: null })),
+          bold(red(util.inspect(x, { showHidden: false, depth: null }))),
         );
 
       console.error(
-        colors.bold.red(
-          `[${new Date().toLocaleTimeString()}] [ERROR] [${tag}]:`,
-        ),
+        bold(red(`[${new Date().toLocaleTimeString()}] [ERROR] [${tag}]:`)),
         newArgs,
       );
     }
