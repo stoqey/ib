@@ -2,7 +2,10 @@
  * @jest-environment ./src/tests/nodb-test-environment
  */
 
-import configuration from "../../common/configuration";
+process.env.ENV_CONFIG_TEST = "ENV";
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const configuration = require("../../common/configuration").default;
 
 describe("configuration", () => {
   test("ENV vars take priority", async () => {

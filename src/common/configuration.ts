@@ -2,9 +2,6 @@
 import { readFileSync } from "fs";
 import * as path from "path";
 
-import dotenv from "dotenv";
-dotenv.config();
-
 export interface Configuration {
   ci: string;
   env_config_test: string;
@@ -30,6 +27,7 @@ export interface Configuration {
 }
 
 let configuration: Configuration = null;
+let dotenvConfigured = false;
 
 const envsToInclude = [
   "ci",
@@ -103,6 +101,14 @@ const ensureInteger = (
   });
 
 function load() {
+  if (!dotenvConfigured) {
+    dotenvConfigured = true;
+    // Keep dotenv lazy so importing the package does not touch process.env or the filesystem.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const dotenv = require("dotenv") as typeof import("dotenv");
+    dotenv.config();
+  }
+
   const nodeEnvironment = process.env.NODE_ENV;
 
   // load default config
@@ -144,5 +150,32 @@ export function get() {
   return configuration;
 }
 
-configuration = load();
-export default configuration;
+const lazyConfiguration = new Proxy({} as Configuration, {
+  get(_target, property: string | symbol) {
+    return get()[property as keyof Configuration];
+  },
+  set(_target, property: string | symbol, value) {
+    get()[property as keyof Configuration] = value as never;
+    return true;
+  },
+  has(_target, property: string | symbol) {
+    return property in get();
+  },
+  ownKeys() {
+    return Reflect.ownKeys(get());
+  },
+  getOwnPropertyDescriptor(_target, property: string | symbol) {
+    const loadedConfiguration = get();
+    if (property in loadedConfiguration) {
+      return {
+        configurable: true,
+        enumerable: true,
+        value: loadedConfiguration[property as keyof Configuration],
+      };
+    }
+
+    return undefined;
+  },
+});
+
+export default lazyConfiguration;

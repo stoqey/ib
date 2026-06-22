@@ -9,23 +9,19 @@ jobs:
     environment:
       NODE_ENV: development
     docker:
-      - image: node:18.19.1
+      - image: node:24
     working_directory: ~/repo
     steps:
       - restore_cache:
           keys:
-            - source-v1-{{ .Branch }}-{{ .Revision }}
-            - source-v1-{{ .Branch }}-
-            - source-v1-
+            - source-v2-{{ .Branch }}-{{ .Revision }}
       - checkout
       - attach_workspace:
           at: ~/repo
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - v2-dependencies-{{ checksum "package.json" }}
-            # fallback to using the latest cache if no exact match is found
-            - v2-dependencies-
+            - v3-dependencies-{{ checksum "package.json" }}-{{ checksum "yarn.lock" }}
 
       - run: yarn
 
@@ -46,10 +42,10 @@ jobs:
           paths:
             - node_modules
             - dist
-          key: v2-dependencies-{{ checksum "package.json" }}
+          key: v3-dependencies-{{ checksum "package.json" }}-{{ checksum "yarn.lock" }}
 
       - save_cache:
-          key: source-v1-{{ .Branch }}-{{ .Revision }}
+          key: source-v2-{{ .Branch }}-{{ .Revision }}
           paths:
             - ./
 
@@ -67,19 +63,15 @@ jobs:
       - JAVA_PATH=/opt/i4j_jres/1.8.0_152/bin # JRE is bundled starting with TWS 952
       - APP=GATEWAY
     docker:
-      - image: node:18.19.1
+      - image: node:24
     working_directory: ~/repo
     steps:
       - restore_cache:
           keys:
-            - source-v1-{{ .Branch }}-{{ .Revision }}
-            - source-v1-{{ .Branch }}-
-            - source-v1-
+            - source-v2-{{ .Branch }}-{{ .Revision }}
       - restore_cache:
           keys:
-            - v2-dependencies-{{ checksum "package.json" }}
-            # fallback to using the latest cache if no exact match is found
-            - v2-dependencies-
+            - v3-dependencies-{{ checksum "package.json" }}-{{ checksum "yarn.lock" }}
 
       - run:
           name: Run eslint
@@ -100,7 +92,7 @@ jobs:
       # CC_TEST_REPORTER_ID: <insert id>
       NODE_ENV: development
     docker:
-      - image: node:18.19.1
+      - image: node:24
       - image: industrialninja/ib_gateway:latest
         environment:
           - TZ=America/NewYork
@@ -110,9 +102,7 @@ jobs:
     steps:
       - restore_cache:
           keys:
-            - source-v1-{{ .Branch }}-{{ .Revision }}
-            - source-v1-{{ .Branch }}-
-            - source-v1-
+            - source-v2-{{ .Branch }}-{{ .Revision }}
       - run:
           name: install dockerize
           command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
@@ -160,7 +150,7 @@ jobs:
       CC_TEST_REPORTER_ID: <insert id>
     docker:
       # - image: circleci/node:16.13.1
-      - image: node:18.19.1
+      - image: node:24
     working_directory: ~/repo
     steps:
       - attach_workspace:
@@ -168,9 +158,7 @@ jobs:
 
       - restore_cache:
           keys:
-            - source-v1-{{ .Branch }}-{{ .Revision }}
-            - source-v1-{{ .Branch }}-
-            - source-v1-
+            - source-v2-{{ .Branch }}-{{ .Revision }}
       - run:
           name: Send coverage report to Code Climate
           command: |
