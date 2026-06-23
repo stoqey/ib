@@ -587,12 +587,12 @@ export class Decoder {
     const tickType = this.readInt();
     const price = this.readDouble();
 
-    let size = undefined;
+    let size: number | undefined = undefined;
     if (version >= 2) {
       size = this.readDecimal();
     }
 
-    let canAutoExecute = undefined;
+    let canAutoExecute: boolean | undefined = undefined;
     if (version >= 3) {
       canAutoExecute = this.readBool();
     }
@@ -601,7 +601,7 @@ export class Decoder {
 
     this.emit(EventName.tickPrice, tickerId, tickType, price, canAutoExecute);
 
-    let sizeTickType = undefined;
+    let sizeTickType: number | undefined = undefined;
     if (version >= 2) {
       switch (tickType) {
         case TickType.BID:

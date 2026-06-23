@@ -22,7 +22,6 @@ describe("IBApi reqContractDetails Tests", () => {
   afterEach(() => {
     if (ib) {
       ib.disconnect();
-      ib = undefined;
     }
   });
 
@@ -86,7 +85,7 @@ describe("IBApi reqContractDetails Tests", () => {
         expect(details.contract.secType).toEqual(refContract.secType);
         expect(details.contract.symbol).toEqual(refContract.symbol);
         expect(details.contract.currency).toEqual(refContract.currency);
-        expect(details.contract.conId).toEqual(653318228);
+        expect(details.contract.conId).toEqual(843630132);
       })
       .on(EventName.contractDetailsEnd, (reqId) => {
         expect(reqId).toEqual(refId);

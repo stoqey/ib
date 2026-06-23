@@ -132,7 +132,7 @@ export class IBApiNextApp {
     const port = (this.cmdLineArgs.port as number) ?? configuration.ib_port;
     const host = (this.cmdLineArgs.host as string) ?? configuration.ib_host;
     if (reconnectInterval === undefined && this.cmdLineArgs.watch)
-      reconnectInterval = 10000;
+      reconnectInterval = 10_000;
     if (clientId === undefined && this.cmdLineArgs.clientId)
       clientId = +this.cmdLineArgs.clientId;
 

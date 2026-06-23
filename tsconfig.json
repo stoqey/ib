@@ -13,7 +13,8 @@
     "resolveJsonModule": false,
     "noImplicitAny": false, //TODO set to true once all data has types
     "target": "ES2021",
-    "typeRoots": ["node_modules/@types", "node_modules/types", "src/ts-types"]
+    "typeRoots": ["node_modules/@types", "node_modules/types", "src/ts-types"],
+    "types": ["node", "jest"]
   },
   "include": ["./src"]
 }

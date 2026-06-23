@@ -10,6 +10,9 @@ export enum ErrorCode {
   /** Order Canceled - reason: */
   ORDER_CANCELLED = 202,
 
+  /** Missing order exchange. */
+  MISSING_ORDER_EXCHANGE = 321,
+
   /** Order Message: BUY 1 SPY ARCA Warning: your order will not be placed at the exchange until 2024-12-02 04:00:00 US/Eastern (#399) */
   ORDER_MESSAGE = 399,
 

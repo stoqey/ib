@@ -221,7 +221,7 @@ export class IBApiNext {
 
     this.api = new IBApiAutoConnection(
       options?.reconnectInterval ?? 0,
-      (options?.connectionWatchdogInterval ?? 0) * 1000,
+      (options?.connectionWatchdogInterval ?? 0) * 1_000,
       this.logger,
       options,
     );
