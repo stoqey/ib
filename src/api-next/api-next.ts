@@ -2863,7 +2863,7 @@ export class IBApiNext {
         [EventName.openOrder, this.onOpenOrder],
         [EventName.orderStatus, this.onOrderStatus],
         [EventName.orderBound, this.onOrderBound],
-        [EventName.openOrderEnd, this.onOpenOrderEnd],
+        [EventName.openOrderEnd, this.onOpenOrderComplete],
       ],
       "getOpenOrders", // Use the same instance ID each time to ensure there is only one pending request at a time.
     );
