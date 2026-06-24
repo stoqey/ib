@@ -83,7 +83,7 @@
     "@eslint/js": "^10.0.1",
     "@smarttools/eslint-plugin-rxjs": "^1.0.22",
     "@types/jest": "^30.0.0",
-    "@types/node": "^18.19.68",
+    "@types/node": "^22.20.0",
     "@types/source-map-support": "^0.5.10",
     "ajv": "^8.18.0",
     "eslint": "^10.5.0",
@@ -101,6 +101,6 @@
     "typescript-eslint": "^8.62.0"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.0.0"
   }
 }

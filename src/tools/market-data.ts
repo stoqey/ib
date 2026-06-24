@@ -4,7 +4,12 @@
 
 import { Subscription } from "rxjs";
 
-import { IBApiNextError, IBApiNextTickType, IBApiTickType } from "../api-next";
+import {
+  IBApiNextError,
+  IBApiNextTickType,
+  IBApiTickType,
+  MarketDataUpdate,
+} from "../api-next";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -49,18 +54,18 @@ class PrintMarketDataApp extends IBApiNextApp {
         false,
       )
       .subscribe({
-        next: (marketData) => {
+        next: (marketData: MarketDataUpdate) => {
           const changedOrAddedDataWithTickNames = new Map<string, number>();
           marketData.added?.forEach((tick, type) => {
             if (type > IBApiNextTickType.API_NEXT_FIRST_TICK_ID) {
               changedOrAddedDataWithTickNames.set(
                 IBApiNextTickType[type],
-                tick.value,
+                tick.value!,
               );
             } else {
               changedOrAddedDataWithTickNames.set(
                 IBApiTickType[type],
-                tick.value,
+                tick.value!,
               );
             }
           });
@@ -68,12 +73,12 @@ class PrintMarketDataApp extends IBApiNextApp {
             if (type > IBApiNextTickType.API_NEXT_FIRST_TICK_ID) {
               changedOrAddedDataWithTickNames.set(
                 IBApiNextTickType[type],
-                tick.value,
+                tick.value!,
               );
             } else {
               changedOrAddedDataWithTickNames.set(
                 IBApiTickType[type],
-                tick.value,
+                tick.value!,
               );
             }
           });

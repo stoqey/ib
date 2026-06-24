@@ -68,7 +68,7 @@ class App extends IBApiNextApp {
           account: configuration.ib_test_account,
           transmit: true,
         };
-        this.api.placeOrder(id, contract, order);
+        this.api!.placeOrder(id, contract, order);
         this.printText(`Order Id ${id} sent`);
         this.stop();
       })
