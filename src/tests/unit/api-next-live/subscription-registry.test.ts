@@ -30,7 +30,7 @@ describe("Subscription registry Tests", () => {
 
     try {
       api.connect(clientId);
-    } catch (error) {
+    } catch (error: any) {
       logger.error(error.message);
     }
   });
@@ -38,7 +38,6 @@ describe("Subscription registry Tests", () => {
   afterEach(() => {
     if (api) {
       api.disconnect();
-      api = undefined;
     }
   });
 

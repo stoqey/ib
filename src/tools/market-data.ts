@@ -30,13 +30,16 @@ class PrintMarketDataApp extends IBApiNextApp {
   }
 
   /** The [[Subscription]] on the MarketData. */
-  private subscription$: Subscription;
+  private subscription$: Subscription | undefined;
 
   /**
    * Start the app.
    */
   start(): void {
     super.start();
+    if (!this.api) {
+      throw Error("API not initialized");
+    }
 
     this.subscription$ = this.api
       .getMarketData(

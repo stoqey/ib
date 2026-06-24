@@ -171,7 +171,7 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
         next: (update) => {
           expect(update.all).toBeDefined();
           expect(update.added).toBeDefined();
-          expect(update.added.size).toEqual(1);
+          expect(update.added!.size).toEqual(1);
 
           let totalValuesCount = 0;
           update.all.forEach((tagValues) =>
@@ -362,8 +362,9 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
       // eslint-disable-next-line rxjs/no-ignored-subscription
       .subscribe({
         next: (update) => {
+          expect(update.added).toBeDefined();
           expect(
-            update.added.get(accountId)?.get(tagName)?.get(currency)?.value,
+            update.added!.get(accountId)?.get(tagName)?.get(currency)?.value,
           ).toEqual(testValue);
 
           apiNext
@@ -372,8 +373,9 @@ describe("RxJS Wrapper: getAccountSummary()", () => {
             // eslint-disable-next-line rxjs/no-ignored-subscription
             .subscribe({
               next: (update) => {
+                expect(update.added).toBeDefined();
                 expect(
-                  update.added.get(accountId)?.get(tagName)?.get(currency)
+                  update.added!.get(accountId)?.get(tagName)?.get(currency)
                     ?.value,
                 ).toEqual(testValue);
                 done();

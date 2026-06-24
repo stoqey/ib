@@ -11,7 +11,7 @@ export interface HistoricalTick {
   price: number;
 
   /** The historical tick size. */
-  size: number;
+  size: number | undefined;
 }
 
 export default HistoricalTick;

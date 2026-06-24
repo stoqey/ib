@@ -32,6 +32,9 @@ class ModifyOrdersApp extends IBApiNextApp {
    */
   start(): void {
     super.start();
+    if (!this.api) {
+      throw Error("API not initialized");
+    }
 
     const id: number = +this.cmdLineArgs.orderId;
 

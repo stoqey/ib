@@ -33,8 +33,10 @@ class PrintHeadTimestampApp extends IBApiNextApp {
    */
   start(): void {
     super.start();
+    if (!this.api) {
+      throw Error("API not initialized");
+    }
 
-    // print next unused order id
     this.api
       .getHeadTimestamp(this.getContractArg(), WhatToShow.TRADES, true, 1)
       .then((timestamp) => {

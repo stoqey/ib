@@ -28,7 +28,6 @@ describe("IBApi Tests", () => {
   afterEach(() => {
     if (ib) {
       ib.disconnect();
-      ib = undefined;
     }
   });
 
@@ -49,7 +48,12 @@ describe("IBApi Tests", () => {
     })
       .on(
         EventName.position,
-        (account: string, contract: Contract, pos: number, avgCost: number) => {
+        (
+          account: string,
+          contract: Contract,
+          pos: number,
+          avgCost?: number,
+        ) => {
           expect(account).toBeTruthy();
           expect(contract).toBeTruthy();
           // expect(pos).toBeTruthy();  pos can be 0 when it has been closed today

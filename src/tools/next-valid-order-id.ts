@@ -28,8 +28,9 @@ class PrintNextUnusedOrderIdApp extends IBApiNextApp {
    */
   start(): void {
     super.start();
-
-    // print next unused order id
+    if (!this.api) {
+      throw Error("API not initialized");
+    }
 
     this.api
       .getNextValidOrderId()

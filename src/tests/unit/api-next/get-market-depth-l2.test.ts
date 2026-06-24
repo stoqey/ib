@@ -20,38 +20,38 @@ describe("RxJS Wrapper: getMarketDepthL2()", () => {
           switch (eventCount) {
             case 0:
               expect(update.all.asks.size).toEqual(1);
-              expect(update.all.asks.get(0).price).toEqual(1);
-              expect(update.all.asks.get(0).size).toEqual(2);
+              expect(update.all.asks.get(0)?.price).toEqual(1);
+              expect(update.all.asks.get(0)?.size).toEqual(2);
               break;
             case 1:
               expect(update.all.asks.size).toEqual(1);
-              expect(update.all.asks.get(0).price).toEqual(1);
-              expect(update.all.asks.get(0).size).toEqual(2);
+              expect(update.all.asks.get(0)!.price).toEqual(1);
+              expect(update.all.asks.get(0)!.size).toEqual(2);
               expect(update.all.bids.size).toEqual(1);
-              expect(update.all.bids.get(0).price).toEqual(11);
-              expect(update.all.bids.get(0).size).toEqual(12);
+              expect(update.all.bids.get(0)!.price).toEqual(11);
+              expect(update.all.bids.get(0)!.size).toEqual(12);
               break;
             case 2:
               expect(update.all.asks.size).toEqual(2);
-              expect(update.all.asks.get(0).price).toEqual(1);
-              expect(update.all.asks.get(0).size).toEqual(2);
-              expect(update.all.asks.get(1).price).toEqual(21);
-              expect(update.all.asks.get(1).size).toEqual(22);
+              expect(update.all.asks.get(0)!.price).toEqual(1);
+              expect(update.all.asks.get(0)!.size).toEqual(2);
+              expect(update.all.asks.get(1)!.price).toEqual(21);
+              expect(update.all.asks.get(1)!.size).toEqual(22);
               expect(update.all.bids.size).toEqual(1);
-              expect(update.all.bids.get(0).price).toEqual(11);
-              expect(update.all.bids.get(0).size).toEqual(12);
+              expect(update.all.bids.get(0)!.price).toEqual(11);
+              expect(update.all.bids.get(0)!.size).toEqual(12);
               break;
             case 3:
               expect(update.all.asks.size).toEqual(2);
-              expect(update.all.asks.get(0).price).toEqual(1);
-              expect(update.all.asks.get(0).size).toEqual(2);
-              expect(update.all.asks.get(1).price).toEqual(21);
-              expect(update.all.asks.get(1).size).toEqual(22);
+              expect(update.all.asks.get(0)!.price).toEqual(1);
+              expect(update.all.asks.get(0)!.size).toEqual(2);
+              expect(update.all.asks.get(1)!.price).toEqual(21);
+              expect(update.all.asks.get(1)!.size).toEqual(22);
               expect(update.all.bids.size).toEqual(2);
-              expect(update.all.bids.get(0).price).toEqual(11);
-              expect(update.all.bids.get(0).size).toEqual(12);
-              expect(update.all.bids.get(1).price).toEqual(31);
-              expect(update.all.bids.get(1).size).toEqual(32);
+              expect(update.all.bids.get(0)!.price).toEqual(11);
+              expect(update.all.bids.get(0)!.size).toEqual(12);
+              expect(update.all.bids.get(1)!.price).toEqual(31);
+              expect(update.all.bids.get(1)!.size).toEqual(32);
               done();
               break;
             default:
@@ -70,7 +70,7 @@ describe("RxJS Wrapper: getMarketDepthL2()", () => {
       0 /* insert */,
       0 /* ask */,
       1 /* price */,
-      2 /* size */
+      2 /* size */,
     );
     eventCount++;
 
@@ -81,7 +81,7 @@ describe("RxJS Wrapper: getMarketDepthL2()", () => {
       0 /* insert */,
       1 /* bid */,
       11 /* price */,
-      12 /* size */
+      12 /* size */,
     );
     eventCount++;
 
@@ -92,7 +92,7 @@ describe("RxJS Wrapper: getMarketDepthL2()", () => {
       0 /* insert */,
       0 /* ask */,
       21 /* price */,
-      22 /* size */
+      22 /* size */,
     );
     eventCount++;
 
@@ -103,7 +103,7 @@ describe("RxJS Wrapper: getMarketDepthL2()", () => {
       0 /* insert */,
       1 /* bid */,
       31 /* price */,
-      32 /* size */
+      32 /* size */,
     );
     eventCount++;
   });
@@ -124,29 +124,29 @@ describe("RxJS Wrapper: getMarketDepthL2()", () => {
           switch (eventCount) {
             case 0:
               expect(update.all.asks.size).toEqual(1);
-              expect(update.all.asks.get(0).price).toEqual(1);
-              expect(update.all.asks.get(0).size).toEqual(2);
+              expect(update.all.asks.get(0)!.price).toEqual(1);
+              expect(update.all.asks.get(0)!.size).toEqual(2);
               break;
             case 1:
               expect(update.all.asks.size).toEqual(1);
-              expect(update.all.asks.get(0).price).toEqual(11);
-              expect(update.all.asks.get(0).size).toEqual(12);
+              expect(update.all.asks.get(0)!.price).toEqual(11);
+              expect(update.all.asks.get(0)!.size).toEqual(12);
               break;
             case 2:
               expect(update.all.asks.size).toEqual(1);
-              expect(update.all.asks.get(0).price).toEqual(11);
-              expect(update.all.asks.get(0).size).toEqual(12);
+              expect(update.all.asks.get(0)!.price).toEqual(11);
+              expect(update.all.asks.get(0)!.size).toEqual(12);
               expect(update.all.bids.size).toEqual(1);
-              expect(update.all.bids.get(0).price).toEqual(1);
-              expect(update.all.bids.get(0).size).toEqual(2);
+              expect(update.all.bids.get(0)!.price).toEqual(1);
+              expect(update.all.bids.get(0)!.size).toEqual(2);
               break;
             case 3:
               expect(update.all.asks.size).toEqual(1);
-              expect(update.all.asks.get(0).price).toEqual(11);
-              expect(update.all.asks.get(0).size).toEqual(12);
+              expect(update.all.asks.get(0)!.price).toEqual(11);
+              expect(update.all.asks.get(0)!.size).toEqual(12);
               expect(update.all.bids.size).toEqual(1);
-              expect(update.all.bids.get(0).price).toEqual(11);
-              expect(update.all.bids.get(0).size).toEqual(12);
+              expect(update.all.bids.get(0)!.price).toEqual(11);
+              expect(update.all.bids.get(0)!.size).toEqual(12);
               done();
               break;
             default:
@@ -167,7 +167,7 @@ describe("RxJS Wrapper: getMarketDepthL2()", () => {
       0 /* insert */,
       0 /* ask */,
       1 /* price */,
-      2 /* size */
+      2 /* size */,
     );
     eventCount++;
 
@@ -178,7 +178,7 @@ describe("RxJS Wrapper: getMarketDepthL2()", () => {
       1 /* update */,
       0 /* ask */,
       11 /* price */,
-      12 /* size */
+      12 /* size */,
     );
     eventCount++;
 
@@ -189,7 +189,7 @@ describe("RxJS Wrapper: getMarketDepthL2()", () => {
       0 /* insert */,
       1 /* bid */,
       1 /* price */,
-      2 /* size */
+      2 /* size */,
     );
     eventCount++;
 
@@ -200,7 +200,7 @@ describe("RxJS Wrapper: getMarketDepthL2()", () => {
       1 /* update */,
       1 /* bid */,
       11 /* price */,
-      12 /* size */
+      12 /* size */,
     );
     eventCount++;
   });
@@ -221,8 +221,8 @@ describe("RxJS Wrapper: getMarketDepthL2()", () => {
           switch (eventCount) {
             case 0:
               expect(update.all.asks.size).toEqual(1);
-              expect(update.all.asks.get(0).price).toEqual(1);
-              expect(update.all.asks.get(0).size).toEqual(2);
+              expect(update.all.asks.get(0)!.price).toEqual(1);
+              expect(update.all.asks.get(0)!.size).toEqual(2);
               break;
             case 1:
               expect(update.all.asks.size).toEqual(0);
@@ -244,7 +244,7 @@ describe("RxJS Wrapper: getMarketDepthL2()", () => {
       0 /* insert */,
       0 /* ask */,
       1 /* price */,
-      2 /* size */
+      2 /* size */,
     );
     eventCount++;
 
@@ -255,7 +255,7 @@ describe("RxJS Wrapper: getMarketDepthL2()", () => {
       2 /* delete */,
       0 /* ask */,
       11 /* price */,
-      12 /* size */
+      12 /* size */,
     );
     eventCount++;
   });

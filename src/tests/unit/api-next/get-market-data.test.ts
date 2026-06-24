@@ -48,10 +48,10 @@ describe("RxJS Wrapper: getMarketData()", () => {
         next: (data) => {
           switch (data.all.size) {
             case 2:
-              expect(data.all.get(TickType.ASK).value).toEqual(testValueAsk);
+              expect(data.all.get(TickType.ASK)?.value).toEqual(testValueAsk);
             // not break my intention
             case 1:
-              expect(data.all.get(TickType.BID).value).toEqual(testValueBid);
+              expect(data.all.get(TickType.BID)?.value).toEqual(testValueBid);
               break;
           }
           if (data.all.size == 2) {
@@ -83,12 +83,12 @@ describe("RxJS Wrapper: getMarketData()", () => {
         next: (data) => {
           switch (data.all.size) {
             case 2:
-              expect(data.all.get(TickType.ASK_SIZE).value).toEqual(
+              expect(data.all.get(TickType.ASK_SIZE)?.value).toEqual(
                 testValueAsk,
               );
             // not break my intention
             case 1:
-              expect(data.all.get(TickType.BID_SIZE).value).toEqual(
+              expect(data.all.get(TickType.BID_SIZE)?.value).toEqual(
                 testValueBid,
               );
               break;
@@ -129,7 +129,7 @@ describe("RxJS Wrapper: getMarketData()", () => {
             expect(data.added).toBeUndefined();
             expect(data.changed).toBeDefined();
           }
-          expect(data.all.get(TickType.NEWS_TICK).value).toEqual(
+          expect(data.all.get(TickType.NEWS_TICK)?.value).toEqual(
             received ? testValue1 : testValue0,
           );
           received++;
@@ -162,23 +162,23 @@ describe("RxJS Wrapper: getMarketData()", () => {
           if (received == 0) {
             expect(data.added).toBeDefined();
             expect(data.changed).toBeUndefined();
-            expect(data.added.get(TickType.LAST_TIMESTAMP).value).toEqual(
+            expect(data.added!.get(TickType.LAST_TIMESTAMP)?.value).toEqual(
               Number(testValue0),
             );
           } else {
             expect(data.added).toBeUndefined();
             expect(data.changed).toBeDefined();
-            expect(data.changed.get(TickType.LAST_TIMESTAMP).value).toEqual(
+            expect(data.changed!.get(TickType.LAST_TIMESTAMP)?.value).toEqual(
               Number(testValue1),
             );
           }
-          expect(data.all.get(TickType.LAST_TIMESTAMP).value).toEqual(
+          expect(data.all.get(TickType.LAST_TIMESTAMP)?.value).toEqual(
             Number(received ? testValue1 : testValue0),
           );
-          expect(data.all.get(TickType.LAST_TIMESTAMP).stringValue).toEqual(
+          expect(data.all.get(TickType.LAST_TIMESTAMP)?.stringValue).toEqual(
             received ? testValue1 : testValue0,
           );
-          expect(data.all.get(TickType.LAST_TIMESTAMP).ingressTm).toEqual(
+          expect(data.all.get(TickType.LAST_TIMESTAMP)?.ingressTm).toEqual(
             expect.any(Number),
           );
           received++;
@@ -208,11 +208,11 @@ describe("RxJS Wrapper: getMarketData()", () => {
         next: (data) => {
           expect(data.added).toBeDefined();
           expect(data.changed).toBeUndefined();
-          expect(data.all.get(TickType.RT_VOLUME).value).toBeUndefined();
-          expect(data.all.get(TickType.RT_VOLUME).stringValue).toEqual(
+          expect(data.all.get(TickType.RT_VOLUME)?.value).toBeUndefined();
+          expect(data.all.get(TickType.RT_VOLUME)?.stringValue).toEqual(
             rtVolume,
           );
-          expect(data.added.get(TickType.RT_VOLUME).stringValue).toEqual(
+          expect(data.added!.get(TickType.RT_VOLUME)?.stringValue).toEqual(
             rtVolume,
           );
           subscription.unsubscribe();
@@ -247,41 +247,42 @@ describe("RxJS Wrapper: getMarketData()", () => {
       // eslint-disable-next-line rxjs/no-ignored-subscription
       .subscribe({
         next: (data) => {
-          expect(data.added.get(IBApiNextTickType.BID_OPTION_IV).value).toEqual(
-            impliedVolatility,
-          );
+          expect(data.added).toBeDefined();
           expect(
-            data.added.get(IBApiNextTickType.BID_OPTION_DELTA).value,
+            data.added!.get(IBApiNextTickType.BID_OPTION_IV)?.value,
+          ).toEqual(impliedVolatility);
+          expect(
+            data.added!.get(IBApiNextTickType.BID_OPTION_DELTA)?.value,
           ).toEqual(delta);
           expect(
-            data.added.get(IBApiNextTickType.BID_OPTION_PRICE).value,
+            data.added!.get(IBApiNextTickType.BID_OPTION_PRICE)?.value,
           ).toEqual(optPrice);
           expect(
-            data.added.get(IBApiNextTickType.BID_OPTION_GAMMA).value,
+            data.added!.get(IBApiNextTickType.BID_OPTION_GAMMA)?.value,
           ).toEqual(gamma);
           expect(
-            data.added.get(IBApiNextTickType.BID_OPTION_VEGA).value,
+            data.added!.get(IBApiNextTickType.BID_OPTION_VEGA)?.value,
           ).toEqual(vega);
           expect(
-            data.added.get(IBApiNextTickType.BID_OPTION_THETA).value,
+            data.added!.get(IBApiNextTickType.BID_OPTION_THETA)?.value,
           ).toEqual(theta);
-          expect(data.all.get(IBApiNextTickType.BID_OPTION_IV).value).toEqual(
+          expect(data.all.get(IBApiNextTickType.BID_OPTION_IV)?.value).toEqual(
             impliedVolatility,
           );
           expect(
-            data.all.get(IBApiNextTickType.BID_OPTION_DELTA).value,
+            data.all.get(IBApiNextTickType.BID_OPTION_DELTA)?.value,
           ).toEqual(delta);
           expect(
-            data.all.get(IBApiNextTickType.BID_OPTION_PRICE).value,
+            data.all.get(IBApiNextTickType.BID_OPTION_PRICE)?.value,
           ).toEqual(optPrice);
           expect(
-            data.all.get(IBApiNextTickType.BID_OPTION_GAMMA).value,
+            data.all.get(IBApiNextTickType.BID_OPTION_GAMMA)?.value,
           ).toEqual(gamma);
-          expect(data.all.get(IBApiNextTickType.BID_OPTION_VEGA).value).toEqual(
-            vega,
-          );
           expect(
-            data.all.get(IBApiNextTickType.BID_OPTION_THETA).value,
+            data.all.get(IBApiNextTickType.BID_OPTION_VEGA)?.value,
+          ).toEqual(vega);
+          expect(
+            data.all.get(IBApiNextTickType.BID_OPTION_THETA)?.value,
           ).toEqual(theta);
           done();
         },
@@ -327,13 +328,17 @@ describe("RxJS Wrapper: getMarketData()", () => {
             // eslint-disable-next-line rxjs/no-ignored-subscription
             .subscribe({
               next: (data) => {
-                expect(data.all.get(TickType.BID).value).toEqual(testValue);
+                expect(data.all.get(TickType.BID)?.value).toEqual(testValue);
                 if (testValue == 1) {
-                  expect(data.added.get(TickType.BID).value).toEqual(testValue);
+                  expect(data.added).toBeDefined();
+                  expect(data.added!.get(TickType.BID)?.value).toEqual(
+                    testValue,
+                  );
                   expect(data.changed).toBeUndefined();
                 } else if (testValue == 2) {
                   expect(data.added).toBeUndefined();
-                  expect(data.changed.get(TickType.BID).value).toEqual(
+                  expect(data.changed).toBeDefined();
+                  expect(data.changed!.get(TickType.BID)?.value).toEqual(
                     testValue,
                   );
                   done();

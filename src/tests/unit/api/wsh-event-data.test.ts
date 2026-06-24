@@ -19,7 +19,6 @@ describe("IBApi Fundamental Data", () => {
   afterEach(() => {
     if (ib) {
       ib.disconnect();
-      ib = undefined;
     }
   });
 

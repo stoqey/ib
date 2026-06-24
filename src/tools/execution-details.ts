@@ -27,6 +27,9 @@ class CloseOrdersApp extends IBApiNextApp {
    */
   start(): void {
     super.start();
+    if (!this.api) {
+      throw Error("API not initialized");
+    }
 
     const executionFilter: ExecutionFilter = {
       clientId: "0",

@@ -21,7 +21,7 @@ export class ExecutionCondition implements OrderCondition {
    * @param conjunctionConnection AND | OR next condition (will be ignored if no more conditions are added)
    */
   constructor(
-    public exchange: string,
+    public exchange: string | undefined,
     public secType: SecType,
     public symbol: string,
     public conjunctionConnection: ConjunctionConnection,

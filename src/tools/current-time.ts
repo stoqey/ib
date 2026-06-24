@@ -28,6 +28,9 @@ class PrintCurrentTimeApp extends IBApiNextApp {
    */
   start(): void {
     super.start();
+    if (!this.api) {
+      throw Error("API not initialized");
+    }
 
     // print current time
 

@@ -41,7 +41,7 @@ export interface Order {
   totalQuantity?: number;
 
   /** The order's type. */
-  orderType?: OrderType;
+  orderType: OrderType;
 
   /**
    * The LIMIT price.

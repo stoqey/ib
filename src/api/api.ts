@@ -659,9 +659,9 @@ export class IBApi extends EventEmitter {
    *
    * @see [[reqPositions]]
    */
-  reqAccountUpdates(subscribe: boolean, acctCode: string): IBApi {
+  reqAccountUpdates(subscribe: boolean, acctCode: string | undefined): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.reqAccountUpdates(subscribe, acctCode),
+      this.controller.encoder.reqAccountUpdates(subscribe, acctCode ?? ""),
     );
     return this;
   }
@@ -1003,7 +1003,7 @@ export class IBApi extends EventEmitter {
   reqHistoricalData(
     reqId: number,
     contract: Contract,
-    endDateTime: string,
+    endDateTime: string | undefined,
     durationStr: string,
     barSizeSetting: BarSizeSetting,
     whatToShow: WhatToShow,
@@ -1076,7 +1076,7 @@ export class IBApi extends EventEmitter {
     reqId: number,
     contract: Contract,
     startDateTime: string,
-    endDateTime: string,
+    endDateTime: string | undefined | null,
     numberOfTicks: number,
     whatToShow: WhatToShow,
     useRTH: number | boolean,
@@ -1087,7 +1087,7 @@ export class IBApi extends EventEmitter {
         reqId,
         contract,
         startDateTime,
-        endDateTime,
+        endDateTime ?? "",
         numberOfTicks,
         whatToShow,
         useRTH,
@@ -1240,7 +1240,7 @@ export class IBApi extends EventEmitter {
   reqMktData(
     reqId: number,
     contract: Contract,
-    genericTickList: string,
+    genericTickList: string | null,
     snapshot: boolean,
     regulatorySnapshot: boolean,
   ): IBApi {
@@ -1248,7 +1248,7 @@ export class IBApi extends EventEmitter {
       this.controller.encoder.reqMktData(
         reqId,
         contract,
-        genericTickList,
+        genericTickList ?? "",
         snapshot,
         regulatorySnapshot,
       ),
@@ -1331,7 +1331,7 @@ export class IBApi extends EventEmitter {
    */
   reqPnL(reqId: number, account: string, modelCode?: string | null): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.reqPnL(reqId, account, modelCode ?? null),
+      this.controller.encoder.reqPnL(reqId, account, modelCode ?? ""),
     );
     return this;
   }
@@ -1348,11 +1348,16 @@ export class IBApi extends EventEmitter {
   reqPnLSingle(
     reqId: number,
     account: string,
-    modelCode: string | null,
+    modelCode: string | undefined | null,
     conId: number,
   ): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.reqPnLSingle(reqId, account, modelCode, conId),
+      this.controller.encoder.reqPnLSingle(
+        reqId,
+        account,
+        modelCode ?? "",
+        conId,
+      ),
     );
     return this;
   }
@@ -1385,7 +1390,11 @@ export class IBApi extends EventEmitter {
     modelCode: string | null,
   ): IBApi {
     this.controller.schedule(() =>
-      this.controller.encoder.reqPositionsMulti(reqId, account, modelCode),
+      this.controller.encoder.reqPositionsMulti(
+        reqId,
+        account,
+        modelCode ?? "",
+      ),
     );
     return this;
   }

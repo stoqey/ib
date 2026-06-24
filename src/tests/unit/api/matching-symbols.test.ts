@@ -18,7 +18,6 @@ describe("IBApi reqMatchingSymbols Tests", () => {
   afterEach(() => {
     if (ib) {
       ib.disconnect();
-      ib = undefined;
     }
   });
 
@@ -31,7 +30,7 @@ describe("IBApi reqMatchingSymbols Tests", () => {
         EventName.symbolSamples,
         (reqId, contractDescriptions: ContractDescription[]) => {
           expect(reqId).toEqual(refId);
-          expect(contractDescriptions[0].contract.symbol).toEqual("SPY");
+          expect(contractDescriptions[0].contract?.symbol).toEqual("SPY");
           ib.disconnect();
         },
       )
@@ -54,7 +53,7 @@ describe("IBApi reqMatchingSymbols Tests", () => {
         EventName.symbolSamples,
         (reqId, contractDescriptions: ContractDescription[]) => {
           expect(reqId).toEqual(refId);
-          expect(contractDescriptions[0].contract.symbol).toEqual("META");
+          expect(contractDescriptions[0].contract?.symbol).toEqual("META");
           ib.disconnect();
         },
       )
@@ -77,7 +76,7 @@ describe("IBApi reqMatchingSymbols Tests", () => {
         EventName.symbolSamples,
         (reqId, contractDescriptions: ContractDescription[]) => {
           expect(reqId).toEqual(refId);
-          expect(contractDescriptions[0].contract.symbol).toEqual("AMC");
+          expect(contractDescriptions[0].contract?.symbol).toEqual("AMC");
           ib.disconnect();
         },
       )

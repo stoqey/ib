@@ -4,7 +4,12 @@
 
 import { Subscription } from "rxjs";
 
-import { IBApiNextError, IBApiNextTickType, IBApiTickType } from "../api-next";
+import {
+  IBApiNextError,
+  IBApiNextTickType,
+  IBApiTickType,
+  MarketDataTick,
+} from "../api-next";
 import { IBApiNextApp } from "./common/ib-api-next-app";
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -32,19 +37,22 @@ class PrintMarketDataSingleApp extends IBApiNextApp {
   }
 
   /** The [[Subscription]] */
-  private subscription$: Subscription;
+  private subscription$: Subscription | undefined;
 
   /**
    * Start the app.
    */
   start(): void {
     super.start();
+    if (!this.api) {
+      throw Error("API not initialized");
+    }
 
     this.api
       .getMarketDataSnapshot(this.getContractArg(), "", false)
       .then((marketData) => {
         const dataWithTickNames = new Map<string, number>();
-        marketData.forEach((tick, type) => {
+        marketData.forEach((tick: MarketDataTick, type) => {
           if (type > IBApiNextTickType.API_NEXT_FIRST_TICK_ID) {
             dataWithTickNames.set(IBApiNextTickType[type], tick.value);
           } else {

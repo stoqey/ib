@@ -33,6 +33,9 @@ class PlaceNewOrdersApp extends IBApiNextApp {
    */
   start(): void {
     super.start();
+    if (!this.api) {
+      throw Error("API not initialized");
+    }
 
     const contract: Contract = {
       symbol: this.cmdLineArgs.symbol as string,

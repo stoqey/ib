@@ -35,13 +35,16 @@ class PrintMarketDepthExchangesApp extends IBApiNextApp {
   }
 
   /** The [[Subscription]] on the PnLSingle. */
-  private subscription$: Subscription;
+  private subscription$: Subscription | undefined;
 
   /**
    * Start the app.
    */
   start(): void {
     super.start();
+    if (!this.api) {
+      throw Error("API not initialized");
+    }
 
     if (!this.cmdLineArgs.conid) {
       this.error("-conid argument missing.");
@@ -51,7 +54,6 @@ class PrintMarketDepthExchangesApp extends IBApiNextApp {
     }
 
     // print order book updates
-
     this.subscription$ = this.api
       .getMarketDepth(
         {

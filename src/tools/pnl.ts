@@ -28,13 +28,16 @@ class PrintPositionsApp extends IBApiNextApp {
   }
 
   /** The [[Subscription]] on the PnL. */
-  private subscription$: Subscription;
+  private subscription$: Subscription | undefined;
 
   /**
    * Start the app.
    */
   start(): void {
     super.start();
+    if (!this.api) {
+      throw Error("API not initialized");
+    }
 
     if (!this.cmdLineArgs.account) {
       this.error("-account argument missing.");

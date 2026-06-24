@@ -29,6 +29,9 @@ class PrintManagedAcctsApp extends IBApiNextApp {
    */
   start(): void {
     super.start();
+    if (!this.api) {
+      throw Error("API not initialized");
+    }
 
     this.api
       .getManagedAccounts()

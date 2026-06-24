@@ -390,7 +390,7 @@ export class Decoder {
 
           this.drainQueue();
         }
-      } catch (e) {
+      } catch (e: any) {
         if (e.name !== "UnderrunError") {
           throw e;
         }
@@ -478,11 +478,39 @@ export class Decoder {
    *
    * Returns 0 if the token is empty.
    * Returns undefined is the token is Number.MAX_VALUE.
+   *
+   * public double readDouble() throws IOException {
+   *     String str = readStr();
+   *     return str == null ? 0 : Double.parseDouble( str);
+   * }
+   *
+   * Note: sometimes, for getPnL for example, the Java reference implementation calls readDouble and not readDoubleMax
+   * and readDouble returns a Double.MAX_VALUE meaning undefined. Therefore readDouble should be able to return undefined.
    */
   readDouble(): number | undefined {
     const token = this.readStr();
     if (token === "") {
       return 0;
+    }
+    const val = parseFloat(token);
+    return val === Number.MAX_VALUE ? undefined : val;
+  }
+
+  /**
+   * Read a token from queue and return it as floating point value.
+   *
+   * Returns undefined if the token is empty or Number.MAX_VALUE.
+   *
+   * public double readDoubleMax() throws IOException {
+   *     String str = readStr();
+   *     return (str == null || str.length() == 0) ? Double.MAX_VALUE
+   *        	                                     : Double.parseDouble( str);
+   * }
+   */
+  readDoubleOrUndefined(): number | undefined {
+    const token = this.readStr();
+    if (token === "") {
+      return undefined;
     }
     const val = parseFloat(token);
     return val === Number.MAX_VALUE ? undefined : val;
@@ -500,20 +528,6 @@ export class Decoder {
     }
     const val = parseFloat(token.replaceAll(",", ""));
     return val === Number.MAX_VALUE || val === Infinity ? undefined : val;
-  }
-
-  /**
-   * Read a token from queue and return it as floating point value.
-   *
-   * Returns undefined if the token is empty or Number.MAX_VALUE.
-   */
-  readDoubleOrUndefined(): number | undefined {
-    const token = this.readStr();
-    if (token === "") {
-      return undefined;
-    }
-    const val = parseFloat(token);
-    return val === Number.MAX_VALUE ? undefined : val;
   }
 
   /**
@@ -746,8 +760,8 @@ export class Decoder {
         : this.serverVersion;
 
     const contract: Contract = {};
-    const order: Order = {};
-    const orderState: OrderState = {};
+    const order: Order = { orderType: OrderType.MKT }; // would be overwritten
+    const orderState: OrderState = { status: OrderStatus.Unknown };
     const orderDecoder = new OrderDecoder(
       this,
       contract,
@@ -885,7 +899,7 @@ export class Decoder {
       contract.tradingClass = this.readStr();
     }
 
-    const position: number = this.readDecimal();
+    const position = this.readDecimal();
 
     const marketPrice = this.readDouble();
     const marketValue = this.readDouble();
@@ -1231,7 +1245,7 @@ export class Decoder {
     const price = this.readDouble();
     const size = this.readDecimal();
 
-    let isSmartDepth = undefined;
+    let isSmartDepth: boolean | undefined = undefined;
     if (this.serverVersion >= MIN_SERVER_VER.SMART_DEPTH) {
       isSmartDepth = this.readBool();
     }
@@ -1301,11 +1315,11 @@ export class Decoder {
     const reqId = this.readInt();
 
     let completedIndicator = "finished";
-    let startDateStr = "";
-    let endDateStr = "";
+    // let startDateStr :string;
+    // let endDateStr :string;
     if (version >= 2) {
-      startDateStr = this.readStr();
-      endDateStr = this.readStr();
+      const startDateStr = this.readStr();
+      const endDateStr = this.readStr();
       completedIndicator += "-" + startDateStr + "-" + endDateStr;
     }
 
@@ -1418,8 +1432,8 @@ export class Decoder {
 
     for (let i = 0; i < nPriceIncrements; i++) {
       priceIncrements[i] = {
-        lowEdge: this.readDouble(),
-        increment: this.readDouble(),
+        lowEdge: this.readDouble()!, // eslint-disable-line @typescript-eslint/no-non-null-assertion
+        increment: this.readDouble()!, // eslint-disable-line @typescript-eslint/no-non-null-assertion
       };
     }
 
@@ -1606,13 +1620,13 @@ export class Decoder {
       _tickAttrib = this.readInt();
     }
 
-    let impliedVol = this.readDouble();
+    let impliedVol: number | undefined = this.readDouble();
     if (impliedVol == -1) {
       // -1 is the "not yet computed" indicator
       impliedVol = undefined;
     }
 
-    let delta = this.readDouble();
+    let delta: number | undefined = this.readDouble();
     if (delta == -2) {
       // -2 is the "not yet computed" indicator
       delta = undefined;
@@ -1835,8 +1849,8 @@ export class Decoder {
     const reqId = this.readInt();
     const underComp: DeltaNeutralContract = {
       conId: this.readInt(),
-      delta: this.readDouble(),
-      price: this.readDouble(),
+      delta: this.readDouble()!, // eslint-disable-line @typescript-eslint/no-non-null-assertion
+      price: this.readDouble()!, // eslint-disable-line @typescript-eslint/no-non-null-assertion
     };
 
     this.emit(EventName.deltaNeutralValidation, reqId, underComp);
@@ -1906,7 +1920,7 @@ export class Decoder {
 
     let avgCost = 0;
     if (version >= 3) {
-      avgCost = this.readDouble();
+      avgCost = this.readDouble()!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
     }
 
     this.emit(EventName.position, account, contract, pos, avgCost);
@@ -2064,7 +2078,8 @@ export class Decoder {
     const strikeCount = this.readInt();
     const strikes: number[] = [];
     for (let j = 0; j < strikeCount; j++) {
-      strikes.push(this.readDouble());
+      const strike = this.readDouble();
+      if (strike) strikes.push(strike);
     }
 
     this.emit(
@@ -2401,7 +2416,7 @@ export class Decoder {
     for (let i = 0; i < tickCount; i++) {
       const time = this.readInt();
       this.readInt(); //for consistency
-      const price = this.readDouble();
+      const price = this.readDouble()!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
       const size = this.readDecimal();
       ticks[i] = {
         time,
@@ -2562,8 +2577,8 @@ export class Decoder {
    */
   private decodeMsg_COMPLETED_ORDER(): void {
     const contract: Contract = {};
-    const order: Order = {};
-    const orderState: OrderState = {};
+    const order: Order = { orderType: OrderType.MKT }; // would be overwritten
+    const orderState: OrderState = { status: OrderStatus.Unknown };
     const orderDecoder = new OrderDecoder(
       this,
       contract,
@@ -3229,8 +3244,8 @@ class OrderDecoder {
     if (this.version >= 20) {
       if (this.decoder.readBool()) {
         const conId = this.decoder.readInt();
-        const delta = this.decoder.readDouble();
-        const price = this.decoder.readDouble();
+        const delta = this.decoder.readDouble()!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
+        const price = this.decoder.readDouble()!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
         this.contract.deltaNeutralContract = {
           conId,
           delta,
@@ -3366,7 +3381,7 @@ class OrderDecoder {
             case OrderConditionType.PercentChange: {
               // OperatorCondition
               const isMore = this.decoder.readBool();
-              const value = this.decoder.readDouble();
+              const value = this.decoder.readDouble()!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
               // ContractCondition
               const condId = this.decoder.readInt();
               const exchange = this.decoder.readStr();
@@ -3384,7 +3399,7 @@ class OrderDecoder {
             case OrderConditionType.Price: {
               // OperatorCondition
               const isMore = this.decoder.readBool();
-              const value = this.decoder.readDouble();
+              const value = this.decoder.readDouble()!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
               // ContractCondition
               const condId = this.decoder.readInt();
               const exchange = this.decoder.readStr();

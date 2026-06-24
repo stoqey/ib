@@ -31,6 +31,9 @@ class PrintContractSearchApp extends IBApiNextApp {
    */
   start(): void {
     super.start();
+    if (!this.api) {
+      throw Error("API not initialized");
+    }
 
     if (!this.cmdLineArgs.pattern) {
       this.error("-pattern argument missing.");

@@ -29,7 +29,6 @@ describe("Place Orders", () => {
   afterEach(() => {
     if (ib) {
       ib.disconnect();
-      ib = undefined;
     }
   });
 

@@ -34,7 +34,7 @@ describe("ApiNext: getContractDetails()", () => {
 
     try {
       api.connect(clientId);
-    } catch (error) {
+    } catch (error: any) {
       logger.error(error.message);
     }
   });
@@ -42,7 +42,6 @@ describe("ApiNext: getContractDetails()", () => {
   afterEach(() => {
     if (api) {
       api.disconnect();
-      api = undefined;
     }
   });
 

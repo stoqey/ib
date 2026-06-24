@@ -22,7 +22,6 @@ describe("IBApi Histogram data Tests", () => {
   afterEach(() => {
     if (ib) {
       ib.disconnect();
-      ib = undefined;
     }
     // logger.info("IBApi disconnected");
   });

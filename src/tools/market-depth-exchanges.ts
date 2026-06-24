@@ -29,8 +29,9 @@ class PrintMarketDepthExchangesApp extends IBApiNextApp {
    */
   start(): void {
     super.start();
-
-    // print current time
+    if (!this.api) {
+      throw Error("API not initialized");
+    }
 
     this.api
       .getMarketDepthExchanges()

@@ -35,8 +35,8 @@ const sample_price_condition: OrderCondition = new PriceCondition(
 );
 const sample_execution_condition: OrderCondition = new ExecutionCondition(
   sample_stock.exchange,
-  sample_stock.secType,
-  sample_stock.symbol,
+  sample_stock.secType!,
+  sample_stock.symbol!,
   ConjunctionConnection.OR,
 );
 const sample_margin_condition: OrderCondition = new MarginCondition(
@@ -81,7 +81,6 @@ describe("Place Conditional Orders", () => {
   afterEach(() => {
     if (ib) {
       ib.disconnect();
-      ib = undefined;
     }
   });
 

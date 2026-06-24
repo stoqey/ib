@@ -65,7 +65,7 @@ describe("IBApi market scanner tests", () => {
           _distance: string,
           _benchmark: string,
           _projection: string,
-          _legStr: string,
+          _legStr?: string,
         ) => {
           expect(reqId).toEqual(refId);
         },
