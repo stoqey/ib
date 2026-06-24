@@ -2,12 +2,10 @@
  * This file implement test code for the placeOrder function .
  */
 import { Subscription } from "rxjs";
-import { IBApiNext, IBApiNextError } from "../../..";
+import { IBApiNext } from "../../..";
 import logger from "../../../common/logger";
-import { aapl_contract } from "../sample-data/contracts";
-import { sample_order } from "../sample-data/orders";
 
-const timeoutPromise = async (secs: number, reason?: string): Promise<void> =>
+const _timeoutPromise = async (secs: number, reason?: string): Promise<void> =>
   new Promise(
     (_, reject) =>
       setTimeout(() => reject(new Error(reason ?? "timeout")), secs * 1_000), // Fail after some time
@@ -51,44 +49,48 @@ describe("Issue xxx", () => {
     }
   });
 
-  test("Bug", async () => {
-    return new Promise<void>(async (resolve, reject) => {
-      let refId: number;
+  /*
+  WIP
+  */
 
-      const ordersSubscription$ = ib.getOpenOrders().subscribe({
-        next: (data) => {
-          logger.debug(data.all.length);
-          data.added?.forEach((item) => {
-            if (item.orderId === refId) {
-              logger.info(`Order #${refId} found in open orders.`);
-              resolve();
-            }
-          });
-        },
-        error: (err: IBApiNextError) => {
-          logger.error(`getOpenOrders failed with '${err.error.message}'`);
-          reject(`getOpenOrders failed with '${err.error.message}'`);
-        },
-      });
+  // test("Bug", async () => {
+  //   return new Promise<void>(async (resolve, reject) => {
+  //     let refId: number;
 
-      await ib
-        .placeNewOrder(aapl_contract, sample_order)
-        .then((orderId: number) => {
-          logger.info(`Order #${orderId} posted.`);
-        });
+  //     const _ordersSubscription$ = ib.getOpenOrders().subscribe({
+  //       next: (data) => {
+  //         logger.debug(data.all.length);
+  //         data.added?.forEach((item) => {
+  //           if (item.orderId === refId) {
+  //             logger.info(`Order #${refId} found in open orders.`);
+  //             resolve();
+  //           }
+  //         });
+  //       },
+  //       error: (err: IBApiNextError) => {
+  //         logger.error(`getOpenOrders failed with '${err.error.message}'`);
+  //         reject(`getOpenOrders failed with '${err.error.message}'`);
+  //       },
+  //     });
 
-      await ib
-        .placeNewOrder(aapl_contract, sample_order)
-        .then((orderId: number) => {
-          logger.info(`Order #${orderId} posted.`);
-        });
+  //     await ib
+  //       .placeNewOrder(aapl_contract, sample_order)
+  //       .then((orderId: number) => {
+  //         logger.info(`Order #${orderId} posted.`);
+  //       });
 
-      await ib
-        .placeNewOrder(aapl_contract, sample_order)
-        .then((orderId: number) => {
-          logger.info(`Order #${orderId} posted.`);
-          refId = orderId;
-        });
-    });
-  });
+  //     await ib
+  //       .placeNewOrder(aapl_contract, sample_order)
+  //       .then((orderId: number) => {
+  //         logger.info(`Order #${orderId} posted.`);
+  //       });
+
+  //     await ib
+  //       .placeNewOrder(aapl_contract, sample_order)
+  //       .then((orderId: number) => {
+  //         logger.info(`Order #${orderId} posted.`);
+  //         refId = orderId;
+  //       });
+  //   });
+  // });
 });

@@ -60,12 +60,12 @@ class PrintMarketDataApp extends IBApiNextApp {
             if (type > IBApiNextTickType.API_NEXT_FIRST_TICK_ID) {
               changedOrAddedDataWithTickNames.set(
                 IBApiNextTickType[type],
-                tick.value!,
+                tick.value!, // eslint-disable-line @typescript-eslint/no-non-null-assertion
               );
             } else {
               changedOrAddedDataWithTickNames.set(
                 IBApiTickType[type],
-                tick.value!,
+                tick.value!, // eslint-disable-line @typescript-eslint/no-non-null-assertion
               );
             }
           });
@@ -73,12 +73,12 @@ class PrintMarketDataApp extends IBApiNextApp {
             if (type > IBApiNextTickType.API_NEXT_FIRST_TICK_ID) {
               changedOrAddedDataWithTickNames.set(
                 IBApiNextTickType[type],
-                tick.value!,
+                tick.value!, // eslint-disable-line @typescript-eslint/no-non-null-assertion
               );
             } else {
               changedOrAddedDataWithTickNames.set(
                 IBApiTickType[type],
-                tick.value!,
+                tick.value!, // eslint-disable-line @typescript-eslint/no-non-null-assertion
               );
             }
           });

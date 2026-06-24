@@ -54,9 +54,9 @@ class PrintMarketDataSingleApp extends IBApiNextApp {
         const dataWithTickNames = new Map<string, number>();
         marketData.forEach((tick: MarketDataTick, type) => {
           if (type > IBApiNextTickType.API_NEXT_FIRST_TICK_ID) {
-            dataWithTickNames.set(IBApiNextTickType[type], tick.value!);
+            dataWithTickNames.set(IBApiNextTickType[type], tick.value!); // eslint-disable-line @typescript-eslint/no-non-null-assertion
           } else {
-            dataWithTickNames.set(IBApiTickType[type], tick.value!);
+            dataWithTickNames.set(IBApiTickType[type], tick.value!); // eslint-disable-line @typescript-eslint/no-non-null-assertion
           }
         });
         this.printObject(dataWithTickNames);
