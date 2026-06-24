@@ -147,9 +147,15 @@ describe("RxJS Wrapper: getAllOpenOrders", () => {
     const apiNext = new IBApiNext();
     const api = (apiNext as unknown as Record<string, unknown>).api as IBApi;
     const openOrdersUpdates: unknown[] = [];
+    let getOpenOrdersCompleted = false;
 
-    const openOrdersSubscription = apiNext.getOpenOrders().subscribe((data) => {
-      openOrdersUpdates.push(data);
+    apiNext.getOpenOrders().subscribe({
+      next: (data) => {
+        openOrdersUpdates.push(data);
+      },
+      complete: () => {
+        getOpenOrdersCompleted = true;
+      },
     });
 
     const allOpenOrdersPromise = apiNext.getAllOpenOrders();
@@ -158,8 +164,30 @@ describe("RxJS Wrapper: getAllOpenOrders", () => {
 
     await expect(allOpenOrdersPromise).resolves.toEqual([]);
     expect(openOrdersUpdates).toEqual([{ all: [], added: [] }]);
+    expect(getOpenOrdersCompleted).toEqual(true);
+  });
 
-    openOrdersSubscription.unsubscribe();
+  test("getAutoOpenOrders stays subscribed after openOrderEnd", () => {
+    const apiNext = new IBApiNext();
+    const api = (apiNext as unknown as Record<string, unknown>).api as IBApi;
+    const autoOpenOrdersUpdates: unknown[] = [];
+    let autoOpenOrdersCompleted = false;
+
+    const subscription = apiNext.getAutoOpenOrders(false).subscribe({
+      next: (data) => {
+        autoOpenOrdersUpdates.push(data);
+      },
+      complete: () => {
+        autoOpenOrdersCompleted = true;
+      },
+    });
+
+    api.emit(EventName.openOrderEnd);
+
+    expect(autoOpenOrdersUpdates).toEqual([{ all: [], added: [] }]);
+    expect(autoOpenOrdersCompleted).toEqual(false);
+
+    subscription.unsubscribe();
   });
 
 });

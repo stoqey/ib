@@ -3032,7 +3032,10 @@ export class IBApiNext {
           EventName.orderBound,
           this.onOrderBound as IBApiNextEventHandler<OpenOrder[]>,
         ],
-        [EventName.openOrderEnd, this.onOpenOrderEnd],
+        [
+          EventName.openOrderEnd,
+          this.onOpenOrderComplete as IBApiNextEventHandler<OpenOrder[]>,
+        ],
       ],
       "getOpenOrders", // Use the same instance ID each time to ensure there is only one pending request at a time.
     );

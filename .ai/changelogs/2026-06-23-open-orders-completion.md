@@ -1,0 +1,4 @@
+- summary: complete `IBApiNext.getOpenOrders()` on `openOrderEnd` while keeping `getAutoOpenOrders()` subscribed for future updates.
+- notable files or areas changed: `src/api-next/api-next.ts`, `src/tests/unit/api-next/get-all-open-orders.test.ts`.
+- tests run: `yarn jest src/tests/unit/api-next/get-all-open-orders.test.ts --runInBand --reporters=default --useStderr --detectOpenHandles`; `yarn jest src/tests/unit/api-next-live/subscription-registry.test.ts --runInBand --reporters=default --useStderr --detectOpenHandles`; `yarn type-check`; `yarn lint`.
+- risks or follow-ups: live verification depends on paper TWS availability.
