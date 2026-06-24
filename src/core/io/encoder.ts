@@ -2950,9 +2950,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     tokens.push(nullifyMax(subscription.numberOfRows));
     tokens.push(subscription.instrument);
     tokens.push(subscription.locationCode);
-    tokens.push(
-      subscription.scanCode ? ScanCode[subscription.scanCode] : undefined,
-    );
+    tokens.push(ScanCode[subscription.scanCode]);
     tokens.push(nullifyMax(subscription.abovePrice));
     tokens.push(nullifyMax(subscription.belowPrice));
     tokens.push(nullifyMax(subscription.aboveVolume));

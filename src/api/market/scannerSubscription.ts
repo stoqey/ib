@@ -18,7 +18,7 @@ export interface ScannerSubscription {
   locationCode?: LocationCode;
 
   /** Same as TWS Market Scanner's "parameters" field, for example: TOP_PERC_GAIN. */
-  scanCode?: ScanCode;
+  scanCode: ScanCode;
 
   /** Filters out Contracts which price is below this value. */
   abovePrice?: number;
