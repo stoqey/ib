@@ -10,7 +10,10 @@ import {
   IBApiTickType,
   MarketDataTick,
 } from "../api-next";
-import { IBApiNextApp } from "./common/ib-api-next-app";
+import {
+  getMarketDataTickDisplayValue,
+  IBApiNextApp,
+} from "./common/ib-api-next-app";
 
 /////////////////////////////////////////////////////////////////////////////////
 // The help text                                                               //
@@ -51,12 +54,16 @@ class PrintMarketDataSingleApp extends IBApiNextApp {
     this.api
       .getMarketDataSnapshot(this.getContractArg(), "", false)
       .then((marketData) => {
-        const dataWithTickNames = new Map<string, number>();
+        const dataWithTickNames = new Map<string, number | string>();
         marketData.forEach((tick: MarketDataTick, type) => {
+          const value = getMarketDataTickDisplayValue(tick);
+          if (value === undefined) {
+            return;
+          }
           if (type > IBApiNextTickType.API_NEXT_FIRST_TICK_ID) {
-            dataWithTickNames.set(IBApiNextTickType[type], tick.value!); // eslint-disable-line @typescript-eslint/no-non-null-assertion
+            dataWithTickNames.set(IBApiNextTickType[type], value);
           } else {
-            dataWithTickNames.set(IBApiTickType[type], tick.value!); // eslint-disable-line @typescript-eslint/no-non-null-assertion
+            dataWithTickNames.set(IBApiTickType[type], value);
           }
         });
         this.printObject(dataWithTickNames);

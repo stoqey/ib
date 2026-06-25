@@ -106,7 +106,7 @@ function load() {
     // Keep dotenv lazy so importing the package does not touch process.env or the filesystem.
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const dotenv = require("dotenv") as typeof import("dotenv");
-    dotenv.config();
+    dotenv.config({ quiet: true });
   }
 
   const nodeEnvironment = process.env.NODE_ENV;

@@ -43,7 +43,9 @@ describe("configuration lazy loading", () => {
 
   test("loads config files when a value is read", async () => {
     const readFileSync = jest.fn(() => "{}");
+    const config = jest.fn();
     jest.doMock("fs", () => ({ readFileSync }));
+    jest.doMock("dotenv", () => ({ config }));
 
     const { default: configuration } = await import(
       "../../common/configuration"
@@ -52,6 +54,7 @@ describe("configuration lazy loading", () => {
 
     expect(environment).toEqual(process.env.NODE_ENV || "local");
     expect(readFileSync).toHaveBeenCalled();
+    expect(config).toHaveBeenCalledWith({ quiet: true });
   });
 
   test("loads dotenv before applying environment overrides", async () => {
@@ -71,5 +74,6 @@ describe("configuration lazy loading", () => {
 
     expect(configuration.env_config_test).toEqual("DOTENV");
     expect(config).toHaveBeenCalledTimes(1);
+    expect(config).toHaveBeenCalledWith({ quiet: true });
   });
 });

@@ -1,7 +1,7 @@
 import { Subscription } from "rxjs";
 
 import path from "path";
-import { IBApiNext, MarketDataType } from "../../api-next";
+import { IBApiNext, MarketDataTick, MarketDataType } from "../../api-next";
 import Contract from "../../api/contract/contract";
 import LogLevel from "../../api/data/enum/log-level";
 import OptionType from "../../api/data/enum/option-type";
@@ -25,6 +25,12 @@ function jsonReplacer(key, value) {
   } else {
     return value;
   }
+}
+
+export function getMarketDataTickDisplayValue(
+  tick: MarketDataTick,
+): number | string | undefined {
+  return tick.value ?? tick.stringValue;
 }
 
 /**

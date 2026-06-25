@@ -2079,7 +2079,7 @@ export class Decoder {
     const strikes: number[] = [];
     for (let j = 0; j < strikeCount; j++) {
       const strike = this.readDouble();
-      if (strike) strikes.push(strike);
+      if (strike !== undefined) strikes.push(strike);
     }
 
     this.emit(
