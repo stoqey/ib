@@ -8,16 +8,16 @@ import { TickAttribLast } from "../historical/historicalTickLast";
  */
 export interface TickByTickAllLast {
   /** The tick type. */
-  tickType?: number;
+  tickType: number;
 
   /** The UNIX timestamp of the tick. */
   time: number;
 
   /** The price of the tick. */
-  price: number;
+  price: number | undefined;
 
   /** The size of the tick. */
-  size: number;
+  size: number | undefined;
 
   /** The tick attributes of the tick. */
   tickAttribLast: TickAttribLast;

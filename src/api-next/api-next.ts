@@ -186,6 +186,11 @@ export interface IBApiNextCreationOptions {
   logger?: Logger;
 }
 
+export type IBApiNextEventHandler<T> = (
+  subscriptions: Map<number, IBApiNextSubscription<T>>,
+  ...eventArgs: unknown[]
+) => void;
+
 /**
  * Next-gen Typescript implementation of the Interactive Brokers TWS (or IB Gateway) API.
  *
@@ -382,7 +387,12 @@ export class IBApiNext {
             this.api.reqCurrentTime();
           },
           undefined,
-          [[EventName.currentTime, this.onCurrentTime]],
+          [
+            [
+              EventName.currentTime,
+              this.onCurrentTime as IBApiNextEventHandler<number>,
+            ],
+          ],
           "getCurrentTime", // Use the same instance ID each time to ensure there is only one pending request at a time.
         )
         .pipe(map((v: { all: number }) => v.all)),
@@ -415,7 +425,12 @@ export class IBApiNext {
             this.api.reqManagedAccts();
           },
           undefined,
-          [[EventName.managedAccounts, this.onManagedAccts]],
+          [
+            [
+              EventName.managedAccounts,
+              this.onManagedAccts as IBApiNextEventHandler<string[]>,
+            ],
+          ],
           "getManagedAccounts", // Use the same instance ID each time to ensure there is only one pending request at a time.
         )
         .pipe(map((v: { all: string[] }) => v.all)),
@@ -561,8 +576,16 @@ export class IBApiNext {
         this.api.cancelAccountSummary(reqId);
       },
       [
-        [EventName.accountSummary, this.onAccountSummary],
-        [EventName.accountSummaryEnd, this.onAccountSummaryEnd],
+        [
+          EventName.accountSummary,
+          this
+            .onAccountSummary as IBApiNextEventHandler<MutableAccountSummaries>,
+        ],
+        [
+          EventName.accountSummaryEnd,
+          this
+            .onAccountSummaryEnd as IBApiNextEventHandler<MutableAccountSummaries>,
+        ],
       ],
       `getAccountSummary+${group}:${tags}`, // Use the same instance ID each time to ensure there is only one pending request at a time.
     );
@@ -809,10 +832,22 @@ export class IBApiNext {
         this.api.reqAccountUpdates(false, acctCode);
       },
       [
-        [EventName.updateAccountValue, this.onUpdateAccountValue],
-        [EventName.updatePortfolio, this.onUpdatePortfolio],
-        [EventName.accountDownloadEnd, this.onAccountDownloadEnd],
-        [EventName.updateAccountTime, this.onUpdateAccountTime],
+        [
+          EventName.updateAccountValue,
+          this.onUpdateAccountValue as IBApiNextEventHandler<AccountUpdate>,
+        ],
+        [
+          EventName.updatePortfolio,
+          this.onUpdatePortfolio as IBApiNextEventHandler<AccountUpdate>,
+        ],
+        [
+          EventName.accountDownloadEnd,
+          this.onAccountDownloadEnd as IBApiNextEventHandler<AccountUpdate>,
+        ],
+        [
+          EventName.updateAccountTime,
+          this.onUpdateAccountTime as IBApiNextEventHandler<AccountUpdate>,
+        ],
       ],
       acctCode ? `getAccountUpdates+${acctCode}` : "getAccountUpdates", // Use the same instance ID each time to ensure there is only one pending request at a time.
     );
@@ -903,7 +938,10 @@ export class IBApiNext {
         this.api.cancelPositions();
       },
       [
-        [EventName.position, this.onPosition],
+        [
+          EventName.position,
+          this.onPosition as IBApiNextEventHandler<MutableAccountPositions>,
+        ],
         [EventName.positionEnd, this.onPositionEnd],
       ],
       "getPositions", // Use the same instance ID each time to ensure there is only one pending request at a time.
@@ -963,9 +1001,24 @@ export class IBApiNext {
           },
           undefined,
           [
-            [EventName.contractDetails, this.onContractDetails],
-            [EventName.bondContractDetails, this.onContractDetails],
-            [EventName.contractDetailsEnd, this.onContractDetailsEnd],
+            [
+              EventName.contractDetails,
+              this.onContractDetails as IBApiNextEventHandler<
+                ContractDetails[]
+              >,
+            ],
+            [
+              EventName.bondContractDetails,
+              this.onContractDetails as IBApiNextEventHandler<
+                ContractDetails[]
+              >,
+            ],
+            [
+              EventName.contractDetailsEnd,
+              this.onContractDetailsEnd as IBApiNextEventHandler<
+                ContractDetails[]
+              >,
+            ],
           ],
         )
         .pipe(map((v: { all: ContractDetails[] }) => v.all)),
@@ -1058,11 +1111,16 @@ export class IBApiNext {
           [
             [
               EventName.securityDefinitionOptionParameter,
-              this.onSecurityDefinitionOptionParameter,
+              this.onSecurityDefinitionOptionParameter as IBApiNextEventHandler<
+                SecurityDefinitionOptionParameterType[]
+              >,
             ],
             [
               EventName.securityDefinitionOptionParameterEnd,
-              this.onSecurityDefinitionOptionParameterEnd,
+              this
+                .onSecurityDefinitionOptionParameterEnd as IBApiNextEventHandler<
+                SecurityDefinitionOptionParameterType[]
+              >,
             ],
           ],
         )
@@ -1112,7 +1170,7 @@ export class IBApiNext {
         (reqId) => {
           this.api.cancelPnL(reqId);
         },
-        [[EventName.pnl, this.onPnL]],
+        [[EventName.pnl, this.onPnL as IBApiNextEventHandler<PnL>]],
         `getPnl+${account}:${modelCode}`, // Use the same instance ID each time to ensure there is only one pending request at a time.
       )
       .pipe(map((v: { all: PnL }) => v.all));
@@ -1157,7 +1215,7 @@ export class IBApiNext {
    */
   getPnLSingle(
     account: string,
-    modelCode: string,
+    modelCode: string | undefined | null,
     conId: number,
   ): Observable<PnLSingle> {
     return this.subscriptions
@@ -1168,7 +1226,12 @@ export class IBApiNext {
         (reqId) => {
           this.api.cancelPnLSingle(reqId);
         },
-        [[EventName.pnlSingle, this.onPnLSingle]],
+        [
+          [
+            EventName.pnlSingle,
+            this.onPnLSingle as IBApiNextEventHandler<PnLSingle>,
+          ],
+        ],
         `getPnLSingle+${account}:${modelCode}:${conId}`, // Use the same instance ID each time to ensure there is only one pending request at a time.
       )
       .pipe(map((v: { all: PnLSingle }) => v.all));
@@ -1610,7 +1673,7 @@ export class IBApiNext {
    */
   getMarketData(
     contract: Contract,
-    genericTickList: string,
+    genericTickList: string | null,
     snapshot: boolean,
     regulatorySnapshot: boolean,
   ): Observable<MarketDataUpdate> {
@@ -1631,12 +1694,31 @@ export class IBApiNext {
         }
       },
       [
-        [EventName.tickPrice, this.onTick],
-        [EventName.tickSize, this.onTick],
-        [EventName.tickGeneric, this.onTick],
-        [EventName.tickString, this.onTickString],
-        [EventName.tickOptionComputation, this.onTickOptionComputation],
-        [EventName.tickSnapshotEnd, this.onTickSnapshotEnd],
+        [
+          EventName.tickPrice,
+          this.onTick as IBApiNextEventHandler<MutableMarketData>,
+        ],
+        [
+          EventName.tickSize,
+          this.onTick as IBApiNextEventHandler<MutableMarketData>,
+        ],
+        [
+          EventName.tickGeneric,
+          this.onTick as IBApiNextEventHandler<MutableMarketData>,
+        ],
+        [
+          EventName.tickString,
+          this.onTickString as IBApiNextEventHandler<MutableMarketData>,
+        ],
+        [
+          EventName.tickOptionComputation,
+          this
+            .onTickOptionComputation as IBApiNextEventHandler<MutableMarketData>,
+        ],
+        [
+          EventName.tickSnapshotEnd,
+          this.onTickSnapshotEnd as IBApiNextEventHandler<MutableMarketData>,
+        ],
       ],
       `getMarketData+${JSON.stringify(
         contract,
@@ -1668,7 +1750,7 @@ export class IBApiNext {
         genericTickList,
         true,
         regulatorySnapshot,
-      ).pipe(map((v: { all: MutableMarketData }) => v.all)),
+      ).pipe(map((v) => new MutableMarketData(v.all))),
       {
         defaultValue: new MutableMarketData(),
       },
@@ -1726,7 +1808,12 @@ export class IBApiNext {
           (reqId) => {
             this.api.cancelHeadTimestamp(reqId);
           },
-          [[EventName.headTimestamp, this.onHeadTimestamp]],
+          [
+            [
+              EventName.headTimestamp,
+              this.onHeadTimestamp as IBApiNextEventHandler<string>,
+            ],
+          ],
           `getHeadTimestamp+${JSON.stringify(
             contract,
           )}:${whatToShow}:${useRTH}:${formatDate}`, // Use the same instance ID each time to ensure there is only one pending request at a time.
@@ -1867,7 +1954,12 @@ export class IBApiNext {
             );
           },
           undefined,
-          [[EventName.historicalData, this.onHistoricalData]],
+          [
+            [
+              EventName.historicalData,
+              this.onHistoricalData as IBApiNextEventHandler<Bar[]>,
+            ],
+          ],
         )
         .pipe(map((v: { all: Bar[] }) => v.all)),
       {
@@ -1969,7 +2061,12 @@ export class IBApiNext {
         (reqId) => {
           this.api.cancelHistoricalData(reqId);
         },
-        [[EventName.historicalDataUpdate, this.onHistoricalDataUpdate]],
+        [
+          [
+            EventName.historicalDataUpdate,
+            this.onHistoricalDataUpdate as IBApiNextEventHandler<Bar>,
+          ],
+        ],
         `${JSON.stringify(
           contract,
         )}:${barSizeSetting}:${whatToShow}:${formatDate}`, // Use the same instance ID each time to ensure there is only one pending request at a time.
@@ -2039,7 +2136,12 @@ export class IBApiNext {
           );
         },
         undefined,
-        [[EventName.historicalTicks, this.onHistoricalTicks]],
+        [
+          [
+            EventName.historicalTicks,
+            this.onHistoricalTicks as IBApiNextEventHandler<HistoricalTick[]>,
+          ],
+        ],
       )
       .pipe(map((v: { all: HistoricalTick[] }) => v.all));
   }
@@ -2088,7 +2190,7 @@ export class IBApiNext {
   getHistoricalTicksBidAsk(
     contract: Contract,
     startDateTime: string,
-    endDateTime: string,
+    endDateTime: string | undefined | null,
     numberOfTicks: number,
     useRTH: number | boolean,
     ignoreSize: boolean,
@@ -2108,7 +2210,14 @@ export class IBApiNext {
           );
         },
         undefined,
-        [[EventName.historicalTicksBidAsk, this.onHistoricalTicksBidAsk]],
+        [
+          [
+            EventName.historicalTicksBidAsk,
+            this.onHistoricalTicksBidAsk as IBApiNextEventHandler<
+              HistoricalTickBidAsk[]
+            >,
+          ],
+        ],
       )
       .pipe(map((v: { all: HistoricalTickBidAsk[] }) => v.all));
   }
@@ -2154,7 +2263,7 @@ export class IBApiNext {
   getHistoricalTicksLast(
     contract: Contract,
     startDateTime: string,
-    endDateTime: string,
+    endDateTime: string | undefined | null,
     numberOfTicks: number,
     useRTH: number | boolean,
   ): Observable<HistoricalTickLast[]> {
@@ -2173,7 +2282,14 @@ export class IBApiNext {
           );
         },
         undefined,
-        [[EventName.historicalTicksLast, this.onHistoricalTicksLast]],
+        [
+          [
+            EventName.historicalTicksLast,
+            this.onHistoricalTicksLast as IBApiNextEventHandler<
+              HistoricalTickLast[]
+            >,
+          ],
+        ],
       )
       .pipe(map((v: { all: HistoricalTickLast[] }) => v.all));
   }
@@ -2205,7 +2321,14 @@ export class IBApiNext {
             this.api.reqMktDepthExchanges();
           },
           undefined,
-          [[EventName.mktDepthExchanges, this.onMktDepthExchanges]],
+          [
+            [
+              EventName.mktDepthExchanges,
+              this.onMktDepthExchanges as IBApiNextEventHandler<
+                DepthMktDataDescription[]
+              >,
+            ],
+          ],
           "getMarketDepthExchanges", // Use the same instance ID each time to ensure there is only one pending request at a time.
         )
         .pipe(map((v: { all: DepthMktDataDescription[] }) => v.all)),
@@ -2258,7 +2381,7 @@ export class IBApiNext {
     subscriptions: Map<number, IBApiNextSubscription<OrderBook>>,
     reqId: number,
     position: number,
-    marketMaker: string,
+    marketMaker: string | undefined,
     operation: number,
     side: number,
     price: number,
@@ -2283,8 +2406,10 @@ export class IBApiNext {
       asks: new Map<OrderBookRowPosition, OrderBookRow>(),
     };
 
-    let cachedRows: Map<OrderBookRowPosition, OrderBookRow> = undefined;
-    let changedRows: Map<OrderBookRowPosition, OrderBookRow> = undefined;
+    let cachedRows: Map<OrderBookRowPosition, OrderBookRow> | undefined =
+      undefined;
+    let changedRows: Map<OrderBookRowPosition, OrderBookRow> | undefined =
+      undefined;
 
     if (side == 0) {
       // ask side
@@ -2367,13 +2492,15 @@ export class IBApiNext {
         {
           const deletedRow = cachedRows.get(position);
 
-          cachedRows.delete(position);
-          changedRows.set(position, deletedRow);
+          if (deletedRow) {
+            cachedRows.delete(position);
+            changedRows.set(position, deletedRow);
 
-          subscription.next({
-            all: cached,
-            removed: changed,
-          });
+            subscription.next({
+              all: cached,
+              removed: changed,
+            });
+          }
         }
         break;
 
@@ -2419,8 +2546,14 @@ export class IBApiNext {
         this.api.cancelMktDepth(reqId, isSmartDepth);
       },
       [
-        [EventName.updateMktDepth, this.onUpdateMktDepth],
-        [EventName.updateMktDepthL2, this.onUpdateMktDepthL2],
+        [
+          EventName.updateMktDepth,
+          this.onUpdateMktDepth as IBApiNextEventHandler<OrderBook>,
+        ],
+        [
+          EventName.updateMktDepthL2,
+          this.onUpdateMktDepthL2 as IBApiNextEventHandler<OrderBook>,
+        ],
       ],
       `${JSON.stringify(
         contract,
@@ -2449,7 +2582,12 @@ export class IBApiNext {
             this.api.reqScannerParameters();
           },
           undefined,
-          [[EventName.scannerParameters, this.onScannerParameters]],
+          [
+            [
+              EventName.scannerParameters,
+              this.onScannerParameters as IBApiNextEventHandler<string>,
+            ],
+          ],
           "getScannerParameters", // Use the same instance ID each time to ensure there is only one pending request at a time.
         )
         .pipe(map((v: { all: string }) => v.all)),
@@ -2568,8 +2706,14 @@ export class IBApiNext {
         this.api.cancelScannerSubscription(reqId);
       },
       [
-        [EventName.scannerData, this.onScannerData],
-        [EventName.scannerDataEnd, this.onScannerDataEnd],
+        [
+          EventName.scannerData,
+          this.onScannerData as IBApiNextEventHandler<MarketScannerRows>,
+        ],
+        [
+          EventName.scannerDataEnd,
+          this.onScannerDataEnd as IBApiNextEventHandler<MarketScannerRows>,
+        ],
       ],
     );
   }
@@ -2620,7 +2764,12 @@ export class IBApiNext {
           (reqId) => {
             this.api.cancelHistogramData(reqId);
           },
-          [[EventName.histogramData, this.onHistogramData]],
+          [
+            [
+              EventName.histogramData,
+              this.onHistogramData as IBApiNextEventHandler<HistogramEntry[]>,
+            ],
+          ],
           `getHistogramData+${JSON.stringify(
             contract,
           )}:${useRTH}:${duration}:${durationUnit}`, // Use the same instance ID each time to ensure there is only one pending request at a time.
@@ -2662,7 +2811,6 @@ export class IBApiNext {
           contract,
           order,
           orderState,
-          orderStatus: undefined,
         };
         allOrders.push(addedOrder);
         if (sub.endEventReceived) {
@@ -2771,10 +2919,10 @@ export class IBApiNext {
       status,
       filled,
       remaining,
-      avgFillPrice: undefined,
+      avgFillPrice,
       permId,
       parentId,
-      lastFillPrice: undefined,
+      lastFillPrice,
       clientId,
       whyHeld,
       mktCapPrice,
@@ -2835,10 +2983,22 @@ export class IBApiNext {
           },
           undefined,
           [
-            [EventName.openOrder, this.onOpenOrder],
-            [EventName.orderStatus, this.onOrderStatus],
-            [EventName.orderBound, this.onOrderBound],
-            [EventName.openOrderEnd, this.onOpenOrderComplete],
+            [
+              EventName.openOrder,
+              this.onOpenOrder as IBApiNextEventHandler<OpenOrder[]>,
+            ],
+            [
+              EventName.orderStatus,
+              this.onOrderStatus as IBApiNextEventHandler<OpenOrder[]>,
+            ],
+            [
+              EventName.orderBound,
+              this.onOrderBound as IBApiNextEventHandler<OpenOrder[]>,
+            ],
+            [
+              EventName.openOrderEnd,
+              this.onOpenOrderComplete as IBApiNextEventHandler<OpenOrder[]>,
+            ],
           ],
           "getAllOpenOrders", // Use the same instance ID each time to ensure there is only one pending request at a time.
         )
@@ -2860,10 +3020,22 @@ export class IBApiNext {
       },
       undefined,
       [
-        [EventName.openOrder, this.onOpenOrder],
-        [EventName.orderStatus, this.onOrderStatus],
-        [EventName.orderBound, this.onOrderBound],
-        [EventName.openOrderEnd, this.onOpenOrderComplete],
+        [
+          EventName.openOrder,
+          this.onOpenOrder as IBApiNextEventHandler<OpenOrder[]>,
+        ],
+        [
+          EventName.orderStatus,
+          this.onOrderStatus as IBApiNextEventHandler<OpenOrder[]>,
+        ],
+        [
+          EventName.orderBound,
+          this.onOrderBound as IBApiNextEventHandler<OpenOrder[]>,
+        ],
+        [
+          EventName.openOrderEnd,
+          this.onOpenOrderComplete as IBApiNextEventHandler<OpenOrder[]>,
+        ],
       ],
       "getOpenOrders", // Use the same instance ID each time to ensure there is only one pending request at a time.
     );
@@ -2884,9 +3056,18 @@ export class IBApiNext {
       },
       undefined,
       [
-        [EventName.openOrder, this.onOpenOrder],
-        [EventName.orderStatus, this.onOrderStatus],
-        [EventName.orderBound, this.onOrderBound],
+        [
+          EventName.openOrder,
+          this.onOpenOrder as IBApiNextEventHandler<OpenOrder[]>,
+        ],
+        [
+          EventName.orderStatus,
+          this.onOrderStatus as IBApiNextEventHandler<OpenOrder[]>,
+        ],
+        [
+          EventName.orderBound,
+          this.onOrderBound as IBApiNextEventHandler<OpenOrder[]>,
+        ],
         [EventName.openOrderEnd, this.onOpenOrderEnd],
       ],
       "getAutoOpenOrders", // Use the same instance ID each time to ensure there is only one pending request at a time.
@@ -2921,7 +3102,12 @@ export class IBApiNext {
             this.api.reqIds();
           },
           undefined,
-          [[EventName.nextValidId, this.onNextValidId]],
+          [
+            [
+              EventName.nextValidId,
+              this.onNextValidId as IBApiNextEventHandler<number>,
+            ],
+          ],
         )
         .pipe(map((v: { all: number }) => v.all)),
       {
@@ -3060,8 +3246,14 @@ export class IBApiNext {
           },
           undefined,
           [
-            [EventName.execDetails, this.onExecDetails],
-            [EventName.execDetailsEnd, this.onExecDetailsEnd],
+            [
+              EventName.execDetails,
+              this.onExecDetails as IBApiNextEventHandler<ExecutionDetail[]>,
+            ],
+            [
+              EventName.execDetailsEnd,
+              this.onExecDetailsEnd as IBApiNextEventHandler<ExecutionDetail[]>,
+            ],
           ],
         )
         .pipe(map((v: { all: ExecutionDetail[] }) => v.all)),
@@ -3084,8 +3276,18 @@ export class IBApiNext {
           },
           undefined,
           [
-            [EventName.commissionReport, this.onComissionReport],
-            [EventName.execDetailsEnd, this.onExecDetailsEnd],
+            [
+              EventName.commissionReport,
+              this.onComissionReport as IBApiNextEventHandler<
+                CommissionReport[]
+              >,
+            ],
+            [
+              EventName.execDetailsEnd,
+              this.onExecDetailsEnd as IBApiNextEventHandler<
+                CommissionReport[]
+              >,
+            ],
           ],
         )
         .pipe(map((v: { all: CommissionReport[] }) => v.all)),
@@ -3122,7 +3324,14 @@ export class IBApiNext {
             this.api.reqMatchingSymbols(reqId, pattern);
           },
           undefined,
-          [[EventName.symbolSamples, this.onSymbolSamples]],
+          [
+            [
+              EventName.symbolSamples,
+              this.onSymbolSamples as IBApiNextEventHandler<
+                ContractDescription[]
+              >,
+            ],
+          ],
         )
         .pipe(map((v: { all: ContractDescription[] }) => v.all)),
     );
@@ -3155,12 +3364,17 @@ export class IBApiNext {
             this.api.reqUserInfo(reqId);
           },
           undefined,
-          [[EventName.userInfo, this.onUserInfo]],
+          [
+            [
+              EventName.userInfo,
+              this.onUserInfo as IBApiNextEventHandler<string>,
+            ],
+          ],
           "getUserInfo",
         )
         .pipe(map((v: { all: string }) => v.all)),
       {
-        defaultValue: undefined,
+        defaultValue: "",
       },
     );
   }
@@ -3198,12 +3412,17 @@ export class IBApiNext {
             this.api.reqMarketRule(marketRuleId);
           },
           undefined,
-          [[EventName.marketRule, this.onMarketRule]],
+          [
+            [
+              EventName.marketRule,
+              this.onMarketRule as IBApiNextEventHandler<PriceIncrement[]>,
+            ],
+          ],
           `getMarketRule+${marketRuleId}`,
         )
         .pipe(map((v: { all: PriceIncrement[] }) => v.all)),
       {
-        defaultValue: undefined,
+        defaultValue: [],
       },
     );
   }
@@ -3233,7 +3452,8 @@ export class IBApiNext {
 
       const current = subscription.lastAllValue ?? ({} as TickByTickAllLast);
       current.tickType = tickType;
-      current.time = !time ? undefined : +time;
+      // current.time = !time ? undefined : +time;
+      current.time = parseInt(time);
       current.price = price !== -1 ? price : undefined;
       current.size = size !== -1 ? size : undefined;
       current.tickAttribLast = tickAttribLast;
@@ -3277,7 +3497,9 @@ export class IBApiNext {
         [
           [
             EventName.tickByTickAllLast,
-            this.onTickByTickAllLastDataUpdates(contract),
+            this.onTickByTickAllLastDataUpdates(
+              contract,
+            ) as IBApiNextEventHandler<TickByTickAllLast>,
           ],
         ],
         `${JSON.stringify(contract)}:${numberOfTicks}:${ignoreSize}`, // Use the same instance ID each time to ensure there is only one pending request at a time.
@@ -3360,7 +3582,12 @@ export class IBApiNext {
         (reqId) => {
           this.api.cancelRealTimeBars(reqId);
         },
-        [[EventName.realtimeBar, this.onRealTimeBar]],
+        [
+          [
+            EventName.realtimeBar,
+            this.onRealTimeBar as IBApiNextEventHandler<Bar>,
+          ],
+        ],
         `getRealTimeBars+${JSON.stringify(contract)}:${whatToShow}:${useRTH}`, // Use the same instance ID each time to ensure there is only one pending request at a time.
       )
       .pipe(map((v: { all: Bar }) => v.all));
@@ -3392,7 +3619,7 @@ export class IBApiNext {
     contract: Contract,
     reportType: string,
     fundamentalDataOptions: TagValue[] = [],
-  ): Promise<string> {
+  ): Promise<string | undefined> {
     return lastValueFrom(
       this.subscriptions
         .register<string>(
@@ -3407,7 +3634,12 @@ export class IBApiNext {
           (reqId) => {
             this.api.cancelFundamentalData(reqId);
           },
-          [[EventName.fundamentalData, this.onFundamentalData]],
+          [
+            [
+              EventName.fundamentalData,
+              this.onFundamentalData as IBApiNextEventHandler<string>,
+            ],
+          ],
         )
         .pipe(map((v: { all: string }) => v.all)),
       {

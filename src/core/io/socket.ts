@@ -453,7 +453,7 @@ export class Socket {
     result[pos++] = 0xff & (val >> 24);
     result[pos++] = 0xff & (val >> 16);
     result[pos++] = 0xff & (val >> 8);
-    result[pos++] = 0xff & val;
+    result[pos] = 0xff & val;
     return result;
   }
 

@@ -26,13 +26,16 @@ class OpenOrdersApp extends IBApiNextApp {
   }
 
   /** The [[Subscription]] on the open orders. */
-  private subscription$: Subscription;
+  private subscription$: Subscription | undefined;
 
   /**
    * Start the app.
    */
   start(): void {
     super.start();
+    if (!this.api) {
+      throw Error("API not initialized");
+    }
 
     this.subscription$ = this.api.getOpenOrders().subscribe({
       next: (data) => {

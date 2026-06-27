@@ -135,9 +135,9 @@ const Integer_MAX_VALUE = 2147483647;
  * but we still support it on encoder-side to avoid any unreasonably large numbers submitted to
  * TWS if any client code was not migrated.
  */
-function nullifyMax(number?: number): number | null {
+function nullifyMax(number: number | undefined): number | undefined {
   if (number === Number.MAX_VALUE) {
-    return null;
+    return undefined;
   } else {
     return number;
   }
@@ -1857,7 +1857,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   /**
    * Encode a REQ_PNL message to an array of tokens.
    */
-  reqPnL(reqId: number, account: string, modelCode: string | null): void {
+  reqPnL(reqId: number, account: string, modelCode: string): void {
     if (this.serverVersion < MIN_SERVER_VER.PNL) {
       return this.emitError(
         "It does not support pnl requests.",
@@ -1890,7 +1890,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   reqPnLSingle(
     reqId: number,
     account: string,
-    modelCode: string | null,
+    modelCode: string,
     conId: number,
   ): void {
     if (this.serverVersion < MIN_SERVER_VER.PNL) {
@@ -2260,7 +2260,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   reqHistoricalData(
     reqId: number,
     contract: Contract,
-    endDateTime: string,
+    endDateTime: string | undefined,
     durationStr: string,
     barSizeSetting: BarSizeSetting,
     whatToShow: WhatToShow,
@@ -2403,7 +2403,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     args.push(endDateTime);
     args.push(numberOfTicks);
     args.push(whatToShow);
-    args.push(useRth);
+    args.push(useRth ? 1 : 0);
     args.push(ignoreSize);
     args.push(this.encodeTagValues(miscOptions));
 
@@ -2791,11 +2791,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
   /**
    * Encode a REQ_POSITIONS_MULTI message.
    */
-  reqPositionsMulti(
-    reqId: number,
-    account: string,
-    modelCode: string | null,
-  ): void {
+  reqPositionsMulti(reqId: number, account: string, modelCode: string): void {
     if (this.serverVersion < MIN_SERVER_VER.MODELS_SUPPORT) {
       return this.emitError(
         "It does not support position requests.",
@@ -3209,7 +3205,7 @@ function tagValuesToTokens(tagValues: TagValue[]): unknown[] {
     conId: number,
     providerCodes: string,
     startDateTime: string,
-    endDateTime: string,
+    endDateTime: string | undefined,
     totalResults: number,
     historicalNewsOptions: TagValue[],
   ): void {

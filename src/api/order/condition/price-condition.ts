@@ -22,8 +22,8 @@ export class PriceCondition implements ContractCondition {
   constructor(
     public price: number,
     public triggerMethod: TriggerMethod,
-    public conId: number,
-    public exchange: string,
+    public conId: number | undefined,
+    public exchange: string | undefined,
     public isMore: boolean,
     public conjunctionConnection: ConjunctionConnection,
   ) {}

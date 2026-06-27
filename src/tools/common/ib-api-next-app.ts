@@ -1,7 +1,7 @@
 import { Subscription } from "rxjs";
 
 import path from "path";
-import { IBApiNext, MarketDataType } from "../../api-next";
+import { IBApiNext, MarketDataTick, MarketDataType } from "../../api-next";
 import Contract from "../../api/contract/contract";
 import LogLevel from "../../api/data/enum/log-level";
 import OptionType from "../../api/data/enum/option-type";
@@ -25,6 +25,12 @@ function jsonReplacer(key, value) {
   } else {
     return value;
   }
+}
+
+export function getMarketDataTickDisplayValue(
+  tick: MarketDataTick,
+): number | string | undefined {
+  return tick.value ?? tick.stringValue;
 }
 
 /**
@@ -57,7 +63,7 @@ export class IBApiNextApp {
     ["multiplier=<number>", "The option's multiplier."],
   ];
 
-  protected logLevel: LogLevel;
+  protected logLevel: LogLevel = LogLevel.ERROR;
 
   constructor(
     appDescription: string,
@@ -117,13 +123,13 @@ export class IBApiNextApp {
   ];
 
   /** The [[IBApiNext]] instance. */
-  protected api: IBApiNext;
+  protected api: IBApiNext | undefined;
 
   /** The subscription on the IBApi errors. */
-  protected error$: Subscription;
+  protected error$: Subscription | undefined;
 
   /** The command-line arguments. */
-  protected cmdLineArgs: Record<string, string | number>;
+  protected cmdLineArgs: Record<string, string | number> = {};
 
   /** Connect to TWS. */
   connect(reconnectInterval?: number, clientId?: number): void {
@@ -165,7 +171,7 @@ export class IBApiNextApp {
 
     try {
       this.api.connect(clientId);
-    } catch (error) {
+    } catch (error: any) {
       this.error(error.message);
     }
   }
@@ -285,6 +291,6 @@ export class IBApiNextApp {
     const scriptName = path.basename(__filename);
     this.info(`Starting ${scriptName} script`);
     this.connect();
-    this.api.setMarketDataType(MarketDataType.DELAYED_FROZEN);
+    this.api?.setMarketDataType(MarketDataType.DELAYED_FROZEN);
   }
 }

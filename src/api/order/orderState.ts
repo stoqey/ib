@@ -5,7 +5,7 @@ import { OrderStatus } from "../..";
  */
 export interface OrderState {
   /** The order's current status. */
-  status?: OrderStatus;
+  status: OrderStatus;
 
   /** The account's current initial margin. */
   initMarginBefore?: number;

@@ -49,13 +49,16 @@ class PrintHistoricalTicksLastApp extends IBApiNextApp {
   }
 
   /** The [[Subscription]] on the historic ticks while being collected from TWS (list will grow incrementally). */
-  private subscription$: Subscription;
+  private subscription$: Subscription | undefined;
 
   /**
    * Start the app.
    */
   start(): void {
     super.start();
+    if (!this.api) {
+      throw Error("API not initialized");
+    }
 
     if (!this.cmdLineArgs.conid) {
       this.error("-conid argument missing.");

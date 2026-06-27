@@ -5,7 +5,7 @@
     "lib": ["es2017", "esnext", "dom", "es7"],
     "declaration": true,
     "module": "commonjs",
-    "moduleResolution": "node",
+    // "moduleResolution": "node",
     "outDir": "./dist",
     "rootDir": "./src",
     "skipLibCheck": true,
@@ -16,5 +16,6 @@
     "typeRoots": ["node_modules/@types", "node_modules/types", "src/ts-types"],
     "types": ["node", "jest"]
   },
-  "include": ["./src"]
+  "include": ["./src"],
+  "exclude": ["dist", "node_modules"]
 }

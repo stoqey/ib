@@ -30,6 +30,7 @@ describe("RxJS Wrapper: getTickByTickAllLastDataUpdates()", () => {
 
     const REF_TICKS: TickByTickAllLast[] = [
       {
+        tickType: 0,
         contract,
         time: 1675228123,
         price: 1,
@@ -42,6 +43,7 @@ describe("RxJS Wrapper: getTickByTickAllLastDataUpdates()", () => {
         specialConditions: "SPECIAL_CONDITIONS",
       },
       {
+        tickType: 0,
         contract,
         time: 1675228124,
         price: 11,
@@ -54,6 +56,7 @@ describe("RxJS Wrapper: getTickByTickAllLastDataUpdates()", () => {
         specialConditions: "SPECIAL_CONDITIONS",
       },
       {
+        tickType: 0,
         contract,
         time: 1675228125,
         price: 21,
@@ -78,9 +81,13 @@ describe("RxJS Wrapper: getTickByTickAllLastDataUpdates()", () => {
           expect(update.time).toEqual(REF_TICKS[updateCount].time);
           expect(update.price).toEqual(REF_TICKS[updateCount].price);
           expect(update.size).toEqual(REF_TICKS[updateCount].size);
-          expect(update.tickAttribLast).toEqual(REF_TICKS[updateCount].tickAttribLast);
+          expect(update.tickAttribLast).toEqual(
+            REF_TICKS[updateCount].tickAttribLast,
+          );
           expect(update.exchange).toEqual(REF_TICKS[updateCount].exchange);
-          expect(update.specialConditions).toEqual(REF_TICKS[updateCount].specialConditions);
+          expect(update.specialConditions).toEqual(
+            REF_TICKS[updateCount].specialConditions,
+          );
 
           updateCount++;
           if (updateCount >= REF_TICKS.length) {

@@ -79,18 +79,20 @@ describe("RxJS Wrapper: getPositions()", () => {
       next: (update) => {
         if (update.added?.size) {
           expect(update.all.size).toEqual(1);
-          expect(update.added.get(accountId)[0].contract.conId).toEqual(
+          expect(update.added.size).toEqual(1);
+          expect(update.added.get(accountId)![0].contract.conId).toEqual(
             positionContract.conId,
           );
-          expect(update.added.get(accountId)[0].pos).toEqual(posSize1);
-          expect(update.added.get(accountId)[0].avgCost).toEqual(avgCost);
+          expect(update.added.get(accountId)![0].pos).toEqual(posSize1);
+          expect(update.added.get(accountId)![0].avgCost).toEqual(avgCost);
         } else if (update.changed?.size) {
           expect(update.all.size).toEqual(1);
-          expect(update.changed.get(accountId)[0].contract.conId).toEqual(
+          expect(update.changed.size).toEqual(1);
+          expect(update.changed.get(accountId)![0].contract.conId).toEqual(
             positionContract.conId,
           );
-          expect(update.changed.get(accountId)[0].pos).toEqual(posSize2);
-          expect(update.changed.get(accountId)[0].avgCost).toEqual(avgCost);
+          expect(update.changed.get(accountId)![0].pos).toEqual(posSize2);
+          expect(update.changed.get(accountId)![0].avgCost).toEqual(avgCost);
           done();
         } else {
           done("Didn't get result");
@@ -137,18 +139,23 @@ describe("RxJS Wrapper: getPositions()", () => {
         // eslint-disable-next-line rxjs/no-ignored-subscription
         apiNext.getPositions().subscribe({
           next: (update) => {
+            expect(update.all).toBeDefined();
             expect(update.all.size).toEqual(1);
-            expect(update.all.size).toEqual(update.added.size);
-            expect(update.all.get(accountId)[0].contract.conId).toEqual(
+            expect(update.added).toBeDefined();
+            expect(update.added!.size).toEqual(1);
+
+            expect(update.all.get(accountId)).toBeDefined();
+            expect(update.all.get(accountId)!.length).toBe(1);
+            expect(update.all.get(accountId)![0].contract.conId).toEqual(
               positionContract.conId,
             );
-            expect(update.all.get(accountId)[0].pos).toEqual(posSize);
-            expect(update.all.get(accountId)[0].avgCost).toEqual(avgCost);
-            expect(update.added.get(accountId)[0].contract.conId).toEqual(
+            expect(update.all.get(accountId)![0].pos).toEqual(posSize);
+            expect(update.all.get(accountId)![0].avgCost).toEqual(avgCost);
+            expect(update.added!.get(accountId)![0].contract.conId).toEqual(
               positionContract.conId,
             );
-            expect(update.added.get(accountId)[0].pos).toEqual(posSize);
-            expect(update.added.get(accountId)[0].avgCost).toEqual(avgCost);
+            expect(update.added!.get(accountId)![0].pos).toEqual(posSize);
+            expect(update.added!.get(accountId)![0].avgCost).toEqual(avgCost);
             done();
           },
           error: (error: IBApiNextError) => {

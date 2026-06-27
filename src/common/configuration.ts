@@ -3,7 +3,7 @@ import { readFileSync } from "fs";
 import * as path from "path";
 
 export interface Configuration {
-  ci: string;
+  ci: string | undefined;
   env_config_test: string;
   env_not_included_config_test: string;
   default_config_test: string;
@@ -26,7 +26,7 @@ export interface Configuration {
   isLocal: boolean;
 }
 
-let configuration: Configuration = null;
+let configuration: Configuration;
 let dotenvConfigured = false;
 
 const envsToInclude = [
@@ -43,7 +43,7 @@ function readJson(readPath: string) {
   try {
     const data = readFileSync(readPath, "utf8");
     return JSON.parse(data);
-  } catch (error) {
+  } catch (error: any) {
     if (
       error.code !== "ENOENT" ||
       (error.errno !== undefined && error.errno !== -4058 && error.errno !== -2)
@@ -106,7 +106,7 @@ function load() {
     // Keep dotenv lazy so importing the package does not touch process.env or the filesystem.
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const dotenv = require("dotenv") as typeof import("dotenv");
-    dotenv.config();
+    dotenv.config({ quiet: true });
   }
 
   const nodeEnvironment = process.env.NODE_ENV;
@@ -118,7 +118,8 @@ function load() {
   config = loadEnvironmentSpecific(config, "local");
 
   // load environment specific config
-  config = loadEnvironmentSpecific(config, nodeEnvironment);
+  if (nodeEnvironment)
+    config = loadEnvironmentSpecific(config, nodeEnvironment);
 
   // load config from env variables
   config = assignEnvironment(config);

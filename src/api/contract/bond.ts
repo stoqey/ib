@@ -16,7 +16,7 @@ export class Bond implements Contract {
 
   public secType = SecType.BOND;
 
-  public get lastTradeDateOrContractMonth(): string {
+  public get lastTradeDateOrContractMonth(): string | undefined {
     return this.maturity;
   }
 }

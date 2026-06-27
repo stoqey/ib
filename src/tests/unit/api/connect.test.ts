@@ -5,7 +5,7 @@ import configuration from "../../../common/configuration";
 describe("IBApi connection Tests", () => {
   jest.setTimeout(5 * 1000);
 
-  let ib: IBApi;
+  let ib: IBApi | undefined;
   const clientId = Math.floor(Math.random() * 32766) + 1; // ensure unique client
 
   beforeEach(() => {
@@ -14,7 +14,6 @@ describe("IBApi connection Tests", () => {
       port: configuration.ib_port,
       clientId,
     });
-    // logger.info("IBApi created");
   });
 
   afterEach(() => {
@@ -22,26 +21,28 @@ describe("IBApi connection Tests", () => {
       ib.disconnect();
       ib = undefined;
     }
-    // logger.info("IBApi disconnected");
   });
 
   test("Connect", (done) => {
     // logger.info("Starting Connect");
-    ib.on(EventName.connected, () => {
-      done();
-    }).on(EventName.error, (err, code, reqId) => {
-      done(`[${reqId}] ${err.message} (#${code})`);
-    });
+    ib!
+      .on(EventName.connected, () => {
+        done();
+      })
+      .on(EventName.error, (err, code, reqId) => {
+        done(`[${reqId}] ${err.message} (#${code})`);
+      });
 
-    ib.connect();
+    ib!.connect();
   });
 
   test("Disconnect", (done) => {
     // logger.info("Starting Disconnect");
-    ib.on(EventName.connected, () => {
-      ib.disconnect();
-      ib = undefined;
-    })
+    ib!
+      .on(EventName.connected, () => {
+        ib!.disconnect();
+        ib = undefined;
+      })
       .on(EventName.disconnected, () => {
         done();
       })
@@ -49,14 +50,15 @@ describe("IBApi connection Tests", () => {
         done(`[${reqId}] ${err.message} (#${code})`);
       });
 
-    ib.connect();
+    ib!.connect();
   });
 
   test("Connect / disconnect", (done) => {
     // logger.info("Starting (Dis)Connect");
-    ib.on(EventName.connected, () => {
-      ib.reqCurrentTime();
-    })
+    ib!
+      .on(EventName.connected, () => {
+        ib!.reqCurrentTime();
+      })
       .on(EventName.currentTime, (time) => {
         expect(time).toBeTruthy();
         if (ib) ib.disconnect();
@@ -68,6 +70,6 @@ describe("IBApi connection Tests", () => {
         done(`[${reqId}] ${err.message} (#${code})`);
       });
 
-    ib.connect();
+    ib!.connect();
   });
 });

@@ -16,15 +16,12 @@ describe("IBApi Historical data Tests", () => {
       port: configuration.ib_port,
       clientId,
     });
-    // logger.info("IBApi created");
   });
 
   afterEach(() => {
     if (ib) {
       ib.disconnect();
-      ib = undefined;
     }
-    // logger.info("IBApi disconnected");
   });
 
   it("Returns the correct head timestamp", (done) => {

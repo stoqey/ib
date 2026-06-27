@@ -57,7 +57,7 @@ export class IBApiAutoConnection extends IBApi {
   private fixedClientId?: number;
 
   /** The current client id. */
-  private currentClientId: number;
+  private currentClientId = 1;
 
   /** true if auto re-connect is enabled, false otherwise. */
   private autoReconnectEnabled = true;

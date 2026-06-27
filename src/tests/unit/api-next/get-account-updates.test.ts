@@ -21,28 +21,37 @@ describe("RxJS Wrapper: getAccountUpdates()", () => {
       .subscribe({
         next: (update) => {
           if (update.changed?.timestamp == "now") {
-            expect(update.all.value.get(accountId1)).toBeDefined();
+            expect(update.all.value).toBeDefined();
+            expect(update.all.portfolio).toBeDefined();
+
+            expect(update.all.value!.get(accountId1)).toBeDefined();
             expect(
-              update.all.value.get(accountId1).get("tag").get(currency).value,
+              update.all.value!.get(accountId1)?.get("tag")?.get(currency)
+                ?.value,
             ).toBe("value1");
-            expect(update.all.portfolio.get(accountId1)).toBeDefined();
-            expect(update.all.portfolio.get(accountId1)[0].account).toBe(
+
+            expect(update.all.portfolio!.get(accountId1)).toBeDefined();
+            expect(update.all.portfolio!.get(accountId1)!.length).toBe(1);
+            expect(update.all.portfolio!.get(accountId1)![0].account).toBe(
               accountId1,
             );
             expect(
-              update.all.portfolio.get(accountId1)[0].contract.symbol,
+              update.all.portfolio!.get(accountId1)![0].contract.symbol,
             ).toBe(sample_etf.symbol);
 
-            expect(update.all.value.get(accountId2)).toBeDefined();
+            expect(update.all.value!.get(accountId2)).toBeDefined();
             expect(
-              update.all.value.get(accountId2).get("tag").get(currency).value,
+              update.all.value!.get(accountId2)?.get("tag")?.get(currency)
+                ?.value,
             ).toBe("value2");
-            expect(update.all.portfolio.get(accountId2)).toBeDefined();
-            expect(update.all.portfolio.get(accountId2)[0].account).toBe(
+
+            expect(update.all.portfolio!.get(accountId2)).toBeDefined();
+            expect(update.all.portfolio!.get(accountId2)!.length).toBe(1);
+            expect(update.all.portfolio!.get(accountId2)![0].account).toBe(
               accountId2,
             );
             expect(
-              update.all.portfolio.get(accountId2)[0].contract.symbol,
+              update.all.portfolio!.get(accountId2)![0].contract.symbol,
             ).toBe(sample_stock.symbol);
           } else if (update.changed?.timestamp == "later") done();
         },
@@ -57,19 +66,23 @@ describe("RxJS Wrapper: getAccountUpdates()", () => {
       .subscribe({
         next: (update) => {
           if (update.changed?.timestamp == "now") {
-            expect(update.all.value.get(accountId1)).toBeDefined();
+            expect(update.all.value).toBeDefined();
+            expect(update.all.portfolio).toBeDefined();
+
+            expect(update.all.value!.get(accountId1)).toBeDefined();
             expect(
-              update.all.value.get(accountId1).get("tag").get(currency).value,
+              update.all.value!.get(accountId1)!.get("tag")?.get(currency)
+                ?.value,
             ).toBe("value1");
-            expect(update.all.portfolio.get(accountId1)).toBeDefined();
-            expect(update.all.portfolio.get(accountId1)[0].account).toBe(
+            expect(update.all.portfolio!.get(accountId1)).toBeDefined();
+            expect(update.all.portfolio!.get(accountId1)!.length).toBe(1);
+            expect(update.all.portfolio!.get(accountId1)![0].account).toBe(
               accountId1,
             );
             expect(
-              update.all.portfolio.get(accountId1)[0].contract.symbol,
+              update.all.portfolio!.get(accountId1)![0].contract.symbol,
             ).toBe(sample_etf.symbol);
-
-            expect(update.all.value.get(accountId2)).toBeUndefined();
+            expect(update.all.value!.get(accountId2)).toBeUndefined();
           }
         },
         error: (error: IBApiNextError) => {
@@ -83,18 +96,21 @@ describe("RxJS Wrapper: getAccountUpdates()", () => {
       .subscribe({
         next: (update) => {
           if (update.changed?.timestamp == "now") {
-            expect(update.all.value.get(accountId1)).toBeUndefined();
+            expect(update.all.value).toBeDefined();
+            expect(update.all.portfolio).toBeDefined();
 
-            expect(update.all.value.get(accountId2)).toBeDefined();
+            expect(update.all.value!.get(accountId1)).toBeUndefined();
+            expect(update.all.value!.get(accountId2)).toBeDefined();
             expect(
-              update.all.value.get(accountId2).get("tag").get(currency).value,
+              update.all.value!.get(accountId2)!.get("tag")?.get(currency)
+                ?.value,
             ).toBe("value2");
-            expect(update.all.portfolio.get(accountId2)).toBeDefined();
-            expect(update.all.portfolio.get(accountId2)[0].account).toBe(
+            expect(update.all.portfolio!.get(accountId2)).toBeDefined();
+            expect(update.all.portfolio!.get(accountId2)![0].account).toBe(
               accountId2,
             );
             expect(
-              update.all.portfolio.get(accountId2)[0].contract.symbol,
+              update.all.portfolio!.get(accountId2)![0].contract.symbol,
             ).toBe(sample_stock.symbol);
           }
         },

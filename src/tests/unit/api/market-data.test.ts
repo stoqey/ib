@@ -31,15 +31,12 @@ describe("IBApi Market data Tests", () => {
       port: configuration.ib_port,
       clientId,
     });
-    // logger.info("IBApi created");
   });
 
   afterEach(() => {
     if (ib) {
       ib.disconnect();
-      ib = undefined;
     }
-    // logger.info("IBApi disconnected");
   });
 
   const IsError = (code: ErrorCode) =>

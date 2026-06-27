@@ -85,7 +85,7 @@ export class IBApiNextSubscriptionRegistry {
    */
   register<T>(
     requestFunction: (reqId: number) => void,
-    cancelFunction: (reqId: number) => void | null | undefined, // eslint-disable-line @typescript-eslint/no-invalid-void-type
+    cancelFunction: ((reqId: number) => void) | null | undefined,
     eventHandler: [
       EventName,
       (
@@ -98,7 +98,7 @@ export class IBApiNextSubscriptionRegistry {
     // get the existing registry entries, or add if not existing yet
 
     const entries: RegistryEntry[] = [];
-    eventHandler.forEach((handler) => {
+    eventHandler?.forEach((handler) => {
       const eventName = handler[0];
       const callback = handler[1];
       const eventEntries = this.entries.getOrAdd(eventName, () => []);
@@ -107,7 +107,7 @@ export class IBApiNextSubscriptionRegistry {
       );
 
       if (!entry) {
-        entry = new RegistryEntry(eventName, callback);
+        entry = new RegistryEntry(eventName, callback as any);
         this.apiNext.logger.debug(
           LOG_TAG,
           `Add RegistryEntry for EventName.${eventName}`,
@@ -121,7 +121,7 @@ export class IBApiNextSubscriptionRegistry {
 
     // lookup subscription by instance id
 
-    let subscription: IBApiNextSubscription<T>;
+    let subscription: IBApiNextSubscription<T> | undefined;
     if (instanceId) {
       entries.forEach((entry) => {
         const values = entry.subscriptions.values();
@@ -133,7 +133,7 @@ export class IBApiNextSubscriptionRegistry {
           if (
             (it.value as IBApiNextSubscription<T>).instanceId === instanceId
           ) {
-            subscription = it.value;
+            subscription = it.value as IBApiNextSubscription<T>;
           }
         }
       });
@@ -145,16 +145,16 @@ export class IBApiNextSubscriptionRegistry {
       subscription = new IBApiNextSubscription<T>(
         this.apiNext,
         () => {
-          requestFunction(subscription.reqId);
+          requestFunction(subscription!.reqId); // eslint-disable-line @typescript-eslint/no-non-null-assertion
         },
         () => {
           if (cancelFunction) {
-            cancelFunction(subscription.reqId);
+            cancelFunction(subscription!.reqId); // eslint-disable-line @typescript-eslint/no-non-null-assertion
           }
         },
         () => {
           entries.forEach((entry) => {
-            entry.subscriptions.delete(subscription.reqId);
+            entry.subscriptions.delete(subscription!.reqId); // eslint-disable-line @typescript-eslint/no-non-null-assertion
             if (!entry.subscriptions.size) {
               this.api.removeListener(entry.eventName, entry.listener);
               this.apiNext.logger.debug(
@@ -174,7 +174,7 @@ export class IBApiNextSubscriptionRegistry {
 
           this.apiNext.logger.debug(
             LOG_TAG,
-            `Deleted IBApiNextSubscription for ${subscription.reqId}.`,
+            `Deleted IBApiNextSubscription for ${subscription?.reqId}.`,
           );
         },
         instanceId,
@@ -183,9 +183,12 @@ export class IBApiNextSubscriptionRegistry {
       entries.forEach((entry) => {
         this.apiNext.logger.debug(
           LOG_TAG,
-          `Add IBApiNextSubscription on EventName.${entry.eventName} for ${subscription.reqId}.`,
+          `Add IBApiNextSubscription on EventName.${entry.eventName} for ${subscription?.reqId}.`,
         );
-        entry.subscriptions.set(subscription.reqId, subscription);
+        entry.subscriptions.set(
+          subscription!.reqId, // eslint-disable-line @typescript-eslint/no-non-null-assertion
+          subscription as IBApiNextSubscription<unknown>,
+        );
       });
     }
 

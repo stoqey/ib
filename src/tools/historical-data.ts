@@ -46,6 +46,9 @@ class PrintPositionsApp extends IBApiNextApp {
    */
   start(): void {
     super.start();
+    if (!this.api) {
+      throw Error("API not initialized");
+    }
 
     if (!this.cmdLineArgs.conid) {
       this.error("-conid argument missing.");

@@ -19,8 +19,8 @@ export class VolumeCondition implements ContractCondition {
    */
   constructor(
     public volume: number,
-    public conId: number,
-    public exchange: string,
+    public conId: number | undefined,
+    public exchange: string | undefined,
     public isMore: boolean,
     public conjunctionConnection: ConjunctionConnection,
   ) {}

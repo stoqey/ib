@@ -17,15 +17,12 @@ describe("RequestAllOpenOrders", () => {
       port: configuration.ib_port,
       clientId,
     });
-    // logger.info("IBApi created");
   });
 
   afterEach(() => {
     if (ib) {
       ib.disconnect();
-      ib = undefined;
     }
-    // logger.info("IBApi disconnected");
   });
 
   it("Test reqAllOpenOrders", (done) => {

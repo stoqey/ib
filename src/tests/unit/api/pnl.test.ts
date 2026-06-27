@@ -22,12 +22,11 @@ describe("IBApi Tests", () => {
   afterEach(() => {
     if (ib) {
       ib.disconnect();
-      ib = undefined;
     }
   });
 
   let _account: string; // maintain account name for further tests
-  let _conId: number; // maintain for conId for  further tests
+  let conId: number | undefined; // maintain for conId for  further tests
 
   it("Test reqPositions / cancelPositions", (done) => {
     let positionsCount = 0;
@@ -37,12 +36,17 @@ describe("IBApi Tests", () => {
     })
       .on(
         EventName.position,
-        (account: string, contract: Contract, pos: number, avgCost: number) => {
+        (
+          account: string,
+          contract: Contract,
+          pos: number,
+          avgCost?: number,
+        ) => {
           if (_account === undefined) {
             _account = account;
           }
-          if (_conId === undefined && pos) {
-            _conId = contract.conId;
+          if (conId === undefined && pos) {
+            conId = contract.conId;
             // console.info(JSON.stringify(contract));
           }
           expect(account).toBeTruthy();
@@ -93,15 +97,15 @@ describe("IBApi Tests", () => {
 
     ib.once(EventName.connected, () => {
       // console.log("reqPnLSingle", refId);
-      ib.reqPnLSingle(refId, _account, "", _conId);
+      ib.reqPnLSingle(refId, _account, "", conId!);
     }).on(
       EventName.pnlSingle,
       (
         reqId: number,
         pos: number,
         _dailyPnL: number,
-        unrealizedPnL: number,
-        _realizedPnL: number,
+        unrealizedPnL: number | undefined,
+        _realizedPnL: number | undefined,
         value: number,
       ) => {
         // console.log(

@@ -4,8 +4,17 @@
 
 import { Subscription } from "rxjs";
 
-import { IBApiNextError, IBApiNextTickType, IBApiTickType } from "../api-next";
-import { IBApiNextApp } from "./common/ib-api-next-app";
+import {
+  IBApiNextError,
+  IBApiNextTickType,
+  IBApiTickType,
+  MarketDataTick,
+  MarketDataUpdate,
+} from "../api-next";
+import {
+  getMarketDataTickDisplayValue,
+  IBApiNextApp,
+} from "./common/ib-api-next-app";
 
 /////////////////////////////////////////////////////////////////////////////////
 // The help text                                                               //
@@ -30,13 +39,16 @@ class PrintMarketDataApp extends IBApiNextApp {
   }
 
   /** The [[Subscription]] on the MarketData. */
-  private subscription$: Subscription;
+  private subscription$: Subscription | undefined;
 
   /**
    * Start the app.
    */
   start(): void {
     super.start();
+    if (!this.api) {
+      throw Error("API not initialized");
+    }
 
     this.subscription$ = this.api
       .getMarketData(
@@ -46,34 +58,27 @@ class PrintMarketDataApp extends IBApiNextApp {
         false,
       )
       .subscribe({
-        next: (marketData) => {
-          const changedOrAddedDataWithTickNames = new Map<string, number>();
-          marketData.added?.forEach((tick, type) => {
+        next: (marketData: MarketDataUpdate) => {
+          const changedOrAddedDataWithTickNames = new Map<
+            string,
+            number | string
+          >();
+          const setTickValue = (tick: MarketDataTick, type: number) => {
+            const value = getMarketDataTickDisplayValue(tick);
+            if (value === undefined) {
+              return;
+            }
             if (type > IBApiNextTickType.API_NEXT_FIRST_TICK_ID) {
               changedOrAddedDataWithTickNames.set(
                 IBApiNextTickType[type],
-                tick.value,
+                value,
               );
             } else {
-              changedOrAddedDataWithTickNames.set(
-                IBApiTickType[type],
-                tick.value,
-              );
+              changedOrAddedDataWithTickNames.set(IBApiTickType[type], value);
             }
-          });
-          marketData.changed?.forEach((tick, type) => {
-            if (type > IBApiNextTickType.API_NEXT_FIRST_TICK_ID) {
-              changedOrAddedDataWithTickNames.set(
-                IBApiNextTickType[type],
-                tick.value,
-              );
-            } else {
-              changedOrAddedDataWithTickNames.set(
-                IBApiTickType[type],
-                tick.value,
-              );
-            }
-          });
+          };
+          marketData.added?.forEach(setTickValue);
+          marketData.changed?.forEach(setTickValue);
           this.printObject(changedOrAddedDataWithTickNames);
         },
         error: (err: IBApiNextError) => {

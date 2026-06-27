@@ -5,10 +5,10 @@ import { OperatorCondition } from "./operator-condition";
  */
 export interface ContractCondition extends OperatorCondition {
   /** The contract id. */
-  conId: number;
+  conId?: number;
 
   /** The exchange code. */
-  exchange: string;
+  exchange?: string;
 }
 
 export default ContractCondition;

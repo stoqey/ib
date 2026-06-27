@@ -4,6 +4,7 @@
 import {
   BarSizeSetting,
   EventName,
+  HistoricalTickLast,
   IBApi,
   isNonFatalError,
   Option,
@@ -63,18 +64,18 @@ describe("IBApi Historical data Tests", () => {
         count: number | undefined,
         WAP: number,
       ) => {
-        console.log(
-          "Stock market data",
-          counter,
-          time,
-          open,
-          high,
-          low,
-          close,
-          volume,
-          count,
-          WAP,
-        );
+        // console.log(
+        //   "Stock market data",
+        //   counter,
+        //   time,
+        //   open,
+        //   high,
+        //   low,
+        //   close,
+        //   volume,
+        //   count,
+        //   WAP,
+        // );
         expect(reqId).toEqual(refId);
         if (time.startsWith("finished")) {
           expect(counter).toEqual(30);
@@ -317,10 +318,13 @@ describe("IBApi Historical data Tests", () => {
         0,
         true,
       );
-    }).on(EventName.historicalTicksLast, (reqId: number, ticks: []) => {
-      expect(ticks.length).toBeGreaterThan(0);
-      done();
-    });
+    }).on(
+      EventName.historicalTicksLast,
+      (reqId: number, ticks: HistoricalTickLast[], _done: boolean) => {
+        expect(ticks.length).toBeGreaterThan(0);
+        done();
+      },
+    );
 
     ib.on(EventName.info, (msg, code) => logger.info(code, msg))
       .on(EventName.error, (error, code, reqId) => {

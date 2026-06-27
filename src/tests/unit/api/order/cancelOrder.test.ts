@@ -47,7 +47,6 @@ describe("CancelOrder", () => {
   afterEach(() => {
     if (ib) {
       ib.disconnect();
-      ib = undefined;
     }
     // logger.info("IBApi disconnected");
   });
@@ -121,8 +120,8 @@ describe("CancelOrder", () => {
         isNonFatalError(code, error)
           ? logger.warn(msg)
           : isCancelling
-          ? logger.info(msg)
-          : logger.error(msg);
+            ? logger.info(msg)
+            : logger.error(msg);
       })
       .connect();
   });
@@ -182,8 +181,8 @@ describe("CancelOrder", () => {
         isNonFatalError(code, error)
           ? logger.warn(msg)
           : isCancelling
-          ? logger.info(msg)
-          : logger.error(msg);
+            ? logger.info(msg)
+            : logger.error(msg);
       })
       .connect();
   });
@@ -243,8 +242,8 @@ describe("CancelOrder", () => {
         isNonFatalError(code, error)
           ? logger.warn(msg)
           : isCancelling
-          ? logger.info(msg)
-          : logger.error(msg);
+            ? logger.info(msg)
+            : logger.error(msg);
       })
       .connect();
   });
