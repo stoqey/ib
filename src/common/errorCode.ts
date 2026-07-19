@@ -296,10 +296,23 @@ export enum ErrorCode {
   FAIL_READ_MESSAGE = 586,
 
   /** Connectivity between IBKR and Trader Workstation has been lost.
-   * @When client is connected to TWS and server but TWS losses connection to server.
+   * @When client is connected to TWS and server but TWS loses connection to server.
    * 🗣️🗣️🗣️ "Market data connection lost".
    */
   FAIL_CONNECTION_LOST_BETWEEN_SERVER_AND_TWS = 1100,
+
+  /** Connectivity between IBKR and Trader Workstation has been restored — data lost.
+   * @When TWS/Gateway reconnects to the IBKR server after a 1100 (typically the nightly
+   * server reset), but market and account data subscriptions did NOT survive: the client
+   * must resubmit market data, account update, and depth subscriptions. Sent with reqId -1.
+   */
+  CONNECTIVITY_RESTORED_DATA_LOST = 1101,
+
+  /** Connectivity between IBKR and Trader Workstation has been restored — data maintained.
+   * @When TWS/Gateway reconnects after a 1100 and all subscriptions survived:
+   * no client action needed. Sent with reqId -1.
+   */
+  CONNECTIVITY_RESTORED_DATA_MAINTAINED = 1102,
 
   /** Connectivity between Trader Workstation and server is broken. It will be restored automatically.
    * @When client connects to TWS but TWS isn't connected to server.
@@ -315,7 +328,7 @@ export enum ErrorCode {
   /** Requested market data is not subscribed. Displaying delayed market data. */
   DISPLAYING_DELAYED_DATA = 10167,
 
-  /* News feed is not allowed. */
+  /** News feed is not allowed. */
   NEWS_FEED_NOT_ALLOWED = 10276,
 }
 
