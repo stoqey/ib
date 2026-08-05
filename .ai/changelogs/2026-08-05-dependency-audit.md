@@ -1,0 +1,4 @@
+- summary: Updated the brace-expansion resolution from 5.0.8 to 5.0.9 after auditing dependency advisories; retained the existing fast-uri 3.1.5 lockfile update.
+- notable files or areas changed: package.json resolutions, yarn.lock dependency resolution.
+- tests run: npx -y yarn@1.22.22 install --ignore-scripts; npx -y yarn@1.22.22 audit --json.
+- risks or follow-ups: brace-expansion remains pinned through a resolution because transitive consumers request older majors; watch for upstream minimatch/glob/test-exclude updates that remove the need for the resolution.
