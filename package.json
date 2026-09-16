@@ -70,8 +70,7 @@
     "command-buffer": "^0.1.0",
     "dotenv": "^17.4.2",
     "eventemitter3": "^5.0.4",
-    "function-rate-limit": "^1.1.0",
-    "rxjs": "^7.8.2"
+    "function-rate-limit": "^1.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -89,10 +88,14 @@
     "jest-environment-node": "^30.4.1",
     "jest-junit": "^17.0.0",
     "prettier": "^3.9.6",
+    "rxjs": "^7.8.2",
     "ts-jest": "^29.4.12",
     "typedoc": "^0.28.20",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.65.0"
+  },
+  "peerDependencies": {
+    "rxjs": ">=7.0.0 <8"
   },
   "engines": {
     "node": ">=18.0.0"
