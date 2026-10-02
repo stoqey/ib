@@ -31,7 +31,7 @@
     "library",
     "stoqey"
   ],
-  "homepage": "https://github.com/stoqey/ib",
+  "homepage": "https://ib.stoqey.com/docs/ib",
   "bugs": {
     "url": "https://github.com/stoqey/ib/issues"
   },
@@ -102,8 +102,9 @@
   },
   "resolutions": {
     "brace-expansion": "5.0.12",
-    "js-yaml": "3.15.1",
-    "fast-uri": "3.1.7",
-    "browserslist": "4.28.8"
+    "js-yaml": "3.15.2",
+    "fast-uri": "3.1.8",
+    "browserslist": "4.28.8",
+    "markdown-it": "14.3.1"
   }
 }
