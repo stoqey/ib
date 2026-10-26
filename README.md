@@ -17,6 +17,16 @@
 
 Refer to [IBKRCampus](https://ibkrcampus.com/campus/ibkr-api-page/twsapi-doc/) for the official documentation and the C#/Java/VB/C++/Python client.
 
+### TWS / IB Gateway compatibility
+
+The Java API version above describes this library's original API baseline, not a maximum Gateway build. The client advertises wire-protocol versions `100..193`; TWS/Gateway and the client [negotiate a common version](https://interactivebrokers.github.io/tws-api/connection.html) before exchanging API messages. A Gateway build such as `10.50.1` is a different version number from the negotiated protocol version.
+
+Existing functionality is expected to work with IB Gateway `10.50.1` through this negotiation, consistent with the [reported production use of `10.47.1c`](https://github.com/stoqey/ib/issues/288). This is a protocol review, not a live certification of `10.50.1`. Deterministic tests cover the advertised range, startup, unsupported negotiated versions, and fractional tick sizes. Validate your application's subscriptions, order lifecycle, and reconnect behavior against a paper account before upgrading production.
+
+Compatibility does not imply support for every newer API feature. This library does not implement the newer Protobuf protocol, odd-lot tick types, `hedgeMaxSize`, contract settlement type, or `conditionsIncludeOvernight`. These require a separate protocol upgrade; increasing the advertised maximum alone would change message layouts without updating the encoders and decoders.
+
+IBKR's [2026 API release notes](https://www.ibkrguides.com/releasenotes/prod-2026.htm) also remove fundamental-data requests and callbacks in `10.47`. The existing fundamental-data methods remain available for older Gateways, but should not be relied on with `10.47+`. The optional `$LEDGER-` prefix for per-currency account values can also change account-value keys when enabled in Gateway settings.
+
 The module makes a socket connection to TWS (or IB Gateway) using the [net](http://nodejs.org/api/net.html) module and all messages are entirely processed in Typescript. It uses [EventEmitter](http://nodejs.org/api/events.html) to pass the result back to user.
 
 ## Simpler Alternative
