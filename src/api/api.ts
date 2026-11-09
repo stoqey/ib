@@ -88,7 +88,7 @@ export interface IBApiCreationOptions {
   maxReqPerSec?: number;
 }
 
-/** Maximum supported version. */
+/** Maximum negotiated wire-protocol version, independent of the TWS/Gateway build number. */
 export const MAX_SUPPORTED_SERVER_VERSION =
   MIN_SERVER_VER.CME_TAGGING_FIELDS_IN_OPEN_ORDER;
 
