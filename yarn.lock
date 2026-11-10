@@ -1310,7 +1310,7 @@ baseline-browser-mapping@^2.11.12:
   resolved "https://registry.yarnpkg.com/baseline-browser-mapping/-/baseline-browser-mapping-2.11.20.tgz#26078c7a4b08299656ea7ddceaebec955dc44303"
   integrity sha512-H0ulySigv6icDJ1F7SjtdCD6PrhTpdYCmP0CactWy1+ekh0AFd0o1Wn5T8b+hnTmdBx19u9yhL6wvCylXMY7zw==
 
-brace-expansion@5.0.12, brace-expansion@^1.1.7, brace-expansion@^5.0.12, brace-expansion@^5.0.5:
+brace-expansion@5.0.12, brace-expansion@^1.1.7, brace-expansion@^5.0.12:
   version "5.0.12"
   resolved "https://registry.yarnpkg.com/brace-expansion/-/brace-expansion-5.0.12.tgz#995fbb4750a77c4d16a7dc942ff2ca6ef8e675ec"
   integrity sha512-YovQ3rzhaLMIrDjNDMkNS01tea93qhEhG5xy8f6+R0l+dw3Ki+5sCoIoI942iuLZTHWogWktgwVDhU09iNEimQ==
@@ -1473,10 +1473,10 @@ deep-is@^0.1.3:
   resolved "https://registry.yarnpkg.com/deep-is/-/deep-is-0.1.4.tgz#a6f2dce612fadd2ef1f519b73551f17e85199831"
   integrity sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==
 
-deepmerge@^4.3.1:
-  version "4.3.1"
-  resolved "https://registry.yarnpkg.com/deepmerge/-/deepmerge-4.3.1.tgz#44b5f2147cd3b00d4b56137685966f26fd25dd4a"
-  integrity sha512-3sUqbMEc77XqpdNO7FRyRog+eW3ph+GYCbj+rK+uYyRMuwsVy0rMiVtPn+QJlKFvWP/1PYpapqYn0Me2knFn+A==
+deepmerge@^4.3.1, "deepmerge@npm:@stackline/deepmerge@1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@stackline/deepmerge/-/deepmerge-1.1.2.tgz#6b36e2d87913fadb0894fc858b4ef930423d566f"
+  integrity sha512-jJIukhO8oDuqYZ/LEcnfB3gFem15gv+0jxSWVWad+c9bEP2pL5SzU2PAlQKHHGKw0qddTGpclgnZUaY3CMukxg==
 
 detect-newline@^3.1.0:
   version "3.1.0"
@@ -2504,14 +2504,7 @@ mimic-fn@^2.1.0:
   resolved "https://registry.yarnpkg.com/mimic-fn/-/mimic-fn-2.1.0.tgz#7ed2c2ccccaf84d3ffcb7a69b57711fc2083401b"
   integrity sha512-OqbOk5oEQeAZ8WXWydlu9HJjz9WVdEIvamMCcXmuqUYjTknH/sqsWvhQ3vgwKFRR1HpjvNBKQ37nbJgYzGqGcg==
 
-minimatch@10.2.5, minimatch@^10.2.5:
-  version "10.2.5"
-  resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-10.2.5.tgz#bd48687a0be38ed2961399105600f832095861d1"
-  integrity sha512-MULkVLfKGYDFYejP07QOurDLLQpcjk7Fw+7jXS2R2czRQzR56yHRveU5NDJEOviH+hETZKSkIk5c+T23GjFUMg==
-  dependencies:
-    brace-expansion "^5.0.5"
-
-minimatch@11.0.5, minimatch@^10.2.2, minimatch@^10.2.4, minimatch@^10.2.6, minimatch@^11.0.5:
+minimatch@11.0.5, minimatch@^10.2.2, minimatch@^10.2.4, minimatch@^10.2.5, minimatch@^10.2.6, minimatch@^11.0.5:
   version "11.0.5"
   resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-11.0.5.tgz#29589e94fc4d84193b2a31b082b0ec67b5ea1d42"
   integrity sha512-snPlVppFcYWfLLFQGhDxUyBcHNtMlWmn3jtj7pEaO+DP8pqL0IvAzXhMYmn1z9ASNtgmwLBdFxSf4tMUB0OTKA==

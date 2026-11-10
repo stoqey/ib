@@ -44,3 +44,13 @@ external integrations, setup, testing constraints, migrations, or known limits.
 Do not use state files as a routine task log.
 Do not record secrets, credentials, tokens, account IDs, private customer data,
 or private runtime data in `.ai/state` files or `.ai/changelogs` files.
+
+## Dependency security compatibility
+
+- Jest's `deepmerge` is resolved to `npm:@stackline/deepmerge@1.1.2` to fix
+  GHSA-gcqx-w48m-w2h4. Upstream deepmerge 4.3.1 has no patched release.
+- TypeDoc 0.28.20 uses a removed minimatch method. `typedoc.json` loads
+  `scripts/typedoc-minimatch.cjs` to preserve directory traversal with patched
+  minimatch 11. Remove the plugin once TypeDoc uses the public partial-match API.
+- `src/tests/unit/dependency-security.test.ts` covers the merge replacement and
+  documentation glob compatibility.
