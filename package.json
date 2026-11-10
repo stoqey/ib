@@ -56,11 +56,9 @@
     "build": "yarn clean && yarn tsc",
     "build:watch": "yarn tsc --watch",
     "clean": "rm -rf dist",
-    "doc": "typedoc --excludeInternal",
-    "doc:dev": "typedoc --out ./doc-dev",
     "lint": "eslint ./src",
     "prepublishOnly": "yarn build",
-    "release": "yarn lint && yarn test && yarn doc && yarn build",
+    "release": "yarn lint && yarn test && yarn build",
     "test": "jest --maxWorkers=8 --reporters=default --useStderr --detectOpenHandles",
     "test-next": "jest ./src/tests/unit/api-next/ --maxWorkers=8 --reporters=default --useStderr --detectOpenHandles",
     "type-check": "tsc --noEmit"
@@ -84,15 +82,14 @@
     "eslint-formatter-junit": "^9.0.1",
     "eslint-plugin-jest": "^29.16.0",
     "eslint-plugin-prettier": "^5.5.6",
-    "jest": "^30.4.2",
-    "jest-environment-node": "^30.4.1",
+    "jest": "^30.5.2",
+    "jest-environment-node": "^30.5.2",
     "jest-junit": "^17.0.0",
     "prettier": "^3.9.6",
     "rxjs": "^7.8.2",
-    "ts-jest": "^29.4.12",
-    "typedoc": "^0.28.20",
+    "ts-jest": "^29.4.15",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.65.0"
+    "typescript-eslint": "^8.72.2"
   },
   "peerDependencies": {
     "rxjs": ">=7.0.0 <8"
@@ -101,18 +98,8 @@
     "node": ">=18.0.0"
   },
   "resolutions": {
-    "brace-expansion": "5.0.12",
-    "js-yaml": "5.5.0",
-    "fast-uri": "3.1.9",
-    "browserslist": "4.28.8",
-    "markdown-it": "15.0.3",
-    "**/@jest/reporters/glob": "14.0.4",
-    "**/jest-config/glob": "14.0.4",
-    "**/jest-runtime/glob": "14.0.4",
-    "**/eslint/minimatch": "11.0.5",
-    "**/@eslint/config-array/minimatch": "11.0.5",
-    "**/@typescript-eslint/typescript-estree/minimatch": "11.0.5",
-    "**/typedoc/minimatch": "11.0.5",
-    "deepmerge": "npm:@stackline/deepmerge@1.1.2"
+    "deepmerge": "npm:@stackline/deepmerge@1.1.2",
+    "glob": "14.0.4",
+    "minimatch": "11.0.5"
   }
 }

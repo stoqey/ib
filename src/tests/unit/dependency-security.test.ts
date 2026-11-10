@@ -2,9 +2,7 @@
  * @jest-environment node
  */
 
-import { execFileSync } from "child_process";
 import { createRequire } from "module";
-import path from "path";
 import merge from "deepmerge";
 
 describe("Jest's deepmerge security replacement", () => {
@@ -50,51 +48,5 @@ describe("Jest's deepmerge security replacement", () => {
       globals: { feature: true, timeout: 50 },
       projects: ["first", "second"],
     });
-  });
-});
-
-describe("TypeDoc's minimatch compatibility plugin", () => {
-  test("preserves directory traversal with patched minimatch", () => {
-    // Run native ESM so the test uses the same Minimatch prototype as TypeDoc.
-    const output = execFileSync(
-      process.execPath,
-      [
-        "--input-type=module",
-        "-e",
-        `
-          import { Minimatch } from "minimatch";
-          import { load } from "./scripts/typedoc-minimatch.cjs";
-          await load();
-          await load();
-          const cases = [
-            ["src/index.ts", "src", true],
-            ["src/index.ts", "other", false],
-            ["src/{api,core}/**/*.ts", "src/api", true],
-            ["src/{api,core}/**/*.ts", "src/core/nested", true],
-            ["src/{api,core}/**/*.ts", "src/common", false],
-            ["src/**/*.ts", "src/.hidden", false],
-            ["src/**/*.ts", "src/api", true],
-            ["src/*.ts", "src/file.js", false],
-          ];
-          console.log(JSON.stringify(cases.map(([pattern, directory, expected]) => {
-            const matcher = new Minimatch(pattern);
-            const actual = matcher.set.some(row =>
-              matcher.matchOne(directory.split("/"), row, true));
-            return { pattern, directory, actual, expected };
-          })));
-        `,
-      ],
-      { cwd: path.resolve(__dirname, "../../.."), encoding: "utf8" },
-    );
-    const results = JSON.parse(output) as {
-      pattern: string;
-      directory: string;
-      actual: boolean;
-      expected: boolean;
-    }[];
-
-    for (const result of results) {
-      expect(result).toEqual({ ...result, actual: result.expected });
-    }
   });
 });
