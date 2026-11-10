@@ -1,0 +1,6 @@
+# Dependency audit fixes
+
+- Summary: reduce audit findings from 19 to zero while reducing security resolutions from 13 to 3. Upgrade Jest and jest-environment-node to 30.5.2, ts-jest to 29.4.15, typescript-eslint to 8.72.2, and ESLint to 10.14.0; refresh affected transitive dependencies.
+- Notable files: `package.json`, regenerated `yarn.lock`, and merge-security regression tests. Remove the unused TypeDoc dependency, configuration, compatibility plugin/test, documentation scripts, and documentation step from the package's release command. The dedicated documentation site replaces the old generation workflow.
+- Tests run: frozen-lockfile install; full and runtime-only Yarn audits (zero findings); `yarn lint` (0 errors, 6 existing warnings); `yarn type-check`; `yarn tsc --outDir /tmp/ib-clean-build`; deterministic unit tests with coverage written to `/tmp/ib-clean-coverage`, excluding `unit/api` and `unit/api-next-live` (37 suites, 96 tests); Prettier check; `git diff --check`.
+- Risks / follow-ups: only glob 14.0.4, minimatch 11.0.5, and the user-approved `npm:@stackline/deepmerge@1.1.2` alias remain as resolutions. Current parent releases still require these exceptions; recheck upstream versions before removing them. Live TWS/Gateway tests were not run. No library runtime logic changes.
